@@ -1,0 +1,28 @@
+[project]
+name = "llsc-backend"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "uwblueprint", email = "matthewwang@uwblueprint.org"},
+]
+dependencies = [
+    "fastapi[standard]>=0.115.0",
+    "sqlalchemy>=2.0.35",
+    "alembic>=1.13.3",
+    "ruff>=0.6.7",
+    "pyright>=1.1.381",
+    "python-dotenv>=1.0.1",
+    "firebase-admin>=6.5.0",
+    "pytest>=8.3.3",
+    "inflection>=0.5.1",
+]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.scripts]
+dev = "fastapi dev app/server.py"
