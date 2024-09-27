@@ -6,44 +6,35 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     ports:
       - 3000:3000
     environment:
       - CHOKIDAR_USEPOLLING=true
     env_file:
       - ./frontend/.env
-  py-backend:
-    container_name: llsc_py_backend
+  backend:
+    container_name: llsc_backend
     restart: always
     build:
-      context: ./backend/python
+      context: ./backend
       dockerfile: Dockerfile
     ports:
       - 8080:8080
-    dns:
-      - 8.8.8.8
-    volumes:
-      - ./backend/python:/app
     depends_on:
       db:
         condition: service_healthy
-    env_file:
-      - ./.env
   db:
     container_name: llsc_db
-    image: postgres:12-alpine
+    image: postgres:16-alpine
     ports:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data/
       - ./db-init:/docker-entrypoint-initdb.d
-    env_file:
-      - ./.env
     environment:
-      - POSTGRES_MULTIPLE_DATABASES=${POSTGRES_DB_DEV},${POSTGRES_DB_TEST}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s

@@ -6,25 +6,23 @@ on:
       - main
     paths:
       - "frontend/**"
-      - "backend/typescript/**"
-      - "backend/python/**"
+      - "backend/**"
   pull_request:
     branches:
       - main
     paths:
       - "frontend/**"
-      - "backend/typescript/**"
-      - "backend/python/**"
+      - "backend/**"
 
 jobs:
   run-lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       
       - name: Filter changed files
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         id: changes
         with:
           filters: |
@@ -35,23 +33,23 @@ jobs:
       
       - name: Set up Node.js
         if: steps.changes.outputs.frontend == 'true'
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: "20.11.1"
-          cache: "yarn"
+          cache: "npm"
           cache-dependency-path: |
-            frontend/yarn.lock
+            frontend/package-lock.json
 
       - name: Install Node.js dependencies
         if: steps.changes.outputs.frontend == 'true'
-        run: yarn --cwd ./frontend --prefer-offline
+        run: npm ci --prefix ./frontend
 
       - name: Lint frontend
         if: steps.changes.outputs.frontend == 'true'
         working-directory: ./frontend
-        run: yarn lint
+        run: npm run lint
       
       - name: Lint Python backend
-        if: steps.changes.outputs.python-backend == 'true'
-        working-directory: ./backend/python
-        run: pip install black && python -m black --check .
+        if: steps.changes.outputs.backend == 'true'
+        working-directory: ./backend
+        run: pip install ruff && ruff check .

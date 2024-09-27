@@ -2,10 +2,10 @@ FROM python:3.12
 
 WORKDIR /app
 
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
-
-COPY . ./app
+COPY pyproject.toml ./
+COPY pdm.lock ./
+RUN pip install pdm && pdm install
+COPY . .
 
 EXPOSE 8080
-ENTRYPOINT ["python", "server.py"]
+CMD ["pdm", "run", "fastapi", "run", "app/server.py", "--port", "8080"]
