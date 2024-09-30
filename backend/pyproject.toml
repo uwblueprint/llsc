@@ -26,3 +26,13 @@ distribution = false
 
 [tool.pdm.scripts]
 dev = "fastapi dev app/server.py"
+
+[tool.ruff]
+target-version = "py312"
+# Read more here https://docs.astral.sh/ruff/rules/
+# By default, Ruff enables Flake8's E and F rules
+# Pyflakes - F, pycodestyle - E, W
+# flake8-builtins - A
+# Pylint - PLC, PLE, PLW
+# isort - I
+select = ['E', 'F', 'W', 'A', 'PLC', 'PLE', 'PLW', 'I']
