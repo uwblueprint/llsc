@@ -1,10 +1,8 @@
-from flask import current_app
 import pytest
 
+from app.models import db
 from app.models.user import User
 from app.services.implementations.user_service import UserService
-
-from app.models import db
 
 """
 Sample python test.

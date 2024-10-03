@@ -1,6 +1,6 @@
-""" 
+"""
 Generates a csv string given a list of dictionaries
-Some Notes: 
+Some Notes:
 1. Unwind only unwinds a single level (i.e a list)
 2. CSV requires all dictionaries in the list are of the same type
 """
