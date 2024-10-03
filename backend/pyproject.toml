@@ -35,4 +35,4 @@ target-version = "py312"
 # flake8-builtins - A
 # Pylint - PLC, PLE, PLW
 # isort - I
-select = ['E', 'F', 'W', 'A', 'PLC', 'PLE', 'PLW', 'I']
+lint.select = ['E', 'F', 'W', 'A', 'PLC', 'PLE', 'PLW', 'I']
