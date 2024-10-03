@@ -1,9 +1,13 @@
 from logging.config import fileConfig
+import os
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -18,12 +22,15 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+from app.models import Base
+
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+config.set_main_option("sqlalchemy.url", os.environ["POSTGRES_DATABASE_URL"])
 
 
 def run_migrations_offline() -> None:
@@ -57,16 +64,15 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    alembic_config = config.get_section(config.config_ini_section, {})
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        alembic_config,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
