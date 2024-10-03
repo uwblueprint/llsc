@@ -1,18 +1,13 @@
-from sqlalchemy import SQLAlchemy
+import os
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
+load_dotenv()
 
-db = SQLAlchemy()
+from .Base import Base
+from .User import User
+from .Role import Role
+__all__ = ["User", "Role"]
 
-
-def init_app(app):
-    app.app_context().push()
-    db.init_app(app)
-
-    erase_db_and_sync = app.config["TESTING"]
-
-    if erase_db_and_sync:
-        # drop tables
-        db.reflect()
-        db.drop_all()
-
-        # recreate tables
-        db.create_all()
+def init_app():
+    engine = create_engine(os.environ["POSTGRES_DATABASE_URL"])
+    Base.metadata.create_all(bind=engine)
