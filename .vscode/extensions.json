@@ -1,0 +1,3 @@
+{
+	"recommendations": ["charliermarsh.ruff", "njpwerner.autodocstring", "ckolkman.vscode-postgres"]
+}
