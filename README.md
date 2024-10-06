@@ -5,8 +5,9 @@
 - [Repo Structure](#repo-structure)
 - [Setup](#setup)
 - [Version Control Guide](#version-control-guide)
-- [Docker Commands](#docker-commands)
-- [Accessing PostgreSQL Database](#accessing-postgresql-database)
+  - [Branching](#branching)
+  - [Docker Commands](#docker-commands)
+  - [Accessing PostgreSQL Database](#accessing-postgresql-database)
 - [Seeding the Production Database](#seeding-the-production-database)
 - [Formatting and Linting](#formatting-and-linting)
 
@@ -84,12 +85,23 @@ cd backend
 pdm install
 ```
 
+To run the backend server locally (recommended for development), run the following command:
+```bash
+cd backend
+pdm run dev
+```
+
 NextJS frontend
 ```bash
 cd frontend
 npm install
 ```
 
+To run the frontend server locally (recommended for development), run the following command:
+```bash
+cd frontend
+npm run dev
+```
 
 ## Version Control Guide
 
@@ -183,9 +195,9 @@ TBD
 
 ## Formatting and Linting
 
-## Backend
+### Backend
 
-### Ruff
+#### Ruff
 
 We use Ruff for code linting and formatting in the backend. To check for linting issues:
 
@@ -209,7 +221,7 @@ pdm run ruff format .
 
 All code needs to pass ruff formatting and linting before it can be merged.
 
-## Frontend
+### Frontend
 
 #### Prettier
 
@@ -225,7 +237,7 @@ To automatically fix formatting issues:
 npm run prettier:fix
 ```
 
-### ESLint
+#### ESLint
 
 We use ESLint for code linting. To check for linting issues:
 
@@ -239,7 +251,7 @@ To automatically fix linting issues:
 npm run lint:fix
 ```
 
-### Combined Formatting and Linting
+#### Combined Formatting and Linting
 
 To run both Prettier and ESLint to format and fix linting issues in one command:
 
@@ -247,7 +259,7 @@ To run both Prettier and ESLint to format and fix linting issues in one command:
 npm run format
 ```
 
-### Commits
+## Commits
 
 - Commits should be atomic (guideline: the commit is self-contained; a reviewer could make sense of it even if they viewed the commit diff in isolation)
 
@@ -269,3 +281,5 @@ git push -f
 
 - Commit messages and PR names are descriptive and written in **imperative tense**. The first word should be capitalized. E.g. "Create user REST endpoints", not "Created user REST endpoints"
 - PRs can contain multiple commits, they do not need to be squashed together before merging as long as each commit is atomic. Our repo is configured to only allow squash commits to `main` so the entire PR will appear as 1 commit on `main`, but the individual commits are preserved when viewing the PR.
+
+## Working with pdm in the backend
