@@ -16,7 +16,8 @@ class IAuthService(ABC):
         :type email: str
         :param password: user's password
         :type password: str
-        :return: AuthDTO object containing the access token, refresh token, and user info
+        :return: AuthDTO object containing the access token, refresh token,
+        and user info
         :rtype: AuthDTO
         :raises Exception: if token generation fails
         """
@@ -30,7 +31,8 @@ class IAuthService(ABC):
 
         :param id_token: user's OAuth ID token
         :type id_token: str
-        :return: AuthDTO object containing the access token, refresh token, and user info
+        :return: AuthDTO object containing the access token, refresh token,
+        and user info
         :rtype: AuthDTO
         :raises Exception: if token generation fails
         """

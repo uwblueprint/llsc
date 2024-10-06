@@ -91,7 +91,8 @@ class IUserService(ABC):
         :type user: CreateUserDTO
         :param auth_id: user's firebase auth id, defaults to None
         :type auth_id: string, optional
-        :param signup_method: method of signup, either "PASSWORD" or "GOOGLE", defaults to "PASSWORD"
+        :param signup_method: method of signup, either "PASSWORD" or "GOOGLE", defaults
+        to "PASSWORD"
         :type signup_method: str, optional
         :return: the created user
         :rtype: UserDTO
@@ -103,8 +104,8 @@ class IUserService(ABC):
     def update_user_by_id(self, user_id, user):
         """
         Update a user
-        Note: the password cannot be updated using this method, use IAuthService.reset_password instead
-
+        Note: the password cannot be updated using this method, use
+        IAuthService.reset_password instead
         :param user_id: user's id
         :type user_id: str
         :param user: the user to be updated
