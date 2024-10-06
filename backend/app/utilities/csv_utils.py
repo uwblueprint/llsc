@@ -1,6 +1,6 @@
-""" 
+"""
 Generates a csv string given a list of dictionaries
-Some Notes: 
+Some Notes:
 1. Unwind only unwinds a single level (i.e a list)
 2. CSV requires all dictionaries in the list are of the same type
 """
@@ -83,7 +83,8 @@ def transform_function(dict_list, transform):
 
 def unwind_field(list_of_dict, field):
     """
-    Unwinds lists inside dicts into multiple dictionaries, returning a new list at the end
+    Unwinds lists inside dicts into multiple dictionaries, returning a new list at
+    the end
 
     Example:
     [{'a': [1, 2, 3]}, {'a': [4, 5, 6]}]
@@ -124,16 +125,16 @@ def generate_csv_from_list(dict_list, **kwargs):
         dict_list = transform_function(dict_list, kwargs["transform"])
 
     if kwargs.get("flatten_lists", None) and kwargs.get("flatten_objects", None):
-        dict_list = [flatten_lists_in_dict(flatten_dicts(dict)) for dict in dict_list]
+        dict_list = [flatten_lists_in_dict(flatten_dicts(dt)) for dt in dict_list]
 
     if kwargs.get("flatten_objects", None):
-        dict_list = [flatten_dicts(dict) for dict in dict_list]
+        dict_list = [flatten_dicts(dt) for dt in dict_list]
 
     if kwargs.get("unwind", None):
         dict_list = unwind_field(dict_list, kwargs["unwind"])
 
     if kwargs.get("flatten_lists", None):
-        dict_list = [flatten_lists_in_dict(dict) for dict in dict_list]
+        dict_list = [flatten_lists_in_dict(dt) for dt in dict_list]
 
     output = io.StringIO()
     field_names = (

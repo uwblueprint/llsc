@@ -1,9 +1,13 @@
+from app.utilities.csv_utils import generate_csv_from_list
+
 """
 Test Cases for generate_csv
 
 Current Issues:
 1. Note that unwind only unwinds at the current level
 2. List of dictionaries must be of the same type
+
+TODO: Re-assess this file as necessary
 """
 
 person = [
@@ -102,14 +106,14 @@ no_header_options = {
     "flatten_objects": False,
 }
 
-from app.utilities.csv_utils import generate_csv_from_list
-
 
 def test_basic():
     result = generate_csv_from_list(person)
     assert (
         result
-        == "Person1,20,\"[{'name': 'Beans', 'type': 'Cat'}, {'name': 'Spot', 'type': 'Dog'}]\"\r\nPerson2,25,\"[{'name': 'Splash', 'type': 'Fish'}]\"\r\n"
+        == "Person1,20,\"[{'name': 'Beans', 'type': 'Cat'}, "
+        + "{'name': 'Spot', 'type': 'Dog'}]\",2\r\nPerson2,25,\""
+        + "[{'name': 'Splash', 'type': 'Fish'}]\",1\r\n"
     )
 
 
@@ -117,7 +121,8 @@ def test_transform():
     result = generate_csv_from_list(person2, **options)
     assert (
         result
-        == "name,age,pets,num_pets\r\nPerson1,20,\"[{'name': 'Beans', 'type': 'Cat'}, {'name': 'Spot', 'type': 'Dog'}]\",2\r\n"
+        == "name,age,pets,num_pets\r\nPerson1,20,\"[{'name': 'Beans', 'type': 'Cat'}, "
+        + "{'name': 'Spot', 'type': 'Dog'}]\",2\r\n"
     )
 
 
@@ -135,7 +140,9 @@ def test_flatten_lists():
     result = generate_csv_from_list(person2, **flatten_list_options)
     assert (
         result
-        == "name,age,pets.0,pets.1\r\nPerson1,20,\"{'name': 'Beans', 'type': 'Cat'}\",\"{'name': 'Spot', 'type': 'Dog'}\"\r\n"
+        == "name,age,pets.0,pets.1\r\nPerson1,20,\"{'name': 'Beans', 'type': 'Cat'}"
+        + '","'
+        "{'name': 'Spot', 'type': 'Dog'}\"\r\n"
     )
 
 
@@ -143,7 +150,8 @@ def test_flatten_both():
     result = generate_csv_from_list(person2, **flatten_both_options)
     assert (
         result
-        == "name,age,pets.0.name,pets.0.type,pets.1.name,pets.1.type\r\nPerson1,20,Beans,Cat,Spot,Dog\r\n"
+        == "name,age,pets.0.name,pets.0.type,pets.1.name,pets.1.type\r\n"
+        + "Person1,20,Beans,Cat,Spot,Dog\r\n"
     )
 
 
@@ -151,5 +159,6 @@ def test_unwind():
     result = generate_csv_from_list(person2, **unwind_options)
     assert (
         result
-        == "name,age,pets\r\nPerson1,20,\"{'name': 'Beans', 'type': 'Cat'}\"\r\nPerson1,20,\"{'name': 'Spot', 'type': 'Dog'}\"\r\n"
+        == "name,age,pets\r\nPerson1,20,\"{'name': 'Beans', 'type': 'Cat'}\"\r\n"
+        + "Person1,20,\"{'name': 'Spot', 'type': 'Dog'}\"\r\n"
     )

@@ -16,10 +16,10 @@ class IEntityService(ABC):
         pass
 
     @abstractmethod
-    def get_entity(self, id):
+    def get_entity(self, entity_id):
         """Return a dictionary from the Entity object based on id
 
-        :param id: Entity id
+        :param entity_id: Entity id
         :return: dictionary of Entity object
         :rtype: dictionary
         :raises Exception: id retrieval fails
@@ -27,10 +27,10 @@ class IEntityService(ABC):
         pass
 
     @abstractmethod
-    def create_entity(self, entity):
+    def create_entity(self, entity_data):
         """Create a new Entity object
 
-        :param entity: dictionary of entity fields
+        :param entity_data: dictionary of entity fields
         :return: dictionary of Entity object
         :rtype: dictionary
         :raises Exception: if entity fields are invalid
@@ -38,21 +38,21 @@ class IEntityService(ABC):
         pass
 
     @abstractmethod
-    def update_entity(self, id, entity):
+    def update_entity(self, entity_id, entity_data):
         """Update existing entity
 
-        :param entity: dictionary of entity fields
-        :param id: Entity id
+        :param entity_data: dictionary of entity fields
+        :param entity_id: Entity id
         :return: dictionary of Entity object
         :rtype: dictionary
         """
         pass
 
     @abstractmethod
-    def delete_entity(self, id):
+    def delete_entity(self, entity_id):
         """Delete existing entity
 
-        :param id: Entity id
+        :param entity_id: Entity id
         :return: id of the Entity deleted
         :rtype: integer
         """

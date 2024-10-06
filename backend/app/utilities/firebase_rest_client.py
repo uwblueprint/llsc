@@ -1,4 +1,5 @@
 import os
+
 import requests
 
 from ..resources.token import Token
@@ -38,7 +39,8 @@ class FirebaseRestClient:
         headers = {"Content-Type": "application/json"}
         data = {"email": email, "password": password, "returnSecureToken": "true"}
 
-        # IMPORTANT: must convert data to string as otherwise the payload will get URL-encoded
+        # IMPORTANT: must convert data to string as otherwise the payload will
+        # get URL-encoded
         # e.g. "@" in the email address will get converted to "%40" which is incorrect
         response = requests.post(
             "{base_url}?key={api_key}".format(

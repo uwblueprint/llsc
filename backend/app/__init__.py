@@ -1,10 +1,12 @@
 import os
-import re
+from logging.config import dictConfig
+
 import firebase_admin
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from logging.config import dictConfig
+
 from .config import app_config
+
 
 def create_app():
     # configure FastAPI logger
@@ -21,7 +23,8 @@ def create_app():
             },
             "formatters": {
                 "default": {
-                    "format": "%(asctime)s-%(levelname)s-%(name)s::%(module)s,%(lineno)s: %(message)s"
+                    "format": "%(asctime)s-%(levelname)s-%(name)s"
+                    + "::%(module)s,%(lineno)s: %(message)s"
                 },
             },
             "root": {"level": "ERROR", "handlers": ["wsgi"]},
@@ -36,7 +39,8 @@ def create_app():
             "http://localhost:3000",
             "https://uw-blueprint-starter-code.firebaseapp.com",
             "https://uw-blueprint-starter-code.web.app",
-            # TODO: create a separate middleware functio to dynamically determine this value
+            # TODO: create a separate middleware function to dynamically
+            # determine this value
             # re.compile("^https:\/\/uw-blueprint-starter-code--pr.*\.web\.app$"),
         ],
         allow_credentials=True,
@@ -45,15 +49,17 @@ def create_app():
     )
 
     if os.getenv("FASTAPI_CONFIG") != "production":
-        app.state.database_uri = "postgresql://{username}:{password}@{host}:5432/{db}".format(
-            username=os.getenv("POSTGRES_USER"),
-            password=os.getenv("POSTGRES_PASSWORD"),
-            host=os.getenv("DB_HOST"),
-            db=(
-                os.getenv("POSTGRES_DB_TEST")
-                if app_config["TESTING"]
-                else os.getenv("POSTGRES_DB_DEV")
-            ),
+        app.state.database_uri = (
+            "postgresql://{username}:{password}@{host}:5432/{db}".format(
+                username=os.getenv("POSTGRES_USER"),
+                password=os.getenv("POSTGRES_PASSWORD"),
+                host=os.getenv("DB_HOST"),
+                db=(
+                    os.getenv("POSTGRES_DB_TEST")
+                    if app_config["TESTING"]
+                    else os.getenv("POSTGRES_DB_DEV")
+                ),
+            )
         )
     else:
         app.state.database_uri = os.getenv("DATABASE_URL")

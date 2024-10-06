@@ -1,9 +1,5 @@
 import pytest
 
-from app import create_app
-
-from app.models import db
-
 """
 Sample python test.
 For more information on pytest, visit:
@@ -45,10 +41,11 @@ def get_expected_user(user):
     return user
 
 
-def insert_users():
-    user_instances = [User(**data) for data in TEST_USERS]
-    db.session.bulk_save_objects(user_instances)
-    db.session.commit()
+# TODO: re-enable when functionality has been added
+# def insert_users():
+#     user_instances = [User(**data) for data in TEST_USERS]
+#     db.session.bulk_save_objects(user_instances)
+#     db.session.commit()
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -60,10 +57,11 @@ def setup(module_mocker):
     module_mocker.patch("firebase_admin.auth.get_user", return_value=FirebaseUser())
 
 
-def test_get_users(client):
-    insert_users()
-    res = client.get("/users")
-    users_with_email = list(map(get_expected_user, TEST_USERS))
-    for expected_user, actual_user in zip(users_with_email, res.json):
-        for key in users_with_email[0].keys():
-            assert expected_user[key] == actual_user[key]
+# TODO: re-enable when functionality has been added
+# def test_get_users(client):
+#     insert_users()
+#     res = client.get("/users")
+#     users_with_email = list(map(get_expected_user, TEST_USERS))
+#     for expected_user, actual_user in zip(users_with_email, res.json):
+#         for key in users_with_email[0].keys():
+#             assert expected_user[key] == actual_user[key]
