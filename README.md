@@ -192,7 +192,7 @@ Running the commands line by line.
 docker exec -it llsc /bin/bash
 
 # in container now
-psql -U llsc -d llsc
+psql -U postgres -d llsc
 
 # in postgres shell, some common commands:
 # display all table names
