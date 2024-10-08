@@ -98,6 +98,12 @@ cd backend
 pdm run dev
 ```
 
+To check if the database has been started up, type the following:
+```bash
+ docker ps | grep llsc_db
+```
+This checks the list of docker containers and searchs for the container name `llsc_db`
+
 NextJS frontend
 ```bash
 cd frontend
