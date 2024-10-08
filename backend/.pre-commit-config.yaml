@@ -32,10 +32,10 @@ repos:
       - id: ruff-format
         args: []
 
-  # - repo: https://github.com/gitleaks/gitleaks
-  #   rev: v8.19.0
-  #   hooks:
-  #     - id: gitleaks
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
 
   # - repo: https://github.com/pycqa/isort
   #   rev: 5.11.2
