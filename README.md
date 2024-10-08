@@ -77,7 +77,7 @@ cp .env.sample .env
 docker-compose up --build
 ```
 
-- Install pdm
+- Install pdm (this is a global installation, so location doesn't matter)
 On macOS:
 ```bash
 brew install pdm
@@ -288,5 +288,3 @@ git push -f
 
 - Commit messages and PR names are descriptive and written in **imperative tense**. The first word should be capitalized. E.g. "Create user REST endpoints", not "Created user REST endpoints"
 - PRs can contain multiple commits, they do not need to be squashed together before merging as long as each commit is atomic. Our repo is configured to only allow squash commits to `main` so the entire PR will appear as 1 commit on `main`, but the individual commits are preserved when viewing the PR.
-
-## Working with pdm in the backend
