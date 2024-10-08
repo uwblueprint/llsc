@@ -298,3 +298,16 @@ git push -f
 
 ## Secrets
 Secrets are stored in the Environment Variable [file](https://www.notion.so/uwblueprintexecs/Environment-Variables-11910f3fb1dc80e4bc67d35c3d65d073?pvs=4) within the LLSC notion.
+
+## Migrations (mirrors [backend README](./backend/README.md))
+
+We use Alembic for database schema migrations. We mainly use migration scripts to keep track of the incremental and in theory revertible changes that have occurred on the database. But, we don't need to rely on this to build the datebase itself, as `Base.metadata.create_all(bind=engine)` achieves that based on the current models. To create a new migration, run the following command after adding or editing models in `backend/app/models.py`:
+```bash
+cd backend
+pdm run alembic revision --autogenerate -m "<migration message>"
+```
+
+To apply the migration, run the following command:
+```bash
+pdm run alembic upgrade head
+```
