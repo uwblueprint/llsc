@@ -10,6 +10,7 @@
   - [Accessing PostgreSQL Database](#accessing-postgresql-database)
 - [Seeding the Production Database](#seeding-the-production-database)
 - [Formatting and Linting](#formatting-and-linting)
+- [Secrets](#secrets)
 
 ## Repo Structure
 ```
@@ -294,3 +295,6 @@ git push -f
 
 - Commit messages and PR names are descriptive and written in **imperative tense**. The first word should be capitalized. E.g. "Create user REST endpoints", not "Created user REST endpoints"
 - PRs can contain multiple commits, they do not need to be squashed together before merging as long as each commit is atomic. Our repo is configured to only allow squash commits to `main` so the entire PR will appear as 1 commit on `main`, but the individual commits are preserved when viewing the PR.
+
+## Secrets
+Secrets are stored in the Environment Variable [file](https://www.notion.so/uwblueprintexecs/Environment-Variables-11910f3fb1dc80e4bc67d35c3d65d073?pvs=4) within the LLSC notion.
