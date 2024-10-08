@@ -2,13 +2,13 @@ from typing import Union
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+
 from . import models
 
 load_dotenv()
 
 app = FastAPI()
 models.init_app()
-
 
 
 @app.get("/")
