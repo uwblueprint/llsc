@@ -77,7 +77,14 @@ cp .env.sample .env
 docker-compose up --build
 ```
 
-You will need to go into each directory individually to install dependencies.
+- Install pdm
+On macOS:
+```bash
+brew install pdm
+```
+Otherwise, feel free to follow install instructions [here](https://pdm-project.org/latest/#installation)
+
+You will then need to go into each directory individually to install dependencies.
 
 FastAPI backend
 ```bash
