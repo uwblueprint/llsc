@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from . import models
+from app.routes import email
 
 load_dotenv()
 
@@ -24,11 +25,11 @@ async def lifespan(_: FastAPI):
 # running-alembic-migrations-on-fastapi-startup
 app = FastAPI(lifespan=lifespan)
 
+app.include_router(email.router, tags=["email"], prefix="/email")
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
-
 
 @app.get("/items/{item_id}")
 def read_item(item_id: int, q: Union[str, None] = None):
