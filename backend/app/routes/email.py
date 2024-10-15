@@ -1,4 +1,3 @@
-# routers/emails.py
 from fastapi import APIRouter, Depends
 from app.services.interfaces.email_service import IEmailService
 from app.services.email.email_service import EmailService
