@@ -5,10 +5,13 @@ from fastapi import FastAPI
 
 from . import models
 from .routes import user
+from .utilities.firebase_init import initialize_firebase
+
 load_dotenv()
 
 app = FastAPI()
 models.init_app()
+initialize_firebase()
 
 app.include_router(user.router)
 

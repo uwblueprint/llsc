@@ -87,7 +87,7 @@ def create_app():
                 ),
             }
         ),
-        {"storageBucket": os.getenv("FIREBASE_STORAGE_DEFAULT_BUCKET")},
+        # {"storageBucket": os.getenv("FIREBASE_STORAGE_DEFAULT_BUCKET")},
     )
 
     # from . import models, rest

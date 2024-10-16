@@ -1,15 +1,24 @@
 from pydantic import BaseModel, EmailStr, Field, validator
 from enum import Enum
+from uuid import UUID
 
-class Role(str, Enum):
+class UserRole(str, Enum):
     PARTICIPANT = "participant"
     VOLUNTEER = "volunteer"
     ADMIN = "admin"
+
+class RoleBase(BaseModel):
+    id: int
+    name: UserRole
+
+    class Config:
+        from_attributes = True
+
 class UserBase(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=50)
     last_name: str = Field(..., min_length=1, max_length=50)
     email: EmailStr
-    role: Role
+    role: RoleBase
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8)
@@ -25,20 +34,23 @@ class UserCreate(UserBase):
         return v
 
 class UserInDB(UserBase):
-    id: str
+    id: UUID
     auth_id: str
+
+    class Config:
+        from_attributes = True
 
 class User(UserBase):
     id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserUpdate(BaseModel):
     first_name: str | None = Field(None, min_length=1, max_length=50)
     last_name: str | None = Field(None, min_length=1, max_length=50)
     email: EmailStr | None = None
-    role: Role | None = None
+    role: RoleBase | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True

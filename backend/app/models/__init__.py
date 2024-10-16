@@ -15,3 +15,4 @@ __all__ = ["User", "Role"]
 def init_app():
     engine = create_engine(os.environ["POSTGRES_DATABASE_URL"])
     Base.metadata.create_all(bind=engine)
+    Base.metadata.bind = engine

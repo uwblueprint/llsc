@@ -1,16 +1,17 @@
 import firebase_admin.auth
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.models.user import User
+from app.models import Role, User
 from app.schemas.user import UserCreate, UserInDB
 from app.services.interfaces.user_service import IUserService
+from firebase_admin.exceptions import FirebaseError
 import logging
 
 class UserService(IUserService):
     def __init__(self, db: Session):
         self.db = db
         self.logger = logging.getLogger(__name__)
-
+        
     async def create_user(self, user: UserCreate) -> UserInDB:
         firebase_user = None
         try:
@@ -20,35 +21,68 @@ class UserService(IUserService):
                 password=user.password
             )
 
-            # Create user in database
+            all_roles = self.db.query(Role).all()
+            print("Available roles:", [role.name for role in all_roles])
+
+            db_role = self.db.query(Role).filter(Role.name == user.role.value).first()
+            if not db_role:
+                raise HTTPException(status_code=400, detail="Invalid role")
+
+            # create user in database
             db_user = User(
                 first_name=user.first_name,
                 last_name=user.last_name,
                 email=user.email,
-                role=user.role,
+                role=db_role,
                 auth_id=firebase_user.uid
             )
+
             self.db.add(db_user)
             self.db.commit()
             self.db.refresh(db_user)
 
-            return UserInDB.from_orm(db_user)
+            return UserInDB.model_validate(db_user)
 
-        except firebase_admin.auth.AuthError as firebase_error:
-            # If Firebase failed to add, the user wasn't added to the db so nothing to rollback
-            self.logger.error(f"Firebase authentication error: {str(firebase_error)}")
-            raise HTTPException(status_code=400, detail=str(firebase_error))
-
+        except firebase_admin.exceptions.FirebaseError as firebase_error:
+            self.logger.error(f"Firebase error: {str(firebase_error)}")
+            if isinstance(firebase_error, firebase_admin.auth.EmailAlreadyExistsError):
+                raise HTTPException(status_code=409, detail="Email already exists")
+            else:
+                raise HTTPException(status_code=400, detail=str(firebase_error))
         except Exception as e:
-            # If database insertion fails, we need to delete the Firebase user
             if firebase_user:
                 try:
                     firebase_admin.auth.delete_user(firebase_user.uid)
                 except firebase_admin.auth.AuthError as firebase_error:
-                    # Log the error if we couldn't delete the Firebase user
                     self.logger.error(f"Failed to delete Firebase user after database insertion failed. Firebase UID: {firebase_user.uid}. Error: {str(firebase_error)}")
             
-            # Rollback the database session
             self.db.rollback()
             self.logger.error(f"Error creating user: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
+        
+    def delete_user_by_email(self, email: str):
+        pass
+
+    def delete_user_by_id(self, user_id: str):
+        pass
+
+    def get_auth_id_by_user_id(self, user_id: str) -> str:
+        pass
+
+    def get_user_by_email(self, email: str):
+        pass
+
+    def get_user_by_id(self, user_id: str):
+        pass
+
+    def get_user_id_by_auth_id(self, auth_id: str) -> str:
+        pass
+
+    def get_user_role_by_auth_id(self, auth_id: str) -> str:
+        pass
+
+    def get_users(self):
+        pass
+
+    def update_user_by_id(self, user_id: str, user):
+        pass
