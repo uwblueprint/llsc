@@ -4,12 +4,13 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from . import models
-
+from .routes import user
 load_dotenv()
 
 app = FastAPI()
 models.init_app()
 
+app.include_router(user.router)
 
 @app.get("/")
 def read_root():
