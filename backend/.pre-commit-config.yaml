@@ -33,12 +33,3 @@ repos:
     rev: v8.18.0
     hooks:
       - id: gitleaks
-
-  # - repo: local
-  #   hooks:
-  #     - id: docker-compose-check
-  #       exclude: '(^|/)(frontend|hooks|.github)/'
-  #       name: Docker Compose up check
-  #       entry: docker-compose
-  #       args: ['up', '--build', '.', '--exit-code-from', 'backend']
-  #       language: system
