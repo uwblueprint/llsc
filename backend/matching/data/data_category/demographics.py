@@ -2,10 +2,9 @@ import random
 
 
 class Demographics:
-
     # TODO: Add more roles and diagnoses (as we go and finalize the survey)
     # TODO: can we move these field paramaters to a constants file?
-    
+
     GENDER_IDENTITIES = [
         "Female",
         "Male",
