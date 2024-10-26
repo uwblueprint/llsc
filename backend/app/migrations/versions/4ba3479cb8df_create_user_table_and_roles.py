@@ -29,10 +29,10 @@ def upgrade() -> None:
     op.create_table(
         "users",
         sa.Column("id", sa.String(), nullable=False),
-        sa.Column("first_name", sa.String(length=80), nullable=True),
-        sa.Column("last_name", sa.String(length=80), nullable=True),
+        sa.Column("first_name", sa.String(length=80), nullable=False),
+        sa.Column("last_name", sa.String(length=80), nullable=False),
         sa.Column("email", sa.String(length=120), nullable=False),
-        sa.Column("role_id", sa.Integer(), nullable=True),
+        sa.Column("role_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["role_id"],
             ["roles.id"],
