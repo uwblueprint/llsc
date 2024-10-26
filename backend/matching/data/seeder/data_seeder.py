@@ -2,6 +2,7 @@ from data_category.personality import Personality
 from data_category.demographics import Demographics
 from llsc.backend.matching.data.seeder.data_formatter import DataFormatter
 
+
 class Seeder:
     # TODO : wrap the records more modularly
 
