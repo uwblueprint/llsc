@@ -13,7 +13,7 @@ class Algorithm:
     def algo1(self, params, data):
         print(params)
         return "successfully ran algo1"
-    
+
     def algo2(self, params, data):
         print(params)
         return "successfully ran algo2"
