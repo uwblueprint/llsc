@@ -35,7 +35,7 @@ To start the backend locally, use the following command:
 pdm run dev
 ```
 
-Note: If you wish to run the backend outside of Docker (e.g., for local development), you'll need to set up a PostgreSQL database. Ensure your database configuration is set properly in the environment variables before running the project.
+Note: If you wish to run the backend outside of Docker (e.g., for local development), you'll need to set up a PostgreSQL database. Ensure your database configuration is set properly in the environment variables before running the project. For the time being, the recommended approach for local development using the database is to use the docker compose Postgres instance with your local dev backend.
 
 ## Run Project
 
