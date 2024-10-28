@@ -46,9 +46,24 @@ cd backend
 pdm run ruff format .
 ```
 
+
+## Adding a new model
+When adding a new model, make sure to add it to `app/models/__init__.py` so that the migration script can pick it up when autogenerating the new migration.
+
+In `app/models/__init__.py`, add the new model like so:
+```python
+from .Base import Base
+...
+from .<new_model_name> import <new_model_name>
+
+__all__ = ["Base", ... , "<new_model_name>"]
+```
+Then run the steps found in the [Migrations](#migrations) section to create a new migration.
+
+
 ## Migrations
 
-We use Alembic for database schema migrations. We mainly use migration scripts to keep track of the incremental and in theory revertible changes that have occurred on the database. But, we don't need to rely on this to build the datebase itself, as `Base.metadata.create_all(bind=engine)` achieves that based on the current models. To create a new migration, run the following command after adding or editing models in `backend/app/models.py`:
+We use Alembic for database schema migrations. We mainly use migration scripts to keep track of the incremental and in theory revertible changes that have occurred on the database. To create a new migration, run the following command after adding or editing models in `backend/app/models.py`:
 ```bash
 cd backend
 pdm run alembic revision --autogenerate -m "<migration message>"
