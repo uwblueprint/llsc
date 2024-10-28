@@ -3,7 +3,6 @@ This repository contains the backend for the Leukemia & Lymphoma Society of Cana
 
 ## Prerequisites
 
-
 Ensure you have the following installed on your machine:
 
 - **Python 3.12+**
@@ -78,3 +77,10 @@ Environment variables are currently stored in an .env file within the base repos
 
 We have added the pre-commit hook package and defined the config file in `backend/.pre-commit-config.yaml`. This should automatically get installed when you run `pdm install` and should work whenever you run any `git commit` or `git push` commands in the repo.
 
+You can also manually run the pre-commit hooks prior to pushing/commiting code by running the following:
+
+```
+pdm run precommit
+```
+
+If the above command doesn't work please run `pdm run precommit-install` prior to running above.
