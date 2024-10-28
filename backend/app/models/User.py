@@ -1,7 +1,8 @@
+import uuid
+
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-import uuid
 
 from .Base import Base
 
@@ -12,6 +13,7 @@ class User(Base):
     first_name = Column(String(80), nullable=False)
     last_name = Column(String(80), nullable=False)
     email = Column(String(120), unique=True, nullable=False)
-    role_id = Column(Integer, ForeignKey("roles.id"))
+    role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
+    auth_id = Column(String, nullable=False)
 
     role = relationship("Role")
