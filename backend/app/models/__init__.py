@@ -10,6 +10,7 @@ from .User import User
 # Used to avoid import errors for the models
 __all__ = ["Base", "User", "Role"]
 
+
 def run_migrations():
     alembic_cfg = Config("alembic.ini")
     # Emulates `alembic upgrade head` to migrate up to latest revision
