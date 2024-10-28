@@ -73,3 +73,8 @@ The backend runs at http://localhost:8080 and the frontend runs at http://localh
 
 ## Environment Variables
 Environment variables are currently stored in an .env file within the base repository (not the backend folder). You will need to copy the local environment variables stored in the following notion [page](https://www.notion.so/uwblueprintexecs/Environment-Variables-11910f3fb1dc80e4bc67d35c3d65d073?pvs=4) to get the database working.
+
+## Pre-commit Hook
+
+We have added the pre-commit hook package and defined the config file in `backend/.pre-commit-config.yaml`. This should automatically get installed when you run `pdm install` and should work whenever you run any `git commit` or `git push` commands in the repo.
+
