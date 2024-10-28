@@ -84,3 +84,5 @@ pdm run precommit
 ```
 
 If the above command doesn't work please run `pdm run precommit-install` prior to running above.
+
+Note after the pre-commit hooks run you may need to stage the changed files again. Please look over the changes before you push the code again.
