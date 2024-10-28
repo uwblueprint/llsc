@@ -1,6 +1,5 @@
 from alembic import command
 from alembic.config import Config
-from dotenv import load_dotenv
 
 # Make sure all models are here to reflect all current models
 # when autogenerating new migration
@@ -10,8 +9,6 @@ from .User import User
 
 # Used to avoid import errors for the models
 __all__ = ["Base", "User", "Role"]
-
-load_dotenv()
 
 def run_migrations():
     alembic_cfg = Config("alembic.ini")
