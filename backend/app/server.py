@@ -1,3 +1,5 @@
+import logging
+from contextlib import asynccontextmanager
 from typing import Union
 
 from dotenv import load_dotenv
@@ -7,8 +9,20 @@ from . import models
 
 load_dotenv()
 
-app = FastAPI()
-models.init_app()
+log = logging.getLogger("uvicorn")
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    log.info("Starting up...")
+    models.run_migrations()
+    yield
+    log.info("Shutting down...")
+
+
+# Source: https://stackoverflow.com/questions/77170361/
+# running-alembic-migrations-on-fastapi-startup
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
