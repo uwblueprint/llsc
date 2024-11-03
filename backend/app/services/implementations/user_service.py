@@ -51,7 +51,7 @@ class UserService(IUserService):
                     firebase_admin.auth.delete_user(firebase_user.uid)
                 except firebase_admin.auth.AuthError as firebase_error:
                     self.logger.error(
-                        "Failed to delete Firebase user after database insertion failed. "
+                        "Failed to delete Firebase user after database insertion failed"
                         f"Firebase UID: {firebase_user.uid}. "
                         f"Error: {str(firebase_error)}"
                     )
