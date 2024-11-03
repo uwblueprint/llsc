@@ -1,18 +1,17 @@
-from sqlalchemy import SQLAlchemy
+from alembic import command
+from alembic.config import Config
 
-db = SQLAlchemy()
+# Make sure all models are here to reflect all current models
+# when autogenerating new migration
+from .Base import Base
+from .Role import Role
+from .User import User
+
+# Used to avoid import errors for the models
+__all__ = ["Base", "User", "Role"]
 
 
-def init_app(app):
-    app.app_context().push()
-    db.init_app(app)
-
-    erase_db_and_sync = app.config["TESTING"]
-
-    if erase_db_and_sync:
-        # drop tables
-        db.reflect()
-        db.drop_all()
-
-        # recreate tables
-        db.create_all()
+def run_migrations():
+    alembic_cfg = Config("alembic.ini")
+    # Emulates `alembic upgrade head` to migrate up to latest revision
+    command.upgrade(alembic_cfg, "head")
