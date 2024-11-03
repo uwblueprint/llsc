@@ -15,9 +15,14 @@ router = APIRouter(
 # allow signup methods other than email (like sign up w Google)??
 
 
+def get_user_service(db: Session = Depends(get_db)):
+    return UserService(db)
+
+
 @router.post("/", response_model=UserInDB)
-async def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    user_service = UserService(db)
+async def create_user(
+    user: UserCreate, user_service: UserService = Depends(get_user_service)
+):
     try:
         created_user = await user_service.create_user(user)
         return created_user
