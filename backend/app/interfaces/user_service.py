@@ -83,7 +83,7 @@ class IUserService(ABC):
         pass
 
     @abstractmethod
-    def create_user(self, user, auth_id=None, signup_method="PASSWORD"):
+    def create_user(self, user, auth_id=None):
         """
         Create a user, email verification configurable
 
