@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from . import models
+from .routes import user
+from .utilities.firebase_init import initialize_firebase
 
 load_dotenv()
 
@@ -16,6 +18,7 @@ log = logging.getLogger("uvicorn")
 async def lifespan(_: FastAPI):
     log.info("Starting up...")
     models.run_migrations()
+    initialize_firebase()
     yield
     log.info("Shutting down...")
 
@@ -23,6 +26,7 @@ async def lifespan(_: FastAPI):
 # Source: https://stackoverflow.com/questions/77170361/
 # running-alembic-migrations-on-fastapi-startup
 app = FastAPI(lifespan=lifespan)
+app.include_router(user.router)
 
 
 @app.get("/")
