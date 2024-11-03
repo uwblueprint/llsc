@@ -1,6 +1,7 @@
 from app.services.interfaces.email_service import IEmailService
 from app.services.interfaces.email_service_provider import IEmailServiceProvider
 
+
 class EmailService(IEmailService):
     def __init__(self, provider: IEmailServiceProvider):
         self.provider = provider
@@ -16,7 +17,6 @@ class EmailService(IEmailService):
 
     def send_notification_email(self, recipient: str, notification_text: str) -> dict:
         pass
-    
+
     def _helper_method_example(self):
         pass
-    

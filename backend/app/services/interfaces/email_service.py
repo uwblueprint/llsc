@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 
+
 class IEmailService(ABC):
     """
-    Interface for the Email Service, defining the core email operations such as sending templated and custom emails.
+    Interface for the Email Service, defining the core email operations such as
+    sending templated and custom emails.
     """
 
     @abstractmethod
@@ -26,7 +28,7 @@ class IEmailService(ABC):
     def send_welcome_email(self, recipient: str, user_name: str) -> dict:
         """
         Sends a welcome email to the specified user.
-        
+
         :param recipient: Email address of the user
         :type recipient: str
         :param user_name: Name of the user
