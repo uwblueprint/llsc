@@ -36,6 +36,12 @@ pdm run dev
 
 Note: If you wish to run the backend outside of Docker (e.g., for local development), you'll need to set up a PostgreSQL database. Ensure your database configuration is set properly in the environment variables before running the project. For the time being, the recommended approach for local development using the database is to use the docker compose Postgres instance with your local dev backend.
 
+To check if the database has been started up, type the following:
+```bash
+ docker ps | grep llsc_db
+```
+This checks the list of docker containers and searchs for the container name `llsc_db`
+
 ## Run Project
 
 Take advantage of the docker compose file in the LLSC root directory to run the backend alongside the frontend by simply running
@@ -70,10 +76,9 @@ You can adjust the ports as needed. For example, 8080:8080 maps the container’
 
 The backend runs at http://localhost:8080 and the frontend runs at http://localhost:3000.
 
-## Environment Variables
-Environment variables are currently stored in an .env file within the base repository (not the backend folder). You will need to copy the local environment variables stored in the following notion [page](https://www.notion.so/uwblueprintexecs/Environment-Variables-11910f3fb1dc80e4bc67d35c3d65d073?pvs=4) to get the database working.
+## Formatting and Linting (mirrors [formatting in base README](../README.md#formatting-and-linting))
 
-## Pre-commit Hook
+### Pre-commit Hook
 
 We have added the pre-commit hook package and defined the config file in `backend/.pre-commit-config.yaml`. This should automatically get installed when you run `pdm install` and should work whenever you run any `git commit` or `git push` commands in the repo.
 
@@ -86,3 +91,48 @@ pdm run precommit
 If the above command doesn't work please run `pdm run precommit-install` prior to running above.
 
 Note after the pre-commit hooks run you may need to stage the changed files again. Please look over the changes before you push the code again.
+
+### Ruff
+
+We use Ruff for code linting and formatting in the backend. To check for and automatically fix linting issues:
+
+```bash
+cd backend
+pdm run ruff check --fix .
+```
+
+To format the code:
+```bash
+cd backend
+pdm run ruff format .
+```
+
+## Environment Variables
+Environment variables are currently stored in an .env file within the base repository (not the backend folder). You will need to copy the local environment variables stored in the following notion [page](https://www.notion.so/uwblueprintexecs/Environment-Variables-11910f3fb1dc80e4bc67d35c3d65d073?pvs=4) to get the database working.
+
+
+## Adding a new model
+When adding a new model, make sure to add it to `app/models/__init__.py` so that the migration script can pick it up when autogenerating the new migration.
+
+In `app/models/__init__.py`, add the new model like so:
+```python
+from .Base import Base
+...
+from .<new_model_name> import <new_model_name>
+
+__all__ = ["Base", ... , "<new_model_name>"]
+```
+Then run the steps found in the [Migrations](#migrations) section to create a new migration.
+
+## Migrations
+
+We use Alembic for database schema migrations. We mainly use migration scripts to keep track of the incremental and in theory revertible changes that have occurred on the database. To create a new migration, run the following command after adding or editing models in `backend/app/models.py`:
+```bash
+cd backend
+pdm run alembic revision --autogenerate -m "<migration message>"
+```
+
+To apply the migration, run the following command:
+```bash
+pdm run alembic upgrade head
+```
