@@ -5,8 +5,9 @@ from typing import Union
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from . import models
 from app.routes import email
+
+from . import models
 
 load_dotenv()
 
