@@ -5,11 +5,12 @@ from typing import Union
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
+load_dotenv()
+
 from . import models
 from .routes import user
 from .utilities.firebase_init import initialize_firebase
 
-load_dotenv()
 
 log = logging.getLogger("uvicorn")
 
