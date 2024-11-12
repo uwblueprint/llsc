@@ -2,6 +2,7 @@ from data_category.medical_information import MedicalInformation
 from data_category.demographics import Demographics
 from llsc.backend.matching.data.seeder.data_formatter import DataFormatter
 
+
 class Seeder:
     # TODO : wrap the records more modularly
     def __init__(self, num_records=10):
@@ -26,7 +27,7 @@ class Seeder:
                 "Ethnicity": Demographics.get_random_ethnic_background(),
                 "Marital Status": Demographics.get_random_marital_status(),
                 "Children Status": Demographics.get_random_children_status(),
-                "Blood Cancer Status":  MedicalInformation.get_random_blood_cancer_question(),
+                "Blood Cancer Status": MedicalInformation.get_random_blood_cancer_question(),
                 "Caregiver Status": MedicalInformation.get_random_caregiver_question(),
                 "Caregiver Type": MedicalInformation.get_random_caregiver_type(),
                 "Diagnostic": MedicalInformation.get_random_diagnosis(),
@@ -50,7 +51,7 @@ class Seeder:
                 "City": Demographics.get_random_city(),
                 "Language": Demographics.get_random_language(),
                 "Criminal Record Status": Demographics.get_random_criminal_record_status(),
-                "Blood Cancer Status":  MedicalInformation.get_random_blood_cancer_question(),
+                "Blood Cancer Status": MedicalInformation.get_random_blood_cancer_question(),
                 "Caregiver Status": MedicalInformation.get_random_caregiver_question(),
                 "Caregiver Type": MedicalInformation.get_random_caregiver_type(),
                 "Diagnostic": MedicalInformation.get_random_diagnosis(),
@@ -77,7 +78,7 @@ class Seeder:
                 "Ethnicity": Demographics.get_random_ethnic_background(),
                 "Marital Status": Demographics.get_random_marital_status(),
                 "Children Status": Demographics.get_random_children_status(),
-                "Blood Cancer Status":  MedicalInformation.get_random_blood_cancer_question(),
+                "Blood Cancer Status": MedicalInformation.get_random_blood_cancer_question(),
                 "Caregiver Status": MedicalInformation.get_random_caregiver_question(),
                 "Caregiver Type": MedicalInformation.get_random_caregiver_type(),
                 "Diagnostic": MedicalInformation.get_random_diagnosis(),
@@ -92,7 +93,9 @@ class Seeder:
 
     def save_data(self, output_format="dataframe", file_path=None):
         if not self.data:
-            self.generate_data()
+            # TODO FIX THIS HERE FOR DIFFERENT METHODS HERE NOT JUST THIS GENERAT EDATA
+            # for now just make it do the general mathign data
+            self.generate_matching_data()
 
         # Use the OutputHandler for saving/formatting data
         handler = DataFormatter(self.data)

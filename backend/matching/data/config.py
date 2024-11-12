@@ -35,7 +35,7 @@ GENDER_IDENTITIES = [
     "Male",
     "Non-binary",
     "Prefer not to answer",
-    "Prefer to self-describe", #TODO: not sure how to accomidate for these 'other options'
+    "Prefer to self-describe",  # TODO: not sure how to accomidate for these 'other options'
 ]
 PRONOUNS = ["she/her", "he/him", "they/them", "other"]
 ETHNIC_GROUPS = [
@@ -63,7 +63,7 @@ CAREGIVING_TYPES = [
     "Child",
     "Spouse",
     "Friend",
-    "Other", # TODO: how do we impl this? (like if the user chooses other)
+    "Other",  # TODO: how do we impl this? (like if the user chooses other)
 ]
 DIAGNOSES = {
     "Unknown": ["Unknown"],

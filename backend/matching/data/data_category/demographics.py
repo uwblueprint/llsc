@@ -9,11 +9,12 @@ from config import (
     PRONOUNS,
     ETHNIC_GROUPS,
     MARITAL_STATUSES,
-    YES_NO
+    YES_NO,
 )
 
-fake = Faker() # generic faker
-fake_ca = Faker("en_CA") # canadian faker
+fake = Faker()  # generic faker
+fake_ca = Faker("en_CA")  # canadian faker
+
 
 # TODO: this uses the random and datetime; we can use a seeder like Faker to generate more realistic data
 # TODO: have highlighted relevent fields for the matching algorithm
@@ -51,16 +52,18 @@ class Demographics:
     def get_random_postal_code():
         # use the regex part here to make it random
         template = "A0A 0A0"
-        
+
         # Use re.sub with specific replacement logic for each position
         return re.sub(
-            r"[A-Z]|\d", 
+            r"[A-Z]|\d",
             lambda x: random.choice(
-                "ABCEGHJKLMNPRSTVXY" if x.start() == 0 else 
-                "ABCEGHJKLMNPRSTVWXYZ" if x.group().isalpha() else 
-                "0123456789"
-            ), 
-            template
+                "ABCEGHJKLMNPRSTVXY"
+                if x.start() == 0
+                else "ABCEGHJKLMNPRSTVWXYZ"
+                if x.group().isalpha()
+                else "0123456789"
+            ),
+            template,
         )
 
     # IMPORTANT: for matching algo
@@ -74,6 +77,7 @@ class Demographics:
     def get_random_city():
         # using the canadian localized data for the cities only
         return fake_ca.city()
+
     # IMPORTANT: for matching algo
     @staticmethod
     def get_random_language():
@@ -107,4 +111,3 @@ class Demographics:
     #### FOR THE VOLUNTEER QUESITONS
     def get_criminal_record_check():
         return random.choice(YES_NO)
-
