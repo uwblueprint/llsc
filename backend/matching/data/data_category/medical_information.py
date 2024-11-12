@@ -6,7 +6,7 @@ from config import DIAGNOSES, TREATMENTS, EXPERIENCES, YES_NO, CAREGIVING_TYPES
 class MedicalInformation:
     # TODO: Add more roles and diagnoses (as we go and finalize the survey)
     # TODO: can we move these field paramaters to a constants file?
-    
+
     @staticmethod
     def get_random_blood_cancer_question():
         return random.choice(YES_NO)
@@ -14,11 +14,11 @@ class MedicalInformation:
     @staticmethod
     def get_random_caregiver_question():
         return random.choice(YES_NO)
-    
+
     @staticmethod
     def get_random_caregiver_type():
         return random.choice(CAREGIVING_TYPES)
-    
+
     # IMPORTANT: for matching algo
     @staticmethod
     def get_random_diagnosis():
@@ -40,7 +40,6 @@ class MedicalInformation:
     def get_random_treatment():
         return random.choice(TREATMENTS)
 
-   
     # IMPORTANT: for matching algo
     # there can be multiple experiences that they can select
     @staticmethod
@@ -48,4 +47,3 @@ class MedicalInformation:
         num_experiences = random.randint(0, len(EXPERIENCES))
         # reutrns empty of all of the experiences
         return random.sample(EXPERIENCES, num_experiences)
-       
