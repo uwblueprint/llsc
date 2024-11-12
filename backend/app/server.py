@@ -5,6 +5,8 @@ from typing import Union
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
+from app.routes import email
+
 from . import models
 
 load_dotenv()
@@ -23,6 +25,8 @@ async def lifespan(_: FastAPI):
 # Source: https://stackoverflow.com/questions/77170361/
 # running-alembic-migrations-on-fastapi-startup
 app = FastAPI(lifespan=lifespan)
+
+app.include_router(email.router)
 
 
 @app.get("/")
