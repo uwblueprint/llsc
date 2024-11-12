@@ -34,13 +34,19 @@ To start the backend locally, use the following command:
 pdm run dev
 ```
 
-Note: If you wish to run the backend outside of Docker (e.g., for local development), you'll need to set up a PostgreSQL database. Ensure your database configuration is set properly in the environment variables before running the project. For the time being, the recommended approach for local development using the database is to use the docker compose Postgres instance with your local dev backend.
+Note: If you wish to run the backend outside of Docker (e.g., for local development), you'll need to set up a PostgreSQL database. Ensure your database configuration is set properly in the environment variables before running the project.
+
+To start up the database using docker, run the following command:
+```bash
+cd backend
+pdm run db
+```
 
 To check if the database has been started up, type the following:
 ```bash
- docker ps | grep llsc_db
+ docker ps | grep llsc_db_dev_local
 ```
-This checks the list of docker containers and searchs for the container name `llsc_db`
+This checks the list of docker containers and searchs for the container name `llsc_db_dev_local`
 
 ## Run Project
 
