@@ -1,26 +1,89 @@
-from data_category.personality import Personality
+from data_category.medical_information import MedicalInformation
 from data_category.demographics import Demographics
 from llsc.backend.matching.data.seeder.data_formatter import DataFormatter
 
-
 class Seeder:
     # TODO : wrap the records more modularly
-
     def __init__(self, num_records=10):
         self.num_records = num_records
         self.data = []
 
-    def generate_data(self):
+    # TODO: see what the schema of our db acutally holds
+    def generate_data_participant(self):
         for _ in range(self.num_records):
             record = {
-                "Role": Personality.get_random_role(),
-                "Diagnosis": Personality.get_random_diagnosis(),
-                "Date of Diagnosis": Personality.get_random_date_of_diagnosis(),
-                "Gender Identity": Demographics.get_random_gender_identity(),
-                "Ethnic Background": Demographics.get_random_ethnic_background(),
-                "Age": Demographics.get_random_age(),
-                "Pronouns": Demographics.get_random_pronouns(),
+                "First Name": Demographics.get_random_first_name(),
+                "Last Name": Demographics.get_random_last_name(),
+                "Date of Birth": Demographics.get_random_date_of_birth(),
+                "Email": Demographics.get_random_email(),
+                "Phone": Demographics.get_random_phone(),
+                "Postal Code": Demographics.get_random_postal_code(),
+                "Province": Demographics.get_random_province(),
                 "City": Demographics.get_random_city(),
+                "Language": Demographics.get_random_language(),
+                "Gender Identity": Demographics.get_random_gender_identity(),
+                "Pronouns": Demographics.get_random_pronouns(),
+                "Ethnicity": Demographics.get_random_ethnic_background(),
+                "Marital Status": Demographics.get_random_marital_status(),
+                "Children Status": Demographics.get_random_children_status(),
+                "Blood Cancer Status":  MedicalInformation.get_random_blood_cancer_question(),
+                "Caregiver Status": MedicalInformation.get_random_caregiver_question(),
+                "Caregiver Type": MedicalInformation.get_random_caregiver_type(),
+                "Diagnostic": MedicalInformation.get_random_diagnosis(),
+                "Date of Diagnosis": MedicalInformation.get_random_date_of_diagnosis(),
+                "Treatment": MedicalInformation.get_random_treatment(),
+                "Experience": MedicalInformation.get_random_experience(),
+            }
+            self.data.append(record)
+
+    # TODO: see what the schema of our db acutally holds
+    def generate_data_volunteer(self):
+        for _ in range(self.num_records):
+            record = {
+                "First Name": Demographics.get_random_first_name(),
+                "Last Name": Demographics.get_random_last_name(),
+                "Date of Birth": Demographics.get_random_date_of_birth(),
+                "Email": Demographics.get_random_email(),
+                "Phone": Demographics.get_random_phone(),
+                "Postal Code": Demographics.get_random_postal_code(),
+                "Province": Demographics.get_random_province(),
+                "City": Demographics.get_random_city(),
+                "Language": Demographics.get_random_language(),
+                "Criminal Record Status": Demographics.get_random_criminal_record_status(),
+                "Blood Cancer Status":  MedicalInformation.get_random_blood_cancer_question(),
+                "Caregiver Status": MedicalInformation.get_random_caregiver_question(),
+                "Caregiver Type": MedicalInformation.get_random_caregiver_type(),
+                "Diagnostic": MedicalInformation.get_random_diagnosis(),
+                "Date of Diagnosis": MedicalInformation.get_random_date_of_diagnosis(),
+                "Gender Identity": Demographics.get_random_gender_identity(),
+                "Pronouns": Demographics.get_random_pronouns(),
+                "Ethnicity": Demographics.get_random_ethnic_background(),
+                "Marital Status": Demographics.get_random_marital_status(),
+                "Children Status": Demographics.get_random_children_status(),
+                "Experience": MedicalInformation.get_random_experience(),
+                # TODO: WHY IS TRAETMENET NOT HERE?
+                # TODO: tell us a story, reference, anyhting eles to share
+            }
+            self.data.append(record)
+
+    # call this twice for matching data (one for participant and one for volunteer)
+    def generate_mathching_data(self):
+        for _ in range(self.num_records):
+            record = {
+                "Province": Demographics.get_random_province(),
+                "Language": Demographics.get_random_language(),
+                "Gender Identity": Demographics.get_random_gender_identity(),
+                "Pronouns": Demographics.get_random_pronouns(),
+                "Ethnicity": Demographics.get_random_ethnic_background(),
+                "Marital Status": Demographics.get_random_marital_status(),
+                "Children Status": Demographics.get_random_children_status(),
+                "Blood Cancer Status":  MedicalInformation.get_random_blood_cancer_question(),
+                "Caregiver Status": MedicalInformation.get_random_caregiver_question(),
+                "Caregiver Type": MedicalInformation.get_random_caregiver_type(),
+                "Diagnostic": MedicalInformation.get_random_diagnosis(),
+                "Date of Diagnosis": MedicalInformation.get_random_date_of_diagnosis(),
+                "Treatment": MedicalInformation.get_random_treatment(),
+                "Experience": MedicalInformation.get_random_experience(),
             }
             self.data.append(record)
 
