@@ -106,8 +106,7 @@ async def test_create_user_service(mock_firebase_auth, db_session):
         )
 
         # Act
-        created_user = await user_service.create_user(
-            user_data)
+        created_user = await user_service.create_user(user_data)
 
         # Assert response
         assert isinstance(created_user, UserCreateResponse)
@@ -143,11 +142,7 @@ async def test_create_user_with_google(mock_firebase_auth, db_session):
         )
 
         # Act
-        created_user = await user_service.create_user(
-            user_data,
-            auth_id="test_google_auth_id",
-            signup_method=SignUpMethod.GOOGLE
-        )
+        created_user = await user_service.create_user(user_data)
 
         # Assert response
         assert isinstance(created_user, UserCreateResponse)

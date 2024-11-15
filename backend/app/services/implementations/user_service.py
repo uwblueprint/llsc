@@ -26,6 +26,9 @@ class UserService(IUserService):
                     email=user.email, 
                     password=user.password
                 )
+            ## TO DO: SSO functionality depends a lot on frontend implementation,
+            ##   so we may need to update this when we have a better idea of what
+            ##   that looks like
             elif user.signup_method == SignUpMethod.GOOGLE:
                 # For signup with Google, Firebase users are automatically created
                 firebase_user = firebase_admin.auth.get_user(user.auth_id)
