@@ -1,12 +1,16 @@
 import logging
-from typing import Optional
 
 import firebase_admin.auth
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models import User
-from app.schemas.user import SignUpMethod, UserCreateRequest, UserCreateResponse, UserRole
+from app.schemas.user import (
+    SignUpMethod,
+    UserCreateRequest,
+    UserCreateResponse,
+    UserRole,
+)
 from app.services.interfaces.user_service import IUserService
 
 
@@ -15,16 +19,12 @@ class UserService(IUserService):
         self.db = db
         self.logger = logging.getLogger(__name__)
 
-    async def create_user(
-        self, 
-        user: UserCreateRequest
-    ) -> UserCreateResponse:
+    async def create_user(self, user: UserCreateRequest) -> UserCreateResponse:
         firebase_user = None
         try:
             if user.signup_method == SignUpMethod.PASSWORD:
                 firebase_user = firebase_admin.auth.create_user(
-                    email=user.email, 
-                    password=user.password
+                    email=user.email, password=user.password
                 )
             ## TO DO: SSO functionality depends a lot on frontend implementation,
             ##   so we may need to update this when we have a better idea of what
@@ -55,15 +55,9 @@ class UserService(IUserService):
             self.logger.error(f"Firebase error: {str(firebase_error)}")
 
             if isinstance(firebase_error, firebase_admin.auth.EmailAlreadyExistsError):
-                raise HTTPException(
-                    status_code=409, 
-                    detail="Email already exists"
-                )
+                raise HTTPException(status_code=409, detail="Email already exists")
 
-            raise HTTPException(
-                status_code=400, 
-                detail=str(firebase_error)
-            )
+            raise HTTPException(status_code=400, detail=str(firebase_error))
 
         except Exception as e:
             # Clean up Firebase user if a database exception occurs
@@ -72,7 +66,7 @@ class UserService(IUserService):
                     firebase_admin.auth.delete_user(firebase_user.uid)
                 except firebase_admin.auth.AuthError as firebase_error:
                     self.logger.error(
-                        "Failed to delete Firebase user after database insertion failed. "
+                        "Failed to delete Firebase user after database insertion failed"
                         f"Firebase UID: {firebase_user.uid}. "
                         f"Error: {str(firebase_error)}"
                     )
@@ -80,11 +74,8 @@ class UserService(IUserService):
             # Rollback database changes
             self.db.rollback()
             self.logger.error(f"Error creating user: {str(e)}")
-            
-            raise HTTPException(
-                status_code=500, 
-                detail=str(e)
-            )
+
+            raise HTTPException(status_code=500, detail=str(e))
 
     def delete_user_by_email(self, email: str):
         pass

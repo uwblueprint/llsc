@@ -5,7 +5,12 @@ from sqlalchemy.orm import sessionmaker
 from app.models import Role
 from app.models.Base import Base
 from app.models.User import User
-from app.schemas.user import SignUpMethod, UserCreateRequest, UserCreateResponse, UserRole
+from app.schemas.user import (
+    SignUpMethod,
+    UserCreateRequest,
+    UserCreateResponse,
+    UserRole,
+)
 from app.services.implementations.user_service import UserService
 
 # Test DB Configuration
@@ -102,7 +107,7 @@ async def test_create_user_service(mock_firebase_auth, db_session):
             email="test@example.com",
             password="TestPass@123",
             role=UserRole.PARTICIPANT,
-            signup_method=SignUpMethod.PASSWORD
+            signup_method=SignUpMethod.PASSWORD,
         )
 
         # Act
@@ -127,6 +132,7 @@ async def test_create_user_service(mock_firebase_auth, db_session):
         db_session.rollback()  # Rollback on error
         raise
 
+
 @pytest.mark.asyncio
 async def test_create_user_with_google(mock_firebase_auth, db_session):
     """Test user creation flow with Google authentication"""
@@ -138,7 +144,7 @@ async def test_create_user_with_google(mock_firebase_auth, db_session):
             last_name="User",
             email="google@example.com",
             role=UserRole.PARTICIPANT,
-            signup_method=SignUpMethod.GOOGLE
+            signup_method=SignUpMethod.GOOGLE,
         )
 
         # Act

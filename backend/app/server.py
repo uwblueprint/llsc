@@ -6,12 +6,13 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from app.routes import email
+
 load_dotenv()
 
-from . import models
-from .routes import user
-from .utilities.firebase_init import initialize_firebase
-
+# we need to load env variables before initialization code runs
+from . import models  # noqa: E402
+from .routes import user  # noqa: E402
+from .utilities.firebase_init import initialize_firebase  # noqa: E402
 
 log = logging.getLogger("uvicorn")
 
