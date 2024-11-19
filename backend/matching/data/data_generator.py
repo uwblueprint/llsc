@@ -10,7 +10,7 @@ class CLI:
 
     def parse_arguments(self):
         """Parse command line arguments."""
-        
+
         parser = argparse.ArgumentParser(description="Generate and save data.")
         parser.add_argument(
             "num_records", type=int, help="Number of records to generate"

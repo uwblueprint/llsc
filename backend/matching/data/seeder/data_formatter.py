@@ -1,4 +1,6 @@
 import pandas as pd
+
+
 class DataFormatter:
     def __init__(self, data):
         self.data = pd.DataFrame(data)
