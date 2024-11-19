@@ -2,7 +2,7 @@ import os
 
 import requests
 
-from ..resources.token import Token
+from ..schemas.auth import Token
 
 FIREBASE_SIGN_IN_URL = (
     "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"

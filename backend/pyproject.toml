@@ -17,6 +17,7 @@ dependencies = [
     "inflection>=0.5.1",
     "pre-commit>=4.0.0",
     "psycopg2>=2.9.9",
+    "requests>=2.31.0",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
