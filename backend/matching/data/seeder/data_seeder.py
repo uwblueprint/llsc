@@ -2,7 +2,6 @@ from data_category.medical_information import MedicalInformation
 from data_category.demographics import Demographics
 from llsc.backend.matching.data.seeder.data_formatter import DataFormatter
 
-
 class Seeder:
     # TODO : wrap the records more modularly
     def __init__(self, num_records=10):
@@ -91,11 +90,19 @@ class Seeder:
     def get_data(self):
         return self.data
 
-    def save_data(self, output_format="dataframe", file_path=None):
+    # TOOD: fix this part so no matter what function we are calling it saves to the db and or the specific file to upload
+    def save_data(self, output_format="dataframe", file_path=None, option="matching"):
         if not self.data:
             # TODO FIX THIS HERE FOR DIFFERENT METHODS HERE NOT JUST THIS GENERAT EDATA
-            # for now just make it do the general mathign data
-            self.generate_matching_data()
+
+            if option == "participant":
+                self.generate_data_participant()
+            elif option == "volunteer":
+                self.generate_data_volunteer()
+            else:
+                self.generate_mathching_data()
+        else:
+            raise ValueError("Data has already been generated. Call get_data() to retrieve it.")
 
         # Use the OutputHandler for saving/formatting data
         handler = DataFormatter(self.data)
@@ -108,7 +115,11 @@ class Seeder:
             handler.to_json(file_path if file_path else "output.json")
         elif output_format == "excel":
             handler.to_excel(file_path if file_path else "output.xlsx")
+        elif output_format == "db":
+            # TODO: upload the data to the db using SQLAlchemy
+            # need to chcek what type of user it is (use the option to check which one it is before we can upload it)
+            pass
         else:
             raise ValueError(
-                "Unsupported output format. Choose 'dataframe', 'csv', 'json', or 'excel'."
+                "Unsupported output format. Choose from: dataframe, csv, json, excel, db"
             )

@@ -45,7 +45,7 @@ class Demographics:
     # TODO: not needed for matching algorithm; can use Faker here to emulate better response
     @staticmethod
     def get_random_phone():
-        return fake.phone_number()
+        return fake_ca.phone_number()
 
     # TODO: not needed for matching algorithm; can use Faker here to emulate better response
     @staticmethod
