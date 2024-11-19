@@ -4,6 +4,7 @@ import firebase_admin.auth
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from app.interfaces.user_service import IUserService
 from app.models import User
 from app.schemas.user import (
     SignUpMethod,
@@ -11,7 +12,6 @@ from app.schemas.user import (
     UserCreateResponse,
     UserRole,
 )
-from app.services.interfaces.user_service import IUserService
 
 
 class UserService(IUserService):
