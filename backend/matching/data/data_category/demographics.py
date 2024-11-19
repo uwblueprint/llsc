@@ -109,5 +109,6 @@ class Demographics:
         return random.choice(YES_NO)
 
     #### FOR THE VOLUNTEER QUESITONS
+    @staticmethod
     def get_criminal_record_check():
         return random.choice(YES_NO)

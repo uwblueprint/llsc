@@ -2,6 +2,7 @@ from data_category.medical_information import MedicalInformation
 from data_category.demographics import Demographics
 from llsc.backend.matching.data.seeder.data_formatter import DataFormatter
 
+
 class Seeder:
     # TODO : wrap the records more modularly
     def __init__(self, num_records=10):
@@ -102,7 +103,9 @@ class Seeder:
             else:
                 self.generate_mathching_data()
         else:
-            raise ValueError("Data has already been generated. Call get_data() to retrieve it.")
+            raise ValueError(
+                "Data has already been generated. Call get_data() to retrieve it."
+            )
 
         # Use the OutputHandler for saving/formatting data
         handler = DataFormatter(self.data)
