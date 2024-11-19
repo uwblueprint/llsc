@@ -52,7 +52,7 @@ class UserCreateRequest(UserBase):
     """
 
     password: Optional[str] = Field(None, min_length=8)
-    auth_id: Optional[str] = Field(None) # for signup with google sso
+    auth_id: Optional[str] = Field(None)  # for signup with google sso
     signup_method: SignUpMethod = Field(default=SignUpMethod.PASSWORD)
 
     @field_validator("password")
