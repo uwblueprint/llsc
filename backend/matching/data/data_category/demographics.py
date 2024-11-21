@@ -2,7 +2,7 @@ import random
 import datetime
 import re
 from faker import Faker
-from config import (
+from backend.matching.data.config import (
     PROVINCES,
     LANGUAGES,
     GENDER_IDENTITIES,
@@ -110,5 +110,5 @@ class Demographics:
 
     #### FOR THE VOLUNTEER QUESITONS
     @staticmethod
-    def get_criminal_record_check():
+    def get_criminal_record_status():
         return random.choice(YES_NO)

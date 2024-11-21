@@ -1,6 +1,12 @@
 import random
 from datetime import datetime, timedelta
-from config import DIAGNOSES, TREATMENTS, EXPERIENCES, YES_NO, CAREGIVING_TYPES
+from backend.matching.data.config import (
+    DIAGNOSES,
+    TREATMENTS,
+    EXPERIENCES,
+    YES_NO,
+    CAREGIVING_TYPES,
+)
 
 
 class MedicalInformation:
@@ -27,7 +33,7 @@ class MedicalInformation:
 
     # IMPORTANT: for matching algo
     @staticmethod
-    def get_random_date_of_diagnosis(start_year=1990, end_year=2024):
+    def get_random_date_of_diagnosis(start_year=1969, end_year=datetime.now().year):
         start_date = datetime(start_year, 1, 1)
         end_date = datetime(end_year, 12, 31)
         random_date = start_date + timedelta(
