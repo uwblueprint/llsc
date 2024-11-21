@@ -1,7 +1,11 @@
 import argparse
 import sys
-from llsc.backend.matching.data.seeder.data_seeder import Seeder
-from config import OUTPUT_FORMAT_CHOICES, FILE_PATH_REQUIRED_FORMATS
+from backend.matching.data.seeder.data_seeder import Seeder
+from backend.matching.data.config import (
+    OUTPUT_FORMAT_CHOICES,
+    OPTIONS_FOR_DATA,
+    FILE_PATH_REQUIRED_FORMATS,
+)
 
 
 class CLI:
@@ -12,6 +16,14 @@ class CLI:
         """Parse command line arguments."""
 
         parser = argparse.ArgumentParser(description="Generate and save data.")
+
+        parser.add_argument(
+            "option",
+            type=str,
+            choices=OPTIONS_FOR_DATA,
+            help="What type of data do you want?",
+        )
+
         parser.add_argument(
             "num_records", type=int, help="Number of records to generate"
         )
@@ -44,11 +56,13 @@ class CLI:
         seeder = Seeder(num_records=self.args.num_records)
 
         if self.args.output_format == "dataframe":
-            df = seeder.save_data(output_format="dataframe")
+            df = seeder.save_data(output_format="dataframe", option=self.args.option)
             print(df)
         else:
             seeder.save_data(
-                output_format=self.args.output_format, file_path=self.args.file_path
+                output_format=self.args.output_format,
+                file_path=self.args.file_path,
+                option=self.args.option,
             )
 
 

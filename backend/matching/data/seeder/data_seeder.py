@@ -1,6 +1,6 @@
-from data_category.medical_information import MedicalInformation
-from data_category.demographics import Demographics
-from llsc.backend.matching.data.seeder.data_formatter import DataFormatter
+from backend.matching.data.data_category.medical_information import MedicalInformation
+from backend.matching.data.data_category.demographics import Demographics
+from backend.matching.data.seeder.data_formatter import DataFormatter
 
 
 class Seeder:
@@ -50,7 +50,7 @@ class Seeder:
                 "Province": Demographics.get_random_province(),
                 "City": Demographics.get_random_city(),
                 "Language": Demographics.get_random_language(),
-                "Criminal Record Status": Demographics.get_random_criminal_record_status(),
+                "Criminal Record Status": Demographics.get_criminal_record_status(),
                 "Blood Cancer Status": MedicalInformation.get_random_blood_cancer_question(),
                 "Caregiver Status": MedicalInformation.get_random_caregiver_question(),
                 "Caregiver Type": MedicalInformation.get_random_caregiver_type(),
@@ -71,6 +71,8 @@ class Seeder:
     def generate_mathching_data(self):
         for _ in range(self.num_records):
             record = {
+                "First Name": Demographics.get_random_first_name(),  # for rohan :sob:
+                "Second Name": Demographics.get_random_last_name(),  # for rohan :sob:
                 "Province": Demographics.get_random_province(),
                 "Language": Demographics.get_random_language(),
                 "Gender Identity": Demographics.get_random_gender_identity(),
