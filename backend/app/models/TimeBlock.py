@@ -1,10 +1,11 @@
 import uuid
 
-from sqlalchemy import Column, ForeignKey, Integer, DateTime
+from sqlalchemy import Column, DateTime, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .Base import Base
+
 
 class TimeBlock(Base):
     __tablename__ = "time_blocks"

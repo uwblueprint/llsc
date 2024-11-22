@@ -11,7 +11,6 @@ from . import models
 from .routes import user
 from .utilities.firebase_init import initialize_firebase
 
-
 log = logging.getLogger("uvicorn")
 
 

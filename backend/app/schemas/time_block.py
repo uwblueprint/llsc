@@ -1,10 +1,17 @@
-from enum import Enum
+
+from pydantic import BaseModel, datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, datetime, Field, field_validator
-
 class TimeBlockBase(BaseModel):
-    schedule_id: int
     start_time = datetime
     end_time = datetime
-    
+
+class TimeBlockId(BaseModel):
+    id: UUID
+
+class TimeBlockFull(TimeBlockBase, TimeBlockId):
+    '''
+    Combines TimeBlockBase and TimeBlockId.
+    Represents a full time block with an ID and time range.
+    '''
+    pass
