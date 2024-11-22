@@ -9,7 +9,7 @@ from .Base import Base
 
 class TimeBlock(Base):
     __tablename__ = "time_blocks"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(Integer, primary_key=True)
     schedule_id = Column(Integer, ForeignKey("schedules.id"), nullable = False)
     start_time = Column(DateTime)
     end_time = Column(DateTime)
