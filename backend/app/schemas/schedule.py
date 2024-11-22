@@ -16,8 +16,8 @@ class ScheduleState(str, Enum):
     @classmethod
     def to_schedule_state_id(cls, state: "ScheduleState") -> int:
         state_map = {
-            cls.PENDING_PARTICIPANT: 1, 
-            cls.PENDING_VOLUNTEER: 2, 
+            cls.PENDING_VOLUNTEER: 1,
+            cls.PENDING_PARTICIPANT: 2,
             cls.SCHEDULED: 3,
             cls.COMPLETED: 4}
 
