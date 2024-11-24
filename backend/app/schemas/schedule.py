@@ -38,6 +38,7 @@ class ScheduleInDB(ScheduleBase):
 class ScheduleData(ScheduleInDB):
     time_blocks: List[TimeBlockFull]
 
+# List of Start and End times to Create a Schedule with
 class ScheduleCreate(BaseModel):
     time_blocks: List[TimeBlockBase]
 

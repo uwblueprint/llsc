@@ -19,7 +19,6 @@ class ScheduleService(IScheduleService):
 
     async def create_schedule(self, schedule: ScheduleCreate) -> ScheduleInDB:
         try:
-
             db_schedule = Schedule(
                 scheduled_time=None,
                 duration=None,
