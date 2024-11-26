@@ -17,6 +17,15 @@ Ensure you have the following installed on your machine:
     ```
 - **Docker**
 
+
+- Create a `.env` file in `./backend` (the root directory, not in the backend folder) based on the .env.sample file. Update
+  the environment variables as needed. Consult the [Secrets](#secrets) section
+  for detailed instructions.
+
+```bash
+cp .env.sample .env
+```
+
 ## Installation
 
 Once PDM is installed, install the project dependencies by running:
@@ -28,14 +37,6 @@ pdm install
 to install all the project dependancies listed in the `pyproject.toml` file.
 
 ## Running the Backend Locally
-To start the backend locally, use the following command:
-
-```bash
-pdm run dev
-```
-
-Note: If you wish to run the backend outside of Docker (e.g., for local development), you'll need to set up a PostgreSQL database. Ensure your database configuration is set properly in the environment variables before running the project.
-
 To start up the database using docker, run the following command:
 ```bash
 cd backend
@@ -48,6 +49,13 @@ To check if the database has been started up, type the following:
 ```
 This checks the list of docker containers and searchs for the container name `llsc_db_dev_local`
 
+Note: If you wish to run the backend outside of Docker (e.g., for local development), you'll need to set up a PostgreSQL database. Ensure your database configuration is set properly in the environment variables before running the project.
+
+To start the backend locally, use the following command:
+
+```bash
+pdm run dev
+```
 ## Run Project
 
 Take advantage of the docker compose file in the LLSC root directory to run the backend alongside the frontend by simply running
