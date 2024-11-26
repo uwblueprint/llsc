@@ -23,6 +23,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - ./.env # In the base directory, not the backend folder
   db:
     container_name: llsc_db
     image: postgres:16-alpine
