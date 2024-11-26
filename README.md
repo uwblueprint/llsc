@@ -85,6 +85,14 @@ brew install pdm
 ```
 Otherwise, feel free to follow install instructions [here](https://pdm-project.org/latest/#installation)
 
+- Install postgresql (this is for local development)
+On macOS:
+```bash
+brew install postgresql
+```
+Otherwise, feel free to follow install instructions [here](https://www.postgresql.org/download/)
+Note: you will need this for `psycopg2`, which requires a config file that is part of postgresql.
+
 You will then need to go into each directory individually to install dependencies.
 
 FastAPI backend
