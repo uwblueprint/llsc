@@ -64,7 +64,7 @@ git clone https://github.com/uwblueprint/llsc.git
 cd llsc
 ```
 
-- Create a .env file in the root directory based on the .env.sample file. Update
+- Create a .env file in `./backend` and `./frontend` based on the .env.sample file. Update
   the environment variables as needed. Consult the [Secrets](#secrets) section
   for detailed instructions.
 
