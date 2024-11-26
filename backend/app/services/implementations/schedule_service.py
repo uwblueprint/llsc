@@ -9,13 +9,14 @@ from app.models import Schedule, TimeBlock
 # from app.schemas.schedule import UserCreate, UserInDB, UserRole
 # from app.schemas.time_block import UserCreate, UserInDB, UserRole
 from app.services.interfaces.schedule_service import IScheduleService
-from app.schemas.schedule import ScheduleCreate, ScheduleInDB, ScheduleAdd, ScheduleData
+from app.schemas.schedule import ScheduleCreate, ScheduleInDB, ScheduleAdd, ScheduleData, ScheduleRemove
 from app.schemas.time_block import TimeBlockBase, TimeBlockId, TimeBlockFull, TimeBlockInDB
 
 class ScheduleService(IScheduleService):
     def __init__(self, db: Session):
         self.db = db
         self.logger = logging.getLogger(__name__)
+        self.logger.info("ScheduleService")
 
     async def create_schedule(self, schedule: ScheduleCreate) -> ScheduleInDB:
         try:
@@ -110,6 +111,3 @@ class ScheduleService(IScheduleService):
         pass
 
 
-    
-
-    

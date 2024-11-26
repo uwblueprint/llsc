@@ -1,5 +1,6 @@
 
-from pydantic import BaseModel, datetime
+from pydantic import BaseModel
+from datetime import datetime
 from uuid import UUID
 
 class TimeBlockBase(BaseModel):

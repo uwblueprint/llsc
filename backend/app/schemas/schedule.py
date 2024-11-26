@@ -2,7 +2,7 @@ from enum import Enum
 from uuid import UUID
 from datetime import datetime, timedelta
 from typing import List
-from schemas.time_block.py import TimeBlockBase, TimeBlockId, TimeBlockFull
+from app.schemas.time_block import TimeBlockBase, TimeBlockId, TimeBlockFull
 from pydantic import BaseModel, ConfigDict
 
 
@@ -30,7 +30,7 @@ class ScheduleBase(BaseModel):
 
 
 class ScheduleInDB(ScheduleBase):
-    id: UUID
+    id: int
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,3 +1,7 @@
+from . import models
+from .routes import user, schedule
+from .utilities.firebase_init import initialize_firebase
+
 import logging
 from contextlib import asynccontextmanager
 from typing import Union
@@ -7,9 +11,7 @@ from fastapi import FastAPI
 
 load_dotenv()
 
-from . import models
-from .routes import user
-from .utilities.firebase_init import initialize_firebase
+
 
 log = logging.getLogger("uvicorn")
 
@@ -27,6 +29,7 @@ async def lifespan(_: FastAPI):
 # running-alembic-migrations-on-fastapi-startup
 app = FastAPI(lifespan=lifespan)
 app.include_router(user.router)
+app.include_router(schedule.router)
 
 
 @app.get("/")
