@@ -72,10 +72,10 @@ cd llsc
 cp .env.sample .env
 ```
 
-- Build and start the Docker containers
+- Build and start the Docker containers (in detached mode)
 
 ```bash
-docker-compose up --build
+docker-compose up -d
 ```
 
 - Install pdm (this is a global installation, so location doesn't matter)
