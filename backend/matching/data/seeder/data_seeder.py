@@ -1,8 +1,8 @@
 from backend.matching.data.data_category.medical_information import MedicalInformation
 from backend.matching.data.data_category.demographics import Demographics
 from backend.matching.data.seeder.data_formatter import DataFormatter
-
-
+from backend.matching.data.data_category.preferences import Preferences
+import random
 class Seeder:
     # TODO : wrap the records more modularly
     def __init__(self, num_records=10):
@@ -12,6 +12,7 @@ class Seeder:
     # TODO: see what the schema of our db acutally holds
     def generate_data_participant(self):
         for _ in range(self.num_records):
+            pref_count = random.randint(0, 5)
             record = {
                 "First Name": Demographics.get_random_first_name(),
                 "Last Name": Demographics.get_random_last_name(),
@@ -34,12 +35,14 @@ class Seeder:
                 "Date of Diagnosis": MedicalInformation.get_random_date_of_diagnosis(),
                 "Treatment": MedicalInformation.get_random_treatment(),
                 "Experience": MedicalInformation.get_random_experience(),
+                "Preferences": Preferences.get_random_random_preference(pref_count),
             }
             self.data.append(record)
 
     # TODO: see what the schema of our db acutally holds
     def generate_data_volunteer(self):
         for _ in range(self.num_records):
+            pref_count = random.randint(0, 5)
             record = {
                 "First Name": Demographics.get_random_first_name(),
                 "Last Name": Demographics.get_random_last_name(),
@@ -62,6 +65,7 @@ class Seeder:
                 "Marital Status": Demographics.get_random_marital_status(),
                 "Children Status": Demographics.get_random_children_status(),
                 "Experience": MedicalInformation.get_random_experience(),
+                "Preferences": Preferences.get_random_random_preference(pref_count),
                 # TODO: WHY IS TRAETMENET NOT HERE?
                 # TODO: tell us a story, reference, anyhting eles to share
             }
@@ -70,6 +74,7 @@ class Seeder:
     # call this twice for matching data (one for participant and one for volunteer)
     def generate_mathching_data(self):
         for _ in range(self.num_records):
+            pref_count = random.randint(0, 5)
             record = {
                 "First Name": Demographics.get_random_first_name(),  
                 "Second Name": Demographics.get_random_last_name(),  
@@ -87,6 +92,7 @@ class Seeder:
                 "Date of Diagnosis": MedicalInformation.get_random_date_of_diagnosis(),
                 "Treatment": MedicalInformation.get_random_treatment(),
                 "Experience": MedicalInformation.get_random_experience(),
+                "Preferences": Preferences.get_random_random_preference(pref_count),
             }
             self.data.append(record)
 

@@ -2,15 +2,57 @@ import argparse
 
 from algorithms.algorithm import Algorithm
 from data.seeder.data_seeder import Seeder
+import numpy as np
 
-def get_param(person, param):
-    return person.get(param, None)
+# PARAMS = [  "First Name",
+#             "Second Name", 
+#             "Province", 
+#             "Language",
+#             "Gender Identity ", 
+#             "Pronouns",
+#             "Ethnicity",
+#             "Marital Status",   
+#             "Children Status", 
+#             "Blood Cancer Status",
+#             "Caregiver Status", 
+#             "Caregiver Type", 
+#             "Diagnostic", 
+#             "Date of Diagnosis", 
+#             "Treatment", 
+#             "Experience"
+#         ]
+ENTRIES = 50
+tempweight = []
+
+def softmax_weights(length: int, alpha = 0.5):
+    ranks = np.arange(1, length + 1)
+    # Exponentiate with decay factor and normalize
+    exp_weights = np.exp(-alpha * ranks)
+
+    normalized_weights = exp_weights / np.sum(exp_weights)
+
+    # Convert to regular Python list
+    return normalized_weights.tolist()
+
+
+def get_param(record, param):
+    return record[param]
     
-def find_best_matches(volunteers, patients, params, weights):
-    matches = []
-    best_score = float('-inf')
 
-    for param, weight in zip(params, weights):
+def find_best_matches(volunteers, patients, preferenes):
+    """
+    Find the best matches between volunteers and patients based on the given parameters and weights
+
+    Args:
+        volunteers (list): List of volunteer records
+        patients (list): List of patient records
+        params (list): List of parameters to optimize on
+        weights (list): List of weights for each parameter
+    """
+    matches = []
+    # best_score = float('-inf')
+
+    for param, weight in zip(patients, weights):
         volunteer_value = get_param(volunteers, param)
         patient_value = get_param(patients, param)
 
@@ -29,16 +71,21 @@ def find_best_matches(volunteers, patients, params, weights):
     return matches
 
 def run_algorithm(params, weights):
-    ENTRIES = 50
     s = Seeder(ENTRIES)
     Seeder.generate_mathching_data()
 
     data = Seeder.get_data()
 
+
+    # records of patients
+    # [ {}, {}]
     volunteers = data[:ENTRIES//2]
+
     patients = data[ENTRIES//2:]
 
-    matches = find_best_matches(volunteers, patients, params, weights)
+    preferences = [preferences for _ in data[preferences]]
+
+    matches = find_best_matches(volunteers, patients, preferences)
 
 
 def main():
