@@ -1,0 +1,13 @@
+FROM postgres:16-alpine
+
+# Set environment variables for PostgreSQL
+ENV POSTGRES_USER=${POSTGRES_USER}
+ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+ENV POSTGRES_DB=${POSTGRES_DATABASE}
+
+# Add a health check for the PostgreSQL server
+HEALTHCHECK --interval=5s --timeout=5s --retries=5 \
+    CMD pg_isready -U ${POSTGRES_USER} || exit 1
+
+# Expose PostgreSQL port
+EXPOSE 5432
