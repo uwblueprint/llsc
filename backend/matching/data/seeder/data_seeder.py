@@ -71,8 +71,8 @@ class Seeder:
     def generate_mathching_data(self):
         for _ in range(self.num_records):
             record = {
-                "First Name": Demographics.get_random_first_name(),  # for rohan :sob:
-                "Second Name": Demographics.get_random_last_name(),  # for rohan :sob:
+                "First Name": Demographics.get_random_first_name(),  
+                "Second Name": Demographics.get_random_last_name(),  
                 "Province": Demographics.get_random_province(),
                 "Language": Demographics.get_random_language(),
                 "Gender Identity": Demographics.get_random_gender_identity(),
