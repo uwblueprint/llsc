@@ -30,6 +30,10 @@ jobs:
               - "frontend/**"
             backend:
               - "backend/**"
+      - name: Debug paths-filter outputs
+        run: |
+          echo "Frontend changes: ${{ steps.changes.outputs.frontend }}"
+          echo "Backend changes: ${{ steps.changes.outputs.backend }}"
       
       - name: Set up Node.js
         if: steps.changes.outputs.frontend == 'true'
