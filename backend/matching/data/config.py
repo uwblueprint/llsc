@@ -120,3 +120,11 @@ EXPERIENCES = [
     "PTSD",
     "Side effects from treatment",
 ]
+
+PREFERENCES = [
+    "SIMILIAR TYPE CANCER",
+    "SIMILIAR DIAGONSIS DATE",
+    "SIMILIAR AGE",
+    "SAME GENDER",
+    "SIMILIAR ETHNICITY",
+]
