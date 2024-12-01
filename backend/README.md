@@ -136,3 +136,15 @@ To apply the migration, run the following command:
 ```bash
 pdm run alembic upgrade head
 ```
+
+### Logging
+
+To add a logger to a new service or file, use the `LOGGER_NAME` function in `app/utilities/constants.py`
+
+```python
+from app.utilities.constants import LOGGER_NAME
+
+log = logging.getLogger(LOGGER_NAME("my_service"))
+```
+
+If you'd like to create a new logger name in the hierarchy, you'll need to add it to `alembic.ini` under the logger section. Following the pre-existing examples for `logger_uvicorn` for example.
