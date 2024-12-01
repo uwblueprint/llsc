@@ -1,3 +1,4 @@
+import logging
 import os
 from logging.config import fileConfig
 
@@ -9,9 +10,12 @@ from app.models import Base
 
 load_dotenv()
 
+log = logging.getLogger("alembic")
+log.info("Entering env.py for alembic migration")
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+log.info("Finished setting up alembic config object")
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -23,6 +27,8 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
+log.info("Pulling model metadata")
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -30,6 +36,7 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 config.set_main_option("sqlalchemy.url", os.environ["POSTGRES_DATABASE_URL"])
+log.info("Finished migration env config setup")
 
 
 def run_migrations_offline() -> None:
@@ -69,13 +76,19 @@ def run_migrations_online() -> None:
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
+    try:
+        log.info("Established database connection")
+        with connectable.connect() as connection:
+            context.configure(connection=connection, target_metadata=target_metadata)
 
-    with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+            with context.begin_transaction():
+                context.run_migrations()
+        log.info("Finished running migrations in alembic env")
+    except Exception as e:
+        log.error(e)
 
-        with context.begin_transaction():
-            context.run_migrations()
 
+log.info("Starting up migration env")
 
 if context.is_offline_mode():
     run_migrations_offline()
