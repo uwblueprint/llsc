@@ -4,7 +4,7 @@
 **/venv
 **/__pycache__
 **/*.log
-**/firebaseServiceAccount.json
+**/serviceAccountKey.json
 **/.DS_Store
 **/*.cache
 **/*.egg-info
