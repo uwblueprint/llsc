@@ -5,6 +5,7 @@ from typing import Union
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
+from app.models import create_tables
 from app.routes import email
 
 load_dotenv()
@@ -19,6 +20,7 @@ log = logging.getLogger("uvicorn")
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     log.info("Starting up...")
+    create_tables()
     initialize_firebase()
     yield
     log.info("Shutting down...")
