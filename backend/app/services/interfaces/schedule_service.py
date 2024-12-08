@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from app.schemas.schedule import ScheduleCreate, ScheduleInDB, ScheduleAdd, ScheduleData, ScheduleRemove
 
 class IScheduleService(ABC):
     """
@@ -17,6 +17,10 @@ class IScheduleService(ABC):
         :rtype: ScheduleDTO
         :raises Exception: if schedule retrieval fails
         """
+        pass
+
+    @abstractmethod
+    def create_schedule(self, schedule: ScheduleCreate) -> ScheduleInDB:
         pass
 
 

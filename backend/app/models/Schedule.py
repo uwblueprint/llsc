@@ -14,5 +14,5 @@ class Schedule(Base):
     duration = Column(Interval, nullable = True)
     state_id = Column(Integer, ForeignKey("schedule_states.id"), nullable=False)
 
-    state = relationship("State")
+    state = relationship("ScheduleState")
     time_blocks = relationship("TimeBlock", back_populates="schedule")

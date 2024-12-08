@@ -14,16 +14,17 @@ from app.schemas.time_block import TimeBlockBase, TimeBlockId, TimeBlockFull, Ti
 
 class ScheduleService(IScheduleService):
     def __init__(self, db: Session):
+        print("entering constructor")
         self.db = db
         self.logger = logging.getLogger(__name__)
-        self.logger.info("ScheduleService")
+        print("ScheduleService")
 
     async def create_schedule(self, schedule: ScheduleCreate) -> ScheduleInDB:
         try:
             db_schedule = Schedule(
                 scheduled_time=None,
                 duration=None,
-                state_id=1 
+                state_id=1
             )
 
             db_schedule.time_blocks = []
@@ -50,7 +51,7 @@ class ScheduleService(IScheduleService):
 
 
     # CURRENTLY UNUSED
-    async def create_time_block(self, schedule_id: UUID, time_block: TimeBlockBase) -> TimeBlockId:
+    async def create_time_block(self, schedule_id: int, time_block: TimeBlockBase) -> TimeBlockId:
         # takes a schedule id
         # create a time block in the db
 
@@ -91,7 +92,7 @@ class ScheduleService(IScheduleService):
         #}
         pass
 
-    async def select_time(self, schedule_id: UUID, time: datetime):
+    async def select_time(self, schedule_id: int, time: datetime):
 
         # loop through each time block associated with the schedule
         # check if time fits within a given timeblock (+1 hour)
@@ -100,12 +101,12 @@ class ScheduleService(IScheduleService):
         # if it doesn't match, then return an error
         pass
     
-    async def complete_schedule(self, schedule_id: UUID):
+    async def complete_schedule(self, schedule_id: int):
 
         # update schedule state to COMPLETED
         pass
 
-    async def get_schedule(self, schedule_id: UUID) -> ScheduleData:
+    async def get_schedule(self, schedule_id: int) -> ScheduleData:
         
         # returns a schedule
         pass
