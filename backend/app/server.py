@@ -5,12 +5,12 @@ from typing import Union
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
+from app.models import create_tables
 from app.routes import email
 
 load_dotenv()
 
 # we need to load env variables before initialization code runs
-from . import models  # noqa: E402
 from .routes import user  # noqa: E402
 from .utilities.firebase_init import initialize_firebase  # noqa: E402
 
@@ -20,7 +20,7 @@ log = logging.getLogger("uvicorn")
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     log.info("Starting up...")
-    models.run_migrations()
+    create_tables()
     initialize_firebase()
     yield
     log.info("Shutting down...")

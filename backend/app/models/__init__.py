@@ -1,5 +1,6 @@
-from alembic import command
-from alembic.config import Config
+import os
+
+from sqlalchemy import create_engine
 
 # Make sure all models are here to reflect all current models
 # when autogenerating new migration
@@ -11,7 +12,6 @@ from .User import User
 __all__ = ["Base", "User", "Role"]
 
 
-def run_migrations():
-    alembic_cfg = Config("alembic.ini")
-    # Emulates `alembic upgrade head` to migrate up to latest revision
-    command.upgrade(alembic_cfg, "head")
+def create_tables():
+    engine = create_engine(os.getenv("POSTGRES_DATABASE_URL"))
+    Base.metadata.create_all(bind=engine)
