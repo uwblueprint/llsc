@@ -1,7 +1,7 @@
 from enum import Enum
 from uuid import UUID
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 from app.schemas.time_block import TimeBlockBase, TimeBlockId, TimeBlockFull
 from pydantic import BaseModel, ConfigDict
 
@@ -24,9 +24,9 @@ class ScheduleState(str, Enum):
         return state_map[state]
 
 class ScheduleBase(BaseModel):
-    scheduledTime: datetime
-    duration: timedelta
-    state: ScheduleState
+    scheduled_time: Optional[datetime]
+    duration: Optional[timedelta]
+    state_id: int
 
 
 class ScheduleInDB(ScheduleBase):

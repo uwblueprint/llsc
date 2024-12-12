@@ -9,22 +9,30 @@ from app.models import Schedule, TimeBlock
 # from app.schemas.schedule import UserCreate, UserInDB, UserRole
 # from app.schemas.time_block import UserCreate, UserInDB, UserRole
 from app.services.interfaces.schedule_service import IScheduleService
-from app.schemas.schedule import ScheduleCreate, ScheduleInDB, ScheduleAdd, ScheduleData, ScheduleRemove
+from app.schemas.schedule import (
+    ScheduleState,
+    ScheduleCreate, 
+    ScheduleInDB, 
+    ScheduleAdd, 
+    ScheduleData, 
+    ScheduleRemove
+)
 from app.schemas.time_block import TimeBlockBase, TimeBlockId, TimeBlockFull, TimeBlockInDB
 
 class ScheduleService(IScheduleService):
     def __init__(self, db: Session):
-        print("entering constructor")
         self.db = db
         self.logger = logging.getLogger(__name__)
-        print("ScheduleService")
+
+    def get_schedule_by_id(self, schedule_id):
+        pass
 
     async def create_schedule(self, schedule: ScheduleCreate) -> ScheduleInDB:
         try:
             db_schedule = Schedule(
                 scheduled_time=None,
                 duration=None,
-                state_id=1
+                state_id=ScheduleState.to_schedule_state_id("PENDING_VOLUNTEER_RESPONSE")
             )
 
             db_schedule.time_blocks = []
@@ -46,7 +54,7 @@ class ScheduleService(IScheduleService):
             return ScheduleInDB.model_validate(db_schedule)
         except Exception as e:
             self.db.rollback()
-            self.logger.error(f"Error creating time block: {str(e)}")
+            self.logger.error(f"Error creating Schedule: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
 

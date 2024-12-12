@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import Column, DateTime, Enum, Interval, Integer, ForeignKey
 from sqlalchemy.orm import relationship
+from app.models.ScheduleState import ScheduleState
 
 from .Base import Base
 

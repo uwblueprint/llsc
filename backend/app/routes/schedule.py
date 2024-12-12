@@ -15,14 +15,12 @@ router = APIRouter(
 
 
 def get_schedule_service(db: Session = Depends(get_db)):
-    print("Depends")
     return ScheduleService(db)
 
 @router.post("/", response_model=ScheduleInDB)
 async def create_schedule(
     schedule: ScheduleCreate, schedule_service: ScheduleService = Depends(get_schedule_service)
 ):
-    print("hi")
     try:
         created_schedule = await schedule_service.create_schedule(schedule)
         return created_schedule
