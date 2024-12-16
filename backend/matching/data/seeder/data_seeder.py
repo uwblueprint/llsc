@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from backend.matching.data.data_category.medical_information import MedicalInformation
 from backend.matching.data.data_category.demographics import Demographics
 from backend.matching.data.seeder.data_formatter import DataFormatter
@@ -7,7 +11,8 @@ class Seeder:
     # TODO : wrap the records more modularly
     def __init__(self, num_records=10):
         self.num_records = num_records
-        self.data = []
+        self.participants = []
+        self.volunteers = []
 
     # TODO: see what the schema of our db acutally holds
     def generate_data_participant(self):
@@ -37,7 +42,7 @@ class Seeder:
                 "Experience": MedicalInformation.get_random_experience(),
                 "Preferences": Preferences.get_random_random_preference(pref_count),
             }
-            self.data.append(record)
+            self.participants.append(record)
 
     # TODO: see what the schema of our db acutally holds
     def generate_data_volunteer(self):
@@ -69,10 +74,11 @@ class Seeder:
                 # TODO: WHY IS TRAETMENET NOT HERE?
                 # TODO: tell us a story, reference, anyhting eles to share
             }
-            self.data.append(record)
+            self.volunteers.append(record)
+
 
     # call this twice for matching data (one for participant and one for volunteer)
-    def generate_mathching_data(self):
+    def generate_matching_data(self):
         for _ in range(self.num_records):
             pref_count = random.randint(0, 5)
             record = {
@@ -96,8 +102,11 @@ class Seeder:
             }
             self.data.append(record)
 
-    def get_data(self):
-        return self.data
+    def get_volunteers(self):
+        return self.volunteers
+    
+    def get_participants(self):
+        return self.participants
 
     # TOOD: fix this part so no matter what function we are calling it saves to the db and or the specific file to upload
     def save_data(self, output_format="dataframe", file_path=None, option="matching"):
@@ -109,7 +118,7 @@ class Seeder:
             elif option == "volunteer":
                 self.generate_data_volunteer()
             else:
-                self.generate_mathching_data()
+                self.generate_matching_data()
         else:
             raise ValueError(
                 "Data has already been generated. Call get_data() to retrieve it."

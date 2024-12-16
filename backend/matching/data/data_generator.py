@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 import argparse
 import sys
 from backend.matching.data.seeder.data_seeder import Seeder
@@ -6,7 +10,6 @@ from backend.matching.data.config import (
     OPTIONS_FOR_DATA,
     FILE_PATH_REQUIRED_FORMATS,
 )
-
 
 class CLI:
     def __init__(self):
