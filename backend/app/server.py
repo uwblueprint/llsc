@@ -11,7 +11,7 @@ load_dotenv()
 
 # we need to load env variables before initialization code runs
 from . import models  # noqa: E402
-from .routes import user  # noqa: E402
+from .routes import user, schedule  # noqa: E402
 from .utilities.firebase_init import initialize_firebase  # noqa: E402
 
 log = logging.getLogger("uvicorn")
@@ -21,7 +21,6 @@ log = logging.getLogger("uvicorn")
 async def lifespan(_: FastAPI):
     log.info("Starting up...")
     # models.run_migrations()
-    initialize_firebase()
     initialize_firebase()
     yield
     log.info("Shutting down...")

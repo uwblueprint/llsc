@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.models import Schedule, TimeBlock
 # from app.schemas.schedule import UserCreate, UserInDB, UserRole
 # from app.schemas.time_block import UserCreate, UserInDB, UserRole
-from app.services.interfaces.schedule_service import IScheduleService
+from app.interfaces.schedule_service import IScheduleService
 from app.schemas.schedule import (
     ScheduleState,
     ScheduleCreate, 
