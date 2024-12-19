@@ -64,7 +64,7 @@ git clone https://github.com/uwblueprint/llsc.git
 cd llsc
 ```
 
-- Create a .env file in the root directory based on the .env.sample file. Update
+- Create a .env file in `./backend` and `./frontend` based on the .env.sample file. Update
   the environment variables as needed. Consult the [Secrets](#secrets) section
   for detailed instructions.
 
@@ -72,10 +72,10 @@ cd llsc
 cp .env.sample .env
 ```
 
-- Build and start the Docker containers
+- Build and start the Docker containers (in detached mode)
 
 ```bash
-docker-compose up --build
+docker-compose up -d
 ```
 
 - Install pdm (this is a global installation, so location doesn't matter)
@@ -84,6 +84,14 @@ On macOS:
 brew install pdm
 ```
 Otherwise, feel free to follow install instructions [here](https://pdm-project.org/latest/#installation)
+
+- Install postgresql (this is for local development)
+On macOS:
+```bash
+brew install postgresql
+```
+Otherwise, feel free to follow install instructions [here](https://www.postgresql.org/download/)
+Note: you will need this for `psycopg2`, which requires a config file that is part of postgresql.
 
 You will then need to go into each directory individually to install dependencies.
 

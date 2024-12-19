@@ -15,6 +15,7 @@ dependencies = [
     "firebase-admin>=6.5.0",
     "pytest>=8.3.3",
     "inflection>=0.5.1",
+    "pre-commit>=4.0.0",
     "psycopg2>=2.9.9",
 ]
 requires-python = "==3.12.*"
@@ -27,6 +28,8 @@ distribution = false
 
 [tool.pdm.scripts]
 dev = "fastapi dev app/server.py"
+precommit = "pre-commit run"
+precommit-install = "pre-commit install"
 revision = "alembic revision --autogenerate"
 upgrade = "alembic upgrade head"
 

@@ -5,7 +5,12 @@ from sqlalchemy.orm import sessionmaker
 from app.models import Role
 from app.models.Base import Base
 from app.models.User import User
-from app.schemas.user import UserCreate, UserInDB, UserRole
+from app.schemas.user import (
+    SignUpMethod,
+    UserCreateRequest,
+    UserCreateResponse,
+    UserRole,
+)
 from app.services.implementations.user_service import UserService
 
 # Test DB Configuration
@@ -47,7 +52,7 @@ def mock_firebase_auth(monkeypatch):
         def create_user(self, email, password):
             return MockFirebaseUser()
 
-        def get_user_by_email(self, email):
+        def get_user(self, uid):
             return MockFirebaseUser()
 
         def delete_user(self, uid):
@@ -96,19 +101,20 @@ async def test_create_user_service(mock_firebase_auth, db_session):
     try:
         # Arrange
         user_service = UserService(db_session)
-        user_data = UserCreate(
+        user_data = UserCreateRequest(
             first_name="Test",
             last_name="User",
             email="test@example.com",
             password="TestPass@123",
             role=UserRole.PARTICIPANT,
+            signup_method=SignUpMethod.PASSWORD,
         )
 
         # Act
         created_user = await user_service.create_user(user_data)
 
         # Assert response
-        assert isinstance(created_user, UserInDB)
+        assert isinstance(created_user, UserCreateResponse)
         assert created_user.first_name == "Test"
         assert created_user.last_name == "User"
         assert created_user.email == "test@example.com"
@@ -117,6 +123,43 @@ async def test_create_user_service(mock_firebase_auth, db_session):
 
         # Assert database state
         db_user = db_session.query(User).filter_by(email="test@example.com").first()
+        assert db_user is not None
+        assert db_user.auth_id == "test_firebase_uid"
+        assert db_user.role_id == 1
+
+        db_session.commit()  # Commit successful test
+    except Exception:
+        db_session.rollback()  # Rollback on error
+        raise
+
+
+@pytest.mark.asyncio
+async def test_create_user_with_google(mock_firebase_auth, db_session):
+    """Test user creation flow with Google authentication"""
+    try:
+        # Arrange
+        user_service = UserService(db_session)
+        user_data = UserCreateRequest(
+            first_name="Google",
+            last_name="User",
+            email="google@example.com",
+            role=UserRole.PARTICIPANT,
+            signup_method=SignUpMethod.GOOGLE,
+        )
+
+        # Act
+        created_user = await user_service.create_user(user_data)
+
+        # Assert response
+        assert isinstance(created_user, UserCreateResponse)
+        assert created_user.first_name == "Google"
+        assert created_user.last_name == "User"
+        assert created_user.email == "google@example.com"
+        assert created_user.role_id == 1
+        assert created_user.auth_id == "test_firebase_uid"
+
+        # Assert database state
+        db_user = db_session.query(User).filter_by(email="google@example.com").first()
         assert db_user is not None
         assert db_user.auth_id == "test_firebase_uid"
         assert db_user.role_id == 1
