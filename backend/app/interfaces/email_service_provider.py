@@ -8,9 +8,7 @@ class IEmailServiceProvider(ABC):
     """
 
     @abstractmethod
-    def send_email(
-        self, recipient: str, subject: str, body_html: str, body_text: str
-    ) -> dict:
+    def send_email(self, recipient: str, subject: str) -> None:
         """
         Sends an email using the provider's service.
 
