@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from app.interfaces.email_service import EmailContent, EmailTemplate
+
 
 class IEmailServiceProvider(ABC):
     """
@@ -8,7 +10,7 @@ class IEmailServiceProvider(ABC):
     """
 
     @abstractmethod
-    def send_email(self, recipient: str, subject: str) -> None:
+    def send_email(self, template: EmailTemplate, content: EmailContent) -> dict:
         """
         Sends an email using the provider's service.
 

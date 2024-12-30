@@ -1,4 +1,38 @@
+import json
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from enum import Enum
+from typing import Generic, TypeVar
+
+T = TypeVar("T")
+
+
+class TemplateData(ABC):
+    def get_formatted_string(self) -> str:
+        class_dict = self.__dict__
+        try:
+            formatted_string = json.dumps(class_dict)  # Try to convert to a JSON string
+        except (TypeError, ValueError) as e:
+            # Handle errors and return a message instead
+            return f"Error in converting data to JSON: {e}"
+
+        return formatted_string
+
+
+@dataclass
+class TestEmailData(TemplateData):
+    name: str
+    date: str
+
+
+class EmailTemplate(Enum):
+    TEST = "Test"
+
+
+@dataclass
+class EmailContent(Generic[T]):
+    recipient: str
+    data: T
 
 
 class IEmailService(ABC):
@@ -8,7 +42,7 @@ class IEmailService(ABC):
     """
 
     @abstractmethod
-    def send_email(self, subject: str, recipient: str, body_html: str) -> None:
+    def send_email(self, template: EmailTemplate, content: EmailContent) -> dict:
         """
         Sends an email with the given parameters.
 

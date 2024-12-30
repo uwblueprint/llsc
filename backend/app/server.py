@@ -10,7 +10,9 @@ from app.routes import email
 load_dotenv()
 
 # we need to load env variables before initialization code runs
+# from . import models  # noqa: E402
 from .routes import user  # noqa: E402
+from .utilities.ses.ses_init import ensure_ses_templates  # noqa: E402
 
 log = logging.getLogger("uvicorn")
 
@@ -18,6 +20,7 @@ log = logging.getLogger("uvicorn")
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     log.info("Starting up...")
+    ensure_ses_templates()
     # models.run_migrations()
     # initialize_firebase()
     yield
