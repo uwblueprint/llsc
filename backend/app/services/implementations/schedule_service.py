@@ -10,7 +10,7 @@ from app.models import Schedule, TimeBlock
 # from app.schemas.time_block import UserCreate, UserInDB, UserRole
 from app.interfaces.schedule_service import IScheduleService
 from app.schemas.schedule import (
-    ScheduleState,
+    ScheduleStatus,
     ScheduleCreate, 
     ScheduleInDB, 
     ScheduleAdd, 
@@ -32,7 +32,7 @@ class ScheduleService(IScheduleService):
             db_schedule = Schedule(
                 scheduled_time=None,
                 duration=None,
-                state_id=ScheduleState.to_schedule_state_id("PENDING_VOLUNTEER_RESPONSE")
+                status_id=ScheduleStatus.to_schedule_status_id("PENDING_VOLUNTEER_RESPONSE")
             )
 
             db_schedule.time_blocks = []

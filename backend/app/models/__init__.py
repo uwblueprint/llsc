@@ -7,11 +7,11 @@ from .Base import Base
 from .Role import Role
 from .User import User
 from .Schedule import Schedule
-from .ScheduleState import ScheduleState
+from .ScheduleStatus import ScheduleStatus
 from .TimeBlock import TimeBlock
 
 # Used to avoid import errors for the models
-__all__ = ["Base", "User", "Role", "Schedule", "ScheduleState", "TimeBlock" ]
+__all__ = ["Base", "User", "Role", "Schedule", "ScheduleStatus", "TimeBlock" ]
 
 
 def run_migrations():

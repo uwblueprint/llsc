@@ -20,7 +20,7 @@ log = logging.getLogger("uvicorn")
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     log.info("Starting up...")
-    # models.run_migrations()
+    models.run_migrations()
     initialize_firebase()
     yield
     log.info("Shutting down...")

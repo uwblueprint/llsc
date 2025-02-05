@@ -7,26 +7,26 @@ from pydantic import BaseModel, ConfigDict
 
 
 
-class ScheduleState(str, Enum):
+class ScheduleStatus(str, Enum):
     PENDING_PARTICIPANT = "PENDING_PARTICIPANT_RESPONSE"
     PENDING_VOLUNTEER = "PENDING_VOLUNTEER_RESPONSE"
     SCHEDULED = "SCHEDULED"
     COMPLETED = "COMPLETED"
 
     @classmethod
-    def to_schedule_state_id(cls, state: "ScheduleState") -> int:
-        state_map = {
+    def to_schedule_status_id(cls, state: "ScheduleStatus") -> int:
+        status_map = {
             cls.PENDING_VOLUNTEER: 1,
             cls.PENDING_PARTICIPANT: 2,
             cls.SCHEDULED: 3,
             cls.COMPLETED: 4}
 
-        return state_map[state]
+        return status_map[state]
 
 class ScheduleBase(BaseModel):
     scheduled_time: Optional[datetime]
     duration: Optional[timedelta]
-    state_id: int
+    status_id: int
 
 
 class ScheduleInDB(ScheduleBase):
