@@ -24,14 +24,12 @@ class IScheduleService(ABC):
         pass
 
 
-    # create schedule
-
-    # update schedule status
-
-    # delete schedule
-
-    # add timeblock
-    # edit timeblock
-    # remove timeblock
+    # TODO: implement the following abstract methods
+    # - update schedule status
+    # - create schedule
+    # - delete schedule
+    # - add timeblock
+    # - edit timeblock
+    # - remove timeblock
 
 
