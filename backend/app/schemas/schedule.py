@@ -31,7 +31,6 @@ class ScheduleBase(BaseModel):
 
 class ScheduleInDB(ScheduleBase):
     id: int
-
     model_config = ConfigDict(from_attributes=True)
 
 # Provides both Schedule data and full TimeBlock data 
@@ -43,10 +42,10 @@ class ScheduleCreate(BaseModel):
     time_blocks: List[TimeBlockBase]
 
 class ScheduleAdd(BaseModel):
-    schedule_id: UUID
+    schedule_id: int
     time_blocks: List[TimeBlockBase]
 
 class ScheduleRemove(BaseModel):
-    schedule_id: UUID
+    schedule_id: int
     time_blocks: List[TimeBlockId]
 
