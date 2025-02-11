@@ -2,10 +2,9 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Union
 
+from backend.app.routes import send_email
 from dotenv import load_dotenv
 from fastapi import FastAPI
-
-from app.routes import email
 
 load_dotenv()
 
@@ -31,7 +30,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(user.router)
 
-app.include_router(email.router)
+app.include_router(send_email.router)
 
 
 @app.get("/")
