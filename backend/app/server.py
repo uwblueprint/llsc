@@ -5,15 +5,16 @@ from typing import Union
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-load_dotenv()
-
-# we need to load env variables before initialization code runs
 from . import models
 from .routes import send_email, user
 from .utilities.constants import LOGGER_NAME
 from .utilities.firebase_init import initialize_firebase
 
+load_dotenv()
+
+
 log = logging.getLogger(LOGGER_NAME("server"))
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
