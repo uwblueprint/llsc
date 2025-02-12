@@ -36,6 +36,7 @@ docker-db = {composite = ["dc-down", "dc-up"]}
 db-dev = {composite = ["docker-db", "dev"]}
 revision = "alembic revision --autogenerate"
 upgrade = "alembic upgrade head"
+db = "bash start_db_local.sh"
 
 [tool.pytest.ini_options]
 asyncio_mode = "strict"
