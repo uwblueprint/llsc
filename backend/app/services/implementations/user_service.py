@@ -12,12 +12,13 @@ from app.schemas.user import (
     UserCreateResponse,
     UserRole,
 )
+from app.utilities.constants import LOGGER_NAME
 
 
 class UserService(IUserService):
     def __init__(self, db: Session):
         self.db = db
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(LOGGER_NAME("user_service"))
 
     async def create_user(self, user: UserCreateRequest) -> UserCreateResponse:
         firebase_user = None
