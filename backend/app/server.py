@@ -2,8 +2,10 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Union
 
+from backend.app.routes import send_email
 from dotenv import load_dotenv
 from fastapi import FastAPI
+
 
 from app.routes import email_test
 
@@ -31,7 +33,6 @@ async def lifespan(_: FastAPI):
 # running-alembic-migrations-on-fastapi-startup
 app = FastAPI(lifespan=lifespan)
 app.include_router(user.router)
-
 app.include_router(email_test.router)
 
 
