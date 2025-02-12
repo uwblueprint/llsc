@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:3aa63e9b7dc6752a7be001239664dd994edfb7456c6abd9c5fc86df865101a2a"
+content_hash = "sha256:25df3f1d1ac88503375e4065bbb639f76ed00694c3c838384908755aba2ad608"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -1120,6 +1120,20 @@ dependencies = [
 files = [
     {file = "pytest-8.3.3-py3-none-any.whl", hash = "sha256:a6853c7375b2663155079443d2e45de913a911a11d669df02a50814944db57b2"},
     {file = "pytest-8.3.3.tar.gz", hash = "sha256:70b98107bd648308a7952b06e6ca9a50bc660be218d53c257cc1fc94fda10181"},
+]
+
+[[package]]
+name = "pytest-asyncio"
+version = "0.25.3"
+requires_python = ">=3.9"
+summary = "Pytest support for asyncio"
+groups = ["default"]
+dependencies = [
+    "pytest<9,>=8.2",
+]
+files = [
+    {file = "pytest_asyncio-0.25.3-py3-none-any.whl", hash = "sha256:9e89518e0f9bd08928f97a3482fdc4e244df17529460bc038291ccaf8f85c7c3"},
+    {file = "pytest_asyncio-0.25.3.tar.gz", hash = "sha256:fc1da2cf9f125ada7e710b4ddad05518d4cee187ae9412e9ac9271003497f07a"},
 ]
 
 [[package]]

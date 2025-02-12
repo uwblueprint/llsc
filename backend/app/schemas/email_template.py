@@ -19,7 +19,7 @@ class TemplateData(ABC):
 
 
 @dataclass
-class TestEmailData(TemplateData):
+class MockEmailData(TemplateData):
     name: str
     date: str
 
