@@ -1,4 +1,4 @@
-"""change ScheduleStatus to ScheduleState
+"""change ScheduleState to ScheduleStatus
 
 Revision ID: df571b763807
 Revises: 991416bdc3f6
