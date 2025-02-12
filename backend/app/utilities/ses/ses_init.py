@@ -38,9 +38,6 @@ def load_file_content(file_path: str) -> str:
         return ""
 
 
-templates_metadata = load_templates_metadata(TEMPLATES_FILE)
-
-
 # Function to create SES template
 def create_ses_template(template_metadata):
     name = template_metadata["TemplateName"]
@@ -68,6 +65,8 @@ def create_ses_template(template_metadata):
 
 # Ensure SES templates are available at app startup
 def ensure_ses_templates():
+    templates_metadata = load_templates_metadata(TEMPLATES_FILE)
+
     for template_metadata in templates_metadata:
         name = template_metadata["TemplateName"]
         try:

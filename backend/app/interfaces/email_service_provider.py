@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from app.interfaces.email_service import EmailContent, EmailTemplate
+from app.schemas.email_template import EmailContent, EmailTemplateType
 
 
 class IEmailServiceProvider(ABC):
@@ -10,21 +10,19 @@ class IEmailServiceProvider(ABC):
     """
 
     @abstractmethod
-    def send_email(self, template: EmailTemplate, content: EmailContent) -> dict:
-        """
-        Sends an email using the provider's service.
+    def send_email(
+        self, templateType: EmailTemplateType, content: EmailContent
+    ) -> dict:
+        """_summary_
 
-        :param recipient: Email address of the recipient
-        :type recipient: str
-        :param subject: Subject of the email
-        :type subject: str
-        :param body_html: HTML body content of the email
-        :type body_html: str
-        :param body_text: Plain text content of the email
-        :type body_text: str
-        :return: Provider-specific metadata related to the sent email
-        (like message ID, status, etc.)
-        :rtype: dict
-        :raises Exception: if the email fails to send
+        Args:
+            templateType (EmailTemplate): Helps provider determine which
+                template to use for the given email
+            content (EmailContent): Contains the recipient and data to be
+                used in the email
+
+        Returns:
+            dict: Provider-specific metadata if any
+                (like message ID, thread ID, label IDs)
         """
         pass
