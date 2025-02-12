@@ -2,17 +2,14 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Union
 
-from backend.app.routes import send_email
 from dotenv import load_dotenv
 from fastapi import FastAPI
-
 
 from app.routes import email_test
 
 load_dotenv()
 
 # we need to load env variables before initialization code runs
-# from . import models  # noqa: E402
 from .routes import user  # noqa: E402
 from .utilities.ses.ses_init import ensure_ses_templates  # noqa: E402
 
