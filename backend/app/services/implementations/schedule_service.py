@@ -6,9 +6,6 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models import Schedule, TimeBlock
-# from app.schemas.schedule import UserCreate, UserInDB, UserRole
-# from app.schemas.time_block import UserCreate, UserInDB, UserRole
-from app.interfaces.schedule_service import IScheduleService
 from app.schemas.schedule import (
     ScheduleStatus,
     ScheduleCreate, 
@@ -19,7 +16,7 @@ from app.schemas.schedule import (
 )
 from app.schemas.time_block import TimeBlockBase, TimeBlockId, TimeBlockFull, TimeBlockInDB
 
-class ScheduleService(IScheduleService):
+class ScheduleService():
     def __init__(self, db: Session):
         self.db = db
         self.logger = logging.getLogger(__name__)
