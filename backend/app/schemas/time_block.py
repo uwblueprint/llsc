@@ -17,7 +17,7 @@ class TimeBlockFull(TimeBlockBase, TimeBlockId):
     '''
     pass
 
-class TimeBlockInDB(BaseModel):
+class TimeBlockEntity(BaseModel):
     id: UUID
     schedule_id: int
     start_time: datetime

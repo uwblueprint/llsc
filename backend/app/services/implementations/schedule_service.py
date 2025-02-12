@@ -8,13 +8,13 @@ from sqlalchemy.orm import Session
 from app.models import Schedule, TimeBlock
 from app.schemas.schedule import (
     ScheduleStatus,
-    ScheduleCreate, 
+    ScheduleCreateRequest, 
     ScheduleInDB, 
-    ScheduleAdd, 
-    ScheduleData, 
-    ScheduleRemove
+    ScheduleUpdateRequest, 
+    ScheduleGetResponse, 
+    ScheduleDeleteRequest
 )
-from app.schemas.time_block import TimeBlockBase, TimeBlockId, TimeBlockFull, TimeBlockInDB
+from app.schemas.time_block import TimeBlockBase, TimeBlockId, TimeBlockFull, TimeBlockEntity
 
 class ScheduleService():
     def __init__(self, db: Session):
@@ -24,7 +24,7 @@ class ScheduleService():
     def get_schedule_by_id(self, schedule_id):
         pass
 
-    async def create_schedule(self, schedule: ScheduleCreate) -> ScheduleInDB:
+    async def create_schedule(self, schedule: ScheduleCreateRequest) -> ScheduleInDB:
         try:
             db_schedule = Schedule(
                 scheduled_time=None,
@@ -82,10 +82,10 @@ class ScheduleService():
         # link the schedule + the time block together
         pass
 
-    async def add_to_schedule(self, schedule: ScheduleAdd):
+    async def add_to_schedule(self, schedule: ScheduleUpdateRequest):
         pass
     
-    async def remove_from_schedule(self, schedule: ScheduleRemove):
+    async def remove_from_schedule(self, schedule: ScheduleDeleteRequest):
 
         # GET schedule
         # return schedule state, time_blocks
@@ -111,7 +111,7 @@ class ScheduleService():
         # update schedule state to COMPLETED
         pass
 
-    async def get_schedule(self, schedule_id: int) -> ScheduleData:
+    async def get_schedule(self, schedule_id: int) -> ScheduleGetResponse:
         
         # returns a schedule
         pass

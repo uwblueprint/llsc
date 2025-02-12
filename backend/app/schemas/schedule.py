@@ -8,8 +8,8 @@ from pydantic import BaseModel, ConfigDict
 
 
 class ScheduleStatus(str, Enum):
-    PENDING_PARTICIPANT = "PENDING_PARTICIPANT_RESPONSE"
     PENDING_VOLUNTEER = "PENDING_VOLUNTEER_RESPONSE"
+    PENDING_PARTICIPANT = "PENDING_PARTICIPANT_RESPONSE"
     SCHEDULED = "SCHEDULED"
     COMPLETED = "COMPLETED"
 
@@ -35,18 +35,18 @@ class ScheduleInDB(ScheduleBase):
     model_config = ConfigDict(from_attributes=True)
 
 # Provides both Schedule data and full TimeBlock data 
-class ScheduleData(ScheduleInDB):
+class ScheduleGetResponse(ScheduleInDB):
     time_blocks: List[TimeBlockFull]
 
 # List of Start and End times to Create a Schedule with
-class ScheduleCreate(BaseModel):
+class ScheduleCreateRequest(BaseModel):
     time_blocks: List[TimeBlockBase]
 
-class ScheduleAdd(BaseModel):
+class ScheduleUpdateRequest(BaseModel):
     schedule_id: UUID
     time_blocks: List[TimeBlockBase]
 
-class ScheduleRemove(BaseModel):
+class ScheduleDeleteRequest(BaseModel):
     schedule_id: UUID
     time_blocks: List[TimeBlockId]
 
