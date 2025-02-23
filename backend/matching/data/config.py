@@ -90,6 +90,7 @@ DIAGNOSES = {
     "Category 5": ["Myelofibrosis", "Essential Thrombocythemia", "Polycythemia Vera"],
 }
 
+#Upto 2
 TREATMENTS = [
     "Unknown",
     "Watch and Wait / Active Surveillance",
@@ -105,6 +106,7 @@ TREATMENTS = [
     "CAR-T",
 ]
 
+#Upto 5
 EXPERIENCES = [
     "Brain Fog",
     "Fatigue",
@@ -122,9 +124,11 @@ EXPERIENCES = [
 ]
 
 PREFERENCES = [
-    "SIMILIAR TYPE CANCER",
-    "SIMILIAR DIAGONSIS DATE",
+    "SIMILIAR MARTIAL STATUS",
+    "SIMILIAR DIAGNOSIS",
+    "SIMILIAR PARENTAL STATUS",
     "SIMILIAR AGE",
     "SAME GENDER",
-    "SIMILIAR ETHNICITY",
+    "SIMILIAR ETHNICITY"
 ]
+

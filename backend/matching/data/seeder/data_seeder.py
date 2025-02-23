@@ -17,7 +17,14 @@ class Seeder:
     # TODO: see what the schema of our db acutally holds
     def generate_data_participant(self):
         for _ in range(self.num_records):
-            pref_count = random.randint(0, 5)
+            pref_count = random.randint(1, 5)
+
+            pref_treatments = random.randint(0, 2)
+            pref_experiences = random.randint(0, 5)
+
+            treatments = MedicalInformation.get_random_treatment(pref_treatments)
+            experiences = MedicalInformation.get_random_experience(pref_experiences)
+
             record = {
                 "First Name": Demographics.get_random_first_name(),
                 "Last Name": Demographics.get_random_last_name(),
@@ -38,16 +45,23 @@ class Seeder:
                 "Caregiver Type": MedicalInformation.get_random_caregiver_type(),
                 "Diagnostic": MedicalInformation.get_random_diagnosis(),
                 "Date of Diagnosis": MedicalInformation.get_random_date_of_diagnosis(),
-                "Treatment": MedicalInformation.get_random_treatment(),
-                "Experience": MedicalInformation.get_random_experience(),
-                "Preferences": Preferences.get_random_random_preference(pref_count),
+                "Treatment": treatments,
+                "Experience": experiences,
+                "Preferences": Preferences.get_random_random_preference(pref_count, treatments, experiences),
             }
             self.participants.append(record)
 
     # TODO: see what the schema of our db acutally holds
     def generate_data_volunteer(self):
         for _ in range(self.num_records):
-            pref_count = random.randint(0, 5)
+            pref_count = random.randint(1, 5)
+
+            pref_treatments = random.randint(0, 2)
+            pref_experiences = random.randint(0, 5)
+
+            treatments = MedicalInformation.get_random_treatment(pref_treatments)
+            experiences = MedicalInformation.get_random_experience(pref_experiences)
+
             record = {
                 "First Name": Demographics.get_random_first_name(),
                 "Last Name": Demographics.get_random_last_name(),
@@ -69,10 +83,9 @@ class Seeder:
                 "Ethnicity": Demographics.get_random_ethnic_background(),
                 "Marital Status": Demographics.get_random_marital_status(),
                 "Children Status": Demographics.get_random_children_status(),
-                "Experience": MedicalInformation.get_random_experience(),
-                "Preferences": Preferences.get_random_random_preference(pref_count),
-                # TODO: WHY IS TRAETMENET NOT HERE?
-                # TODO: tell us a story, reference, anyhting eles to share
+                "Treatment": treatments,
+                "Experience": experiences,
+                "Preferences": Preferences.get_random_random_preference(pref_count, treatments, experiences),
             }
             self.volunteers.append(record)
 
@@ -80,7 +93,15 @@ class Seeder:
     # call this twice for matching data (one for participant and one for volunteer)
     def generate_matching_data(self):
         for _ in range(self.num_records):
-            pref_count = random.randint(0, 5)
+            pref_count = random.randint(1, 5)
+            # TO DO
+            pref_treatments = random.randint(0, 2)
+            pref_experiences = random.randint(0, 5)
+
+            # Doing this because I want to pass this list into preferences 
+            treatments = MedicalInformation.get_random_treatment(pref_treatments)
+            experiences = MedicalInformation.get_random_experience(pref_experiences)
+
             record = {
                 "First Name": Demographics.get_random_first_name(),  
                 "Second Name": Demographics.get_random_last_name(),  
@@ -96,9 +117,9 @@ class Seeder:
                 "Caregiver Type": MedicalInformation.get_random_caregiver_type(),
                 "Diagnostic": MedicalInformation.get_random_diagnosis(),
                 "Date of Diagnosis": MedicalInformation.get_random_date_of_diagnosis(),
-                "Treatment": MedicalInformation.get_random_treatment(),
-                "Experience": MedicalInformation.get_random_experience(),
-                "Preferences": Preferences.get_random_random_preference(pref_count),
+                "Treatment": treatments,
+                "Experience": experiences,
+                "Preferences": Preferences.get_random_random_preference(pref_count, treatments, experiences),
             }
             self.data.append(record)
 

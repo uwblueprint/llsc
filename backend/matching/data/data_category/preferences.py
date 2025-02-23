@@ -11,7 +11,14 @@ from backend.matching.data.config import PREFERENCES
 class Preferences:
     @staticmethod
     # temporary function to get random first name
-    def get_random_random_preference(k : int):
-        k = min(k, len(PREFERENCES))
-        return random.sample(PREFERENCES, k)
+    def get_random_random_preference(k : int, treatments: list, experiences: list):
+        k = min(k, 5) 
+
+        exp_entry = {"EXPERIENCE": experiences}
+        treat_entry = {"TREATMENT": treatments}
+
+        final_preference_list = PREFERENCES + [exp_entry, treat_entry]
+
+        return random.sample(final_preference_list, k)
+
 

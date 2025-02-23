@@ -47,13 +47,12 @@ class MedicalInformation:
 
     # IMPORTANT: for matching algo
     @staticmethod
-    def get_random_treatment():
-        return random.choice(TREATMENTS)
+    def get_random_treatment(pref_treatments: int):
+        return random.sample(TREATMENTS, pref_treatments)
 
     # IMPORTANT: for matching algo
     # there can be multiple experiences that they can select
     @staticmethod
-    def get_random_experience():
-        num_experiences = random.randint(0, len(EXPERIENCES))
+    def get_random_experience(pref_experiences: int):
         # reutrns empty of all of the experiences
-        return random.sample(EXPERIENCES, num_experiences)
+        return random.sample(EXPERIENCES, pref_experiences)
