@@ -9,7 +9,7 @@ from app.models import Schedule, TimeBlock
 from app.schemas.schedule import (
     ScheduleStatus,
     ScheduleCreateRequest, 
-    ScheduleInDB, 
+    ScheduleEntity, 
     ScheduleUpdateRequest, 
     ScheduleGetResponse, 
     ScheduleDeleteRequest
@@ -24,7 +24,7 @@ class ScheduleService():
     def get_schedule_by_id(self, schedule_id):
         pass
 
-    async def create_schedule(self, schedule: ScheduleCreateRequest) -> ScheduleInDB:
+    async def create_schedule(self, schedule: ScheduleCreateRequest) -> ScheduleEntity:
         try:
             db_schedule = Schedule(
                 scheduled_time=None,
@@ -48,7 +48,7 @@ class ScheduleService():
             self.db.commit()
             self.db.refresh(db_schedule)
 
-            return ScheduleInDB.model_validate(db_schedule)
+            return ScheduleEntity.model_validate(db_schedule)
         except Exception as e:
             self.db.rollback()
             self.logger.error(f"Error creating Schedule: {str(e)}")

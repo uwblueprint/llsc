@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.schemas.schedule import ScheduleCreateRequest, ScheduleInDB
+from app.schemas.schedule import ScheduleCreateRequest, ScheduleEntity
 from app.services.implementations.schedule_service import ScheduleService
 from app.utilities.db_utils import get_db
 
@@ -17,7 +17,7 @@ router = APIRouter(
 def get_schedule_service(db: Session = Depends(get_db)):
     return ScheduleService(db)
 
-@router.post("/", response_model=ScheduleInDB)
+@router.post("/", response_model=ScheduleEntity)
 async def create_schedule(
     schedule: ScheduleCreateRequest, schedule_service: ScheduleService = Depends(get_schedule_service)
 ):

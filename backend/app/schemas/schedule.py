@@ -29,13 +29,13 @@ class ScheduleBase(BaseModel):
     status_id: int
 
 
-class ScheduleInDB(ScheduleBase):
+class ScheduleEntity(ScheduleBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
 
 # Provides both Schedule data and full TimeBlock data 
-class ScheduleGetResponse(ScheduleInDB):
+class ScheduleGetResponse(ScheduleEntity):
     time_blocks: List[TimeBlockFull]
 
 # List of Start and End times to Create a Schedule with
