@@ -54,34 +54,6 @@ class ScheduleService():
             self.logger.error(f"Error creating Schedule: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-
-    # CURRENTLY UNUSED
-    async def create_time_block(self, schedule_id: int, time_block: TimeBlockBase) -> TimeBlockId:
-        # takes a schedule id
-        # create a time block in the db
-
-        try:
-            db_time_block = TimeBlock(
-                schedule_id = schedule_id,
-                start_time = time_block.start_time,
-                end_time = time_block.end_time
-            )
-
-
-            self.db.add(db_time_block)
-            self.db.commit()
-            self.db.refresh(db_time_block)
-
-            return TimeBlockId.model_validate(db_time_block)
-        except Exception as e:
-            self.db.rollback()
-            self.logger.error(f"Error creating time block: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e))
-
-
-        # link the schedule + the time block together
-        pass
-
     async def add_to_schedule(self, schedule: ScheduleUpdateRequest):
         pass
     
