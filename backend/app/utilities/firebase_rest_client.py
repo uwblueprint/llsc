@@ -2,7 +2,7 @@ import os
 
 import requests
 
-from ..resources.token import Token
+from ..schemas.auth import Token
 
 FIREBASE_SIGN_IN_URL = (
     "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
@@ -63,7 +63,10 @@ class FirebaseRestClient:
 
             raise Exception("Failed to sign-in via Firebase REST API")
 
-        return Token(response_json["idToken"], response_json["refreshToken"])
+        return Token(
+            access_token=response_json["idToken"],
+            refresh_token=response_json["refreshToken"]
+        )
 
     # docs: https://firebase.google.com/docs/reference/rest/auth/#section-sign-in-with-oauth-credential
     def sign_in_with_google(self, id_token):
@@ -146,4 +149,4 @@ class FirebaseRestClient:
 
             raise Exception("Failed to refresh token via Firebase REST API")
 
-        return Token(response_json["id_token"], response_json["refresh_token"])
+        return Token(access_token=response_json["id_token"], refresh_token=response_json["refresh_token"])
