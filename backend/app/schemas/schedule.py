@@ -28,14 +28,14 @@ class ScheduleBase(BaseModel):
     duration: Optional[timedelta]
     state_id: int
 
-
 class ScheduleInDB(ScheduleBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
 
-# Provides both Schedule data and full TimeBlock data 
+# Provides both Schedule data and full TimeBlock data
 class ScheduleData(ScheduleInDB):
     time_blocks: List[TimeBlockFull]
+    model_config = ConfigDict(from_attributes=True)
 
 # List of Start and End times to Create a Schedule with
 class ScheduleCreate(BaseModel):

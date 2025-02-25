@@ -140,7 +140,6 @@ class ScheduleService(IScheduleService):
     async def complete_schedule(self, schedule_id: int) -> ScheduleInDB:
         try:
             # get schedule from db
-            # can we just use get_schedule in here??
             db_schedule = (
                 self.db.query(Schedule).filter(Schedule.id == schedule_id).first()
             )
@@ -164,7 +163,6 @@ class ScheduleService(IScheduleService):
 
     async def get_schedule(self, schedule_id: int) -> ScheduleData:
         # gets schedule and its timeblocks from database
-        # get all objects in db matching Schedule model, filter by id, get first
         try:
             db_schedule = (
                 self.db.query(Schedule)
@@ -176,8 +174,8 @@ class ScheduleService(IScheduleService):
             )
             if not db_schedule:
                 raise HTTPException(status_code=404, detail="Schedule not found.")
-            else:
-                return ScheduleData.model_validate(db_schedule)
+
+            return ScheduleData.model_validate(db_schedule)
         except Exception as e:
             # self.logger.error(f"Error retrieving schedule:" {str(e)})
             raise HTTPException(status_code=500, detail=str(e))

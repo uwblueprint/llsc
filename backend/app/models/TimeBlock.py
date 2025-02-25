@@ -6,7 +6,6 @@ from sqlalchemy.orm import relationship
 
 from .Base import Base
 
-
 class TimeBlock(Base):
     __tablename__ = "time_blocks"
     id = Column(Integer, primary_key=True)
