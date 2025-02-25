@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Security, Body
+from fastapi import APIRouter, Depends, HTTPException, Security, Body, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 from ..schemas.auth import AuthResponse, LoginRequest, Token, RefreshRequest
@@ -6,7 +6,6 @@ from ..services.implementations.auth_service import AuthService
 from ..services.implementations.user_service import UserService
 from ..utilities.db_utils import get_db
 from ..utilities.service_utils import get_auth_service
-from ..middleware.auth import get_current_user, require_roles
 import logging
 
 from ..schemas.user import UserRole
@@ -21,14 +20,18 @@ async def login(
 ):
     return auth_service.generate_token(credentials.email, credentials.password)
 
-# update this assuming middleware adds in user
 @router.post("/logout")
 async def logout(
-    current_user = Depends(get_current_user),
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
     auth_service: AuthService = Depends(get_auth_service)
 ):
     try:
-        auth_service.revoke_tokens(current_user["user"])
+        user_id = request.state.user_id
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+            
+        auth_service.revoke_tokens(user_id)
         return {"message": "Successfully logged out"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
