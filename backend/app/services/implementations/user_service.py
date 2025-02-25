@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.interfaces.user_service import IUserService
-from app.models import User
+from app.models import User, Role
 from app.schemas.user import (
     SignUpMethod,
     UserCreateRequest,
@@ -19,7 +19,7 @@ class UserService(IUserService):
     def __init__(self, db: Session):
         self.db = db
         self.logger = logging.getLogger(LOGGER_NAME("user_service"))
-
+        
     async def create_user(self, user: UserCreateRequest) -> UserCreateResponse:
         firebase_user = None
         try:
@@ -84,8 +84,12 @@ class UserService(IUserService):
     def delete_user_by_id(self, user_id: str):
         pass
 
-    def get_auth_id_by_user_id(self, user_id: str) -> str:
-        pass
+    def get_user_id_by_auth_id(self, auth_id: str) -> str:
+        """Get user ID for a user by their Firebase auth_id"""
+        user = self.db.query(User).filter(User.auth_id == auth_id).first()
+        if not user:
+            raise ValueError(f"User with auth_id {auth_id} not found")
+        return str(user.id)  # Convert UUID to string
 
     def get_user_by_email(self, email: str):
         pass
@@ -93,14 +97,29 @@ class UserService(IUserService):
     def get_user_by_id(self, user_id: str):
         pass
 
-    def get_user_id_by_auth_id(self, auth_id: str) -> str:
-        pass
+    def get_auth_id_by_user_id(self, user_id: str) -> str:
+        """Get Firebase auth_id for a user"""
+        user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise ValueError(f"User with id {user_id} not found")
+        return user.auth_id
 
     def get_user_role_by_auth_id(self, auth_id: str) -> str:
-        pass
+        """Get role name for a user by their Firebase auth_id"""
+        user = self.db.query(User).join(Role).filter(User.auth_id == auth_id).first()
+        if not user:
+            raise ValueError(f"User with auth_id {auth_id} not found")
+        return user.role.name
 
     def get_users(self):
         pass
 
     def update_user_by_id(self, user_id: str, user):
         pass
+
+    def get_user_by_email(self, email: str):
+        user = self.db.query(User).filter(User.email == email).first()
+        if not user:
+            raise ValueError(f"User with email {email} not found")
+        return user
+    
