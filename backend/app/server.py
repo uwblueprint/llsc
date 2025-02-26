@@ -5,14 +5,13 @@ from typing import Union
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-load_dotenv()
-
-# we need to load env variables before initialization code runs
 from . import models
-from .routes import send_email, user
+from .routes import email_test, user
 from .utilities.constants import LOGGER_NAME
 from .utilities.firebase_init import initialize_firebase
-from .utilities.ses.ses_init import ensure_ses_templates  # noqa: E402
+from .utilities.ses.ses_init import ensure_ses_templates
+
+load_dotenv()
 
 log = logging.getLogger(LOGGER_NAME("server"))
 
