@@ -32,6 +32,10 @@ distribution = false
 dev = "fastapi dev app/server.py"
 precommit = "pre-commit run"
 precommit-install = "pre-commit install"
+dc-down = "docker-compose down -v"
+dc-up = "docker-compose up -d"
+docker-db = {composite = ["dc-down", "dc-up"]}
+db-dev = {composite = ["docker-db", "dev"]}
 revision = "alembic revision --autogenerate"
 upgrade = "alembic upgrade head"
 tests = "pytest -v"
