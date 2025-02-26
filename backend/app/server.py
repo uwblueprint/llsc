@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from . import models
-from .routes import email_test, user
+from .routes import send_email, user
 from .utilities.constants import LOGGER_NAME
 from .utilities.firebase_init import initialize_firebase
 from .utilities.ses.ses_init import ensure_ses_templates
@@ -30,7 +30,7 @@ async def lifespan(_: FastAPI):
 # running-alembic-migrations-on-fastapi-startup
 app = FastAPI(lifespan=lifespan)
 app.include_router(user.router)
-app.include_router(email_test.router)
+app.include_router(send_email.router)
 
 
 @app.get("/")
