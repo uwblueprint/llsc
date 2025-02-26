@@ -9,8 +9,8 @@ import numpy as np
 from backend.matching.data.config import DIAGNOSES
 from datetime import datetime
 
-ENTRIES = 10
-TOP_K = 5
+ENTRIES = 50
+TOP_K = 10
 
 def print_data(data, file):
     for record in data:
@@ -78,9 +78,9 @@ def matches_criteria(volunteer, patient, patient_preferences):
     criteria_checks = {
         "SAME GENDER": volunteer.get("Gender Identity") == patient.get("Gender Identity"),
         "SIMILIAR ETHNICITY": volunteer.get("Ethnicity") == patient.get("Ethnicity"),
-        "SIMILIAR MARTIAL STATUS": volunteer.get("Marital Status") == patient.get("Marital Status"),
-        "SIMILAR PARENTAL STATUS": volunteer.get("Children Status") == patient.get("Children Status"),
-        "SIMILAR DIAGNOSES": get_diagnosis_category(volunteer.get("Diagnostic")) == get_diagnosis_category(patient.get("Diagnostic")),
+        "SIMILIAR MARITAL STATUS": volunteer.get("Marital Status") == patient.get("Marital Status"),
+        "SIMILIAR PARENTAL STATUS": volunteer.get("Children Status") == patient.get("Children Status"),
+        "SIMILIAR DIAGNOSES": get_diagnosis_category(volunteer.get("Diagnostic")) == get_diagnosis_category(patient.get("Diagnostic")),
     }
 
     final_weights = []
