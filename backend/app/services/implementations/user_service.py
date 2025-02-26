@@ -19,7 +19,7 @@ class UserService(IUserService):
     def __init__(self, db: Session):
         self.db = db
         self.logger = logging.getLogger(LOGGER_NAME("user_service"))
-        
+
     async def create_user(self, user: UserCreateRequest) -> UserCreateResponse:
         firebase_user = None
         try:
@@ -122,4 +122,3 @@ class UserService(IUserService):
         if not user:
             raise ValueError(f"User with email {email} not found")
         return user
-    

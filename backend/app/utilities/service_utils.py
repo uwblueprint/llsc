@@ -5,8 +5,10 @@ from ..services.implementations.auth_service import AuthService
 from .db_utils import get_db
 import logging
 
+
 def get_user_service(db: Session = Depends(get_db)):
     return UserService(db)
+
 
 def get_auth_service(db: Session = Depends(get_db)):
     logger = logging.getLogger(__name__)

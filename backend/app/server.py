@@ -25,8 +25,10 @@ PUBLIC_PATHS = [
     "/auth/login",
     "/auth/register",
     "/health",
-    "/test-middleware-public"
+    "/test-middleware-public",
+    "/email/send-test-email",
 ]
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -49,10 +51,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(
-    AuthMiddleware,
-    public_paths=PUBLIC_PATHS
-)
+app.add_middleware(AuthMiddleware, public_paths=PUBLIC_PATHS)
 
 app.include_router(auth.router)
 app.include_router(user.router)
@@ -74,9 +73,9 @@ async def test_middleware(request: Request) -> Dict[str, Any]:
     """
     Test endpoint that requires authentication and shows middleware-added state.
     This will only work if you provide a valid Firebase token in the Authorization header.
-    
+
     Example: Authorization: Bearer your-firebase-token
-    
+
     The response will show all user information added by the Firebase auth middleware.
     """
     # Get all the attributes from request.state
@@ -95,7 +94,7 @@ async def test_middleware(request: Request) -> Dict[str, Any]:
         "user_claims": getattr(request.state, "user_claims", None),
         "user_info": getattr(request.state, "user_info", None),
         "request_id": getattr(request.state, "request_id", None),
-        "authorization_header": request.headers.get("Authorization", "Not provided")
+        "authorization_header": request.headers.get("Authorization", "Not provided"),
     }
 
 
@@ -132,14 +131,14 @@ async def test_middleware_public(request: Request) -> Dict[str, Any]:
 from .middleware.auth import has_roles
 from .schemas.user import UserRole
 
+
 @app.get("/test-role-admin")
 async def test_role_admin(
-    request: Request,
-    authorized: bool = has_roles([UserRole.ADMIN])
+    request: Request, authorized: bool = has_roles([UserRole.ADMIN])
 ) -> Dict[str, Any]:
     """
     Test endpoint that requires the Admin role.
-    
+
     This demonstrates role-based access control using the has_roles dependency.
     Only users with the Admin role can access this endpoint.
     """
@@ -147,17 +146,17 @@ async def test_role_admin(
         "message": "You have successfully accessed an admin-only endpoint",
         "user_id": request.state.user_id,
         "user_email": request.state.user_email,
-        "role": "admin"
+        "role": "admin",
     }
+
 
 @app.get("/test-role-volunteer")
 async def test_role_volunteer(
-    request: Request,
-    authorized: bool = has_roles([UserRole.VOLUNTEER])
+    request: Request, authorized: bool = has_roles([UserRole.VOLUNTEER])
 ) -> Dict[str, Any]:
     """
     Test endpoint that requires the Volunteer role.
-    
+
     This demonstrates role-based access control using the has_roles dependency.
     Only users with the Volunteer role can access this endpoint.
     """
@@ -165,17 +164,17 @@ async def test_role_volunteer(
         "message": "You have successfully accessed a volunteer-only endpoint",
         "user_id": request.state.user_id,
         "user_email": request.state.user_email,
-        "role": "volunteer"
+        "role": "volunteer",
     }
+
 
 @app.get("/test-role-participant")
 async def test_role_participant(
-    request: Request,
-    authorized: bool = has_roles([UserRole.PARTICIPANT])
+    request: Request, authorized: bool = has_roles([UserRole.PARTICIPANT])
 ) -> Dict[str, Any]:
     """
     Test endpoint that requires the Participant role.
-    
+
     This demonstrates role-based access control using the has_roles dependency.
     Only users with the Participant role can access this endpoint.
     """
@@ -183,17 +182,17 @@ async def test_role_participant(
         "message": "You have successfully accessed a participant-only endpoint",
         "user_id": request.state.user_id,
         "user_email": request.state.user_email,
-        "role": "participant"
+        "role": "participant",
     }
+
 
 @app.get("/test-role-multiple")
 async def test_role_multiple(
-    request: Request,
-    authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER])
+    request: Request, authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER])
 ) -> Dict[str, Any]:
     """
     Test endpoint that requires either Admin OR Volunteer role.
-    
+
     This demonstrates role-based access control with multiple allowed roles.
     Users with either Admin or Volunteer roles can access this endpoint.
     """
@@ -201,5 +200,5 @@ async def test_role_multiple(
         "message": "You have successfully accessed an endpoint requiring admin OR volunteer role",
         "user_id": request.state.user_id,
         "user_email": request.state.user_email,
-        "roles_allowed": ["admin", "volunteer"]
+        "roles_allowed": ["admin", "volunteer"],
     }

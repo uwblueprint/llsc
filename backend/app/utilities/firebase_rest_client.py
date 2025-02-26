@@ -65,7 +65,7 @@ class FirebaseRestClient:
 
         return Token(
             access_token=response_json["idToken"],
-            refresh_token=response_json["refreshToken"]
+            refresh_token=response_json["refreshToken"],
         )
 
     # docs: https://firebase.google.com/docs/reference/rest/auth/#section-sign-in-with-oauth-credential
@@ -149,4 +149,7 @@ class FirebaseRestClient:
 
             raise Exception("Failed to refresh token via Firebase REST API")
 
-        return Token(access_token=response_json["id_token"], refresh_token=response_json["refresh_token"])
+        return Token(
+            access_token=response_json["id_token"],
+            refresh_token=response_json["refresh_token"],
+        )
