@@ -5,7 +5,8 @@ from fastapi.testclient import TestClient
 from starlette.responses import JSONResponse
 from app.middleware.auth_middleware import AuthMiddleware
 import firebase_admin.auth
-
+from app.middleware.auth import has_roles
+from app.schemas.user import UserRole
 
 # To test: public paths, protected routes, missing token, invalid token, revoked token, expired token
 # also test routes w/ different permissions? (e.g. admin, user, etc.)
@@ -22,6 +23,18 @@ async def public_route():
 async def protected_route():
     return {"message": "This is a protected route"}
 #make one for admin, volunteer, participant
+
+@app.get("/admin")
+async def admin_route(authorized: bool = has_roles([UserRole.ADMIN])):
+    return{"message": "This is an admin-only route"}
+
+@app.get("/volunteer")
+async def volunteer_route(authorized: bool = has_roles([UserRole.VOLUNTEER])):    
+    return{"message": "This is a volunteer-only route"}
+
+@app.get("/participant")
+async def volunteer_route(authorized: bool = has_roles([UserRole.PARTICIPANT])):    
+    return{"message": "This is a participant-only route"}
 
 client = TestClient(app)
 
@@ -43,13 +56,63 @@ def mock_firebase(): #makes mock objects to get mock responses - get sample toke
 
         yield mock_verify, mock_get_user
 
+@pytest.fixture
+def mock_firebase_admin():
+    with patch("firebase_admin.auth.verify_id_token") as mock_verify, \
+        patch("firebase_admin.auth.get_user") as mock_get_user:
+        
+        mock_verify.return_value = {
+            "uid": "test_user",
+            "email": "test@example.com",
+            "name": "Test User",
+            "picture": "https://example.com/picture.jpg",
+            "claims": {"role": "admin"},
+        }
+
+        mock_get_user.return_value = AsyncMock(email_verified=True)
+
+        yield mock_verify, mock_get_user
+
+@pytest.fixture
+def mock_firebase_volunteer():
+    with patch("firebase_admin.auth.verify_id_token") as mock_verify, \
+        patch("firebase_admin.auth.get_user") as mock_get_user:
+        
+        mock_verify.return_value = {
+            "uid": "test_user",
+            "email": "test@example.com",
+            "name": "Test User",
+            "picture": "https://example.com/picture.jpg",
+            "claims": {"role": "volunteer"},
+        }
+
+        mock_get_user.return_value = AsyncMock(email_verified=True)
+
+        yield mock_verify, mock_get_user
+
+@pytest.fixture
+def mock_firebase_participant():
+    with patch("firebase_admin.auth.verify_id_token") as mock_verify, \
+        patch("firebase_admin.auth.get_user") as mock_get_user:
+        
+        mock_verify.return_value = {
+            "uid": "test_user",
+            "email": "test@example.com",
+            "name": "Test User",
+            "picture": "https://example.com/picture.jpg",
+            "claims": {"role": "participant"},
+        }
+
+        mock_get_user.return_value = AsyncMock(email_verified=True)
+
+        yield mock_verify, mock_get_user
+
 
 def test_public_route():
     """Public routes should be accessible without authentication."""
     response = client.get("/public")
     assert response.status_code == 200 #successful
     assert response.json() == {"message": "This is a public route"}
-
 
 def test_protected_route_access_granted(mock_firebase):
     #mock firebase specifies for admin rn
@@ -60,6 +123,19 @@ def test_protected_route_access_granted(mock_firebase):
     assert response.status_code == 200
     assert response.json() == {"message": "This is a protected route"}
     assert "X-Auth-User-ID" in response.headers
+
+def test_protected_route_participant_admin(mock_firebase_admin):
+    headers = {"Authorization": "Bearer valid_token"}
+    response = client.get("/admin", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json() == {"message": "This is an admin-only route"}
+
+def test_protected_route_volunteer_admin(mock_firebase_volunteer):
+    headers = {"Authorization": "Bearer valid_token"}
+    response = client.get("/admin", headers=headers)
+
+    assert response.status_code == 401
 
 
 def test_protected_route_missing_token():
