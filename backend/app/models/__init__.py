@@ -9,13 +9,13 @@ from app.utilities.constants import LOGGER_NAME
 # when autogenerating new migration
 from .Base import Base
 from .Role import Role
-from .User import User
 from .Schedule import Schedule
 from .ScheduleStatus import ScheduleStatus
 from .TimeBlock import TimeBlock
+from .User import User
 
 # Used to avoid import errors for the models
-__all__ = ["Base", "User", "Role", "Schedule", "ScheduleStatus", "TimeBlock" ]
+__all__ = ["Base", "User", "Role", "Schedule", "ScheduleStatus", "TimeBlock"]
 
 log = logging.getLogger(LOGGER_NAME("models"))
 
