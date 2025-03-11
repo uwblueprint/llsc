@@ -6,9 +6,10 @@ from alembic.config import Config
 from .Base import Base
 from .Role import Role
 from .User import User
+from .Form import Form
 
 # Used to avoid import errors for the models
-__all__ = ["Base", "User", "Role"]
+__all__ = ["Base", "User", "Role", "Form"]
 
 
 def run_migrations():

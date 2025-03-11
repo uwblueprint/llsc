@@ -6,7 +6,7 @@ authors = [
     {name = "uwblueprint", email = "matthewwang@uwblueprint.org"},
 ]
 dependencies = [
-    "fastapi[standard]>=0.115.0",
+    "fastapi>=0.115.11",
     "sqlalchemy>=2.0.35",
     "alembic>=1.13.3",
     "ruff>=0.6.7",
@@ -19,6 +19,8 @@ dependencies = [
     "psycopg2>=2.9.9",
     "Faker>=30.8.2",
     "pandas>=2.2.3",
+    "uvicorn>=0.34.0",
+    "email-validator>=2.2.0",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
@@ -29,7 +31,7 @@ license = {text = "MIT"}
 distribution = false
 
 [tool.pdm.scripts]
-dev = "fastapi dev app/server.py"
+dev = "uvicorn app.server:app --reload"
 precommit = "pre-commit run"
 precommit-install = "pre-commit install"
 revision = "alembic revision --autogenerate"
