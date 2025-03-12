@@ -22,3 +22,7 @@ class User(Base):
     availability = relationship(
         "TimeBlock", secondary="available_times", back_populates="users"
     )
+
+    participant_matches = relationship("Match", back_populates="participant")
+
+    volunteer_matches = relationship("Match", back_populates="volunteer")
