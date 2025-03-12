@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from . import models
-from .routes import send_email, user, schedule
+from .routes import schedule, send_email, user
 from .utilities.constants import LOGGER_NAME
 from .utilities.firebase_init import initialize_firebase
 from .utilities.ses.ses_init import ensure_ses_templates
@@ -32,6 +32,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(user.router)
 app.include_router(schedule.router)
 app.include_router(send_email.router)
+
 
 @app.get("/")
 def read_root():

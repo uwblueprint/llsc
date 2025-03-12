@@ -19,4 +19,6 @@ class User(Base):
     role = relationship("Role")
 
     # time blocks in an availability for a user
-    availability = relationship("TimeBlock", secondary="available_times", back_populates="users")
+    availability = relationship(
+        "TimeBlock", secondary="available_times", back_populates="users"
+    )

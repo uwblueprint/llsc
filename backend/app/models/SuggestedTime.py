@@ -1,8 +1,9 @@
-from .Base import Base
-from sqlalchemy import Column, DateTime, ForeignKey
+from sqlalchemy import Column, ForeignKey, Table
 
-# SuggestedTimes as a pure association table 
-# only exists to establish a relationship between Matches and Time Blocks (many to many relationship)
+from .Base import Base
+
+# SuggestedTimes as a pure association table
+# only exists to establish a relationship between Matches and Time Blocks (many to many)
 suggested_times = Table(
     "suggested_times",
     Base.metadata,

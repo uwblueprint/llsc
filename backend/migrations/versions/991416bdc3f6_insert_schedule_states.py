@@ -5,15 +5,15 @@ Revises: 40bc7d1cefc4
 Create Date: 2024-11-22 18:21:24.174362
 
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '991416bdc3f6'
-down_revision: Union[str, None] = '40bc7d1cefc4'
+revision: str = "991416bdc3f6"
+down_revision: Union[str, None] = "40bc7d1cefc4"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -29,10 +29,9 @@ def upgrade() -> None:
             {"id": 1, "name": "PENDING_VOLUNTEER_RESPONSE"},
             {"id": 2, "name": "PENDING_PARTICIPANT_RESPONSE"},
             {"id": 3, "name": "SCHEDULED"},
-            {"id": 4, "name": "COMPLETED"}
+            {"id": 4, "name": "COMPLETED"},
         ],
     )
-    
 
 
 def downgrade() -> None:
