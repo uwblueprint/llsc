@@ -19,7 +19,7 @@ log = logging.getLogger(LOGGER_NAME("server"))
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     log.info("Starting up...")
-    ensure_ses_templates()
+    # ensure_ses_templates()
     models.run_migrations()
     initialize_firebase()
     yield
@@ -30,7 +30,7 @@ async def lifespan(_: FastAPI):
 # running-alembic-migrations-on-fastapi-startup
 app = FastAPI(lifespan=lifespan)
 app.include_router(user.router)
-app.include_router(send_email.router)
+# app.include_router(send_email.router)
 
 
 @app.get("/")

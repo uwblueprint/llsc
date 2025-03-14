@@ -12,7 +12,7 @@ from .Role import Role
 from .User import User
 
 # Used to avoid import errors for the models
-__all__ = ["Base", "User", "Role"]
+__all__ = ["Base", "User", "Role", "Matches"]
 
 log = logging.getLogger(LOGGER_NAME("models"))
 
