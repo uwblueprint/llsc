@@ -10,7 +10,6 @@ from backend.matching.data.config import DIAGNOSES
 from datetime import datetime
 
 ENTRIES = 50
-TOP_K = 10
 
 def print_data(data, file):
     for record in data:
@@ -99,14 +98,13 @@ def matches_criteria(volunteer, patient, patient_preferences):
 
     return final_weights
 
-def find_best_matches(volunteers, patients, top_k):
+def find_best_matches(volunteers, patients):
     """
-    Find the top-k best matches for each patient based on preferences.
+    Find the best matches for each patient based on preferences.
 
     Args:
         volunteers (list): List of volunteer records, each with preferences.
         patients (list): List of patient records, each with preferences.
-        top_k (int): Number of top matches to return for each patient.
 
     Returns:
         dict: A dictionary where each patient has a list of top-k matches with their scores.
@@ -146,7 +144,7 @@ def find_best_matches(volunteers, patients, top_k):
 
         volunteer_scores.sort(key=lambda x: x["Score"], reverse=True)
 
-        results[patient["First Name"] + " " + patient["Last Name"]] = volunteer_scores[:top_k]
+        results[patient["First Name"] + " " + patient["Last Name"]] = volunteer_scores
 
     return results
 
@@ -167,7 +165,7 @@ def run_algorithm():
         file.write("\nParticipants:\n")
         print_data(participants, file)
 
-    matches = find_best_matches(volunteers, participants, TOP_K)
+    matches = find_best_matches(volunteers, participants)
 
     # debugging purposes
     print_matches(matches)
