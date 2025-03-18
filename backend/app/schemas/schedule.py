@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.schemas.time_block import TimeBlockBase, TimeBlockFull, TimeBlockId
+from app.schemas.time_block import TimeBlockBase, TimeBlockId
 
 
 class ScheduleStatus(str, Enum):
@@ -39,8 +39,6 @@ class ScheduleEntity(ScheduleBase):
 
 
 # Provides both Schedule data and full TimeBlock data
-class ScheduleGetResponse(ScheduleEntity):
-    time_blocks: List[TimeBlockFull]
 
 
 # List of Start and End times to Create a Schedule with

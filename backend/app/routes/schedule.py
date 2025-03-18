@@ -1,30 +1,29 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.schemas.schedule import ScheduleCreateRequest, ScheduleEntity
-from app.services.implementations.schedule_service import ScheduleService
 from app.utilities.db_utils import get_db
+# from app.schemas.availability import AvailabilityEntity, CreateAvailabilityRequest
+from app.services.implementations.availability_service import AvailabilityService
 
 router = APIRouter(
     prefix="/schedules",
     tags=["schedules"],
 )
 
+def get_availability_service(db: Session = Depends(get_db)):
+    return AvailabilityService(db)
 
-def get_schedule_service(db: Session = Depends(get_db)):
-    return ScheduleService(db)
-
-
-@router.post("/", response_model=ScheduleEntity)
-async def create_schedule(
-    schedule: ScheduleCreateRequest,
-    schedule_service: ScheduleService = Depends(get_schedule_service),
-):
-    try:
-        created_schedule = await schedule_service.create_schedule(schedule)
-        return created_schedule
-    except HTTPException as http_ex:
-        raise http_ex
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.post("/", response_model=AvailabilityEntity)
+# async def create_schedule(
+#     availability: CreateAvailabilityRequest,
+#     availability_service: AvailabilityService = Depends(get_availability_service),
+# ):
+#     try:
+#         created_availability = await availability_service.create_availability(availability)
+#         # returns user id
+#         return created_availability
+#     except HTTPException as http_ex:
+#         raise http_ex
+#     except Exception as e:
+#         print(e)
+#         raise HTTPException(status_code=500, detail=str(e))
