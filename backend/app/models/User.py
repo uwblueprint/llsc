@@ -17,3 +17,12 @@ class User(Base):
     auth_id = Column(String, nullable=False)
 
     role = relationship("Role")
+
+    # time blocks in an availability for a user
+    availability = relationship(
+        "TimeBlock", secondary="available_times", back_populates="users"
+    )
+
+    participant_matches = relationship("Match", back_populates="participant")
+
+    volunteer_matches = relationship("Match", back_populates="volunteer")
