@@ -71,11 +71,11 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['time_block_id'], ['time_blocks.id'], ),
     sa.PrimaryKeyConstraint('match_id', 'time_block_id')
     )
-    op.drop_table('schedules')
-    op.drop_table('schedule_status')
     op.drop_constraint('time_blocks_schedule_id_fkey', 'time_blocks', type_='foreignkey')
     op.drop_column('time_blocks', 'schedule_id')
     op.drop_column('time_blocks', 'end_time')
+    op.drop_table('schedules')
+    op.drop_table('schedule_status')
     # ### end Alembic commands ###
 
 
