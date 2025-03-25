@@ -31,15 +31,15 @@ class Match(Base):
     match_status = relationship("MatchStatus")
 
     participant = relationship(
-        "User", foreign_keys=[participant_id], back_populates="matches"
+        "User", foreign_keys=[participant_id], back_populates="participant_matches"
     )
     volunteer = relationship(
-        "User", foreign_keys=[volunteer_id], back_populates="matches"
+        "User", foreign_keys=[volunteer_id], back_populates="volunteer_matches"
     )
 
     confirmed_time = relationship(
         "TimeBlock", back_populates="confirmed_match", uselist=False
     )
     suggested_time_blocks = relationship(
-        "TimeBlock", back_populates="suggested_matches"
+        "TimeBlock", secondary="suggested_times", back_populates="suggested_matches"
     )

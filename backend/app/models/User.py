@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .Base import Base
+from .Match import Match
 
 
 class User(Base):
@@ -23,6 +24,14 @@ class User(Base):
         "TimeBlock", secondary="available_times", back_populates="users"
     )
 
-    participant_matches = relationship("Match", back_populates="participant")
+    participant_matches = relationship(
+        "Match", 
+        back_populates="participant", 
+        foreign_keys=[Match.participant_id]
+    )
 
-    volunteer_matches = relationship("Match", back_populates="volunteer")
+    volunteer_matches = relationship(
+        "Match", 
+        back_populates="volunteer",
+        foreign_keys=[Match.volunteer_id]
+    )
