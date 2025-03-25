@@ -6,15 +6,15 @@ from app.schemas.availability import AvailabilityEntity, CreateAvailabilityReque
 from app.services.implementations.availability_service import AvailabilityService
 
 router = APIRouter(
-    prefix="/schedules",
-    tags=["schedules"],
+    prefix="/availability",
+    tags=["availability"],
 )
 
 def get_availability_service(db: Session = Depends(get_db)):
     return AvailabilityService(db)
 
 @router.post("/", response_model=AvailabilityEntity)
-async def create_schedule(
+async def create_availability(
     availability: CreateAvailabilityRequest,
     availability_service: AvailabilityService = Depends(get_availability_service),
 ):

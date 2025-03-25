@@ -20,12 +20,11 @@ class AvailabilityService:
         try:
             user_id = availability.user_id
             user = self.db.query(User).filter_by(id=user_id).one()
-
-            for time_range in CreateAvailabilityRequest.available_times:
+            for time_range in availability.available_times:
                 # time format looks like: 2025-03-17 09:30:00
                 # modify based on the format
-                start_time = datetime.strptime(time_range['start_time'], "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.strptime(time_range['end_time'], "%Y-%m-%d %H:%M:%S")
+                start_time = time_range.start_time
+                end_time = time_range.end_time
                 
                 # create timeblocks (1.5 hr) with 15 min spacing
                 current_start_time = start_time
@@ -42,8 +41,8 @@ class AvailabilityService:
 
             self.db.commit()
 
-            return AvailabilityEntity.model_validate({user_id: user.id})
+            return AvailabilityEntity.model_validate({"user_id": user.id})
         except Exception as e:
             self.db.rollback()
-            self.logger.error(f"Error creating Schedule: {str(e)}")
+            self.logger.error(f"Error creating availability: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
