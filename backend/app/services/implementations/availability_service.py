@@ -16,7 +16,7 @@ class AvailabilityService:
         self.db = db
         self.logger = logging.getLogger(__name__)
 
-    async def create_availability(self, availability: CreateAvailabilityRequest) -> AvailabilityEntity:
+    def create_availability(self, availability: CreateAvailabilityRequest) -> AvailabilityEntity:
         try:
             user_id = availability.user_id
             user = self.db.query(User).filter_by(id=user_id).one()
