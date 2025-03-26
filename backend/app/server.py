@@ -9,7 +9,7 @@ from . import models
 from .routes import send_email, user
 from .utilities.constants import LOGGER_NAME
 from .utilities.firebase_init import initialize_firebase
-from .utilities.ses.ses_init import ensure_ses_templates
+#from .utilities.ses.ses_init import ensure_ses_templates
 
 load_dotenv()
 
@@ -19,7 +19,7 @@ log = logging.getLogger(LOGGER_NAME("server"))
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     log.info("Starting up...")
-    ensure_ses_templates()
+    #ensure_ses_templates()
     models.run_migrations()
     initialize_firebase()
     yield

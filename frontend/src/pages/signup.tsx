@@ -1,35 +1,26 @@
 import React, { useContext, useState } from "react";
-import { Redirect } from "react-router-dom";
-import authAPIClient from "../../APIClients/AuthAPIClient";
-import { HOME_PAGE } from "../../constants/Routes";
-import AuthContext from "../../contexts/AuthContext";
-import { AuthenticatedUser } from "../../types/AuthTypes";
+import register from "../APIClients/AuthAPIClient";
+//import { HOME_PAGE } from "../../constants/Routes";
+//import AuthContext from "../../contexts/AuthContext";
+//import { AuthenticatedUser } from "../../types/AuthTypes";
 
 const Signup = (): React.ReactElement => {
-  const { authenticatedUser, setAuthenticatedUser } = useContext(AuthContext);
+  //const { authenticatedUser, setAuthenticatedUser } = useContext(AuthContext);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // graphql {
-  const [register] = useMutation<{ register: AuthenticatedUser }>(REGISTER);
-  // } graphql
+  const [role, setRole] = useState(0);
 
   const onSignupClick = async () => {
-    const user: AuthenticatedUser = await authAPIClient.register(
-      firstName,
-      lastName,
-      email,
-      password,
-      register,
-    );
-    setAuthenticatedUser(user);
+    const user = await register(firstName, lastName, email, password, role);
+    console.log(user);
+    //setAuthenticatedUser(user);
   };
 
-  if (authenticatedUser) {
-    return <Redirect to={HOME_PAGE} />;
-  }
+  //if (authenticatedUser) {
+    //return <Redirect to={HOME_PAGE} />;
+  //}
 
   return (
     <div style={{ textAlign: "center" }}>
@@ -49,19 +40,29 @@ const Signup = (): React.ReactElement => {
           <input
             type="password"
             value={password}
-            onChange={(event) => setLastName(event.target.value)}
+            onChange={(event) => setPassword(event.target.value)}
             placeholder=""
           />
         </div>
+        <div>
+          <input
+            type="Confirm Password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder=""
+          />
+        </div>
+        {/* add select for participant/volunteer */}
         <div>
           <button
             className="btn btn-primary"
             type="button"
             onClick={onSignupClick}
           >
-            Continue
+            Continue 
           </button>
         </div>
+        {/* add already have account, add confirm password is same */}
       </form>
     </div>
   );
