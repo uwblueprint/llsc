@@ -1,4 +1,5 @@
 import logging
+from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
 
 from fastapi import HTTPException
@@ -7,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.models import User, TimeBlock
 from app.schemas.availability import (
     CreateAvailabilityRequest,
+    CreateAvailabilityResponse,
+    GetAvailabilityRequest,
     AvailabilityEntity
 )
 
@@ -16,7 +19,21 @@ class AvailabilityService:
         self.db = db
         self.logger = logging.getLogger(__name__)
 
-    def create_availability(self, availability: CreateAvailabilityRequest) -> AvailabilityEntity:
+    async def get_availability(self, req: GetAvailabilityRequest) -> AvailabilityEntity:
+        try:
+            user_id = req.user_id
+            user = self.db.query(User).filter_by(id=user_id).one()
+            validated_data = AvailabilityEntity.model_validate({
+                "user_id": user_id,
+                "available_times": user.availability
+            })
+            return validated_data
+            
+        except Exception as e:
+            self.logger.error(f"Error getting availability: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    async def create_availability(self, availability: CreateAvailabilityRequest) -> CreateAvailabilityResponse:
         try:
             user_id = availability.user_id
             user = self.db.query(User).filter_by(id=user_id).one()
@@ -38,10 +55,12 @@ class AvailabilityService:
 
                     # update current time by 15 minutes for the next block
                     current_start_time += timedelta(minutes=15)
-
+            self.db.flush()
+            validated_data = CreateAvailabilityResponse.model_validate({
+                "user_id": user_id
+            })
             self.db.commit()
-
-            return AvailabilityEntity.model_validate({"user_id": user.id})
+            return validated_data
         except Exception as e:
             self.db.rollback()
             self.logger.error(f"Error creating availability: {str(e)}")
