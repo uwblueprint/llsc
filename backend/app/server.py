@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from typing import Any, Dict, Union
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import models
