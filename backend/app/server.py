@@ -4,12 +4,14 @@ from typing import Union
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import models
 from .routes import send_email, user
 from .utilities.constants import LOGGER_NAME
 from .utilities.firebase_init import initialize_firebase
 from .utilities.ses.ses_init import ensure_ses_templates
+
 
 load_dotenv()
 
@@ -29,6 +31,20 @@ async def lifespan(_: FastAPI):
 # Source: https://stackoverflow.com/questions/77170361/
 # running-alembic-migrations-on-fastapi-startup
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://uw-blueprint-starter-code.firebaseapp.com",
+        "https://uw-blueprint-starter-code.web.app",
+        # TODO: create a separate middleware function to dynamically
+        # determine this value
+        # re.compile("^https:\/\/uw-blueprint-starter-code--pr.*\.web\.app$"),
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(user.router)
 app.include_router(send_email.router)
 
