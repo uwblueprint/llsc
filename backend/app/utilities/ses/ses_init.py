@@ -8,13 +8,6 @@ from botocore.exceptions import ClientError
 TEMPLATES_FILE = "app/utilities/ses/ses_templates.json"
 TEMPLATES_DIR = "app/utilities/ses/template_files"
 
-ses_client = boto3.client(
-    "ses",
-    region_name=os.getenv("AWS_REGION"),
-    aws_access_key_id=os.getenv("AWS_ACCESS_KEY"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_KEY"),
-)
-
 
 def load_templates_metadata(file_path: str) -> Dict:
     try:
@@ -39,7 +32,7 @@ def load_file_content(file_path: str) -> str:
 
 
 # Function to create SES template
-def create_ses_template(template_metadata):
+def create_ses_template(template_metadata, ses_client):
     name = template_metadata["TemplateName"]
     try:
         text_part = load_file_content(template_metadata["TextPart"])
@@ -66,6 +59,20 @@ def create_ses_template(template_metadata):
 # Ensure SES templates are available at app startup
 def ensure_ses_templates():
     templates_metadata = load_templates_metadata(TEMPLATES_FILE)
+    aws_region = os.getenv("AWS_REGION")
+    aws_access_key = os.getenv("AWS_ACCESS_KEY")
+    aws_secret_key = os.getenv("AWS_SECRET_KEY")
+
+    if not all([aws_region, aws_access_key, aws_secret_key]):
+        print("AWS credentials not set. Skipping SES template setup.")
+        return
+
+    ses_client = boto3.client(
+        "ses",
+        region_name=aws_region,
+        aws_access_key_id=aws_access_key,
+        aws_secret_access_key=aws_secret_key,
+    )
 
     for template_metadata in templates_metadata:
         name = template_metadata["TemplateName"]
@@ -76,6 +83,6 @@ def ensure_ses_templates():
         except ClientError as e:
             if e.response["Error"]["Code"] == "TemplateDoesNotExist":
                 print(f"SES template '{name}' does not exist. Creating template...")
-                create_ses_template(template_metadata)
+                create_ses_template(template_metadata, ses_client)
             else:
                 print(f"An error occurred while checking the SES template: {e}")
