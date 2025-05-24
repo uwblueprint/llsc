@@ -2,12 +2,25 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from ..schemas.auth import AuthResponse, LoginRequest, RefreshRequest, Token
+from ..schemas.user import UserCreateRequest, UserCreateResponse
 from ..services.implementations.auth_service import AuthService
-from ..utilities.service_utils import get_auth_service
+from ..services.implementations.user_service import UserService
+from ..utilities.service_utils import get_auth_service, get_user_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 security = HTTPBearer()
 
+#TODO: ADD RATE LIMITING
+@router.post("/register", response_model=UserCreateResponse)
+async def register_user(
+    user: UserCreateRequest, user_service: UserService = Depends(get_user_service)
+):
+    try:
+        return await user_service.create_user(user)
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/login", response_model=AuthResponse)
 async def login(
