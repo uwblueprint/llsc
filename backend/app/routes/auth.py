@@ -10,7 +10,8 @@ from ..utilities.service_utils import get_auth_service, get_user_service
 router = APIRouter(prefix="/auth", tags=["auth"])
 security = HTTPBearer()
 
-#TODO: ADD RATE LIMITING
+
+# TODO: ADD RATE LIMITING
 @router.post("/register", response_model=UserCreateResponse)
 async def register_user(
     user: UserCreateRequest, user_service: UserService = Depends(get_user_service)
@@ -21,6 +22,7 @@ async def register_user(
         raise http_ex
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/login", response_model=AuthResponse)
 async def login(

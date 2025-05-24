@@ -14,12 +14,13 @@ router = APIRouter(
 # send email verification via auth_service
 # allow signup methods other than email (like sign up w Google)??
 
-#admin only manually create user, not sure if this is needed
+
+# admin only manually create user, not sure if this is needed
 @router.post("/", response_model=UserCreateResponse)
 async def create_user(
     user: UserCreateRequest,
     user_service: UserService = Depends(get_user_service),
-    authorized: bool = has_roles([UserRole.ADMIN])
+    authorized: bool = has_roles([UserRole.ADMIN]),
 ):
     try:
         return await user_service.create_user(user)
