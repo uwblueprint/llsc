@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:25df3f1d1ac88503375e4065bbb639f76ed00694c3c838384908755aba2ad608"
+content_hash = "sha256:9e47b00aee014713a4fb48d43fd8d74aaabcaceca75495b77c55006ac79ecd86"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -366,21 +366,21 @@ files = [
 
 [[package]]
 name = "firebase-admin"
-version = "6.5.0"
+version = "6.8.0"
 requires_python = ">=3.7"
 summary = "Firebase Admin Python SDK"
 groups = ["default"]
 dependencies = [
-    "cachecontrol>=0.12.6",
+    "cachecontrol>=0.12.14",
     "google-api-core[grpc]<3.0.0dev,>=1.22.1; platform_python_implementation != \"PyPy\"",
     "google-api-python-client>=1.7.8",
-    "google-cloud-firestore>=2.9.1; platform_python_implementation != \"PyPy\"",
+    "google-cloud-firestore>=2.19.0; platform_python_implementation != \"PyPy\"",
     "google-cloud-storage>=1.37.1",
     "pyjwt[crypto]>=2.5.0",
 ]
 files = [
-    {file = "firebase_admin-6.5.0-py3-none-any.whl", hash = "sha256:fe34ee3ca0e625c5156b3931ca4b4b69b5fc344dbe51bba9706ff674ce277898"},
-    {file = "firebase_admin-6.5.0.tar.gz", hash = "sha256:e716dde1447f0a1cd1523be76ff872df33c4e1a3c079564ace033b2ad60bcc4f"},
+    {file = "firebase_admin-6.8.0-py3-none-any.whl", hash = "sha256:84d5fd82859c4d27b63338c3fe9724667dfe400aa2fd9fef0efffbf6e23bca82"},
+    {file = "firebase_admin-6.8.0.tar.gz", hash = "sha256:24a9870219cfd6578586357858e00758aea26a39df74c53be5d803f5654d883e"},
 ]
 
 [[package]]
@@ -487,22 +487,23 @@ files = [
 
 [[package]]
 name = "google-cloud-firestore"
-version = "2.18.0"
+version = "2.20.2"
 requires_python = ">=3.7"
 summary = "Google Cloud Firestore API client library"
 groups = ["default"]
 marker = "platform_python_implementation != \"PyPy\""
 dependencies = [
-    "google-api-core[grpc]!=2.0.*,!=2.1.*,!=2.10.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,!=2.8.*,!=2.9.*,<3.0.0dev,>=1.34.0",
-    "google-auth!=2.24.0,!=2.25.0,<3.0.0dev,>=2.14.1",
-    "google-cloud-core<3.0.0dev,>=1.4.1",
-    "proto-plus<2.0.0dev,>=1.22.0",
-    "proto-plus<2.0.0dev,>=1.22.2; python_version >= \"3.11\"",
-    "protobuf!=3.20.0,!=3.20.1,!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<6.0.0dev,>=3.20.2",
+    "google-api-core[grpc]!=2.0.*,!=2.1.*,!=2.10.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,!=2.8.*,!=2.9.*,<3.0.0,>=1.34.0",
+    "google-auth!=2.24.0,!=2.25.0,<3.0.0,>=2.14.1",
+    "google-cloud-core<3.0.0,>=1.4.1",
+    "proto-plus<2.0.0,>=1.22.0",
+    "proto-plus<2.0.0,>=1.22.2; python_version >= \"3.11\"",
+    "proto-plus<2.0.0,>=1.25.0; python_version >= \"3.13\"",
+    "protobuf!=3.20.0,!=3.20.1,!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<7.0.0dev,>=3.20.2",
 ]
 files = [
-    {file = "google_cloud_firestore-2.18.0-py2.py3-none-any.whl", hash = "sha256:9a735860b692f39f93f900dd3390713ceb9b47ea82cda98360bb551f03d2b916"},
-    {file = "google_cloud_firestore-2.18.0.tar.gz", hash = "sha256:3db5dd42334b9904d82b3786703a5a4b576810fb50f61b8fa83ecf4f17b7fdae"},
+    {file = "google_cloud_firestore-2.20.2-py3-none-any.whl", hash = "sha256:0ff7b4c66e3ad2fe00f7d5d8c15127bf4ff8b316c6e4eb635ac51d9a9bcd828b"},
+    {file = "google_cloud_firestore-2.20.2.tar.gz", hash = "sha256:0ad2e33fa7da0ba8fb7ccc324f91d3f57866b770e24840bd62f6a272f747c5f9"},
 ]
 
 [[package]]

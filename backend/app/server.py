@@ -7,7 +7,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import models
-from .routes import send_email, user
+from .middleware.auth_middleware import AuthMiddleware
+from .routes import auth, send_email, test, user
 from .utilities.constants import LOGGER_NAME
 from .utilities.firebase_init import initialize_firebase
 from .utilities.ses.ses_init import ensure_ses_templates
@@ -15,6 +16,18 @@ from .utilities.ses.ses_init import ensure_ses_templates
 load_dotenv()
 
 log = logging.getLogger(LOGGER_NAME("server"))
+
+PUBLIC_PATHS = [
+    "/",
+    "/docs",
+    "/redoc",
+    "/openapi.json",
+    "/auth/login",
+    "/auth/register",
+    "/health",
+    "/test-middleware-public",
+    "/email/send-test-email",
+]
 
 
 @asynccontextmanager
@@ -44,8 +57,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(AuthMiddleware, public_paths=PUBLIC_PATHS)
+app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(send_email.router)
+app.include_router(test.router)
 
 
 @app.get("/")
