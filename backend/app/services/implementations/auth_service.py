@@ -2,11 +2,12 @@ import logging
 
 import firebase_admin.auth
 from fastapi import HTTPException
+
+from app.utilities.constants import LOGGER_NAME
+
 from ...interfaces.auth_service import IAuthService
 from ...schemas.auth import AuthResponse, Token
 from ...utilities.firebase_rest_client import FirebaseRestClient
-
-from app.utilities.constants import LOGGER_NAME
 
 
 class AuthService(IAuthService):
@@ -18,7 +19,6 @@ class AuthService(IAuthService):
     def generate_token(self, email: str, password: str) -> AuthResponse:
         try:
             token = self.firebase_client.sign_in_with_password(email, password)
-            firebase_user = firebase_admin.auth.get_user_by_email(email)
             user = self.user_service.get_user_by_email(email)
             return AuthResponse(
                 access_token=token.access_token,
@@ -83,7 +83,8 @@ class AuthService(IAuthService):
             )
             firebase_user = firebase_admin.auth.get_user(decoded_token["uid"])
             return firebase_user.email_verified and token_user_id == requested_user_id
-        except:
+        except Exception as e:
+            print(f"Authorization error: {str(e)}")
             return False
 
     def is_authorized_by_email(self, access_token: str, requested_email: str) -> bool:
@@ -96,5 +97,6 @@ class AuthService(IAuthService):
                 firebase_user.email_verified
                 and decoded_token["email"] == requested_email
             )
-        except:
+        except Exception as e:
+            print(f"Authorization error: {str(e)}")
             return False

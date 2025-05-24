@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.interfaces.user_service import IUserService
-from app.models import User, Role
+from app.models import Role, User
 from app.schemas.user import (
     SignUpMethod,
     UserCreateRequest,
@@ -92,7 +92,10 @@ class UserService(IUserService):
         return str(user.id)  # Convert UUID to string
 
     def get_user_by_email(self, email: str):
-        pass
+        user = self.db.query(User).filter(User.email == email).first()
+        if not user:
+            raise ValueError(f"User with email {email} not found")
+        return user
 
     def get_user_by_id(self, user_id: str):
         pass
@@ -116,9 +119,3 @@ class UserService(IUserService):
 
     def update_user_by_id(self, user_id: str, user):
         pass
-
-    def get_user_by_email(self, email: str):
-        user = self.db.query(User).filter(User.email == email).first()
-        if not user:
-            raise ValueError(f"User with email {email} not found")
-        return user

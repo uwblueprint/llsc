@@ -1,10 +1,12 @@
 import logging
 from typing import List
+
 import firebase_admin.auth
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.types import ASGIApp
+
 from app.utilities.constants import LOGGER_NAME
 
 

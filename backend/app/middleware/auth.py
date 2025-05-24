@@ -1,8 +1,8 @@
 import logging
-from typing import List, Dict, Any
+from typing import List
 
 from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from ..utilities.constants import LOGGER_NAME
 from ..utilities.service_utils import get_auth_service
@@ -13,7 +13,8 @@ logger = logging.getLogger(LOGGER_NAME("auth"))
 
 def has_roles(required_roles: List[str]):
     """
-    FastAPI dependency that checks if the authenticated user has one of the required roles.
+    FastAPI dependency that checks if the authenticated user has
+    one of the required roles.
 
     Args:
         required_roles: List of roles that can access the endpoint
