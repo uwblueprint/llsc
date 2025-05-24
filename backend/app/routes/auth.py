@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from ..middleware.auth import UserRole
 from ..schemas.auth import AuthResponse, LoginRequest, RefreshRequest, Token
 from ..schemas.user import UserCreateRequest, UserCreateResponse
 from ..services.implementations.auth_service import AuthService
@@ -26,9 +27,29 @@ async def register_user(
 
 @router.post("/login", response_model=AuthResponse)
 async def login(
-    credentials: LoginRequest, auth_service: AuthService = Depends(get_auth_service)
+    request: Request,
+    credentials: LoginRequest,
+    auth_service: AuthService = Depends(get_auth_service),
 ):
-    return auth_service.generate_token(credentials.email, credentials.password)
+    try:
+        is_admin_portal = request.headers.get("X-Admin-Portal") == "true"
+        auth_response = auth_service.generate_token(
+            credentials.email, credentials.password
+        )
+        if is_admin_portal and not auth_service.is_authorized_by_role(
+            auth_response.access_token, {UserRole.ADMIN}
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied. Admin privileges required for admin portal",
+            )
+
+        return auth_response
+
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/logout")
