@@ -6,12 +6,13 @@ export interface FieldProps extends Omit<ChakraField.RootProps, 'label'> {
   helperText?: React.ReactNode;
   errorText?: React.ReactNode;
   optionalText?: React.ReactNode;
+  mb?: string | number; // allow override
 }
 
 export const Field = React.forwardRef<HTMLDivElement, FieldProps>(function Field(props, ref) {
-  const { label, children, helperText, errorText, optionalText, ...rest } = props;
+  const { label, children, helperText, errorText, optionalText, mb = 4, ...rest } = props;
   return (
-    <ChakraField.Root ref={ref} {...rest}>
+    <ChakraField.Root ref={ref} mb={mb} {...rest}>
       {label && (
         <ChakraField.Label>
           {label}
