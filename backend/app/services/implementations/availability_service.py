@@ -10,7 +10,9 @@ from app.schemas.availability import (
     CreateAvailabilityRequest,
     CreateAvailabilityResponse,
     GetAvailabilityRequest,
-    AvailabilityEntity
+    AvailabilityEntity,
+    UpdateAvailabilityRequest,
+    UpdateAvailabilityResponse
 )
 
 
@@ -20,6 +22,9 @@ class AvailabilityService:
         self.logger = logging.getLogger(__name__)
 
     async def get_availability(self, req: GetAvailabilityRequest) -> AvailabilityEntity:
+        """
+        Takes a user_id and outputs all time_blocks in a user's Availability
+        """
         try:
             user_id = req.user_id
             user = self.db.query(User).filter_by(id=user_id).one()
@@ -34,6 +39,9 @@ class AvailabilityService:
             raise HTTPException(status_code=500, detail=str(e))
 
     async def create_availability(self, availability: CreateAvailabilityRequest) -> CreateAvailabilityResponse:
+        """
+        Takes a user_id and a range of desired times. Creates 30 minute time blocks spaced 30 minutes apart for the user's Availability.
+        """
         try:
             user_id = availability.user_id
             user = self.db.query(User).filter_by(id=user_id).one()
@@ -43,9 +51,9 @@ class AvailabilityService:
                 start_time = time_range.start_time
                 end_time = time_range.end_time
                 
-                # create timeblocks (1.5 hr) with 15 min spacing
+                # create timeblocks (0.5 hr) with 15 min spacing
                 current_start_time = start_time
-                while current_start_time + timedelta(hours=1.5) <= end_time:
+                while current_start_time + timedelta(hours=0.5) <= end_time:
                     
                     # create time block
                     time_block = TimeBlock(start_time=current_start_time)
@@ -53,8 +61,8 @@ class AvailabilityService:
                     # add to user's availability
                     user.availability.append(time_block)
 
-                    # update current time by 15 minutes for the next block
-                    current_start_time += timedelta(minutes=15)
+                    # update current time by 30 minutes for the next block
+                    current_start_time += timedelta(minutes=30)
             self.db.flush()
             validated_data = CreateAvailabilityResponse.model_validate({
                 "user_id": user_id
@@ -65,3 +73,14 @@ class AvailabilityService:
             self.db.rollback()
             self.logger.error(f"Error creating availability: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
+
+    async def update_availability(self, req: UpdateAvailabilityRequest) -> UpdateAvailabilityResponse:
+        """
+        Takes an UpdateAvailabilityRequest:
+        - add: TimeBlocks that should be added to the Availability
+        - delete: TimeBlocks in Availability that should be deleted
+
+        Existing TimeBlocks in add will be ignored.
+        Non-existent TimeBlocks in delete will produce a warning.
+        """
+        pass
