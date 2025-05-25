@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.schemas.time_block import TimeBlockEntity, TimeRange, TimeBlockId
+from app.schemas.time_block import TimeBlockEntity, TimeRange
 
 
 class CreateAvailabilityRequest(BaseModel):
@@ -24,3 +24,16 @@ class AvailabilityEntity(BaseModel):
     user_id: UUID
     available_times: List[TimeBlockEntity]
 
+
+class UpdateAvailabilityRequest(BaseModel):
+    user_id: UUID
+    add:    list[TimeRange] = []
+    delete: list[TimeRange] = []
+
+class UpdateAvailabilityResponse(BaseModel):
+    user_id: UUID
+    added: int
+    deleted: int
+
+    # return the user’s availability after the update
+    availability: List[TimeBlockEntity]
