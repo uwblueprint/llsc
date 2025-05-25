@@ -1,115 +1,159 @@
+import React from 'react';
 import Image from 'next/image';
-import localFont from 'next/font/local';
+import Link from 'next/link';
+import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
+import { Field } from '@/components/ui/field';
+import { InputGroup } from '@/components/ui/input-group';
 
-const geistSans = localFont({
-  src: './fonts/GeistVF.woff',
-  variable: '--font-geist-sans',
-  weight: '100 900',
-});
-const geistMono = localFont({
-  src: './fonts/GeistMonoVF.woff',
-  variable: '--font-geist-mono',
-  weight: '100 900',
-});
+const veniceBlue = '#1d3448';
+const fieldGray = '#414651';
+const teal = '#056067';
 
-export default function Home() {
+export default function LoginPage() {
   return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+    <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
+      {/* Left: Login Form */}
+      <Flex
+        flex="1"
+        align="center"
+        justify="center"
+        px={{ base: 4, md: 12 }}
+        py={{ base: 16, md: 0 }}
+        bg="white"
+        minH={{ base: '60vh', md: '100vh' }}
+      >
+        <Box w="full" maxW="520px">
+          <Heading
+            as="h1"
+            fontFamily="'Open Sans', sans-serif"
+            fontWeight={600}
+            color={veniceBlue}
+            fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}
+            lineHeight="50px"
+            mb={2}
+          >
+            First Connection Peer<br />Support Program
+          </Heading>
+          <Heading
+            as="h2"
+            fontFamily="'Open Sans', sans-serif"
+            fontWeight={600}
+            color={veniceBlue}
+            fontSize={{ base: 'xl', md: '2xl' }}
+            mb={6}
+            mt={8}
+          >
+            Welcome Back!
+          </Heading>
+          <Text
+            mb={8}
+            color={veniceBlue}
+            fontFamily="'Open Sans', sans-serif"
+            fontWeight={400}
+            fontSize="lg"
+          >
+            Sign in with your email and password.
+          </Text>
+          <form>
+            <Field
+              label={<span style={{ color: 'fieldGray', fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
+              mb={4}
+            >
+              <InputGroup w="100%">
+                <Input
+                  type="email"
+                  placeholder="john.doe@gmail.com"
+                  required
+                  autoComplete="email"
+                  w="100%"
+                  maxW="518px"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  fontSize={14}
+                  color={fieldGray}
+                  bg="white"
+                  borderColor="#D5D7DA"
+                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                />
+              </InputGroup>
+            </Field>
+            <Field
+              label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Password</span>}
+              mb={2}
+            >
+              <InputGroup w="100%">
+                <Input
+                  type="password"
+                  placeholder=""
+                  required
+                  autoComplete="current-password"
+                  w="100%"
+                  maxW="518px"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  fontSize={14}
+                  color={fieldGray}
+                  bg="white"
+                  borderColor="#D5D7DA"
+                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                />
+              </InputGroup>
+            </Field>
+            <Box mt={1} mb={6} textAlign="right">
+              <span style={{
+                color: '#535862',
+                fontWeight: 600,
+                fontFamily: 'Open Sans, sans-serif',
+                fontSize: 15,
+                display: 'inline-block',
+                marginTop: 6,
+              }}>
+                Forgot Password?
+              </span>
+            </Box>
+            <Button
+              type="submit"
+              w="100%"
+              maxW="518px"
+              mt={2}
+              size="lg"
+              fontWeight={600}
+              fontFamily="'Open Sans', sans-serif"
+              fontSize="lg"
+              bg={teal}
+              color="white"
+              borderRadius="8px"
+              border="1px solid #056067"
+              boxShadow="0 1px 2px 0 #0A0D12, 0 0 0 0 transparent"
+              _hover={{ bg: '#044953' }}
+              px={8}
+              py={3}
+            >
+              Sign In
+            </Button>
+          </form>
+          <Text mt={8} color={veniceBlue} fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
+            Don&apos;t have an account?{' '}
+            <Link
+              href="https://airtable.com/appw2vQbQn2Qw1QkA/shr6Qw1QkA2Qw1QkA"
+              target="_blank"
+              style={{ color: teal, textDecoration: 'underline', fontWeight: 600, fontFamily: 'Open Sans, sans-serif' }}
+            >
+              Complete our First Connection Participant Form.
+            </Link>
+          </Text>
+        </Box>
+      </Flex>
+      {/* Right: Image */}
+      <Box flex="1" display={{ base: 'none', md: 'block' }} position="relative" minH="100vh">
         <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
+          src="/login.png"
+          alt="First Connection Peer Support"
+          fill
+          style={{ objectFit: 'cover', objectPosition: '90% 50%' }}
           priority
         />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{' '}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/pages/index.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </Box>
+    </Flex>
   );
 }
