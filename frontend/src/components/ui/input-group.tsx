@@ -40,6 +40,13 @@ export const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
           }),
           ...(endElement && { pe: `calc(var(--input-height) - ${endOffset})` }),
           ...children.props,
+          borderRadius: 'md',
+          border: '1px solid',
+          borderColor: 'gray.300',
+          padding: '10px',
+          fontSize: 'md',
+          _focus: { borderColor: 'teal.500', boxShadow: '0 0 0 1px #319795' },
+          _placeholder: { color: 'gray.400' },
         })}
         {endElement && (
           <InputElement placement="end" {...endElementProps}>
