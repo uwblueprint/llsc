@@ -142,6 +142,19 @@ export default function LoginPage() {
               Complete our First Connection Participant Form.
             </Link>
           </Text>
+          
+          {/* Temporary link to schedule page for testing */}
+          <Box mt={4}>
+            <Link href="/schedule">
+              <Button
+                variant="outline"
+                colorScheme="teal"
+                size="sm"
+              >
+                View Schedule Page (Test)
+              </Button>
+            </Link>
+          </Box>
         </Box>
       </Flex>
       {/* Right: Image */}

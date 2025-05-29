@@ -17,3 +17,4 @@ class User(Base):
     auth_id = Column(String, nullable=False)
 
     role = relationship("Role")
+

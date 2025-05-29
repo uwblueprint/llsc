@@ -7,7 +7,6 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
-
 class Token(BaseModel):
     """
     For authentication tokens from Firebase
