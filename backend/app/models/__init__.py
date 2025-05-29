@@ -10,9 +10,10 @@ from app.utilities.constants import LOGGER_NAME
 from .Base import Base
 from .Role import Role
 from .User import User
+from .UserData import UserData
 
 # Used to avoid import errors for the models
-__all__ = ["Base", "User", "Role"]
+__all__ = ["Base", "User", "Role", "UserData"]
 
 log = logging.getLogger(LOGGER_NAME("models"))
 
