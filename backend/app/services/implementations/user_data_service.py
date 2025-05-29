@@ -23,23 +23,34 @@ class UserDataService(IUserDataService):
         """Get user data by its ID"""
         user_data = self.db.query(UserData).filter(UserData.id == user_data_id).first()
         if not user_data:
-            raise HTTPException(status_code=404, detail=f"User data with id {user_data_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"User data with id {user_data_id} not found"
+            )
         return UserDataResponse.model_validate(user_data)
 
     def get_user_data_by_user_id(self, user_id: UUID) -> UserDataResponse:
         """Get user data by user ID"""
         user_data = self.db.query(UserData).filter(UserData.user_id == user_id).first()
         if not user_data:
-            raise HTTPException(status_code=404, detail=f"User data for user {user_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"User data for user {user_id} not found"
+            )
         return UserDataResponse.model_validate(user_data)
 
     def create_user_data(self, user_data: UserDataCreateRequest) -> UserDataResponse:
         """Create user data for a user"""
         try:
             # Check if user data already exists for this user
-            existing_data = self.db.query(UserData).filter(UserData.user_id == user_data.user_id).first()
+            existing_data = (
+                self.db.query(UserData)
+                .filter(UserData.user_id == user_data.user_id)
+                .first()
+            )
             if existing_data:
-                raise HTTPException(status_code=409, detail=f"User data already exists for user {user_data.user_id}")
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"User data already exists for user {user_data.user_id}",
+                )
 
             # Create new user data
             db_user_data = UserData(**user_data.model_dump())
@@ -56,13 +67,19 @@ class UserDataService(IUserDataService):
             self.logger.error(f"Error creating user data: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    def update_user_data_by_user_id(self, user_id: UUID, user_data: UserDataUpdateRequest) -> UserDataResponse:
+    def update_user_data_by_user_id(
+        self, user_id: UUID, user_data: UserDataUpdateRequest
+    ) -> UserDataResponse:
         """Update user data for a user"""
         try:
             # Get existing user data
-            db_user_data = self.db.query(UserData).filter(UserData.user_id == user_id).first()
+            db_user_data = (
+                self.db.query(UserData).filter(UserData.user_id == user_id).first()
+            )
             if not db_user_data:
-                raise HTTPException(status_code=404, detail=f"User data for user {user_id} not found")
+                raise HTTPException(
+                    status_code=404, detail=f"User data for user {user_id} not found"
+                )
 
             # Update only provided fields
             update_data = user_data.model_dump(exclude_unset=True)
@@ -84,9 +101,14 @@ class UserDataService(IUserDataService):
     def delete_user_data_by_id(self, user_data_id: UUID):
         """Delete user data by its ID"""
         try:
-            user_data = self.db.query(UserData).filter(UserData.id == user_data_id).first()
+            user_data = (
+                self.db.query(UserData).filter(UserData.id == user_data_id).first()
+            )
             if not user_data:
-                raise HTTPException(status_code=404, detail=f"User data with id {user_data_id} not found")
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"User data with id {user_data_id} not found",
+                )
 
             self.db.delete(user_data)
             self.db.commit()
@@ -101,9 +123,13 @@ class UserDataService(IUserDataService):
     def delete_user_data_by_user_id(self, user_id: UUID):
         """Delete user data by user ID"""
         try:
-            user_data = self.db.query(UserData).filter(UserData.user_id == user_id).first()
+            user_data = (
+                self.db.query(UserData).filter(UserData.user_id == user_id).first()
+            )
             if not user_data:
-                raise HTTPException(status_code=404, detail=f"User data for user {user_id} not found")
+                raise HTTPException(
+                    status_code=404, detail=f"User data for user {user_id} not found"
+                )
 
             self.db.delete(user_data)
             self.db.commit()
@@ -113,4 +139,4 @@ class UserDataService(IUserDataService):
         except Exception as e:
             self.db.rollback()
             self.logger.error(f"Error deleting user data: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e)) 
+            raise HTTPException(status_code=500, detail=str(e))

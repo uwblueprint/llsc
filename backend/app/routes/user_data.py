@@ -22,7 +22,9 @@ router = APIRouter(
 async def create_user_data(
     user_data: UserDataCreateRequest,
     user_data_service: UserDataService = Depends(get_user_data_service),
-    authorized: bool = has_roles([UserRole.ADMIN, UserRole.PARTICIPANT, UserRole.VOLUNTEER]),
+    authorized: bool = has_roles(
+        [UserRole.ADMIN, UserRole.PARTICIPANT, UserRole.VOLUNTEER]
+    ),
 ):
     """Create user data for intake form"""
     try:
@@ -37,7 +39,9 @@ async def create_user_data(
 async def get_user_data_by_user_id(
     user_id: UUID,
     user_data_service: UserDataService = Depends(get_user_data_service),
-    authorized: bool = has_roles([UserRole.ADMIN, UserRole.PARTICIPANT, UserRole.VOLUNTEER]),
+    authorized: bool = has_roles(
+        [UserRole.ADMIN, UserRole.PARTICIPANT, UserRole.VOLUNTEER]
+    ),
 ):
     """Get user data by user ID"""
     try:
@@ -68,7 +72,9 @@ async def update_user_data_by_user_id(
     user_id: UUID,
     user_data: UserDataUpdateRequest,
     user_data_service: UserDataService = Depends(get_user_data_service),
-    authorized: bool = has_roles([UserRole.ADMIN, UserRole.PARTICIPANT, UserRole.VOLUNTEER]),
+    authorized: bool = has_roles(
+        [UserRole.ADMIN, UserRole.PARTICIPANT, UserRole.VOLUNTEER]
+    ),
 ):
     """Update user data by user ID"""
     try:
@@ -108,4 +114,4 @@ async def delete_user_data_by_user_id(
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))
