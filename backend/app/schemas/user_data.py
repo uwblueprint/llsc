@@ -64,4 +64,4 @@ class UserDataResponse(UserDataBase):
     user_id: UUID
 
     # from_attributes enables automatic mapping from SQLAlchemy model to Pydantic model
-    model_config = ConfigDict(from_attributes=True) 
+    model_config = ConfigDict(from_attributes=True)

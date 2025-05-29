@@ -49,7 +49,9 @@ class IUserDataService(ABC):
         pass
 
     @abstractmethod
-    def update_user_data_by_user_id(self, user_id: UUID, user_data: UserDataUpdateRequest):
+    def update_user_data_by_user_id(
+        self, user_id: UUID, user_data: UserDataUpdateRequest
+    ):
         """
         Update user data for a user
 
@@ -83,4 +85,4 @@ class IUserDataService(ABC):
         :type user_id: UUID
         :raises Exception: if user data deletion fails
         """
-        pass 
+        pass
