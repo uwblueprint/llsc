@@ -1,4 +1,6 @@
 import logging
+from typing import List
+from uuid import UUID
 
 import firebase_admin.auth
 from fastapi import HTTPException
@@ -10,7 +12,9 @@ from app.schemas.user import (
     SignUpMethod,
     UserCreateRequest,
     UserCreateResponse,
+    UserResponse,
     UserRole,
+    UserUpdateRequest,
 )
 from app.utilities.constants import LOGGER_NAME
 
@@ -79,10 +83,38 @@ class UserService(IUserService):
             raise HTTPException(status_code=500, detail=str(e))
 
     def delete_user_by_email(self, email: str):
-        pass
+        try:
+            db_user = self.db.query(User).filter(User.email == email).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
 
+            self.db.delete(db_user)
+            self.db.commit()
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error deleting user with email {email}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+            
     def delete_user_by_id(self, user_id: str):
-        pass
+        try:
+            db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            self.db.delete(db_user)
+            self.db.commit()
+
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error deleting user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
 
     def get_user_id_by_auth_id(self, auth_id: str) -> str:
         """Get user ID for a user by their Firebase auth_id"""
@@ -97,8 +129,19 @@ class UserService(IUserService):
             raise ValueError(f"User with email {email} not found")
         return user
 
-    def get_user_by_id(self, user_id: str):
-        pass
+    def get_user_by_id(self, user_id: str) -> UserResponse:
+        try:
+            user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+            return UserResponse.model_validate(user)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.logger.error(f"Error retrieving user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
 
     def get_auth_id_by_user_id(self, user_id: str) -> str:
         """Get Firebase auth_id for a user"""
@@ -114,8 +157,42 @@ class UserService(IUserService):
             raise ValueError(f"User with auth_id {auth_id} not found")
         return user.role.name
 
-    def get_users(self):
-        pass
+    def get_users(self) -> List[UserResponse]:
+        try:
+            users = self.db.query(User).join(Role).all()
+            return [UserResponse.model_validate(user) for user in users]
+        except Exception as e:
+            self.logger.error(f"Error retrieving users: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
 
-    def update_user_by_id(self, user_id: str, user):
-        pass
+    def update_user_by_id(self, user_id: str, user_update: UserUpdateRequest) -> UserResponse:
+        try:
+            db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            # update provided fields only
+            update_data = user_update.model_dump(exclude_unset=True)
+            
+            # handle role conversion if role is being updated
+            if "role" in update_data:
+                update_data["role_id"] = UserRole.to_role_id(update_data.pop("role"))
+
+            for field, value in update_data.items():
+                setattr(db_user, field, value)
+
+            self.db.commit()
+            self.db.refresh(db_user)
+
+            # return user with role information
+            updated_user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
+            return UserResponse.model_validate(updated_user)
+
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error updating user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
