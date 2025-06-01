@@ -77,7 +77,7 @@ class UserUpdateRequest(BaseModel):
     """
     Request schema for user updates, all fields optional
     """
-    
+
     first_name: Optional[str] = Field(None, min_length=1, max_length=50)
     last_name: Optional[str] = Field(None, min_length=1, max_length=50)
     email: Optional[EmailStr] = None
@@ -106,7 +106,7 @@ class UserResponse(BaseModel):
     """
     Response schema for user data including role information
     """
-    
+
     id: UUID
     first_name: str
     last_name: str
@@ -123,7 +123,7 @@ class RoleResponse(BaseModel):
     """
     Response schema for role data
     """
-    
+
     id: int
     name: str
 
@@ -134,6 +134,6 @@ class UserListResponse(BaseModel):
     """
     Response schema for listing users
     """
-    
+
     users: List[UserResponse]
     total: int

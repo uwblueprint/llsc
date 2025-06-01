@@ -97,7 +97,7 @@ class UserService(IUserService):
             self.db.rollback()
             self.logger.error(f"Error deleting user with email {email}: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
-            
+
     def delete_user_by_id(self, user_id: str):
         try:
             db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
@@ -131,7 +131,9 @@ class UserService(IUserService):
 
     def get_user_by_id(self, user_id: str) -> UserResponse:
         try:
-            user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
+            user = (
+                self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
+            )
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
             return UserResponse.model_validate(user)
@@ -165,7 +167,9 @@ class UserService(IUserService):
             self.logger.error(f"Error retrieving users: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    def update_user_by_id(self, user_id: str, user_update: UserUpdateRequest) -> UserResponse:
+    def update_user_by_id(
+        self, user_id: str, user_update: UserUpdateRequest
+    ) -> UserResponse:
         try:
             db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
             if not db_user:
@@ -173,7 +177,7 @@ class UserService(IUserService):
 
             # update provided fields only
             update_data = user_update.model_dump(exclude_unset=True)
-            
+
             # handle role conversion if role is being updated
             if "role" in update_data:
                 update_data["role_id"] = UserRole.to_role_id(update_data.pop("role"))
@@ -185,7 +189,9 @@ class UserService(IUserService):
             self.db.refresh(db_user)
 
             # return user with role information
-            updated_user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
+            updated_user = (
+                self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
+            )
             return UserResponse.model_validate(updated_user)
 
         except ValueError:

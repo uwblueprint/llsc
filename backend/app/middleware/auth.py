@@ -6,7 +6,6 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from ..utilities.constants import LOGGER_NAME
 from ..utilities.service_utils import get_auth_service
-from ..schemas.user import UserRole
 
 security = HTTPBearer()
 logger = logging.getLogger(LOGGER_NAME("auth"))

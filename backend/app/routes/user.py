@@ -1,10 +1,14 @@
-from typing import List
-from uuid import UUID
-
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.middleware.auth import has_roles
-from app.schemas.user import UserCreateRequest, UserCreateResponse, UserListResponse, UserResponse, UserRole, UserUpdateRequest
+from app.schemas.user import (
+    UserCreateRequest,
+    UserCreateResponse,
+    UserListResponse,
+    UserResponse,
+    UserRole,
+    UserUpdateRequest,
+)
 from app.services.implementations.user_service import UserService
 from app.utilities.service_utils import get_user_service
 
