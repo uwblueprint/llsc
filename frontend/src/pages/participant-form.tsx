@@ -1,18 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
+import { Radio, RadioGroup } from '@/components/ui/radio';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
 const teal = '#056067';
 
-export default function LoginPage() {
+export function ParticipantFormPage() {
+  const [signupType, setSignupType] = useState('volunteer');
+
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Left: Login Form */}
+      {/* Left: Participant Form */}
       <Flex
         flex="1"
         align="center"
@@ -43,7 +46,7 @@ export default function LoginPage() {
             mb={6}
             mt={8}
           >
-            Welcome Back!
+            Welcome to our application portal!
           </Heading>
           <Text
             mb={8}
@@ -52,11 +55,11 @@ export default function LoginPage() {
             fontWeight={400}
             fontSize="lg"
           >
-            Sign in with your email and password.
+            Let&apos;s start by creating an account.
           </Text>
           <form>
             <Field
-              label={<span style={{ color: 'fieldGray', fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
+              label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
               mb={4}
             >
               <InputGroup w="100%">
@@ -79,14 +82,14 @@ export default function LoginPage() {
             </Field>
             <Field
               label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Password</span>}
-              mb={2}
+              mb={4}
             >
               <InputGroup w="100%">
                 <Input
                   type="password"
                   placeholder=""
                   required
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   w="100%"
                   maxW="518px"
                   fontFamily="'Open Sans', sans-serif"
@@ -99,18 +102,53 @@ export default function LoginPage() {
                 />
               </InputGroup>
             </Field>
-            <Box mt={1} mb={6} textAlign="right">
-              <span style={{
-                color: '#535862',
-                fontWeight: 600,
-                fontFamily: 'Open Sans, sans-serif',
-                fontSize: 15,
-                display: 'inline-block',
-                marginTop: 6,
-              }}>
-                Forgot Password?
-              </span>
-            </Box>
+            <Field
+              label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Confirm Password</span>}
+              mb={4}
+            >
+              <InputGroup w="100%">
+                <Input
+                  type="password"
+                  placeholder=""
+                  required
+                  autoComplete="new-password"
+                  w="100%"
+                  maxW="518px"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  fontSize={14}
+                  color={fieldGray}
+                  bg="white"
+                  borderColor="#D5D7DA"
+                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                />
+              </InputGroup>
+            </Field>
+            <Text mt={2} mb={2} color={fieldGray} fontWeight={600} fontFamily="'Open Sans', sans-serif" fontSize={15}>
+              I am signing up:
+            </Text>
+            <RadioGroup
+              value={signupType}
+              onValueChange={details => setSignupType(details.value)}
+              mb={6}
+            >
+              <div className="radio-options-container" style={{ display: 'flex', flexDirection: 'row', gap: 40 }}>
+                <Radio
+                  value="volunteer"
+                  style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#414651', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}
+                  data-control-style={{ borderColor: '#A0AEC0', background: '#E2E8F0', width: 16, height: 16 }}
+                >
+                  As a Peer Support Volunteer
+                </Radio>
+                <Radio
+                  value="request"
+                  style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#414651', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}
+                  data-control-style={{ borderColor: '#A0AEC0', background: '#E2E8F0', width: 16, height: 16 }}
+                >
+                  To Request Peer Support
+                </Radio>
+              </div>
+            </RadioGroup>
             <Button
               type="submit"
               w="100%"
@@ -128,17 +166,20 @@ export default function LoginPage() {
               _hover={{ bg: '#044953' }}
               px={8}
               py={3}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
             >
-              Sign In
+              Continue <span style={{ fontSize: 22, marginLeft: 8 }}>&rarr;</span>
             </Button>
           </form>
           <Text mt={8} color={veniceBlue} fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
-            Don&apos;t have an account?{' '}
+            Already have an account?{' '}
             <Link
-              href="/participant-form"
+              href="/"
               style={{ color: teal, textDecoration: 'underline', fontWeight: 600, fontFamily: 'Open Sans, sans-serif' }}
             >
-              Complete our First Connection Participant Form.
+              Sign in
             </Link>
           </Text>
         </Box>
@@ -156,3 +197,20 @@ export default function LoginPage() {
     </Flex>
   );
 }
+
+export default function ParticipantFormPageWrapper() {
+  return (
+    <>
+      <ParticipantFormPage />
+      <style jsx global>{`
+        .radio-options-container [data-part="control"] {
+          border: 2px solid #A0AEC0 !important;
+          background: #E2E8F0 !important;
+          width: 16px !important;
+          height: 16px !important;
+          box-shadow: none !important;
+        }
+      `}</style>
+    </>
+  );
+} 
