@@ -73,7 +73,7 @@ async def update_user(
     user_id: str,
     user_update: UserUpdateRequest,
     user_service: UserService = Depends(get_user_service),
-    authorized: bool = Depends(has_roles([UserRole.ADMIN])),
+    authorized: bool = has_roles([UserRole.ADMIN]),
 ):
     try:
         return user_service.update_user_by_id(user_id, user_update)
