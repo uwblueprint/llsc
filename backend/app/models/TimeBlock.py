@@ -7,7 +7,7 @@ from .Base import Base
 class TimeBlock(Base):
     __tablename__ = "time_blocks"
     id = Column(Integer, primary_key=True)
-    start_time = Column(DateTime)
+    start_time = Column(DateTime(timezone=True))
 
     # if a match has been confirmed on this time block, this is non null
     confirmed_match = relationship(

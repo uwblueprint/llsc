@@ -3,7 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.utilities.db_utils import get_db
-from app.schemas.availability import AvailabilityEntity, CreateAvailabilityRequest, CreateAvailabilityResponse, GetAvailabilityRequest
+from app.schemas.availability import (
+    AvailabilityEntity, 
+    CreateAvailabilityRequest, 
+    CreateAvailabilityResponse, 
+    DeleteAvailabilityRequest, 
+    DeleteAvailabilityResponse, 
+    GetAvailabilityRequest
+)
 from app.services.implementations.availability_service import AvailabilityService
 
 router = APIRouter(
@@ -45,3 +52,18 @@ async def create_availability(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.delete("/", response_model=DeleteAvailabilityResponse)
+async def delete_availability(
+    availability: DeleteAvailabilityRequest,
+    availability_service: AvailabilityService = Depends(get_availability_service),
+):
+    try:
+        deleted_availability = await availability_service.delete_availability(availability)
+        return deleted_availability
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e)) 

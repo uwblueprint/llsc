@@ -15,6 +15,7 @@ class CreateAvailabilityRequest(BaseModel):
 
 class CreateAvailabilityResponse(BaseModel):
     user_id: UUID
+    added: int
 
 
 class GetAvailabilityRequest(BaseModel):
@@ -25,14 +26,12 @@ class AvailabilityEntity(BaseModel):
     available_times: List[TimeBlockEntity]
 
 
-class UpdateAvailabilityRequest(BaseModel):
+class DeleteAvailabilityRequest(BaseModel):
     user_id: UUID
-    add:    list[TimeRange] = []
     delete: list[TimeRange] = []
 
-class UpdateAvailabilityResponse(BaseModel):
+class DeleteAvailabilityResponse(BaseModel):
     user_id: UUID
-    added: int
     deleted: int
 
     # return the user’s availability after the update
