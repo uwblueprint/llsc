@@ -5,21 +5,27 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.schemas.time_block import TimeBlockBase, TimeBlockId, TimeRange
+from app.schemas.time_block import TimeBlockEntity, TimeBlockId, TimeRange
 
 class SuggestedTimeCreateRequest(BaseModel):
   match_id: int
-  suggested_time_blocks: List[TimeBlockId]
   suggested_new_times: List[TimeRange]
 
-class SuggestedTimeUpdateRequest(BaseModel):
-  suggested_time_id: UUID
-  time_blocks: List[TimeBlockId]
-
+class SuggestedTimeGetRequest(BaseModel):
+  match_id: int
 
 class SuggestedTimeDeleteRequest(BaseModel):
-  suggested_time_id: UUID
-  time_blocks: List[TimeBlockId]
+  match_id: int
 
 class SuggestedTimeEntity(BaseModel):
+  id: int
   match_id: int
+  timeblock_id: TimeBlockId
+
+class SuggestedTimeCreateResponse(BaseModel):
+  match_id: int
+  suggested_new_times: List[TimeRange]
+
+class SuggestedTimeGetResponse(BaseModel):
+  match_id: int
+  suggested_times: List[TimeBlockEntity]
