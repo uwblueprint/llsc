@@ -34,7 +34,6 @@ class ScheduleBase(BaseModel):
 
 class ScheduleEntity(ScheduleBase):
     id: int
-
     model_config = ConfigDict(from_attributes=True)
 
 
