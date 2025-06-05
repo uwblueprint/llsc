@@ -2,20 +2,21 @@ import React, { useState } from 'react';
 import { Box, Flex, Heading, Text, Button, Input, VStack, HStack } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
-import { Radio, RadioGroup } from '@/components/ui/radio';
-import { Checkbox } from '@/components/ui/checkbox';
+import { CustomRadio } from '@/components/CustomRadio';
 
 const veniceBlue = '#1d3448';
-const fieldGray = '#414651';
-const teal = '#056067';
-const lightGray = '#f7f8fa';
-const progressTeal = '#4a9b9f';
+const fieldGray = '#6b7280';
+const teal = '#0d7377';
+const lightTeal = '#e6f7f7';
+const lightGray = '#f3f4f6';
+const progressTeal = '#5eead4';
+const progressGray = '#d1d5db';
 
 export default function IntakePage() {
   const [formData, setFormData] = useState({
-    hasBloodCancer: '',
-    caringForSomeone: '',
-    caringFor: '',
+    hasBloodCancer: 'no',
+    caringForSomeone: 'yes',
+    caringFor: 'spouse',
     otherCaringFor: '',
     firstName: '',
     lastName: '',
@@ -31,147 +32,125 @@ export default function IntakePage() {
   };
 
   return (
-    <Flex minH="100vh" bg={lightGray} justify="center" py={8}>
+    <Flex minH="100vh" bg={lightGray} justify="center" py={12}>
       <Box
         w="full"
-        maxW="800px"
+        maxW="840px"
         bg="white"
-        borderRadius="12px"
-        boxShadow="0 4px 6px rgba(0, 0, 0, 0.1)"
-        p={8}
+        borderRadius="8px"
+        boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+        p={10}
       >
         {/* Header */}
         <Heading
           as="h1"
-          fontFamily="'Open Sans', sans-serif"
+          fontFamily="system-ui, -apple-system, sans-serif"
           fontWeight={600}
           color={veniceBlue}
-          fontSize="2xl"
+          fontSize="28px"
           mb={8}
         >
           First Connection Participant Form
         </Heading>
 
         {/* Progress Bar */}
-        <Box mb={8}>
-          <HStack gap={4} mb={4}>
+        <Box mb={10}>
+          <HStack gap={3}>
             <Box flex="1">
-              <Box h="4px" bg={progressTeal} borderRadius="2px" />
+              <Box h="3px" bg={teal} borderRadius="full" />
             </Box>
             <Box flex="1">
-              <Box h="4px" bg="#e2e8f0" borderRadius="2px" />
+              <Box h="3px" bg={progressGray} borderRadius="full" />
             </Box>
             <Box flex="1">
-              <Box h="4px" bg="#e2e8f0" borderRadius="2px" />
+              <Box h="3px" bg={progressGray} borderRadius="full" />
             </Box>
           </HStack>
         </Box>
 
         {/* Experience Type Section */}
-        <Box mb={10}>
+        <Box mb={12}>
           <Heading
             as="h2"
-            fontFamily="'Open Sans', sans-serif"
+            fontFamily="system-ui, -apple-system, sans-serif"
             fontWeight={600}
             color={veniceBlue}
-            fontSize="xl"
-            mb={2}
+            fontSize="20px"
+            mb={3}
           >
             Experience Type
           </Heading>
-          <Text color={fieldGray} fontFamily="'Open Sans', sans-serif" fontSize="sm" mb={6}>
+          <Text color={fieldGray} fontFamily="system-ui, -apple-system, sans-serif" fontSize="15px" mb={8}>
             Help us learn more about your experience with cancer.
           </Text>
 
-          <VStack align="start" gap={6}>
+          <VStack align="start" gap={8}>
             {/* Blood Cancer and Caring Questions - Side by Side */}
-            <HStack align="start" gap={8} w="full">
+            <HStack align="start" gap={12} w="full">
               {/* Blood Cancer Question */}
               <Box flex="1">
                 <Text
                   color={veniceBlue}
-                  fontFamily="'Open Sans', sans-serif"
+                  fontFamily="system-ui, -apple-system, sans-serif"
                   fontWeight={500}
-                  fontSize="sm"
-                  mb={3}
+                  fontSize="14px"
+                  mb={4}
                 >
                   Do you have blood cancer?
                 </Text>
-                <Box
-                  css={{
-                    '& [data-part="control"]': {
-                      borderColor: '#d1d5db',
-                    },
-                    '& [data-part="control"][data-state="checked"]': {
-                      backgroundColor: teal,
-                      borderColor: teal,
-                      color: 'white',
-                    },
-                  }}
+                <CustomRadio
+                  name="hasBloodCancer"
+                  value="yes"
+                  checked={formData.hasBloodCancer === 'yes'}
+                  onChange={(value) => handleInputChange('hasBloodCancer', value)}
                 >
-                  <RadioGroup
-                    value={formData.hasBloodCancer}
-                    onValueChange={(details) => handleInputChange('hasBloodCancer', details.value)}
-                  >
-                    <VStack align="start" gap={2}>
-                      <Radio value="yes">
-                        <Text fontFamily="'Open Sans', sans-serif" fontSize="sm">
-                          Yes
-                        </Text>
-                      </Radio>
-                      <Radio value="no">
-                        <Text fontFamily="'Open Sans', sans-serif" fontSize="sm">
-                          No
-                        </Text>
-                      </Radio>
-                    </VStack>
-                  </RadioGroup>
-                </Box>
+                  <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={veniceBlue}>
+                    Yes
+                  </Text>
+                </CustomRadio>
+                <CustomRadio
+                  name="hasBloodCancer"
+                  value="no"
+                  checked={formData.hasBloodCancer === 'no'}
+                  onChange={(value) => handleInputChange('hasBloodCancer', value)}
+                >
+                  <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={veniceBlue}>
+                    No
+                  </Text>
+                </CustomRadio>
               </Box>
 
               {/* Caring for Someone Question */}
               <Box flex="1">
                 <Text
                   color={veniceBlue}
-                  fontFamily="'Open Sans', sans-serif"
+                  fontFamily="system-ui, -apple-system, sans-serif"
                   fontWeight={500}
-                  fontSize="sm"
-                  mb={3}
+                  fontSize="14px"
+                  mb={4}
                 >
                   Are you caring for anyone with blood cancer?
                 </Text>
-                <Box
-                  css={{
-                    '& [data-part="control"]': {
-                      borderColor: '#d1d5db',
-                    },
-                    '& [data-part="control"][data-state="checked"]': {
-                      backgroundColor: teal,
-                      borderColor: teal,
-                      color: 'white',
-                    },
-                  }}
+                <CustomRadio
+                  name="caringForSomeone"
+                  value="yes"
+                  checked={formData.caringForSomeone === 'yes'}
+                  onChange={(value) => handleInputChange('caringForSomeone', value)}
                 >
-                  <RadioGroup
-                    value={formData.caringForSomeone}
-                    onValueChange={(details) =>
-                      handleInputChange('caringForSomeone', details.value)
-                    }
-                  >
-                    <VStack align="start" gap={2}>
-                      <Radio value="yes">
-                        <Text fontFamily="'Open Sans', sans-serif" fontSize="sm">
-                          Yes
-                        </Text>
-                      </Radio>
-                      <Radio value="no">
-                        <Text fontFamily="'Open Sans', sans-serif" fontSize="sm">
-                          No
-                        </Text>
-                      </Radio>
-                    </VStack>
-                  </RadioGroup>
-                </Box>
+                  <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={veniceBlue}>
+                    Yes
+                  </Text>
+                </CustomRadio>
+                <CustomRadio
+                  name="caringForSomeone"
+                  value="no"
+                  checked={formData.caringForSomeone === 'no'}
+                  onChange={(value) => handleInputChange('caringForSomeone', value)}
+                >
+                  <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={veniceBlue}>
+                    No
+                  </Text>
+                </CustomRadio>
               </Box>
             </HStack>
 
@@ -179,180 +158,125 @@ export default function IntakePage() {
             <Box w="full">
               <Text
                 color={veniceBlue}
-                fontFamily="'Open Sans', sans-serif"
+                fontFamily="system-ui, -apple-system, sans-serif"
                 fontWeight={500}
-                fontSize="sm"
-                mb={3}
+                fontSize="14px"
+                mb={4}
               >
                 Who are you caring for?
               </Text>
-              <Box
-                css={{
-                  '& [data-part="control"]': {
-                    borderColor: '#d1d5db',
-                  },
-                  '& [data-part="control"][data-state="checked"]': {
-                    backgroundColor: teal,
-                    borderColor: teal,
-                    color: 'white',
-                  },
-                }}
+              <CustomRadio
+                name="caringFor"
+                value="parent"
+                checked={formData.caringFor === 'parent'}
+                onChange={(value) => handleInputChange('caringFor', value)}
               >
-                <VStack align="start" gap={2}>
-                  <Checkbox
-                    checked={formData.caringFor.includes('parent')}
-                    onCheckedChange={(checked) => {
-                      const current = formData.caringFor.split(',').filter(Boolean);
-                      if (checked) {
-                        handleInputChange('caringFor', [...current, 'parent'].join(','));
-                      } else {
-                        handleInputChange(
-                          'caringFor',
-                          current.filter((item) => item !== 'parent').join(','),
-                        );
-                      }
-                    }}
-                  >
-                    <Text fontFamily="'Open Sans', sans-serif" fontSize="sm" color={veniceBlue}>
-                      A parent
-                    </Text>
-                  </Checkbox>
-                  <Checkbox
-                    checked={formData.caringFor.includes('sibling')}
-                    onCheckedChange={(checked) => {
-                      const current = formData.caringFor.split(',').filter(Boolean);
-                      if (checked) {
-                        handleInputChange('caringFor', [...current, 'sibling'].join(','));
-                      } else {
-                        handleInputChange(
-                          'caringFor',
-                          current.filter((item) => item !== 'sibling').join(','),
-                        );
-                      }
-                    }}
-                  >
-                    <Text fontFamily="'Open Sans', sans-serif" fontSize="sm" color={veniceBlue}>
-                      A sibling
-                    </Text>
-                  </Checkbox>
-                  <Checkbox
-                    checked={formData.caringFor.includes('child')}
-                    onCheckedChange={(checked) => {
-                      const current = formData.caringFor.split(',').filter(Boolean);
-                      if (checked) {
-                        handleInputChange('caringFor', [...current, 'child'].join(','));
-                      } else {
-                        handleInputChange(
-                          'caringFor',
-                          current.filter((item) => item !== 'child').join(','),
-                        );
-                      }
-                    }}
-                  >
-                    <Text fontFamily="'Open Sans', sans-serif" fontSize="sm" color={veniceBlue}>
-                      A child
-                    </Text>
-                  </Checkbox>
-                  <Checkbox
-                    checked={formData.caringFor.includes('spouse')}
-                    onCheckedChange={(checked) => {
-                      const current = formData.caringFor.split(',').filter(Boolean);
-                      if (checked) {
-                        handleInputChange('caringFor', [...current, 'spouse'].join(','));
-                      } else {
-                        handleInputChange(
-                          'caringFor',
-                          current.filter((item) => item !== 'spouse').join(','),
-                        );
-                      }
-                    }}
-                  >
-                    <Text fontFamily="'Open Sans', sans-serif" fontSize="sm" color={veniceBlue}>
-                      A spouse
-                    </Text>
-                  </Checkbox>
-                  <Checkbox
-                    checked={formData.caringFor.includes('friend')}
-                    onCheckedChange={(checked) => {
-                      const current = formData.caringFor.split(',').filter(Boolean);
-                      if (checked) {
-                        handleInputChange('caringFor', [...current, 'friend'].join(','));
-                      } else {
-                        handleInputChange(
-                          'caringFor',
-                          current.filter((item) => item !== 'friend').join(','),
-                        );
-                      }
-                    }}
-                  >
-                    <Text fontFamily="'Open Sans', sans-serif" fontSize="sm" color={veniceBlue}>
-                      A friend
-                    </Text>
-                  </Checkbox>
-                  <Checkbox
-                    checked={formData.caringFor.includes('other')}
-                    onCheckedChange={(checked) => {
-                      const current = formData.caringFor.split(',').filter(Boolean);
-                      if (checked) {
-                        handleInputChange('caringFor', [...current, 'other'].join(','));
-                      } else {
-                        handleInputChange(
-                          'caringFor',
-                          current.filter((item) => item !== 'other').join(','),
-                        );
-                      }
-                    }}
-                  >
-                    <Text fontFamily="'Open Sans', sans-serif" fontSize="sm" color={veniceBlue}>
-                      Other:
-                    </Text>
-                  </Checkbox>
-                  {formData.caringFor.includes('other') && (
-                    <Box ml={6} w="300px">
+                <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={veniceBlue}>
+                  A parent
+                </Text>
+              </CustomRadio>
+              <CustomRadio
+                name="caringFor"
+                value="sibling"
+                checked={formData.caringFor === 'sibling'}
+                onChange={(value) => handleInputChange('caringFor', value)}
+              >
+                <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={veniceBlue}>
+                  A sibling
+                </Text>
+              </CustomRadio>
+              <CustomRadio
+                name="caringFor"
+                value="child"
+                checked={formData.caringFor === 'child'}
+                onChange={(value) => handleInputChange('caringFor', value)}
+              >
+                <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={veniceBlue}>
+                  A child
+                </Text>
+              </CustomRadio>
+              <CustomRadio
+                name="caringFor"
+                value="spouse"
+                checked={formData.caringFor === 'spouse'}
+                onChange={(value) => handleInputChange('caringFor', value)}
+              >
+                <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={veniceBlue}>
+                  A spouse
+                </Text>
+              </CustomRadio>
+              <CustomRadio
+                name="caringFor"
+                value="friend"
+                checked={formData.caringFor === 'friend'}
+                onChange={(value) => handleInputChange('caringFor', value)}
+              >
+                <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={veniceBlue}>
+                  A friend
+                </Text>
+              </CustomRadio>
+              <CustomRadio
+                name="caringFor"
+                value="other"
+                checked={formData.caringFor === 'other'}
+                onChange={(value) => handleInputChange('caringFor', value)}
+              >
+                <HStack align="center" gap={2}>
+                  <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={veniceBlue}>
+                    Other:
+                  </Text>
+                  {formData.caringFor === 'other' && (
+                    <Box w="280px">
                       <InputGroup>
                         <Input
-                          placeholder="olivia@sentineldu.com"
+                          placeholder="olivia@untitledui.com"
                           value={formData.otherCaringFor}
                           onChange={(e) => handleInputChange('otherCaringFor', e.target.value)}
-                          fontFamily="'Open Sans', sans-serif"
-                          fontSize="sm"
-                          color={fieldGray}
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                          fontSize="14px"
+                          color={veniceBlue}
+                          borderColor="#d1d5db"
+                          borderRadius="6px"
+                          h="36px"
+                          _placeholder={{ color: '#9ca3af' }}
+                          _focus={{ borderColor: teal, boxShadow: `0 0 0 3px ${teal}20` }}
                         />
                       </InputGroup>
                     </Box>
                   )}
-                </VStack>
-              </Box>
+                </HStack>
+              </CustomRadio>
             </Box>
           </VStack>
         </Box>
 
         {/* Personal Information Section */}
-        <Box mb={8}>
+        <Box mb={10}>
           <Heading
             as="h2"
-            fontFamily="'Open Sans', sans-serif"
+            fontFamily="system-ui, -apple-system, sans-serif"
             fontWeight={600}
             color={veniceBlue}
-            fontSize="xl"
-            mb={2}
+            fontSize="20px"
+            mb={3}
           >
             Personal Information
           </Heading>
-          <Text color={fieldGray} fontFamily="'Open Sans', sans-serif" fontSize="sm" mb={6}>
+          <Text color={fieldGray} fontFamily="system-ui, -apple-system, sans-serif" fontSize="15px" mb={8}>
             Please provide your contact details and address.
           </Text>
 
-          <VStack gap={6}>
+          <VStack gap={5}>
             {/* Name Fields */}
             <HStack gap={4} w="full">
               <Field
                 label={
                   <Text
-                    color={fieldGray}
-                    fontWeight={600}
-                    fontSize="sm"
-                    fontFamily="'Open Sans', sans-serif"
+                    color={veniceBlue}
+                    fontWeight={500}
+                    fontSize="14px"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    mb={1}
                   >
                     First Name
                   </Text>
@@ -364,19 +288,25 @@ export default function IntakePage() {
                     placeholder="John"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    fontFamily="'Open Sans', sans-serif"
-                    fontSize="sm"
-                    color={fieldGray}
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: teal, boxShadow: `0 0 0 3px ${teal}20` }}
                   />
                 </InputGroup>
               </Field>
               <Field
                 label={
                   <Text
-                    color={fieldGray}
-                    fontWeight={600}
-                    fontSize="sm"
-                    fontFamily="'Open Sans', sans-serif"
+                    color={veniceBlue}
+                    fontWeight={500}
+                    fontSize="14px"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    mb={1}
                   >
                     Last Name
                   </Text>
@@ -388,9 +318,14 @@ export default function IntakePage() {
                     placeholder="Doe"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    fontFamily="'Open Sans', sans-serif"
-                    fontSize="sm"
-                    color={fieldGray}
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: teal, boxShadow: `0 0 0 3px ${teal}20` }}
                   />
                 </InputGroup>
               </Field>
@@ -401,10 +336,11 @@ export default function IntakePage() {
               <Field
                 label={
                   <Text
-                    color={fieldGray}
-                    fontWeight={600}
-                    fontSize="sm"
-                    fontFamily="'Open Sans', sans-serif"
+                    color={veniceBlue}
+                    fontWeight={500}
+                    fontSize="14px"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    mb={1}
                   >
                     Date of Birth
                   </Text>
@@ -416,19 +352,25 @@ export default function IntakePage() {
                     placeholder="DD/MM/YYYY"
                     value={formData.dateOfBirth}
                     onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                    fontFamily="'Open Sans', sans-serif"
-                    fontSize="sm"
-                    color={fieldGray}
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: teal, boxShadow: `0 0 0 3px ${teal}20` }}
                   />
                 </InputGroup>
               </Field>
               <Field
                 label={
                   <Text
-                    color={fieldGray}
-                    fontWeight={600}
-                    fontSize="sm"
-                    fontFamily="'Open Sans', sans-serif"
+                    color={veniceBlue}
+                    fontWeight={500}
+                    fontSize="14px"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    mb={1}
                   >
                     Phone Number
                   </Text>
@@ -440,9 +382,14 @@ export default function IntakePage() {
                     placeholder="###-###-####"
                     value={formData.phoneNumber}
                     onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                    fontFamily="'Open Sans', sans-serif"
-                    fontSize="sm"
-                    color={fieldGray}
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: teal, boxShadow: `0 0 0 3px ${teal}20` }}
                   />
                 </InputGroup>
               </Field>
@@ -453,10 +400,11 @@ export default function IntakePage() {
               <Field
                 label={
                   <Text
-                    color={fieldGray}
-                    fontWeight={600}
-                    fontSize="sm"
-                    fontFamily="'Open Sans', sans-serif"
+                    color={veniceBlue}
+                    fontWeight={500}
+                    fontSize="14px"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    mb={1}
                   >
                     Postal Code
                   </Text>
@@ -468,19 +416,25 @@ export default function IntakePage() {
                     placeholder="ZIP Code"
                     value={formData.postalCode}
                     onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                    fontFamily="'Open Sans', sans-serif"
-                    fontSize="sm"
-                    color={fieldGray}
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: teal, boxShadow: `0 0 0 3px ${teal}20` }}
                   />
                 </InputGroup>
               </Field>
               <Field
                 label={
                   <Text
-                    color={fieldGray}
-                    fontWeight={600}
-                    fontSize="sm"
-                    fontFamily="'Open Sans', sans-serif"
+                    color={veniceBlue}
+                    fontWeight={500}
+                    fontSize="14px"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    mb={1}
                   >
                     City
                   </Text>
@@ -492,9 +446,14 @@ export default function IntakePage() {
                     placeholder="City"
                     value={formData.city}
                     onChange={(e) => handleInputChange('city', e.target.value)}
-                    fontFamily="'Open Sans', sans-serif"
-                    fontSize="sm"
-                    color={fieldGray}
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: teal, boxShadow: `0 0 0 3px ${teal}20` }}
                   />
                 </InputGroup>
               </Field>
@@ -504,10 +463,11 @@ export default function IntakePage() {
             <Field
               label={
                 <Text
-                  color={fieldGray}
-                  fontWeight={600}
-                  fontSize="sm"
-                  fontFamily="'Open Sans', sans-serif"
+                  color={veniceBlue}
+                  fontWeight={500}
+                  fontSize="14px"
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  mb={1}
                 >
                   Province
                 </Text>
@@ -519,9 +479,14 @@ export default function IntakePage() {
                   placeholder="Province"
                   value={formData.province}
                   onChange={(e) => handleInputChange('province', e.target.value)}
-                  fontFamily="'Open Sans', sans-serif"
-                  fontSize="sm"
-                  color={fieldGray}
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  fontSize="14px"
+                  color={veniceBlue}
+                  borderColor="#d1d5db"
+                  borderRadius="6px"
+                  h="40px"
+                  _placeholder={{ color: '#9ca3af' }}
+                  _focus={{ borderColor: teal, boxShadow: `0 0 0 3px ${teal}20` }}
                 />
               </InputGroup>
             </Field>
@@ -529,20 +494,22 @@ export default function IntakePage() {
         </Box>
 
         {/* Next Section Button */}
-        <Flex justify="flex-end" mt={8}>
+        <Flex justify="flex-end" mt={10}>
           <Button
             bg={teal}
             color="white"
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={600}
-            fontSize="sm"
-            px={6}
-            py={3}
-            borderRadius="8px"
-            _hover={{ bg: '#044953' }}
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontWeight={500}
+            fontSize="14px"
+            px={5}
+            py={2.5}
+            h="40px"
+            borderRadius="6px"
+            _hover={{ bg: '#0a5d61' }}
+            transition="background-color 0.2s"
           >
             Next Section
-            <Box as="span" fontSize="lg" ml={2}>
+            <Box as="span" fontSize="16px" ml={2}>
               →
             </Box>
           </Button>
