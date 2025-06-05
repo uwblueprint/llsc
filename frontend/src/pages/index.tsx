@@ -56,7 +56,7 @@ export default function LoginPage() {
           </Text>
           <form>
             <Field
-              label={<span style={{ color: 'fieldGray', fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
+              label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
               mb={4}
             >
               <InputGroup w="100%">
