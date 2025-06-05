@@ -1,4 +1,4 @@
-import { Field as ChakraField } from '@chakra-ui/react';
+import { Field as ChakraField, Text } from '@chakra-ui/react';
 import * as React from 'react';
 
 export interface FieldProps extends Omit<ChakraField.RootProps, 'label'> {
@@ -21,7 +21,11 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(function Field
       )}
       {children}
       {helperText && <ChakraField.HelperText>{helperText}</ChakraField.HelperText>}
-      {errorText && <ChakraField.ErrorText>{errorText}</ChakraField.ErrorText>}
+      {errorText && (
+        <Text color="red.500" fontSize="12px" mt={1}>
+          {errorText}
+        </Text>
+      )}
     </ChakraField.Root>
   );
 });
