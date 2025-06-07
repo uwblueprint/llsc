@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from ..schemas.auth import AuthResponse, LoginRequest, RefreshRequest, Token
-from ..schemas.user import UserRole, UserCreateRequest, UserCreateResponse
+from ..schemas.user import UserCreateRequest, UserCreateResponse, UserRole
 from ..services.implementations.auth_service import AuthService
 from ..services.implementations.user_service import UserService
 from ..utilities.service_utils import get_auth_service, get_user_service

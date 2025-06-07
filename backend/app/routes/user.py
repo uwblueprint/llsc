@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.middleware.auth import has_roles
 from app.schemas.user import (
@@ -40,11 +42,17 @@ async def create_user(
 # admin only get all users
 @router.get("/", response_model=UserListResponse)
 async def get_users(
+    admin: Optional[bool] = Query(
+        False, description="If true, returns admin users only"
+    ),
     user_service: UserService = Depends(get_user_service),
     authorized: bool = has_roles([UserRole.ADMIN]),
 ):
     try:
-        users = user_service.get_users()
+        if admin:
+            users = await user_service.get_admins()
+        else:
+            users = await user_service.get_users()
         return UserListResponse(users=users, total=len(users))
     except HTTPException as http_ex:
         raise http_ex
@@ -60,7 +68,7 @@ async def get_user(
     authorized: bool = has_roles([UserRole.ADMIN]),
 ):
     try:
-        return user_service.get_user_by_id(user_id)
+        return await user_service.get_user_by_id(user_id)
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:
@@ -76,7 +84,7 @@ async def update_user(
     authorized: bool = has_roles([UserRole.ADMIN]),
 ):
     try:
-        return user_service.update_user_by_id(user_id, user_update)
+        return await user_service.update_user_by_id(user_id, user_update)
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:
@@ -91,7 +99,7 @@ async def delete_user(
     authorized: bool = has_roles([UserRole.ADMIN]),
 ):
     try:
-        user_service.delete_user_by_id(user_id)
+        await user_service.delete_user_by_id(user_id)
         return {"message": "User deleted successfully"}
     except HTTPException as http_ex:
         raise http_ex

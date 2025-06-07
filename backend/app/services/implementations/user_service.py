@@ -82,7 +82,7 @@ class UserService(IUserService):
 
             raise HTTPException(status_code=500, detail=str(e))
 
-    def delete_user_by_email(self, email: str):
+    async def delete_user_by_email(self, email: str):
         try:
             db_user = self.db.query(User).filter(User.email == email).first()
             if not db_user:
@@ -98,7 +98,7 @@ class UserService(IUserService):
             self.logger.error(f"Error deleting user with email {email}: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    def delete_user_by_id(self, user_id: str):
+    async def delete_user_by_id(self, user_id: str):
         try:
             db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
             if not db_user:
@@ -116,7 +116,7 @@ class UserService(IUserService):
             self.logger.error(f"Error deleting user {user_id}: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    def get_user_id_by_auth_id(self, auth_id: str) -> str:
+    async def get_user_id_by_auth_id(self, auth_id: str) -> str:
         """Get user ID for a user by their Firebase auth_id"""
         user = self.db.query(User).filter(User.auth_id == auth_id).first()
         if not user:
@@ -129,7 +129,7 @@ class UserService(IUserService):
             raise ValueError(f"User with email {email} not found")
         return user
 
-    def get_user_by_id(self, user_id: str) -> UserResponse:
+    async def get_user_by_id(self, user_id: str) -> UserResponse:
         try:
             user = (
                 self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
@@ -159,15 +159,27 @@ class UserService(IUserService):
             raise ValueError(f"User with auth_id {auth_id} not found")
         return user.role.name
 
-    def get_users(self) -> List[UserResponse]:
+    async def get_users(self) -> List[UserResponse]:
         try:
-            users = self.db.query(User).join(Role).all()
+            # Filter users to only include participants and volunteers (role_id 1 and 2)
+            users = (
+                self.db.query(User).join(Role).filter(User.role_id.in_([1, 2])).all()
+            )
             return [UserResponse.model_validate(user) for user in users]
         except Exception as e:
-            self.logger.error(f"Error retrieving users: {str(e)}")
+            self.logger.error(f"Error getting users: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    def update_user_by_id(
+    async def get_admins(self) -> List[UserResponse]:
+        try:
+            # Get only admin users (role_id 3)
+            users = self.db.query(User).join(Role).filter(User.role_id == 3).all()
+            return [UserResponse.model_validate(user) for user in users]
+        except Exception as e:
+            self.logger.error(f"Error retrieving admin users: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    async def update_user_by_id(
         self, user_id: str, user_update: UserUpdateRequest
     ) -> UserResponse:
         try:

@@ -137,3 +137,14 @@ class IUserService(ABC):
         :raises Exception: if user deletion fails
         """
         pass
+
+    @abstractmethod
+    def get_admins(self):
+        """
+        Get all admin users
+
+        :return: list of UserDTOs for admin users
+        :rtype: [UserDTO]
+        :raises Exception: if user retrieval fails
+        """
+        pass
