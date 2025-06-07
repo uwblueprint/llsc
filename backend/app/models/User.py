@@ -18,3 +18,4 @@ class User(Base):
     approved = Column(Boolean, default=False)
 
     role = relationship("Role")
+    user_data = relationship("UserData", back_populates="user", uselist=False)
