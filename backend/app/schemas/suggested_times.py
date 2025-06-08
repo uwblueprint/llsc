@@ -17,15 +17,19 @@ class SuggestedTimeGetRequest(BaseModel):
 class SuggestedTimeDeleteRequest(BaseModel):
   match_id: int
 
-class SuggestedTimeEntity(BaseModel):
-  id: int
+class SuggestedTimeDeleteResponse(BaseModel):
   match_id: int
-  timeblock_id: TimeBlockId
+  deleted: int
 
 class SuggestedTimeCreateResponse(BaseModel):
   match_id: int
-  suggested_new_times: List[TimeRange]
+  added: int
 
 class SuggestedTimeGetResponse(BaseModel):
   match_id: int
   suggested_times: List[TimeBlockEntity]
+
+class SuggestedTimeEntity(BaseModel):
+  id: int
+  match_id: int
+  timeblock_id: TimeBlockId

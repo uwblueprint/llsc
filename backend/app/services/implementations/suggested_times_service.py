@@ -9,10 +9,10 @@ from app.schemas.time_block import (
   TimeRange
 )
 from app.schemas.suggested_times import (
-  SuggestedTimeEntity,
     SuggestedTimeCreateRequest,
     SuggestedTimeGetRequest,
     SuggestedTimeDeleteRequest,
+    SuggestedTimeDeleteResponse,
     SuggestedTimeCreateResponse,
     SuggestedTimeGetResponse
 )
@@ -25,7 +25,7 @@ class SuggestedTimesService:
   def get_suggested_time_by_match_id(self, req: SuggestedTimeGetRequest) -> SuggestedTimeGetResponse:
     try:
       match_id = req.match_id
-      match: Match = self.db.query(Match).filter_by(id=match_id)
+      match: Match = self.db.query(Match).filter_by(id=match_id).first()
       suggested_times = match.suggested_time_blocks
 
       validated_data = SuggestedTimeGetResponse.model_validate({
@@ -39,7 +39,7 @@ class SuggestedTimesService:
       self.logger.error(f"Error getting Suggested Time: {str(e)}")
       raise HTTPException(status_code=500, detail=str(e))
 
-  async def create_suggested_time(self, req: SuggestedTimeCreateRequest) -> int:
+  async def create_suggested_time(self, req: SuggestedTimeCreateRequest) -> SuggestedTimeCreateResponse:
     added = 0
 
     try:
@@ -78,22 +78,25 @@ class SuggestedTimesService:
       self.logger.error(f"Error creating Suggested Time: {str(e)}")
       raise HTTPException(status_code=500, detail=str(e))
 
-  def delete_suggested_time_by_match_id(self, req: SuggestedTimeDeleteRequest):
+  async def delete_suggested_times_by_match_id(self, req: SuggestedTimeDeleteRequest):
     try:
       match_id = req.match_id
+      match = self.db.query(Match).filter_by(id=match_id).one()
 
-      # query ids for timeblock deletion
-      suggested_times_to_delete = self.db.query(SuggestedTime).filter_by(id=match_id).all()
-      timeblock_ids = [st.timeblock_id for st in suggested_times_to_delete]
+      # timeblock deletion
+      suggested_time_blocks_to_delete = self.db.query(Match).filter_by(id=match_id).one().suggested_time_blocks
+      num_blocks_to_del = len(suggested_time_blocks_to_delete)
+      match.suggested_time_blocks.clear()
 
-      # delete suggeseted times
-      self.db.query(SuggestedTime).filter_by(id=match_id).delete()
+      self.db.flush()
 
-      # delete associated timeblocks
-      for timeblock_id in timeblock_ids:
-        self.db.query(TimeBlock).filter_by(id=timeblock_id).delete()
+      validated_data = SuggestedTimeDeleteResponse.model_validate({
+        "match_id": match_id,
+        "deleted": num_blocks_to_del
+      })
 
       self.db.commit()
+      return validated_data
     except Exception as e:
       self.db.rollback()
       self.logger.error(f"Error getting Suggested Time: {str(e)}")
