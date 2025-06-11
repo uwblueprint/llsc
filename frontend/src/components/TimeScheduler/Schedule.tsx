@@ -1,10 +1,24 @@
 import React, { useState } from 'react';
-import { Box, Container, Heading, Text, VStack, HStack, Button, Textarea } from '@chakra-ui/react';
+import {
+  Box,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Button,
+  Textarea,
+} from '@chakra-ui/react';
 import { BiArrowBack } from 'react-icons/bi';
-import { TimeScheduler, AvailabilitySidebar } from '../components/TimeScheduler';
-import type { TimeSlot } from '../components/TimeScheduler';
+import TimeScheduler from './TimeScheduler';
+import AvailabilitySidebar from './AvailabilitySidebar';
+import type { TimeSlot } from './types';
 
-const SchedulePage: React.FC = () => {
+interface ScheduleProps {
+  onConfirm: () => void;
+}
+
+const Schedule: React.FC<ScheduleProps> = ({ onConfirm }) => {
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([
     { day: 'Tuesday', time: '10:00 - 11:00', selected: true },
     { day: 'Tuesday', time: '11:00 - 12:00', selected: true },
@@ -23,10 +37,8 @@ const SchedulePage: React.FC = () => {
     );
 
     if (existingSlotIndex >= 0) {
-      // Remove the slot
       setSelectedTimeSlots(prev => prev.filter((_, index) => index !== existingSlotIndex));
     } else {
-      // Add the slot
       setSelectedTimeSlots(prev => [...prev, { day, time: timeStr, selected: true }]);
     }
   };
@@ -36,40 +48,51 @@ const SchedulePage: React.FC = () => {
   };
 
   const handleSend = () => {
-    console.log('Selected time slots:', selectedTimeSlots);
-    console.log('Additional info:', additionalInfo);
-    // Handle form submission here
+    // You can add your submission logic here
+    onConfirm();
   };
 
   return (
-    <Box minH="100vh" bg="gray.50">
+    <Box minH="100vh" bg="background">
       <Container maxW="7xl" py={6}>
         <VStack gap={6} align="stretch">
           {/* Header */}
           <HStack gap={4} align="center">
-            <BiArrowBack size={20} />
-            <Text fontSize="sm" color="gray.600" cursor="pointer">
+            <BiArrowBack size={20} color="var(--chakra-colors-veniceBlue)" />
+            <Text fontSize="sm" color="fieldGray" cursor="pointer" fontFamily="body">
               Back
             </Text>
           </HStack>
 
           {/* Title */}
           <Box textAlign="center">
-            <Heading size="lg" mb={2}>
+            <Heading size="lg" mb={2} color="veniceBlue" fontFamily="heading" fontWeight={600}>
               Volunteer Dashboard - Participants Matched
             </Heading>
           </Box>
 
           {/* Main Content */}
-          <Box bg="white" borderRadius="lg" p={8} shadow="sm">
+          <Box bg="white" borderRadius="lg" p={8} boxShadow="sm">
             <VStack gap={8} align="stretch">
               {/* Schedule Section Header */}
               <Box>
-                <Heading size="md" mb={2}>
-                  Schedule call with your availability
+                <Heading
+                  size="2xl"
+                  mb={2}
+                  color="#1D3448"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={600}
+                >
+                  Select your availability
                 </Heading>
-                <Text color="gray.600" fontSize="sm">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis posuere quam at lorem facilibus.
+                <Text
+                  color="#414651"
+                  fontSize="md"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  mb={8}
+                >
+                  Drag to select all the times you will usually be available to meet with participants. You will also be able to edit later in your profile.
                 </Text>
               </Box>
 
@@ -77,7 +100,7 @@ const SchedulePage: React.FC = () => {
               <HStack gap={8} align="start">
                 {/* Time Grid */}
                 <Box flex="2">
-                  <Text fontWeight="medium" mb={4}>
+                  <Text fontWeight="medium" mb={4} color="veniceBlue" fontFamily="body">
                     Your availability:
                   </Text>
                   <TimeScheduler
@@ -94,7 +117,7 @@ const SchedulePage: React.FC = () => {
 
               {/* Additional Information */}
               <Box>
-                <Text fontWeight="medium" mb={3} color="gray.700">
+                <Text fontWeight="medium" mb={3} color="veniceBlue" fontFamily="body">
                   Additional information (optional)
                 </Text>
                 <Textarea
@@ -102,12 +125,13 @@ const SchedulePage: React.FC = () => {
                   value={additionalInfo}
                   onChange={(e) => setAdditionalInfo(e.target.value)}
                   rows={4}
-                  bg="gray.50"
+                  bg="background"
                   border="1px solid"
-                  borderColor="gray.200"
+                  borderColor="border"
+                  fontFamily="body"
                   _focus={{
-                    borderColor: 'blue.400',
-                    boxShadow: '0 0 0 1px var(--chakra-colors-blue-400)',
+                    borderColor: 'brand.400',
+                    boxShadow: '0 0 0 1px var(--chakra-colors-brand-400)',
                   }}
                 />
               </Box>
@@ -116,16 +140,24 @@ const SchedulePage: React.FC = () => {
               <HStack justify="flex-end" gap={4}>
                 <Button
                   variant="outline"
-                  colorScheme="gray"
+                  colorScheme="brand"
+                  fontFamily="body"
                   onClick={handleChooseNewTimes}
                 >
                   Choose new times
                 </Button>
                 <Button
-                  colorScheme="teal"
+                  bg="#056067"
+                  color="#fff"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={600}
+                  borderRadius="md"
+                  px={8}
+                  py={2}
+                  _hover={{ bg: "#044d4d" }}
                   onClick={handleSend}
                 >
-                  Send
+                  Confirm Availability
                 </Button>
               </HStack>
             </VStack>
@@ -136,4 +168,4 @@ const SchedulePage: React.FC = () => {
   );
 };
 
-export default SchedulePage; 
+export default Schedule; 

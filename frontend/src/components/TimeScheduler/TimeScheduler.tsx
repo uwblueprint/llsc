@@ -1,15 +1,31 @@
-import React from 'react';
-import { Box, Grid, Text } from '@chakra-ui/react';
-import { TimeSlotComponent } from './';
-import { TimeSchedulerProps } from './types';
+import React, { useState, useCallback } from 'react';
+import {
+  Box,
+  Table,
+  Text,
+  Button,
+  Heading,
+  Stack,
+} from '@chakra-ui/react';
+import type { TimeSlot } from './types';
 
-const TimeScheduler: React.FC<TimeSchedulerProps> = ({
-  selectedTimeSlots,
+interface TimeSchedulerProps {
+  selectedTimeSlots: TimeSlot[];
+  onTimeSlotToggle: (day: string, hour: number) => void;
+  onConfirm?: () => void;
+}
+
+const days = ['Mon', 'Tues', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const daysFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const hours = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
+
+const TimeScheduler: React.FC<TimeSchedulerProps> = ({ 
+  selectedTimeSlots, 
   onTimeSlotToggle,
+  onConfirm 
 }) => {
-  const days = ['Mon', 'Tues', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const daysFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8 AM to 7 PM
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragValue, setDragValue] = useState<boolean | null>(null);
 
   const isTimeSlotSelected = (day: string, hour: number) => {
     const timeStr = `${hour}:00 - ${hour + 1}:00`;
@@ -18,66 +34,140 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
     );
   };
 
+  const formatTime = (hour: number) => {
+    if (hour <= 11) {
+      return `${hour} AM`;
+    } else if (hour === 12) {
+      return '12 PM';
+    } else {
+      return `${hour - 12} PM`;
+    }
+  };
+
+  const handleMouseDown = (day: string, hour: number) => {
+    const isSelected = isTimeSlotSelected(day, hour);
+    setIsDragging(true);
+    setDragValue(!isSelected);
+    onTimeSlotToggle(day, hour);
+  };
+
+  const handleMouseEnter = (day: string, hour: number) => {
+    if (isDragging && dragValue !== null) {
+      const isSelected = isTimeSlotSelected(day, hour);
+      if (isSelected !== dragValue) {
+        onTimeSlotToggle(day, hour);
+      }
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setDragValue(null);
+  };
+
   return (
-    <Box
-      border="1px solid"
-      borderColor="gray.200"
-      borderRadius="md"
-      overflow="hidden"
-    >
-      {/* Header Row */}
-      <Grid templateColumns="80px repeat(7, 1fr)" bg="gray.50">
-        <Box p={3} borderRight="1px solid" borderColor="gray.200">
-          <Text fontSize="sm" fontWeight="medium" color="gray.600">
-            
+    <Box bg="white" minH="100vh" w="100%">
+      <Box maxW="1400px" mx="auto" py={20} px={[4, 6, 8]}>
+        {/* Header */}
+        <Stack align="start" gap={4} mb={12}>
+          <Heading as="h1" fontSize={["xl", "2xl", "3xl"]} fontWeight="semibold" color="gray.800" fontFamily="'Open Sans', sans-serif">
+            Select your availability
+          </Heading>
+          <Text fontSize={["sm", "md"]} color="gray.600" lineHeight="1.6" fontFamily="'Open Sans', sans-serif" maxW="2xl">
+            Drag to select all the times you will usually be available to meet with participants.
+            You will also be able to edit later in your profile.
           </Text>
-        </Box>
-        {days.map((day, index) => (
-          <Box
-            key={day}
-            p={3}
-            borderRight={index < days.length - 1 ? "1px solid" : "none"}
-            borderColor="gray.200"
-            textAlign="center"
-          >
-            <Text fontSize="sm" fontWeight="medium" color="gray.700">
-              {day}
-            </Text>
-          </Box>
-        ))}
-      </Grid>
+        </Stack>
 
-      {/* Time Rows */}
-      {hours.map((hour, hourIndex) => (
-        <Grid key={hour} templateColumns="80px repeat(7, 1fr)">
-          {/* Time Label */}
-          <Box
-            p={3}
-            borderRight="1px solid"
-            borderTop="1px solid"
-            borderColor="gray.200"
-            bg="gray.50"
-            display="flex"
-            alignItems="center"
-          >
-            <Text fontSize="sm" color="gray.600">
-              {hour}:00
-            </Text>
+        {/* Availability Grid */}
+        <Box overflowX="auto" mb={16}>
+          {/* Header Row */}
+          <Box display="flex" mb={4}>
+            <Box w={["16", "20", "24"]} />
+            {days.map(day => (
+              <Box
+                key={day}
+                flex="1"
+                textAlign="center"
+                color="gray.600"
+                fontWeight="normal"
+                fontSize={["sm", "md"]}
+                px={[2, 4]}
+                fontFamily="'Open Sans', sans-serif"
+                minW={["100px", "140px", "160px"]}
+              >
+                {day}
+              </Box>
+            ))}
           </Box>
 
-          {/* Time Slots for each day */}
-          {daysFull.map((dayFull, dayIndex) => (
-            <TimeSlotComponent
-              key={`${dayFull}-${hour}`}
-              day={dayFull}
-              hour={hour}
-              isSelected={isTimeSlotSelected(dayFull, hour)}
-              onClick={() => onTimeSlotToggle(dayFull, hour)}
-              isLastColumn={dayIndex === daysFull.length - 1}
-            />
+          {/* Time Grid */}
+          {hours.map(hour => (
+            <Box key={hour} display="flex">
+              {/* Time Label */}
+              <Box
+                w={["16", "20", "24"]}
+                color="gray.600"
+                fontWeight="normal"
+                fontSize={["sm", "md"]}
+                fontFamily="'Open Sans', sans-serif"
+                display="flex"
+                alignItems="center"
+                pr={4}
+                h={["3rem", "3.5rem", "4rem"]}
+              >
+                {formatTime(hour)}
+              </Box>
+              
+              {/* Day Cells */}
+              {daysFull.map((dayFull, dayIndex) => (
+                <Box
+                  key={`${dayFull}-${hour}`}
+                  flex="1"
+                  h={["3rem", "3.5rem", "4rem"]}
+                  cursor="pointer"
+                  bg={isTimeSlotSelected(dayFull, hour) ? "orange.100" : "white"}
+                  transition="background 0.2s"
+                  borderTop="1px solid"
+                  borderBottom="1px solid"
+                  borderLeft={dayIndex === 0 ? "1px solid" : "none"}
+                  borderRight="1px solid"
+                  borderColor="gray.200"
+                  _hover={{
+                    bg: isTimeSlotSelected(dayFull, hour) ? "orange.100" : "orange.50"
+                  }}
+                  onMouseDown={() => handleMouseDown(dayFull, hour)}
+                  onMouseEnter={() => handleMouseEnter(dayFull, hour)}
+                  onMouseUp={handleMouseUp}
+                  userSelect="none"
+                />
+              ))}
+            </Box>
           ))}
-        </Grid>
-      ))}
+        </Box>
+
+        {/* Confirm Button */}
+        <Box display="flex" justifyContent="flex-end" w="100%">
+          <Button
+            bg="teal.700"
+            color="white"
+            fontWeight="medium"
+            px={[6, 8]}
+            py={[3, 4]}
+            fontSize={["sm", "md"]}
+            borderRadius="md"
+            boxShadow="sm"
+            fontFamily="'Open Sans', sans-serif"
+            _hover={{
+              bg: "teal.800"
+            }}
+            transition="background 0.2s"
+            onClick={onConfirm}
+          >
+            Confirm Availability
+          </Button>
+        </Box>
+      </Box>
     </Box>
   );
 };
