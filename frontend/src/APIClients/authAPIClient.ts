@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 import { 
     AuthenticatedUser, 
     UserCreateRequest, 
@@ -8,47 +6,140 @@ import {
     AuthResponse,
     RefreshRequest,
     Token,
-} from '../types/authTypes';
+    UserRole,
+    SignUpMethod
+} from '../types/AuthTypes';
 
-// To Do: Add proper URL below
-const API_URL = process.env.BACKEND_URL_name || "";
+import AUTHENTICATED_USER_KEY from '../constants/AuthConstants';
+import baseAPIClient from './BaseAPIClient';
+import { getLocalStorageObjProperty, setLocalStorageObjProperty } from '../utils/LocalStorageUtils';
 
-export const registerUser = async (userData: UserCreateRequest): Promise<UserCreateResponse> => {
+
+const login = async (
+    email: string,
+    password: string,
+): Promise<AuthenticatedUser> => {
     try {
-        const response = await axios.post<UserCreateResponse>(`${API_URL}/auth/register`, userData);
-        return response.data;
+        const loginRequest: LoginRequest = { email, password };
+        const { data } = await baseAPIClient.post<AuthResponse>(
+            "/auth/login",
+            loginRequest,
+            { withCredentials: true },
+        );
+        localStorage.setItem(AUTHENTICATED_USER_KEY, JSON.stringify(data));
+        return { ...data.user, ...data };
     } catch (error) {
-        throw error;
+        return null;
     }
 };
 
-export const loginUser = async (credentials: LoginRequest): Promise<AuthenticatedUser> => {
+const loginWithGoogle = async (idToken: string): Promise<AuthenticatedUser> => {
     try {
-        const response = await axios.post<AuthResponse>(`${API_URL}/auth/login`, credentials);
-        return { ...response.data.user, ...response.data };
+        const { data } = await baseAPIClient.post<AuthResponse>(
+            "/auth/login",
+            { idToken },
+            { withCredentials: true },
+        );
+        localStorage.setItem(AUTHENTICATED_USER_KEY, JSON.stringify(data));
+        return { ...data.user, ...data };
     } catch (error) {
-        throw error;
+        return null;
     }
 };
 
-export const logoutUser = async (token: string): Promise<void> => {
+const logout = async (): Promise<boolean> => {
+    const bearerToken = `Bearer ${getLocalStorageObjProperty(
+        AUTHENTICATED_USER_KEY,
+        "accessToken",
+    )}`;
     try {
-        await axios.post(`${API_URL}/auth/logout`, {}, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        await baseAPIClient.post(
+            "/auth/logout",
+            {},
+            { headers: { Authorization: bearerToken } },
+        );
+        localStorage.removeItem(AUTHENTICATED_USER_KEY);
+        return true;
     } catch (error) {
-        throw error;
+        return false;
     }
 };
 
-export const refreshUser = async (refreshToken: string): Promise<Token> => {
+const register = async (
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    role: UserRole = UserRole.PARTICIPANT,
+): Promise<AuthenticatedUser> => {
     try {
-        const refreshRequest: RefreshRequest = { refreshToken };
-        const response = await axios.post<Token>(`${API_URL}/auth/refresh`, refreshRequest);
-        return response.data;
+        const registerRequest: UserCreateRequest = {
+            firstName,
+            lastName,
+            email,
+            password,
+            role,
+            signupMethod: SignUpMethod.PASSWORD
+        };
+        
+        const { data } = await baseAPIClient.post<UserCreateResponse>(
+            "/auth/register",
+            registerRequest,
+            { withCredentials: true },
+        );
+        
+        // After registration, we need to login to get the tokens
+        return await login(email, password);
     } catch (error) {
-        throw error;
+        return null;
     }
-}; 
+};
+
+const resetPassword = async (email: string | undefined): Promise<boolean> => {
+    const bearerToken = `Bearer ${getLocalStorageObjProperty(
+      AUTHENTICATED_USER_KEY,
+      "accessToken",
+    )}`;
+    try {
+      await baseAPIClient.post(
+        `/auth/resetPassword/${email}`,
+        {},
+        { headers: { Authorization: bearerToken } },
+      );
+      return true;
+    } catch (error) {
+      return false;
+    }
+};
+
+const refresh = async (): Promise<boolean> => {
+    try {
+        const refreshToken = getLocalStorageObjProperty(
+            AUTHENTICATED_USER_KEY,
+            "refreshToken",
+        );
+        
+        const refreshRequest: RefreshRequest = { refreshToken: refreshToken as string };
+        const { data } = await baseAPIClient.post<Token>(
+            "/auth/refresh",
+            refreshRequest,
+            { withCredentials: true },
+        );
+        
+        setLocalStorageObjProperty(
+            AUTHENTICATED_USER_KEY,
+            "accessToken",
+            data.accessToken,
+        );
+        setLocalStorageObjProperty(
+            AUTHENTICATED_USER_KEY,
+            "refreshToken",
+            data.refreshToken,
+        );
+        return true;
+    } catch (error) {
+        return false;
+    }
+};
+
+export default { login, logout, loginWithGoogle, register, resetPassword, refresh };
