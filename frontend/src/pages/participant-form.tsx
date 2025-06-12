@@ -5,7 +5,7 @@ import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { Radio, RadioGroup } from '@/components/ui/radio';
-import { registerUser } from '@/APIClients/authAPIClient';
+import { register } from '@/APIClients/authAPIClient';
 import { useRouter } from 'next/router';
 import { UserRole, SignUpMethod } from '@/types/authTypes';
 
@@ -37,7 +37,7 @@ export function ParticipantFormPage() {
         role: signupType === 'volunteer' ? UserRole.VOLUNTEER : UserRole.PARTICIPANT,
         signupMethod: SignUpMethod.PASSWORD,
       };
-      const result = await registerUser(userData);
+      const result = await register(userData);
       console.log('Registration success:', result);
       router.push(`/verify?email=${encodeURIComponent(email)}&role=${signupType}`);
     } catch (err: unknown) {
