@@ -1,6 +1,5 @@
 import { 
     AuthenticatedUser, 
-    UserCreateRequest, 
     UserCreateResponse,
     LoginRequest, 
     AuthResponse,

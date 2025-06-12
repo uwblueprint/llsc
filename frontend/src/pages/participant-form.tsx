@@ -5,6 +5,9 @@ import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { Radio, RadioGroup } from '@/components/ui/radio';
+import { registerUser } from '@/APIClients/authAPIClient';
+import { useRouter } from 'next/router';
+import { UserRole, SignUpMethod } from '@/types/authTypes';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
@@ -12,6 +15,40 @@ const teal = '#056067';
 
 export function ParticipantFormPage() {
   const [signupType, setSignupType] = useState('volunteer');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    try {
+      const userData = {
+        first_name: '',
+        last_name: '',
+        email,
+        password,
+        role: signupType === 'volunteer' ? UserRole.VOLUNTEER : UserRole.PARTICIPANT,
+        signupMethod: SignUpMethod.PASSWORD,
+      };
+      const result = await registerUser(userData);
+      console.log('Registration success:', result);
+      router.push(`/verify?email=${encodeURIComponent(email)}&role=${signupType}`);
+    } catch (err: unknown) {
+      console.error('Registration error:', err);
+      if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'data' in err.response && err.response.data && typeof err.response.data === 'object' && 'detail' in err.response.data) {
+        setError((err.response.data as { detail: string }).detail || 'Registration failed');
+      } else {
+        setError('Registration failed');
+      }
+    }
+  };
 
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
@@ -57,7 +94,7 @@ export function ParticipantFormPage() {
           >
             Let&apos;s start by creating an account.
           </Text>
-          <form>
+          <form onSubmit={handleSubmit}>
             <Field
               label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
               mb={4}
@@ -77,6 +114,8 @@ export function ParticipantFormPage() {
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -99,6 +138,8 @@ export function ParticipantFormPage() {
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -121,6 +162,8 @@ export function ParticipantFormPage() {
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -149,6 +192,11 @@ export function ParticipantFormPage() {
                 </Radio>
               </div>
             </RadioGroup>
+            {error && (
+              <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
+                {typeof error === 'string' ? error : JSON.stringify(error)}
+              </Text>
+            )}
             <Button
               type="submit"
               w="100%"
