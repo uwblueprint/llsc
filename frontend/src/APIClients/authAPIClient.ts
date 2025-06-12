@@ -64,30 +64,38 @@ const logout = async (): Promise<boolean> => {
     }
 };
 
-const register = async (
-    firstName: string,
-    lastName: string,
+export const register = async ({
+    first_name,
+    last_name,
+    email,
+    password,
+    role = UserRole.PARTICIPANT,
+    signupMethod = SignUpMethod.PASSWORD
+}: {
+    first_name?: string | null,
+    last_name?: string | null,
     email: string,
     password: string,
-    role: UserRole = UserRole.PARTICIPANT,
-): Promise<AuthenticatedUser> => {
+    role?: UserRole,
+    signupMethod?: SignUpMethod
+}): Promise<AuthenticatedUser> => {
     try {
-        const registerRequest: UserCreateRequest = {
-            firstName,
-            lastName,
+        const registerRequest = {
+            first_name,
+            last_name,
             email,
             password,
             role,
-            signupMethod: SignUpMethod.PASSWORD
+            signupMethod
         };
-        
+
+        console.log("Register request body:", registerRequest);
+
         const { data } = await baseAPIClient.post<UserCreateResponse>(
             "/auth/register",
             registerRequest,
             { withCredentials: true },
         );
-        
-        // After registration, we need to login to get the tokens
         return await login(email, password);
     } catch (error) {
         return null;
@@ -141,4 +149,4 @@ const refresh = async (): Promise<boolean> => {
     }
 };
 
-export default { login, logout, loginWithGoogle, register, resetPassword, refresh };
+export default { login, logout, loginWithGoogle, resetPassword, refresh };
