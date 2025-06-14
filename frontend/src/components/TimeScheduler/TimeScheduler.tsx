@@ -83,12 +83,27 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
         <Box overflowX="auto" mb={16}>
           {/* Header Row */}
           <Box display="flex" mb={4}>
-            <Box w={["16", "20", "24"]} />
+            <Box 
+              w={["16", "20", "24"]} 
+              h={["3rem", "3.5rem", "4rem"]}
+              color="gray.500" 
+              fontWeight="normal" 
+              fontSize={["sm", "md"]} 
+              fontFamily="'Open Sans', sans-serif" 
+              display="flex" 
+              alignItems="center" 
+              pr={4}
+            >
+              EST
+            </Box>
             {days.map(day => (
               <Box
                 key={day}
                 flex="1"
-                textAlign="center"
+                h={["3rem", "3.5rem", "4rem"]}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
                 color="gray.600"
                 fontWeight="normal"
                 fontSize={["sm", "md"]}
