@@ -93,6 +93,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
               display="flex" 
               alignItems="center" 
               pr={4}
+              opacity={0.4}
             >
               EST
             </Box>
@@ -106,7 +107,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
                 justifyContent="center"
                 color="gray.600"
                 fontWeight="normal"
-                fontSize={["sm", "md"]}
+                fontSize={["lg", "xl"]}
                 px={[2, 4]}
                 fontFamily="'Open Sans', sans-serif"
                 minW={["100px", "140px", "160px"]}
@@ -130,6 +131,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
                 alignItems="center"
                 pr={4}
                 h={["3rem", "3.5rem", "4rem"]}
+                opacity={0.4}
               >
                 {formatTime(hour)}
               </Box>
