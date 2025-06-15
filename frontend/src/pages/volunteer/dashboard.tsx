@@ -7,6 +7,7 @@ import {
   Heading,
   Text,
   Stack,
+  Button,
 } from '@chakra-ui/react';
 
 const VolunteerDashboard: React.FC = () => {
@@ -58,11 +59,45 @@ const VolunteerDashboard: React.FC = () => {
 
   if (showSchedule) {
     return (
-      <TimeScheduler
-        selectedTimeSlots={selectedTimeSlots}
-        onTimeSlotToggle={handleTimeSlotToggle}
-        onConfirm={handleConfirmAvailability}
-      />
+      <Box bg="white" h="100vh" w="100vw">
+        <Box maxW="80vw" h="80vh" mx="auto" py={8} px={[4, 6, 8]}>
+          {/* Header */}
+          <Stack align="start" gap={4} mb={8}>
+            <Heading as="h1" fontSize={["lg", "xl", "2xl"]} fontWeight="semibold" color="gray.800" fontFamily="'Open Sans', sans-serif">
+              Select your availability
+            </Heading>
+            <Text fontSize={["sm", "md"]} color="gray.600" lineHeight="1.6" fontFamily="'Open Sans', sans-serif" maxW="2xl" whiteSpace="nowrap">
+              Drag to select all the times you will usually be available to meet with participants.
+              You will also be able to edit later in your profile.
+            </Text>
+          </Stack>
+          <TimeScheduler
+            selectedTimeSlots={selectedTimeSlots}
+            onTimeSlotToggle={handleTimeSlotToggle}
+
+          />
+           <Box display="flex" justifyContent="flex-end" w="100%">
+          <Button
+            bg="teal.700"
+            color="white"
+            fontWeight="medium"
+            px={[6, 8]}
+            py={[3, 4]}
+            fontSize={["sm", "md"]}
+            borderRadius="md"
+            boxShadow="sm"
+            fontFamily="'Open Sans', sans-serif"
+            _hover={{
+              bg: "teal.800"
+            }}
+            transition="background 0.2s"
+            onClick={handleConfirmAvailability}
+          >
+            Confirm Availability
+          </Button>
+        </Box>
+      </Box>
+    </Box>
     );
   }
 
