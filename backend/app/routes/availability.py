@@ -1,19 +1,20 @@
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.middleware.auth import has_roles
-from app.utilities.db_utils import get_db
 from app.schemas.availability import (
-    AvailabilityEntity, 
-    CreateAvailabilityRequest, 
-    CreateAvailabilityResponse, 
-    DeleteAvailabilityRequest, 
-    DeleteAvailabilityResponse, 
-    GetAvailabilityRequest
+    AvailabilityEntity,
+    CreateAvailabilityRequest,
+    CreateAvailabilityResponse,
+    DeleteAvailabilityRequest,
+    DeleteAvailabilityResponse,
+    GetAvailabilityRequest,
 )
-from app.services.implementations.availability_service import AvailabilityService
 from app.schemas.user import UserRole
+from app.services.implementations.availability_service import AvailabilityService
+from app.utilities.db_utils import get_db
 
 router = APIRouter(
     prefix="/availability",
@@ -39,8 +40,6 @@ async def get_availability(
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
 
-
-
 @router.post("/", response_model=CreateAvailabilityResponse)
 async def create_availability(
     availability: CreateAvailabilityRequest,
@@ -48,15 +47,15 @@ async def create_availability(
     authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER]),
 ):
     try:
-        created_availability = await availability_service.create_availability(availability)
+        created = await availability_service.create_availability(availability)
         # returns user id
-        return created_availability
+        return created
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 
 @router.delete("/", response_model=DeleteAvailabilityResponse)
 async def delete_availability(
@@ -65,10 +64,10 @@ async def delete_availability(
     authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER]),
 ):
     try:
-        deleted_availability = await availability_service.delete_availability(availability)
-        return deleted_availability
+        deleted = await availability_service.delete_availability(availability)
+        return deleted
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))

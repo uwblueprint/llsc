@@ -1,11 +1,9 @@
-from datetime import datetime, timedelta
-from enum import Enum
-from typing import List, Optional
-from uuid import UUID
+from typing import List
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 from app.schemas.time_block import TimeBlockEntity, TimeBlockId, TimeRange
+
 
 class SuggestedTimeCreateRequest(BaseModel):
   match_id: int

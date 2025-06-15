@@ -1,21 +1,19 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models import Match, TimeBlock, SuggestedTime
-from app.schemas.time_block import (
-  TimeRange
-)
+from app.models import Match, TimeBlock
 from app.schemas.suggested_times import (
-    SuggestedTimeCreateRequest,
-    SuggestedTimeGetRequest,
-    SuggestedTimeDeleteRequest,
-    SuggestedTimeDeleteResponse,
-    SuggestedTimeCreateResponse,
-    SuggestedTimeGetResponse
+  SuggestedTimeCreateRequest,
+  SuggestedTimeCreateResponse,
+  SuggestedTimeDeleteRequest,
+  SuggestedTimeDeleteResponse,
+  SuggestedTimeGetRequest,
+  SuggestedTimeGetResponse,
 )
+
 
 class SuggestedTimesService:
   def __init__(self, db: Session):

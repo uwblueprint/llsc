@@ -7,7 +7,6 @@ from sqlalchemy.orm import relationship
 from .Base import Base
 from .Match import Match
 
-from .Match import Match
 
 class User(Base):
     __tablename__ = "users"

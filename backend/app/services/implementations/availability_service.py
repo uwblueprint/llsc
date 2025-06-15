@@ -1,18 +1,17 @@
 import logging
-from sqlalchemy.orm import joinedload
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models import User, TimeBlock, available_times
+from app.models import TimeBlock, User, available_times
 from app.schemas.availability import (
+    AvailabilityEntity,
     CreateAvailabilityRequest,
     CreateAvailabilityResponse,
     DeleteAvailabilityRequest,
     DeleteAvailabilityResponse,
     GetAvailabilityRequest,
-    AvailabilityEntity
 )
 
 
@@ -33,21 +32,22 @@ class AvailabilityService:
                 "available_times": user.availability
             })
             return validated_data
-            
+
         except Exception as e:
             self.logger.error(f"Error getting availability: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
     async def create_availability(self, availability: CreateAvailabilityRequest) -> CreateAvailabilityResponse:
         """
-        Takes a user_id and a range of desired times. Creates 30 minute time blocks spaced 30 minutes apart for the user's Availability.
+        Takes a user_id and a range of desired times. 
+        Creates 30 minute time blocks spaced 30 minutes apart for the user's Availability.
         Existing TimeBlocks in add will be silently ignored.
         """
         added = 0
         try:
             user_id = availability.user_id
             user = self.db.query(User).filter_by(id=user_id).one()
-            # get user's existing times and create a set            
+            # get user's existing times and create a set
             existing_start_times = {tb.start_time for tb in user.availability}
 
             for time_range in availability.available_times:
@@ -55,7 +55,7 @@ class AvailabilityService:
                 # modify based on the format
                 start_time = time_range.start_time
                 end_time = time_range.end_time
-                
+
                 # create timeblocks (0.5 hr) with 30 min spacing
                 current_start_time = start_time
                 while current_start_time < end_time:
@@ -66,7 +66,7 @@ class AvailabilityService:
                         time_block = TimeBlock(start_time=current_start_time)
                         user.availability.append(time_block)
                         added += 1
-                    
+
                     # update current time by 30 minutes for the next block
                     current_start_time += timedelta(hours=0.5)
 
@@ -113,7 +113,7 @@ class AvailabilityService:
                         self.db.delete(block)
                         deleted += 1
 
-                    
+
                     curr_start += timedelta(hours=0.5)
 
             self.db.flush()

@@ -1,24 +1,19 @@
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.schemas.time_block import TimeBlockBase
-from app.schemas.suggested_times import SuggestedTimeCreateRequest, SuggestedTimeEntity
-from app.services.implementations.suggested_times_service import SuggestedTimesService
-from app.utilities.db_utils import get_db
-
-from typing import List
-
-
+from app.middleware.auth import has_roles
 from app.schemas.suggested_times import (
     SuggestedTimeCreateRequest,
-    SuggestedTimeGetRequest,
-    SuggestedTimeDeleteRequest,
     SuggestedTimeCreateResponse,
+    SuggestedTimeDeleteRequest,
+    SuggestedTimeDeleteResponse,
+    SuggestedTimeGetRequest,
     SuggestedTimeGetResponse,
-    SuggestedTimeDeleteResponse
 )
-from app.middleware.auth import has_roles
 from app.schemas.user import UserRole
+from app.services.implementations.suggested_times_service import SuggestedTimesService
+from app.utilities.db_utils import get_db
 
 router = APIRouter(
     prefix="/suggested-times",
@@ -31,12 +26,12 @@ def get_suggested_times_service(db: Session = Depends(get_db)):
 @router.post("/", response_model=SuggestedTimeCreateResponse)
 async def create_suggested_times(
     suggested_time: SuggestedTimeCreateRequest,
-    suggested_time_service: SuggestedTimesService = Depends(get_suggested_times_service),
+    time_service: SuggestedTimesService = Depends(get_suggested_times_service),
     authorized: bool = has_roles([UserRole.ADMIN, UserRole.PARTICIPANT]),
 ):
     try:
-        created_suggested_time = await suggested_time_service.create_suggested_time(suggested_time)
-        return created_suggested_time
+        created = await time_service.create_suggested_time(suggested_time)
+        return created
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:
@@ -46,12 +41,12 @@ async def create_suggested_times(
 @router.get("/", response_model=SuggestedTimeGetResponse)
 async def get_suggested_times(
     match_id: int,
-    suggested_time_service: SuggestedTimesService = Depends(get_suggested_times_service),
+    time_service: SuggestedTimesService = Depends(get_suggested_times_service),
     authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER]),
 ):
     try:
         req = SuggestedTimeGetRequest(match_id=match_id)
-        suggested_times = suggested_time_service.get_suggested_time_by_match_id(req)
+        suggested_times = time_service.get_suggested_time_by_match_id(req)
         return suggested_times
     except HTTPException as http_ex:
         raise http_ex
@@ -62,13 +57,13 @@ async def get_suggested_times(
 @router.delete("/", response_model=SuggestedTimeDeleteResponse)
 async def delete_suggested_times(
     match_id: int,
-    suggested_time_service: SuggestedTimesService = Depends(get_suggested_times_service),
+    time_service: SuggestedTimesService = Depends(get_suggested_times_service),
     authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER]),
 ):
     try:
         req = SuggestedTimeDeleteRequest(match_id=match_id)
-        deleted_suggested_time = await suggested_time_service.delete_suggested_times_by_match_id(req)
-        return deleted_suggested_time
+        deleted = await time_service.delete_suggested_times_by_match_id(req)
+        return deleted
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:

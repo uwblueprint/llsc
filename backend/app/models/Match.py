@@ -1,4 +1,3 @@
-import enum
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID

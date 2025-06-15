@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.utilities.db_utils import get_db
-from app.services.implementations.match_service import MatchService
 from app.schemas.match import SubmitMatchRequest, SubmitMatchResponse
+from app.services.implementations.match_service import MatchService
+from app.utilities.db_utils import get_db
 
 router = APIRouter(prefix="/matches", tags=["matches"])
 
@@ -25,4 +25,3 @@ async def confirm_time(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
-    

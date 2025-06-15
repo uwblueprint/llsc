@@ -1,10 +1,10 @@
 import logging
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models import Match, TimeBlock, MatchStatus
+from app.models import Match, MatchStatus, TimeBlock
 from app.schemas.match import SubmitMatchRequest, SubmitMatchResponse
-from app.schemas.time_block import TimeBlockEntity
 
 
 class MatchService:

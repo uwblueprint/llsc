@@ -1,7 +1,7 @@
-from datetime import datetime, timedelta
-from uuid import UUID
+from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
+
 
 class TimeRange(BaseModel):
     start_time: datetime
