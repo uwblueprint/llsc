@@ -3,6 +3,7 @@ import { Box, Flex } from '@chakra-ui/react';
 import { PersonalInfoForm } from '@/components/intake/personal-info-form';
 import { DemographicCancerForm } from '@/components/intake/demographic-cancer-form';
 import { LovedOneForm } from '@/components/intake/loved-one-form';
+import { ThankYouScreen } from '@/components/intake/thank-you-screen';
 import { useIntakeForm } from '@/hooks/useIntakeForm';
 import { COLORS } from '@/constants/form';
 
@@ -39,9 +40,14 @@ export default function IntakePage() {
   };
 
   const handleFinalSubmit = () => {
-    alert('All forms completed successfully!');
-    // Handle final submission or navigation
+    // Show thank you screen instead of alert
+    setCurrentStep(4);
   };
+
+  // If we're on step 4, show the thank you screen without the form container
+  if (currentStep === 4) {
+    return <ThankYouScreen />;
+  }
 
   return (
     <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
@@ -63,7 +69,7 @@ export default function IntakePage() {
         )}
 
         {currentStep === 2 && (
-          <DemographicCancerForm onBack={handleBackToPersonalInfo} onNext={handleMoveToLovedOne} />
+          <DemographicCancerForm onNext={handleMoveToLovedOne} />
         )}
 
         {currentStep === 3 && <LovedOneForm onSubmit={handleFinalSubmit} />}
