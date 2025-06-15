@@ -60,13 +60,13 @@ const VolunteerDashboard: React.FC = () => {
   if (showSchedule) {
     return (
       <Box bg="white" h="100vh" w="100vw">
-        <Box maxW="80vw" h="80vh" mx="auto" py={8} px={[4, 6, 8]}>
+        <Box maxW="90vw" h="80vh" mx="auto" py={8} px={[4, 6, 8]}>
           {/* Header */}
           <Stack align="start" gap={4} mb={8}>
-            <Heading as="h1" fontSize={["lg", "xl", "2xl"]} fontWeight="semibold" color="gray.800" fontFamily="'Open Sans', sans-serif">
+            <Heading as="h1" fontSize={["md", "lg", "xl"]} fontWeight="semibold" color="gray.800" fontFamily="'Open Sans', sans-serif">
               Select your availability
             </Heading>
-            <Text fontSize={["sm", "md"]} color="gray.600" lineHeight="1.6" fontFamily="'Open Sans', sans-serif" maxW="2xl" whiteSpace="nowrap">
+            <Text fontSize={["xs", "sm"]} color="gray.600" lineHeight="1.6" fontFamily="'Open Sans', sans-serif" maxW="2xl" whiteSpace="nowrap">
               Drag to select all the times you will usually be available to meet with participants.
               You will also be able to edit later in your profile.
             </Text>
@@ -74,16 +74,15 @@ const VolunteerDashboard: React.FC = () => {
           <TimeScheduler
             selectedTimeSlots={selectedTimeSlots}
             onTimeSlotToggle={handleTimeSlotToggle}
-
           />
            <Box display="flex" justifyContent="flex-end" w="100%">
           <Button
             bg="teal.700"
             color="white"
             fontWeight="medium"
-            px={[6, 8]}
-            py={[3, 4]}
-            fontSize={["sm", "md"]}
+            px={[4, 6]}
+            py={[2, 3]}
+            fontSize={["xs", "sm"]}
             borderRadius="md"
             boxShadow="sm"
             fontFamily="'Open Sans', sans-serif"

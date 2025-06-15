@@ -122,11 +122,11 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
                 cursor="pointer"
                 bg={isTimeSlotSelected(dayFull, hour) ? "orange.100" : "white"}
                 transition="background 0.2s"
-                borderTop="1px solid"
-                borderBottom="1px solid"
-                borderLeft={dayIndex === 0 ? "1px solid" : "none"}
-                borderRight="1px solid"
-                borderColor="gray.200"
+                borderTop="0.91px solid"
+                borderBottom="0.91px solid"
+                borderLeft={dayIndex === 0 ? "0.91px solid" : "none"}
+                borderRight="0.91px solid"
+                borderColor="#e3e3e3"
                 _hover={{
                   bg: isTimeSlotSelected(dayFull, hour) ? "orange.100" : "orange.50"
                 }}
