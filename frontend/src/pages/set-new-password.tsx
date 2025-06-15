@@ -9,19 +9,27 @@ import { useRouter } from 'next/router';
 const veniceBlue = '#1d3448';
 const teal = '#056067';
 
-export default function ResetPasswordPage() {
-  const [email, setEmail] = useState('');
+export default function SetNewPasswordPage() {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would trigger your reset password logic
-    router.push('/set-new-password');
+    setError('');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match. Please try again.');
+      return;
+    }
+    // Here you would trigger your password reset logic
+    // On success:
+    router.push('/password-changed'); // redirect to password changed page
   };
 
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Left: Reset Password Form */}
+      {/* Left: Set New Password Form */}
       <Flex
         flex="1"
         align="center"
@@ -61,19 +69,19 @@ export default function ResetPasswordPage() {
             fontWeight={400}
             fontSize="lg"
           >
-            Enter the email address associated with your account to receive password reset options.
+            Set a new password to restore access to your account.
           </Text>
           <form onSubmit={handleSubmit}>
             <Field
-              label={<span style={{ color: veniceBlue, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
+              label={<span style={{ color: veniceBlue, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>New Password</span>}
               mb={4}
             >
               <InputGroup w="100%">
                 <Input
-                  type="email"
-                  placeholder="john.doe@gmail.com"
+                  type="password"
+                  placeholder=""
                   required
-                  autoComplete="email"
+                  autoComplete="new-password"
                   w="100%"
                   maxW="518px"
                   fontFamily="'Open Sans', sans-serif"
@@ -83,10 +91,47 @@ export default function ResetPasswordPage() {
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
                 />
               </InputGroup>
+            </Field>
+            <Field
+              label={<span style={{ color: veniceBlue, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Confirm New Password</span>}
+              mb={4}
+              errorText={error ? error : undefined}
+            >
+              <InputGroup w="100%">
+                <Input
+                  type="password"
+                  placeholder=""
+                  required
+                  autoComplete="new-password"
+                  w="100%"
+                  maxW="518px"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  fontSize={14}
+                  color={veniceBlue}
+                  bg="white"
+                  borderColor={error ? '#E53E3E' : '#D5D7DA'}
+                  borderWidth={error ? 2 : 1}
+                  boxShadow={error ? '0 0 0 2px #E53E3E' : 'none'}
+                  _focus={error ? { borderColor: '#E53E3E', boxShadow: '0 0 0 2px #E53E3E' } : { borderColor: teal, boxShadow: '0 0 0 1px #319795' }}
+                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={confirmPassword}
+                  onChange={e => {
+                    setConfirmPassword(e.target.value);
+                    // Debug log
+                    console.log('Confirm Password changed:', e.target.value, 'Error:', error);
+                  }}
+                />
+              </InputGroup>
+              {error && (
+                <Text color="#E53E3E" fontSize="sm" mt={1} fontWeight={600} fontFamily="'Open Sans', sans-serif">
+                  {error}
+                </Text>
+              )}
             </Field>
             <Button
               type="submit"
@@ -106,13 +151,10 @@ export default function ResetPasswordPage() {
               px={8}
               py={3}
             >
-              Send Reset Link
+              Reset Password
             </Button>
           </form>
-          <Text mt={8} color={veniceBlue} fontSize="md" fontWeight={400} fontFamily="'Open Sans', sans-serif">
-            If the email address is linked to an account, a reset link will be sent shortly. Don&apos;t see the email? Check your spam folder.
-          </Text>
-          <Text mt={4} color={veniceBlue} fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
+          <Text mt={8} color={veniceBlue} fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
             Return to <Link href="/" style={{ color: teal, textDecoration: 'underline', fontWeight: 600 }}>login</Link>.
           </Text>
         </Box>
