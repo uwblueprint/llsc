@@ -2,6 +2,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.middleware.auth import has_roles
 from app.utilities.db_utils import get_db
 from app.schemas.availability import (
     AvailabilityEntity, 
@@ -12,6 +13,7 @@ from app.schemas.availability import (
     GetAvailabilityRequest
 )
 from app.services.implementations.availability_service import AvailabilityService
+from app.schemas.user import UserRole
 
 router = APIRouter(
     prefix="/availability",
@@ -25,6 +27,7 @@ def get_availability_service(db: Session = Depends(get_db)):
 async def get_availability(
     user_id: UUID = Query(..., description="User ID to fetch availability"),
     availability_service: AvailabilityService = Depends(get_availability_service),
+    authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER]),
 ):
     try:
         req = GetAvailabilityRequest(user_id=user_id)
@@ -42,6 +45,7 @@ async def get_availability(
 async def create_availability(
     availability: CreateAvailabilityRequest,
     availability_service: AvailabilityService = Depends(get_availability_service),
+    authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER]),
 ):
     try:
         created_availability = await availability_service.create_availability(availability)
@@ -58,6 +62,7 @@ async def create_availability(
 async def delete_availability(
     availability: DeleteAvailabilityRequest,
     availability_service: AvailabilityService = Depends(get_availability_service),
+    authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER]),
 ):
     try:
         deleted_availability = await availability_service.delete_availability(availability)
