@@ -4,7 +4,7 @@ Handles user CRUD and response models for the API.
 """
 
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
@@ -52,7 +52,7 @@ class UserCreateRequest(UserBase):
     """
 
     password: Optional[str] = Field(None, min_length=8)
-    auth_id: Optional[str] = Field(None)  # for signup with google sso
+    auth_id: Optional[str] = Field(None)
     signup_method: SignUpMethod = Field(default=SignUpMethod.PASSWORD)
 
     @field_validator("password")
@@ -73,6 +73,18 @@ class UserCreateRequest(UserBase):
         return password
 
 
+class UserUpdateRequest(BaseModel):
+    """
+    Request schema for user updates, all fields optional
+    """
+
+    first_name: Optional[str] = Field(None, min_length=1, max_length=50)
+    last_name: Optional[str] = Field(None, min_length=1, max_length=50)
+    email: Optional[EmailStr] = None
+    role: Optional[UserRole] = None
+    approved: Optional[bool] = None
+
+
 class UserCreateResponse(BaseModel):
     """
     Response schema for user creation, maps directly from ORM User object.
@@ -84,6 +96,44 @@ class UserCreateResponse(BaseModel):
     email: EmailStr
     role_id: int
     auth_id: str
+    approved: bool
 
     # from_attributes enables automatic mapping from SQLAlchemy model to Pydantic model
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserResponse(BaseModel):
+    """
+    Response schema for user data including role information
+    """
+
+    id: UUID
+    first_name: str
+    last_name: str
+    email: EmailStr
+    role_id: int
+    auth_id: str
+    approved: bool
+    role: "RoleResponse"
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RoleResponse(BaseModel):
+    """
+    Response schema for role data
+    """
+
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserListResponse(BaseModel):
+    """
+    Response schema for listing users
+    """
+
+    users: List[UserResponse]
+    total: int
