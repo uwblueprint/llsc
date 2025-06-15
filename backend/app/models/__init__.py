@@ -9,10 +9,11 @@ from app.utilities.constants import LOGGER_NAME
 # when autogenerating new migration
 from .Base import Base
 from .Role import Role
+from .Tasks import PriorityEnum, Task
 from .User import User
 
 # Used to avoid import errors for the models
-__all__ = ["Base", "User", "Role"]
+__all__ = ["Base", "User", "Role", "Task", "PriorityEnum"]
 
 log = logging.getLogger(LOGGER_NAME("models"))
 
