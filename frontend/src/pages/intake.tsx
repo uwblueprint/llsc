@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Flex } from '@chakra-ui/react';
 import { PersonalInfoForm } from '@/components/intake/personal-info-form';
 import { DemographicCancerForm } from '@/components/intake/demographic-cancer-form';
+import { LovedOneForm } from '@/components/intake/loved-one-form';
 import { useIntakeForm } from '@/hooks/useIntakeForm';
 import { COLORS } from '@/constants/form';
 
@@ -33,6 +34,10 @@ export default function IntakePage() {
     setCurrentStep(1);
   };
 
+  const handleMoveToLovedOne = () => {
+    setCurrentStep(3);
+  };
+
   const handleFinalSubmit = () => {
     alert('All forms completed successfully!');
     // Handle final submission or navigation
@@ -58,8 +63,10 @@ export default function IntakePage() {
         )}
 
         {currentStep === 2 && (
-          <DemographicCancerForm onBack={handleBackToPersonalInfo} onNext={handleFinalSubmit} />
+          <DemographicCancerForm onBack={handleBackToPersonalInfo} onNext={handleMoveToLovedOne} />
         )}
+
+        {currentStep === 3 && <LovedOneForm onSubmit={handleFinalSubmit} />}
       </Box>
     </Flex>
   );

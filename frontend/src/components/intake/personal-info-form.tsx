@@ -248,21 +248,24 @@ export function PersonalInfoForm({
       </Box>
 
       {/* Submit Button */}
-      <Button
-        type="submit"
-        bg={COLORS.teal}
-        color="white"
-        _hover={{ bg: COLORS.teal }}
-        _active={{ bg: COLORS.teal }}
-        loading={isSubmitting}
-        loadingText="Submitting..."
-        w="full"
-        h="48px"
-        fontSize="16px"
-        fontWeight={500}
-      >
-        Continue
-      </Button>
+      <Box w="full" display="flex" justifyContent="flex-end">
+        <Button
+          type="submit"
+          bg={COLORS.teal}
+          color="white"
+          _hover={{ bg: COLORS.teal }}
+          _active={{ bg: COLORS.teal }}
+          loading={isSubmitting}
+          loadingText="Submitting..."
+          w="auto"
+          h="40px"
+          fontSize="14px"
+          fontWeight={500}
+          px={6}
+        >
+          Continue
+        </Button>
+      </Box>
     </form>
   );
 }

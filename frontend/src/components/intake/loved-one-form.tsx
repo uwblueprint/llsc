@@ -37,12 +37,9 @@ const StyledSelect: React.FC<{
   </select>
 );
 
-interface DemographicCancerFormData {
+interface LovedOneFormData {
   genderIdentity: string;
-  pronouns: string;
-  ethnicGroup: string;
-  maritalStatus: string;
-  hasKids: string;
+  age: string;
   diagnosis: string;
   dateOfDiagnosis: string;
   treatments: string[];
@@ -51,12 +48,9 @@ interface DemographicCancerFormData {
   otherExperience: string;
 }
 
-const DEFAULT_VALUES: DemographicCancerFormData = {
+const DEFAULT_VALUES: LovedOneFormData = {
   genderIdentity: '',
-  pronouns: '',
-  ethnicGroup: '',
-  maritalStatus: '',
-  hasKids: '',
+  age: '',
   diagnosis: '',
   dateOfDiagnosis: '',
   treatments: [],
@@ -111,19 +105,18 @@ const DIAGNOSIS_OPTIONS = [
   'Other',
 ];
 
-interface DemographicCancerFormProps {
-  onBack: () => void;
-  onNext: () => void;
+interface LovedOneFormProps {
+  onSubmit: () => void;
 }
 
-export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormProps) {
+export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
     watch,
     setValue,
-  } = useForm<DemographicCancerFormData>({
+  } = useForm<LovedOneFormData>({
     defaultValues: DEFAULT_VALUES,
   });
 
@@ -132,10 +125,10 @@ export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormP
   const otherTreatment = watch('otherTreatment') || '';
   const otherExperience = watch('otherExperience') || '';
 
-  const onSubmit = async (data: DemographicCancerFormData) => {
+  const onFormSubmit = async (data: LovedOneFormData) => {
     try {
-      console.log('Demographic cancer form data:', data);
-      onNext();
+      console.log('Loved one form data:', data);
+      onSubmit();
     } catch (err) {
       console.error('Error submitting form:', err);
       alert('Error submitting form. Please try again later.');
@@ -143,7 +136,7 @@ export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormP
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onFormSubmit)}>
       {/* Header */}
       <Heading
         as="h1"
@@ -163,15 +156,15 @@ export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormP
             <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
           </Box>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
+            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
           </Box>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
+            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
           </Box>
         </HStack>
       </Box>
 
-      {/* Demographic Information Section */}
+      {/* Loved One's Demographic Information Section */}
       <Box mb={10}>
         <Heading
           as="h2"
@@ -181,7 +174,7 @@ export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormP
           fontSize="20px"
           mb={3}
         >
-          Your Demographic Information
+          Your Loved One's Demographic Information
         </Heading>
 
         <Text
@@ -190,96 +183,48 @@ export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormP
           color={COLORS.fieldGray}
           mb={6}
         >
-          This information can be taken into account when matching you with a service user.
+          This information can be taken into account when matching you with a volunteer.
         </Text>
 
         <VStack gap={5}>
-          {/* Gender Identity */}
-          <FormField label="Gender Identity" error={errors.genderIdentity?.message} flex="1">
-            <Controller
-              name="genderIdentity"
-              control={control}
-              render={({ field }) => (
-                <StyledSelect {...field} error={!!errors.genderIdentity}>
-                  <option value="">Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="non-binary">Non-binary</option>
-                  <option value="prefer-not-to-say">Prefer not to say</option>
-                </StyledSelect>
-              )}
-            />
-          </FormField>
-
-          {/* Pronouns */}
-          <FormField label="Pronouns" error={errors.pronouns?.message} flex="1">
-            <Controller
-              name="pronouns"
-              control={control}
-              render={({ field }) => (
-                <StyledSelect {...field} error={!!errors.pronouns}>
-                  <option value="">Pronouns</option>
-                  <option value="he/him">He/Him</option>
-                  <option value="she/her">She/Her</option>
-                  <option value="they/them">They/Them</option>
-                  <option value="other">Other</option>
-                </StyledSelect>
-              )}
-            />
-          </FormField>
-
-          {/* Ethnic or Cultural Group */}
-          <FormField label="Ethnic or Cultural Group" error={errors.ethnicGroup?.message} flex="1">
-            <Controller
-              name="ethnicGroup"
-              control={control}
-              render={({ field }) => (
-                <StyledSelect {...field} error={!!errors.ethnicGroup}>
-                  <option value="">Ethnic or Cultural Group</option>
-                  <option value="caucasian">Caucasian</option>
-                  <option value="asian">Asian</option>
-                  <option value="african">African</option>
-                  <option value="hispanic">Hispanic</option>
-                  <option value="indigenous">Indigenous</option>
-                  <option value="middle-eastern">Middle Eastern</option>
-                  <option value="mixed">Mixed</option>
-                  <option value="other">Other</option>
-                  <option value="prefer-not-to-say">Prefer not to say</option>
-                </StyledSelect>
-              )}
-            />
-          </FormField>
-
-          {/* Marital Status and Kids */}
+          {/* Gender Identity and Age */}
           <HStack gap={4} w="full">
-            <FormField label="Marital Status" error={errors.maritalStatus?.message} flex="1">
+            <FormField label="Gender Identity" error={errors.genderIdentity?.message} flex="1">
               <Controller
-                name="maritalStatus"
+                name="genderIdentity"
                 control={control}
                 render={({ field }) => (
-                  <StyledSelect {...field} error={!!errors.maritalStatus}>
-                    <option value="">Marital Status</option>
-                    <option value="single">Single</option>
-                    <option value="married">Married</option>
-                    <option value="divorced">Divorced</option>
-                    <option value="widowed">Widowed</option>
-                    <option value="separated">Separated</option>
-                    <option value="common-law">Common Law</option>
+                  <StyledSelect {...field} error={!!errors.genderIdentity}>
+                    <option value="">Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="non-binary">Non-binary</option>
+                    <option value="prefer-not-to-say">Prefer not to say</option>
                   </StyledSelect>
                 )}
               />
             </FormField>
 
-            <FormField label="Do you have kids?" error={errors.hasKids?.message} flex="1">
+            <FormField label="Age" error={errors.age?.message} flex="1">
               <Controller
-                name="hasKids"
+                name="age"
                 control={control}
                 render={({ field }) => (
-                  <StyledSelect {...field} error={!!errors.hasKids}>
-                    <option value="">Yes/No</option>
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </StyledSelect>
+                  <InputGroup>
+                    <Input
+                      {...field}
+                      placeholder="25"
+                      type="number"
+                      fontFamily="system-ui, -apple-system, sans-serif"
+                      fontSize="14px"
+                      color={COLORS.veniceBlue}
+                      borderColor={errors.age ? 'red.500' : '#d1d5db'}
+                      borderRadius="6px"
+                      h="40px"
+                      _placeholder={{ color: '#9ca3af' }}
+                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                    />
+                  </InputGroup>
                 )}
               />
             </FormField>
@@ -287,7 +232,7 @@ export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormP
         </VStack>
       </Box>
 
-      {/* Cancer Experience Section */}
+      {/* Loved One's Cancer Experience Section */}
       <Box mb={10}>
         <Heading
           as="h2"
@@ -297,7 +242,7 @@ export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormP
           fontSize="20px"
           mb={3}
         >
-          Your Cancer Experience
+          Your Loved One's Cancer Experience
         </Heading>
 
         <Text
@@ -312,7 +257,7 @@ export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormP
         <VStack gap={6}>
           {/* Diagnosis and Date */}
           <HStack gap={4} w="full">
-            <FormField label="Your Diagnosis" error={errors.diagnosis?.message} flex="1">
+            <FormField label="Their Diagnosis" error={errors.diagnosis?.message} flex="1">
               <Controller
                 name="diagnosis"
                 control={control}
@@ -330,7 +275,7 @@ export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormP
             </FormField>
 
             <FormField
-              label="Your Date of Diagnosis"
+              label="Their Date of Diagnosis"
               error={errors.dateOfDiagnosis?.message}
               flex="1"
             >
@@ -368,7 +313,7 @@ export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormP
                 color={COLORS.veniceBlue}
                 mb={2}
               >
-                Which of the following treatments have you done?
+                Which of the following treatments have they done?
               </Text>
               <Text
                 fontFamily="system-ui, -apple-system, sans-serif"
@@ -452,7 +397,7 @@ export function DemographicCancerForm({ onBack, onNext }: DemographicCancerFormP
           fontWeight={500}
           px={6}
         >
-          Next Section →
+          Submit Your Peer Support Request →
         </Button>
       </Box>
     </form>
