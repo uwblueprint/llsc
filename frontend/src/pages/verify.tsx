@@ -9,7 +9,7 @@ export default function VerifyPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Verification code entered:', code);
+    router.push('/confirmed');
   };
 
   return (
