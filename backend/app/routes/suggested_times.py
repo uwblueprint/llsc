@@ -17,19 +17,22 @@ from app.schemas.suggested_times import (
     SuggestedTimeGetResponse,
     SuggestedTimeDeleteResponse
 )
+from app.middleware.auth import has_roles
+from app.schemas.user import UserRole
 
 router = APIRouter(
     prefix="/suggested-times",
     tags=["suggested-times"],
 )
 
-def get_schedule_service(db: Session = Depends(get_db)):
+def get_suggested_times_service(db: Session = Depends(get_db)):
     return SuggestedTimesService(db)
 
 @router.post("/", response_model=SuggestedTimeCreateResponse)
-async def create_schedule(
+async def create_suggested_times(
     suggested_time: SuggestedTimeCreateRequest,
-    suggested_time_service: SuggestedTimesService = Depends(get_schedule_service),
+    suggested_time_service: SuggestedTimesService = Depends(get_suggested_times_service),
+    authorized: bool = has_roles([UserRole.ADMIN, UserRole.PARTICIPANT]),
 ):
     try:
         created_suggested_time = await suggested_time_service.create_suggested_time(suggested_time)
@@ -41,9 +44,10 @@ async def create_schedule(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/", response_model=SuggestedTimeGetResponse)
-async def get_schedule(
+async def get_suggested_times(
     match_id: int,
-    suggested_time_service: SuggestedTimesService = Depends(get_schedule_service),
+    suggested_time_service: SuggestedTimesService = Depends(get_suggested_times_service),
+    authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER]),
 ):
     try:
         req = SuggestedTimeGetRequest(match_id=match_id)
@@ -56,9 +60,10 @@ async def get_schedule(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/", response_model=SuggestedTimeDeleteResponse)
-async def delete_schedule(
+async def delete_suggested_times(
     match_id: int,
-    suggested_time_service: SuggestedTimesService = Depends(get_schedule_service),
+    suggested_time_service: SuggestedTimesService = Depends(get_suggested_times_service),
+    authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER]),
 ):
     try:
         req = SuggestedTimeDeleteRequest(match_id=match_id)
