@@ -106,14 +106,18 @@ export default function LoginPage() {
               </InputGroup>
             </Field>
             <Box mt={1} mb={6} textAlign="right">
-              <span style={{
-                color: '#535862',
-                fontWeight: 600,
-                fontFamily: 'Open Sans, sans-serif',
-                fontSize: 15,
-                display: 'inline-block',
-                marginTop: 6,
-              }}>
+              <span
+                style={{
+                  color: '#535862',
+                  fontWeight: 600,
+                  fontFamily: 'Open Sans, sans-serif',
+                  fontSize: 15,
+                  display: 'inline-block',
+                  marginTop: 6,
+                  cursor: 'pointer'
+                }}
+                onClick={() => router.push('/reset-password')}
+              >
                 Forgot Password?
               </span>
             </Box>
