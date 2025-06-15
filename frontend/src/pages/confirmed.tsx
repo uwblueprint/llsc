@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
@@ -10,15 +10,19 @@ const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
 const teal = '#056067';
 
-export default function LoginPage() {
+export default function ConfirmedPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const router = useRouter();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     router.push('/welcome');
   };
+
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Left: Login Form */}
+      {/* Left: Confirmation and Sign In */}
       <Flex
         flex="1"
         align="center"
@@ -49,7 +53,7 @@ export default function LoginPage() {
             mb={6}
             mt={8}
           >
-            Welcome Back!
+            Thank you for confirming!
           </Heading>
           <Text
             mb={8}
@@ -58,7 +62,7 @@ export default function LoginPage() {
             fontWeight={400}
             fontSize="lg"
           >
-            Sign in with your email and password.
+            Your email has been successfully verified. Please sign in again to continue.
           </Text>
           <form onSubmit={handleSubmit}>
             <Field
@@ -80,6 +84,8 @@ export default function LoginPage() {
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -102,6 +108,8 @@ export default function LoginPage() {
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -161,4 +169,4 @@ export default function LoginPage() {
       </Box>
     </Flex>
   );
-}
+} 
