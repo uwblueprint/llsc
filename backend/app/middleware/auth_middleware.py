@@ -27,20 +27,14 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # Get authentication token from header
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
-            self.logger.warning(
-                f"Missing or invalid auth header for {request.url.path}"
-            )
-            return JSONResponse(
-                status_code=401, content={"detail": "Authentication required"}
-            )
+            self.logger.warning(f"Missing or invalid auth header for {request.url.path}")
+            return JSONResponse(status_code=401, content={"detail": "Authentication required"})
 
         token = auth_header.split(" ")[1]
         try:
             # Verify the token with Firebase
             self.logger.info(f"Verifying token for request to {request.url.path}")
-            decoded_token = firebase_admin.auth.verify_id_token(
-                token, check_revoked=True
-            )
+            decoded_token = firebase_admin.auth.verify_id_token(token, check_revoked=True)
 
             # Get Firebase user information
             firebase_user = firebase_admin.auth.get_user(decoded_token["uid"])
@@ -80,11 +74,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             )
         except firebase_admin.auth.InvalidIdTokenError as e:
             self.logger.warning(f"Invalid token: {request.url.path}, error: {str(e)}")
-            return JSONResponse(
-                status_code=401, content={"detail": "Invalid authentication token"}
-            )
+            return JSONResponse(status_code=401, content={"detail": "Invalid authentication token"})
         except Exception as e:
             self.logger.error(f"Authentication error for {request.url.path}: {str(e)}")
-            return JSONResponse(
-                status_code=401, content={"detail": f"Authentication failed: {str(e)}"}
-            )
+            return JSONResponse(status_code=401, content={"detail": f"Authentication failed: {str(e)}"})

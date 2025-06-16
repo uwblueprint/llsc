@@ -61,3 +61,4 @@ target-version = "py312"
 # Pylint - PLC, PLE, PLW
 # isort - I
 lint.select = ['E', 'F', 'W', 'A', 'PLC', 'PLE', 'PLW', 'I']
+line-length = 120

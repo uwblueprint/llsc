@@ -19,9 +19,7 @@ from app.services.implementations.user_service import UserService
 
 # Test DB Configuration
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -199,9 +197,7 @@ async def test_delete_user_by_email(db_session):
         await user_service.delete_user_by_email("delete@example.com")
 
         # Assert
-        deleted_user = (
-            db_session.query(User).filter_by(email="delete@example.com").first()
-        )
+        deleted_user = db_session.query(User).filter_by(email="delete@example.com").first()
         assert deleted_user is None
 
     except Exception:
@@ -373,12 +369,7 @@ def test_get_user_role_by_auth_id(db_session):
         assert role == UserRole.PARTICIPANT
 
         # Verify database state
-        db_user = (
-            db_session.query(User)
-            .join(Role)
-            .filter(User.auth_id == "test_auth_id")
-            .first()
-        )
+        db_user = db_session.query(User).join(Role).filter(User.auth_id == "test_auth_id").first()
         assert db_user.role.name == UserRole.PARTICIPANT
 
     except Exception:

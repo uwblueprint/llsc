@@ -13,9 +13,7 @@ security = HTTPBearer()
 
 # TODO: ADD RATE LIMITING
 @router.post("/register", response_model=UserCreateResponse)
-async def register_user(
-    user: UserCreateRequest, user_service: UserService = Depends(get_user_service)
-):
+async def register_user(user: UserCreateRequest, user_service: UserService = Depends(get_user_service)):
     try:
         return await user_service.create_user(user)
     except HTTPException as http_ex:
@@ -32,12 +30,8 @@ async def login(
 ):
     try:
         is_admin_portal = request.headers.get("X-Admin-Portal") == "true"
-        auth_response = auth_service.generate_token(
-            credentials.email, credentials.password
-        )
-        if is_admin_portal and not auth_service.is_authorized_by_role(
-            auth_response.access_token, {UserRole.ADMIN}
-        ):
+        auth_response = auth_service.generate_token(credentials.email, credentials.password)
+        if is_admin_portal and not auth_service.is_authorized_by_role(auth_response.access_token, {UserRole.ADMIN}):
             raise HTTPException(
                 status_code=403,
                 detail="Access denied. Admin privileges required for admin portal",
@@ -69,9 +63,7 @@ async def logout(
 
 
 @router.post("/refresh", response_model=Token)
-async def refresh(
-    refresh_data: RefreshRequest, auth_service: AuthService = Depends(get_auth_service)
-):
+async def refresh(refresh_data: RefreshRequest, auth_service: AuthService = Depends(get_auth_service)):
     try:
         return auth_service.renew_token(refresh_data.refresh_token)
     except Exception as e:

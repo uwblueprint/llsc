@@ -22,10 +22,7 @@ def create_app():
                 }
             },
             "formatters": {
-                "default": {
-                    "format": "%(asctime)s-%(levelname)s-%(name)s"
-                    + "::%(module)s,%(lineno)s: %(message)s"
-                },
+                "default": {"format": "%(asctime)s-%(levelname)s-%(name)s" + "::%(module)s,%(lineno)s: %(message)s"},
             },
             "root": {"level": "ERROR", "handlers": ["wsgi"]},
         }
@@ -49,17 +46,11 @@ def create_app():
     )
 
     if os.getenv("FASTAPI_CONFIG") != "production":
-        app.state.database_uri = (
-            "postgresql://{username}:{password}@{host}:5432/{db}".format(
-                username=os.getenv("POSTGRES_USER"),
-                password=os.getenv("POSTGRES_PASSWORD"),
-                host=os.getenv("DB_HOST"),
-                db=(
-                    os.getenv("POSTGRES_DB_TEST")
-                    if app_config["TESTING"]
-                    else os.getenv("POSTGRES_DB_DEV")
-                ),
-            )
+        app.state.database_uri = "postgresql://{username}:{password}@{host}:5432/{db}".format(
+            username=os.getenv("POSTGRES_USER"),
+            password=os.getenv("POSTGRES_PASSWORD"),
+            host=os.getenv("DB_HOST"),
+            db=(os.getenv("POSTGRES_DB_TEST") if app_config["TESTING"] else os.getenv("POSTGRES_DB_DEV")),
         )
     else:
         app.state.database_uri = os.getenv("DATABASE_URL")
@@ -79,12 +70,8 @@ def create_app():
                 "client_id": os.getenv("FIREBASE_SVC_ACCOUNT_CLIENT_ID"),
                 "auth_uri": os.getenv("FIREBASE_SVC_ACCOUNT_AUTH_URI"),
                 "token_uri": os.getenv("FIREBASE_SVC_ACCOUNT_TOKEN_URI"),
-                "auth_provider_x509_cert_url": os.getenv(
-                    "FIREBASE_SVC_ACCOUNT_AUTH_PROVIDER_X509_CERT_URL"
-                ),
-                "client_x509_cert_url": os.getenv(
-                    "FIREBASE_SVC_ACCOUNT_CLIENT_X509_CERT_URL"
-                ),
+                "auth_provider_x509_cert_url": os.getenv("FIREBASE_SVC_ACCOUNT_AUTH_PROVIDER_X509_CERT_URL"),
+                "client_x509_cert_url": os.getenv("FIREBASE_SVC_ACCOUNT_CLIENT_X509_CERT_URL"),
             }
         ),
         {"storageBucket": os.getenv("FIREBASE_STORAGE_DEFAULT_BUCKET")},

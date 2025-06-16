@@ -42,9 +42,7 @@ async def create_user(
 # admin only get all users
 @router.get("/", response_model=UserListResponse)
 async def get_users(
-    admin: Optional[bool] = Query(
-        False, description="If true, returns admin users only"
-    ),
+    admin: Optional[bool] = Query(False, description="If true, returns admin users only"),
     user_service: UserService = Depends(get_user_service),
     authorized: bool = has_roles([UserRole.ADMIN]),
 ):
