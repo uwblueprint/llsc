@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .Base import Base
+from .Match import Match
 
 
 class User(Base):
@@ -18,3 +19,10 @@ class User(Base):
     approved = Column(Boolean, default=False)
 
     role = relationship("Role")
+
+    # time blocks in an availability for a user
+    availability = relationship("TimeBlock", secondary="available_times", back_populates="users")
+
+    participant_matches = relationship("Match", back_populates="participant", foreign_keys=[Match.participant_id])
+
+    volunteer_matches = relationship("Match", back_populates="volunteer", foreign_keys=[Match.volunteer_id])

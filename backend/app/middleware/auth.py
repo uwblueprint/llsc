@@ -40,9 +40,7 @@ def has_roles(required_roles: List[str]):
         is_authorized = auth_service.is_authorized_by_role(token, set(required_roles))
 
         if not is_authorized:
-            logger.warning(
-                f"Access denied: user doesn't have required roles: {required_roles}"
-            )
+            logger.warning(f"Access denied: user doesn't have required roles: {required_roles}")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Access denied: requires one of these roles: {required_roles}",

@@ -138,9 +138,7 @@ def generate_csv_from_list(dict_list, **kwargs):
 
     output = io.StringIO()
     field_names = (
-        {key: None for d in dict_list for key in d.keys()}.keys()
-        if not kwargs.get("field", None)
-        else kwargs["field"]
+        {key: None for d in dict_list for key in d.keys()}.keys() if not kwargs.get("field", None) else kwargs["field"]
     )
     writer = csv.DictWriter(output, fieldnames=field_names)
 
