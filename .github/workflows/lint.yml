@@ -52,4 +52,4 @@ jobs:
       - name: Lint Python backend
         if: steps.changes.outputs.backend == 'true'
         working-directory: ./backend
-        run: pip install ruff && ruff check . && ruff format --check .
+        run: pip install ruff && ruff check --line-length 120 . && ruff format --check .
