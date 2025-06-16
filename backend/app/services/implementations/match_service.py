@@ -32,10 +32,12 @@ class MatchService:
 
             self.db.flush()
 
-            response = SubmitMatchResponse.model_validate({
-                "match_id": match.id,
-                "time_block": block,
-            })
+            response = SubmitMatchResponse.model_validate(
+                {
+                    "match_id": match.id,
+                    "time_block": block,
+                }
+            )
 
             self.db.commit()
             return response

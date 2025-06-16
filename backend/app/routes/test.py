@@ -52,9 +52,7 @@ async def test_middleware_public(request: Request) -> Dict[str, Any]:
 
 
 @router.get("/role-admin")
-async def test_role_admin(
-    request: Request, authorized: bool = has_roles([UserRole.ADMIN])
-) -> Dict[str, Any]:
+async def test_role_admin(request: Request, authorized: bool = has_roles([UserRole.ADMIN])) -> Dict[str, Any]:
     return {
         "message": "Successfully accessed an admin-only endpoint",
         "user_id": request.state.user_id,
@@ -64,9 +62,7 @@ async def test_role_admin(
 
 
 @router.get("/role-volunteer")
-async def test_role_volunteer(
-    request: Request, authorized: bool = has_roles([UserRole.VOLUNTEER])
-) -> Dict[str, Any]:
+async def test_role_volunteer(request: Request, authorized: bool = has_roles([UserRole.VOLUNTEER])) -> Dict[str, Any]:
     return {
         "message": "Successfully accessed a volunteer-only endpoint",
         "user_id": request.state.user_id,

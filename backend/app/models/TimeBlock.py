@@ -10,16 +10,10 @@ class TimeBlock(Base):
     start_time = Column(DateTime(timezone=True))
 
     # if a match has been confirmed on this time block, this is non null
-    confirmed_match = relationship(
-        "Match", back_populates="confirmed_time", uselist=False
-    )
+    confirmed_match = relationship("Match", back_populates="confirmed_time", uselist=False)
 
     # suggested matches
-    suggested_matches = relationship(
-        "Match", secondary="suggested_times", back_populates="suggested_time_blocks"
-    )
+    suggested_matches = relationship("Match", secondary="suggested_times", back_populates="suggested_time_blocks")
 
     # the availability that the timeblock is a part of for a given user
-    users = relationship(
-        "User", secondary="available_times", back_populates="availability"
-    )
+    users = relationship("User", secondary="available_times", back_populates="availability")

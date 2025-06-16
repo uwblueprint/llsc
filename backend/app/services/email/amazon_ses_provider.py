@@ -55,9 +55,7 @@ class AmazonSESEmailProvider(IEmailServiceProvider):
         except Exception as e:
             print(f"Failed to verify email: {e}")
 
-    def send_email(
-        self, templateType: EmailTemplateType, content: EmailContent
-    ) -> dict:
+    def send_email(self, templateType: EmailTemplateType, content: EmailContent) -> dict:
         try:
             self._verify_email(content.recipient, templateType)
 

@@ -21,8 +21,10 @@ router = APIRouter(
     tags=["availability"],
 )
 
+
 def get_availability_service(db: Session = Depends(get_db)):
     return AvailabilityService(db)
+
 
 @router.get("/", response_model=AvailabilityEntity)
 async def get_availability(
@@ -39,6 +41,7 @@ async def get_availability(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/", response_model=CreateAvailabilityResponse)
 async def create_availability(

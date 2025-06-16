@@ -21,18 +21,8 @@ class User(Base):
     role = relationship("Role")
 
     # time blocks in an availability for a user
-    availability = relationship(
-        "TimeBlock", secondary="available_times", back_populates="users"
-    )
+    availability = relationship("TimeBlock", secondary="available_times", back_populates="users")
 
-    participant_matches = relationship(
-         "Match",
-         back_populates="participant",
-         foreign_keys=[Match.participant_id]
-     )
+    participant_matches = relationship("Match", back_populates="participant", foreign_keys=[Match.participant_id])
 
-    volunteer_matches = relationship(
-         "Match",
-         back_populates="volunteer",
-         foreign_keys=[Match.volunteer_id]
-     )
+    volunteer_matches = relationship("Match", back_populates="volunteer", foreign_keys=[Match.volunteer_id])

@@ -16,11 +16,14 @@ class TimeRange(BaseModel):
             raise ValueError("Times must be on the hour")
         return self
 
+
 class TimeBlockBase(BaseModel):
     start_time: datetime
 
+
 class TimeBlockId(BaseModel):
     id: int
+
 
 class TimeBlockEntity(BaseModel):
     id: int

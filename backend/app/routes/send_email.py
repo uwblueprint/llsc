@@ -28,7 +28,5 @@ async def send_welcome_email(
 ):
     return email_service.send_email(
         templateType=EmailTemplateType.TEST,
-        content=EmailContent[MockEmailData](
-            recipient=recipient, data=MockEmailData(name=user_name, date="2021-12-01")
-        ),
+        content=EmailContent[MockEmailData](recipient=recipient, data=MockEmailData(name=user_name, date="2021-12-01")),
     )

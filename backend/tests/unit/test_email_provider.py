@@ -52,9 +52,7 @@ def provider(monkeypatch, fake_ses_client):
 def test_send_email_success(provider):
     # Create dummy email content with a verified recipient.
     test_data = MockEmailData(name="User", date="2021-12-01")
-    email_content = EmailContent[MockEmailData](
-        recipient="verified@example.com", data=test_data
-    )
+    email_content = EmailContent[MockEmailData](recipient="verified@example.com", data=test_data)
 
     response = provider.send_email(EmailTemplateType.TEST, email_content)
 
@@ -65,16 +63,12 @@ def test_send_email_success(provider):
 def test_send_email_failure(provider):
     # Simulate failure in send_templated_email by raising ClientError.
     def fake_send_templated_email(**kwargs):
-        raise ClientError(
-            {"Error": {"Message": "Failed to send email"}}, "send_templated_email"
-        )
+        raise ClientError({"Error": {"Message": "Failed to send email"}}, "send_templated_email")
 
     provider.ses_client.send_templated_email = fake_send_templated_email
 
     test_data = MockEmailData(name="User", date="2021-12-01")
-    email_content = EmailContent[MockEmailData](
-        recipient="verified@example.com", data=test_data
-    )
+    email_content = EmailContent[MockEmailData](recipient="verified@example.com", data=test_data)
 
     response = provider.send_email(EmailTemplateType.TEST, email_content)
     assert "error" in response

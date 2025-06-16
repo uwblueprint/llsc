@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -20,8 +19,10 @@ router = APIRouter(
     tags=["suggested-times"],
 )
 
+
 def get_suggested_times_service(db: Session = Depends(get_db)):
     return SuggestedTimesService(db)
+
 
 @router.post("/", response_model=SuggestedTimeCreateResponse)
 async def create_suggested_times(
@@ -37,6 +38,7 @@ async def create_suggested_times(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/", response_model=SuggestedTimeGetResponse)
 async def get_suggested_times(
@@ -54,6 +56,7 @@ async def get_suggested_times(
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.delete("/", response_model=SuggestedTimeDeleteResponse)
 async def delete_suggested_times(
     match_id: int,
@@ -69,4 +72,3 @@ async def delete_suggested_times(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
-

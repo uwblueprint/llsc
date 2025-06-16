@@ -10,9 +10,7 @@ class IEmailServiceProvider(ABC):
     """
 
     @abstractmethod
-    def send_email(
-        self, templateType: EmailTemplateType, content: EmailContent
-    ) -> dict:
+    def send_email(self, templateType: EmailTemplateType, content: EmailContent) -> dict:
         """_summary_
 
         Args:

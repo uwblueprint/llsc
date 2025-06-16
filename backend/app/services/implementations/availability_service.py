@@ -27,10 +27,9 @@ class AvailabilityService:
         try:
             user_id = req.user_id
             user = self.db.query(User).filter_by(id=user_id).one()
-            validated_data = AvailabilityEntity.model_validate({
-                "user_id": user_id,
-                "available_times": user.availability
-            })
+            validated_data = AvailabilityEntity.model_validate(
+                {"user_id": user_id, "available_times": user.availability}
+            )
             return validated_data
 
         except Exception as e:
@@ -39,7 +38,7 @@ class AvailabilityService:
 
     async def create_availability(self, availability: CreateAvailabilityRequest) -> CreateAvailabilityResponse:
         """
-        Takes a user_id and a range of desired times. 
+        Takes a user_id and a range of desired times.
         Creates 30 minute time blocks spaced 30 minutes apart for the user's Availability.
         Existing TimeBlocks in add will be silently ignored.
         """
@@ -62,7 +61,6 @@ class AvailabilityService:
                     self.logger.error(current_start_time)
                     # check if TimeBlock exists
                     if current_start_time not in existing_start_times:
-
                         time_block = TimeBlock(start_time=current_start_time)
                         user.availability.append(time_block)
                         added += 1
@@ -71,10 +69,7 @@ class AvailabilityService:
                     current_start_time += timedelta(hours=0.5)
 
             self.db.flush()
-            validated_data = CreateAvailabilityResponse.model_validate({
-                "user_id": user_id,
-                "added": added
-            })
+            validated_data = CreateAvailabilityResponse.model_validate({"user_id": user_id, "added": added})
             self.db.commit()
             return validated_data
         except Exception as e:
@@ -98,32 +93,24 @@ class AvailabilityService:
             for time_range in req.delete:
                 curr_start = time_range.start_time
                 while curr_start < time_range.end_time:
-
                     block = (
-                                self.db.query(TimeBlock)
-                                .join(available_times, TimeBlock.id == available_times.c.time_block_id)
-                                .filter(
-                                    available_times.c.user_id == user.id,
-                                    TimeBlock.start_time == curr_start
-                                )
-                                .first()
-                            )
+                        self.db.query(TimeBlock)
+                        .join(available_times, TimeBlock.id == available_times.c.time_block_id)
+                        .filter(available_times.c.user_id == user.id, TimeBlock.start_time == curr_start)
+                        .first()
+                    )
 
                     if block:
                         self.db.delete(block)
                         deleted += 1
 
-
                     curr_start += timedelta(hours=0.5)
 
             self.db.flush()
 
-            response = DeleteAvailabilityResponse.model_validate({
-                "user_id": req.user_id,
-                "deleted": deleted,
-                "availability": user.availability
-            })
-
+            response = DeleteAvailabilityResponse.model_validate(
+                {"user_id": req.user_id, "deleted": deleted, "availability": user.availability}
+            )
 
             self.db.commit()
             return response
@@ -132,4 +119,3 @@ class AvailabilityService:
             self.db.rollback()
             self.logger.error(f"Error updating availability for user {req.user_id}: {e}")
             raise HTTPException(status_code=500, detail="Failed to update availability")
-

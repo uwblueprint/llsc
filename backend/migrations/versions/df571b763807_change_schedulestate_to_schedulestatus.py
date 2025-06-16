@@ -55,9 +55,7 @@ def downgrade() -> None:
         sa.Column("state_id", sa.INTEGER(), autoincrement=False, nullable=False),
     )
     op.drop_constraint(None, "schedules", type_="foreignkey")
-    op.create_foreign_key(
-        "schedules_state_id_fkey", "schedules", "schedule_states", ["state_id"], ["id"]
-    )
+    op.create_foreign_key("schedules_state_id_fkey", "schedules", "schedule_states", ["state_id"], ["id"])
     op.drop_column("schedules", "status_id")
     op.create_table(
         "schedule_states",

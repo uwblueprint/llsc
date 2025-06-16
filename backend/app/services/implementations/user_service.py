@@ -28,9 +28,7 @@ class UserService(IUserService):
         firebase_user = None
         try:
             if user.signup_method == SignUpMethod.PASSWORD:
-                firebase_user = firebase_admin.auth.create_user(
-                    email=user.email, password=user.password
-                )
+                firebase_user = firebase_admin.auth.create_user(email=user.email, password=user.password)
             ## TO DO: SSO functionality depends a lot on frontend implementation,
             ##   so we may need to update this when we have a better idea of what
             ##   that looks like
@@ -131,9 +129,7 @@ class UserService(IUserService):
 
     async def get_user_by_id(self, user_id: str) -> UserResponse:
         try:
-            user = (
-                self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
-            )
+            user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
             return UserResponse.model_validate(user)
@@ -162,9 +158,7 @@ class UserService(IUserService):
     async def get_users(self) -> List[UserResponse]:
         try:
             # Filter users to only include participants and volunteers (role_id 1 and 2)
-            users = (
-                self.db.query(User).join(Role).filter(User.role_id.in_([1, 2])).all()
-            )
+            users = self.db.query(User).join(Role).filter(User.role_id.in_([1, 2])).all()
             return [UserResponse.model_validate(user) for user in users]
         except Exception as e:
             self.logger.error(f"Error getting users: {str(e)}")
@@ -179,9 +173,7 @@ class UserService(IUserService):
             self.logger.error(f"Error retrieving admin users: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    async def update_user_by_id(
-        self, user_id: str, user_update: UserUpdateRequest
-    ) -> UserResponse:
+    async def update_user_by_id(self, user_id: str, user_update: UserUpdateRequest) -> UserResponse:
         try:
             db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
             if not db_user:
@@ -201,9 +193,7 @@ class UserService(IUserService):
             self.db.refresh(db_user)
 
             # return user with role information
-            updated_user = (
-                self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
-            )
+            updated_user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
             return UserResponse.model_validate(updated_user)
 
         except ValueError:
