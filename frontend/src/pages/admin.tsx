@@ -5,6 +5,8 @@ import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
+import { register } from '@/APIClients/authAPIClient';
+import { UserRole, SignUpMethod } from '@/types/authTypes';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
@@ -14,10 +16,38 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/admin/dashboard');
+    setError('');
+    
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    try {
+      const userData = {
+        first_name: '',
+        last_name: '',
+        email,
+        password,
+        role: UserRole.ADMIN,
+        signupMethod: SignUpMethod.PASSWORD,
+      };
+      const result = await register(userData);
+      console.log('Admin registration success:', result);
+      router.push(`/verify?email=${encodeURIComponent(email)}&role=admin`);
+    } catch (err: unknown) {
+      console.error('Admin registration error:', err);
+      if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'data' in err.response && err.response.data && typeof err.response.data === 'object' && 'detail' in err.response.data) {
+        setError((err.response.data as { detail: string }).detail || 'Registration failed');
+      } else {
+        setError('Registration failed');
+      }
+    }
   };
 
   return (
@@ -132,9 +162,16 @@ export default function AdminLoginPage() {
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
                 />
               </InputGroup>
             </Field>
+            {error && (
+              <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
+                {typeof error === 'string' ? error : JSON.stringify(error)}
+              </Text>
+            )}
             <Button
               type="submit"
               w="100%"
