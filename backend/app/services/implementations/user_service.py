@@ -1,4 +1,6 @@
 import logging
+from typing import List
+from uuid import UUID
 
 import firebase_admin.auth
 from fastapi import HTTPException
@@ -10,7 +12,9 @@ from app.schemas.user import (
     SignUpMethod,
     UserCreateRequest,
     UserCreateResponse,
+    UserResponse,
     UserRole,
+    UserUpdateRequest,
 )
 from app.utilities.constants import LOGGER_NAME
 
@@ -24,9 +28,7 @@ class UserService(IUserService):
         firebase_user = None
         try:
             if user.signup_method == SignUpMethod.PASSWORD:
-                firebase_user = firebase_admin.auth.create_user(
-                    email=user.email, password=user.password
-                )
+                firebase_user = firebase_admin.auth.create_user(email=user.email, password=user.password)
             ## TO DO: SSO functionality depends a lot on frontend implementation,
             ##   so we may need to update this when we have a better idea of what
             ##   that looks like
@@ -78,13 +80,41 @@ class UserService(IUserService):
 
             raise HTTPException(status_code=500, detail=str(e))
 
-    def delete_user_by_email(self, email: str):
-        pass
+    async def delete_user_by_email(self, email: str):
+        try:
+            db_user = self.db.query(User).filter(User.email == email).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
 
-    def delete_user_by_id(self, user_id: str):
-        pass
+            self.db.delete(db_user)
+            self.db.commit()
 
-    def get_user_id_by_auth_id(self, auth_id: str) -> str:
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error deleting user with email {email}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    async def delete_user_by_id(self, user_id: str):
+        try:
+            db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            self.db.delete(db_user)
+            self.db.commit()
+
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error deleting user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    async def get_user_id_by_auth_id(self, auth_id: str) -> str:
         """Get user ID for a user by their Firebase auth_id"""
         user = self.db.query(User).filter(User.auth_id == auth_id).first()
         if not user:
@@ -97,8 +127,19 @@ class UserService(IUserService):
             raise ValueError(f"User with email {email} not found")
         return user
 
-    def get_user_by_id(self, user_id: str):
-        pass
+    async def get_user_by_id(self, user_id: str) -> UserResponse:
+        try:
+            user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+            return UserResponse.model_validate(user)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.logger.error(f"Error retrieving user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
 
     def get_auth_id_by_user_id(self, user_id: str) -> str:
         """Get Firebase auth_id for a user"""
@@ -114,8 +155,52 @@ class UserService(IUserService):
             raise ValueError(f"User with auth_id {auth_id} not found")
         return user.role.name
 
-    def get_users(self):
-        pass
+    async def get_users(self) -> List[UserResponse]:
+        try:
+            # Filter users to only include participants and volunteers (role_id 1 and 2)
+            users = self.db.query(User).join(Role).filter(User.role_id.in_([1, 2])).all()
+            return [UserResponse.model_validate(user) for user in users]
+        except Exception as e:
+            self.logger.error(f"Error getting users: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
 
-    def update_user_by_id(self, user_id: str, user):
-        pass
+    async def get_admins(self) -> List[UserResponse]:
+        try:
+            # Get only admin users (role_id 3)
+            users = self.db.query(User).join(Role).filter(User.role_id == 3).all()
+            return [UserResponse.model_validate(user) for user in users]
+        except Exception as e:
+            self.logger.error(f"Error retrieving admin users: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    async def update_user_by_id(self, user_id: str, user_update: UserUpdateRequest) -> UserResponse:
+        try:
+            db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            # update provided fields only
+            update_data = user_update.model_dump(exclude_unset=True)
+
+            # handle role conversion if role is being updated
+            if "role" in update_data:
+                update_data["role_id"] = UserRole.to_role_id(update_data.pop("role"))
+
+            for field, value in update_data.items():
+                setattr(db_user, field, value)
+
+            self.db.commit()
+            self.db.refresh(db_user)
+
+            # return user with role information
+            updated_user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
+            return UserResponse.model_validate(updated_user)
+
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error updating user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))

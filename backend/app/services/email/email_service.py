@@ -10,10 +10,6 @@ class EmailService(IEmailService):
         self.provider = provider
         self.logger = logging.getLogger(__name__)
 
-    def send_email(
-        self, templateType: EmailTemplateType, content: EmailContent[EmailData]
-    ) -> dict:
-        self.logger.info(
-            f"Sending email to {content.recipient} with template {templateType.value}"
-        )
+    def send_email(self, templateType: EmailTemplateType, content: EmailContent[EmailData]) -> dict:
+        self.logger.info(f"Sending email to {content.recipient} with template {templateType.value}")
         return self.provider.send_email(templateType, content)

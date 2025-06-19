@@ -166,9 +166,7 @@ def test_protected_route_missing_token():
 
 def test_protected_route_invalid_token():
     """Requests with an invalid authentication token should be denied."""
-    with patch(
-        "firebase_admin.auth.verify_id_token", side_effect=Exception("Invalid Token")
-    ):
+    with patch("firebase_admin.auth.verify_id_token", side_effect=Exception("Invalid Token")):
         headers = {"Authorization": "Bearer invalid_token"}
         response = client.get("/protected", headers=headers)
 
@@ -187,19 +185,14 @@ def test_protected_route_revoked_token():
         print(response.json())
 
         assert response.status_code == 401
-        assert (
-            "Token has been revoked. Please reauthenticate."
-            in response.json()["detail"]
-        )
+        assert "Token has been revoked. Please reauthenticate." in response.json()["detail"]
 
 
 def test_protected_route_expired_token():
     """Requests with an expired token should be denied."""
     with patch(
         "firebase_admin.auth.verify_id_token",
-        side_effect=firebase_admin.auth.ExpiredIdTokenError(
-            message="Token expired", cause="test"
-        ),
+        side_effect=firebase_admin.auth.ExpiredIdTokenError(message="Token expired", cause="test"),
     ):
         headers = {"Authorization": "Bearer expired_token"}
         response = client.get("/protected", headers=headers)

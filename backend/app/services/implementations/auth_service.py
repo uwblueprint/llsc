@@ -60,9 +60,7 @@ class AuthService(IAuthService):
 
     def is_authorized_by_role(self, access_token: str, roles: set[str]) -> bool:
         try:
-            decoded_token = firebase_admin.auth.verify_id_token(
-                access_token, check_revoked=True
-            )
+            decoded_token = firebase_admin.auth.verify_id_token(access_token, check_revoked=True)
             user_role = self.user_service.get_user_role_by_auth_id(decoded_token["uid"])
             firebase_user = firebase_admin.auth.get_user(decoded_token["uid"])
             result = firebase_user.email_verified and user_role in roles
@@ -71,16 +69,10 @@ class AuthService(IAuthService):
             print(f"Authorization error: {str(e)}")
             return False
 
-    def is_authorized_by_user_id(
-        self, access_token: str, requested_user_id: str
-    ) -> bool:
+    def is_authorized_by_user_id(self, access_token: str, requested_user_id: str) -> bool:
         try:
-            decoded_token = firebase_admin.auth.verify_id_token(
-                access_token, check_revoked=True
-            )
-            token_user_id = self.user_service.get_user_id_by_auth_id(
-                decoded_token["uid"]
-            )
+            decoded_token = firebase_admin.auth.verify_id_token(access_token, check_revoked=True)
+            token_user_id = self.user_service.get_user_id_by_auth_id(decoded_token["uid"])
             firebase_user = firebase_admin.auth.get_user(decoded_token["uid"])
             return firebase_user.email_verified and token_user_id == requested_user_id
         except Exception as e:
@@ -89,14 +81,9 @@ class AuthService(IAuthService):
 
     def is_authorized_by_email(self, access_token: str, requested_email: str) -> bool:
         try:
-            decoded_token = firebase_admin.auth.verify_id_token(
-                access_token, check_revoked=True
-            )
+            decoded_token = firebase_admin.auth.verify_id_token(access_token, check_revoked=True)
             firebase_user = firebase_admin.auth.get_user(decoded_token["uid"])
-            return (
-                firebase_user.email_verified
-                and decoded_token["email"] == requested_email
-            )
+            return firebase_user.email_verified and decoded_token["email"] == requested_email
         except Exception as e:
             print(f"Authorization error: {str(e)}")
             return False
