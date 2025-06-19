@@ -30,10 +30,6 @@ export default function IntakePage() {
     }
   };
 
-  const handleBackToPersonalInfo = () => {
-    setCurrentStep(1);
-  };
-
   const handleMoveToLovedOne = () => {
     setCurrentStep(3);
   };
@@ -62,9 +58,7 @@ export default function IntakePage() {
           />
         )}
 
-        {currentStep === 2 && (
-          <DemographicCancerForm onBack={handleBackToPersonalInfo} onNext={handleMoveToLovedOne} />
-        )}
+        {currentStep === 2 && <DemographicCancerForm onNext={handleMoveToLovedOne} />}
 
         {currentStep === 3 && <LovedOneForm onSubmit={handleFinalSubmit} />}
       </Box>
