@@ -5,6 +5,7 @@ import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
+import authAPIClient from '@/APIClients/authAPIClient';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
@@ -14,11 +15,24 @@ export default function AdminLogin() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Add login logic here
-    router.push('/admin/dashboard');
+    setError('');
+    
+    try {
+      const result = await authAPIClient.login(email, password);
+      if (result) {
+        console.log('Admin login success:', result);
+        router.push('/admin/dashboard');
+      } else {
+        setError('Invalid email or password');
+      }
+    } catch (err: unknown) {
+      console.error('Admin login error:', err);
+      setError('Login failed. Please try again.');
+    }
   };
 
   return (
@@ -130,6 +144,11 @@ export default function AdminLogin() {
                 Forgot Password?
               </span>
             </Box>
+            {error && (
+              <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
+                {error}
+              </Text>
+            )}
             <Button
               type="submit"
               w="100%"
