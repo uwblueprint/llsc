@@ -15,11 +15,11 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
       borderTop="1px solid"
       borderRight={!isLastColumn ? "1px solid" : "none"}
       borderColor="gray.200"
-      bg={isSelected ? 'orange.200' : 'transparent'}
+      bg={isSelected ? 'rgba(255, 187, 138, 0.2)' : 'transparent'}
       cursor="pointer"
       transition="all 0.2s"
       _hover={{
-        bg: isSelected ? 'orange.300' : 'gray.100',
+        bg: isSelected ? 'rgba(255, 187, 138, 0.2)' : 'gray.100',
       }}
       onClick={onClick}
       position="relative"
@@ -29,7 +29,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
         <Box
           position="absolute"
           inset={1}
-          bg="orange.400"
+          bg="rgba(255, 187, 138, 0.2)"
           borderRadius="sm"
           opacity={0.7}
         />

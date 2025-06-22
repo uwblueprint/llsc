@@ -68,7 +68,8 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
       {/* Header Row */}
       <Box display="flex" h="10%">
         <Box 
-          w="80px" 
+          w={["16", "20", "24"]}
+          maxW="160px"
           color="gray.500" 
           fontWeight="normal" 
           fontSize={["xs", "sm"]} 
@@ -83,6 +84,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
           <Box
             key={day}
             flex="1"
+            maxW="160px"
             display="flex"
             alignItems="center"
             justifyContent="center"
@@ -103,6 +105,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
             {/* Time Label */}
             <Box
               w={["16", "20", "24"]}
+              maxW="160px"
               color="gray.600"
               fontWeight="normal"
               fontSize={["xs", "sm"]}
@@ -119,8 +122,9 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
               <Box
                 key={`${dayFull}-${hour}`}
                 flex="1"
+                maxW="160px"
                 cursor="pointer"
-                bg={isTimeSlotSelected(dayFull, hour) ? "orange.100" : "white"}
+                bg={isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" : "white"}
                 transition="background 0.2s"
                 borderTop="0.91px solid"
                 borderBottom="0.91px solid"
@@ -128,7 +132,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
                 borderRight="0.91px solid"
                 borderColor="#e3e3e3"
                 _hover={{
-                  bg: isTimeSlotSelected(dayFull, hour) ? "orange.100" : "orange.50"
+                  bg: isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" :"rgba(255, 187, 138, 0.1)" 
                 }}
                 onMouseDown={() => handleMouseDown(dayFull, hour)}
                 onMouseEnter={() => handleMouseEnter(dayFull, hour)}

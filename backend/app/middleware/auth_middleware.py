@@ -24,6 +24,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
             self.logger.info(f"Skipping auth for public path: {request.url.path}")
             return await call_next(request)
 
+        # Allow OPTIONS requests (CORS preflight) without authentication
+        if request.method == "OPTIONS":
+            self.logger.info(f"Skipping auth for OPTIONS request to {request.url.path}")
+            return await call_next(request)
+
         # Get authentication token from header
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):

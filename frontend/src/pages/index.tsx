@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
+import authAPIClient from '@/APIClients/authAPIClient';
+import { UserRole } from '@/types/AuthTypes';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
@@ -12,10 +14,44 @@ const teal = '#056067';
 
 export default function LoginPage() {
   const router = useRouter();
-  const handleSubmit = (e: React.FormEvent) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/welcome');
+    setError('');
+    setIsLoading(true);
+    
+    try {
+      const result = await authAPIClient.login(email, password);
+      if (result) {
+        console.log('Login success:', result);
+        
+        // Check user role and redirect accordingly
+        // roleId: 1 = participant, 2 = volunteer, 3 = admin
+        if (result.roleId === 2) { // Volunteer
+          router.push('/volunteer/dashboard');
+        } else if (result.roleId === 1) { // Participant
+          router.push('/welcome'); // or wherever participants should go
+        } else if (result.roleId === 3) { // Admin
+          router.push('/admin/dashboard');
+        } else {
+          // Default fallback
+          router.push('/welcome');
+        }
+      } else {
+        setError('Invalid email or password');
+      }
+    } catch (err: unknown) {
+      console.error('Login error:', err);
+      setError('Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
       {/* Left: Login Form */}
@@ -80,6 +116,8 @@ export default function LoginPage() {
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -102,6 +140,8 @@ export default function LoginPage() {
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -121,6 +161,11 @@ export default function LoginPage() {
                 Forgot Password?
               </span>
             </Box>
+            {error && (
+              <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
+                {error}
+              </Text>
+            )}
             <Button
               type="submit"
               w="100%"
@@ -138,6 +183,8 @@ export default function LoginPage() {
               _hover={{ bg: '#044953' }}
               px={8}
               py={3}
+              loading={isLoading}
+              loadingText="Signing In..."
             >
               Sign In
             </Button>
