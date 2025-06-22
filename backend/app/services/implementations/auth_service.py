@@ -1,4 +1,6 @@
 import logging
+import requests
+import os
 
 import firebase_admin.auth
 from fastapi import HTTPException
@@ -46,10 +48,28 @@ class AuthService(IAuthService):
 
     def reset_password(self, email: str) -> None:
         try:
-            firebase_admin.auth.generate_password_reset_link(email)
+            # Use Firebase REST API to send password reset email
+            url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={os.getenv('FIREBASE_WEB_API_KEY')}"
+            data = {
+                "requestType": "PASSWORD_RESET",
+                "email": email
+            }
+            
+            response = requests.post(url, json=data)
+            response_json = response.json()
+            
+            if response.status_code != 200:
+                error_message = response_json.get("error", {}).get("message", "Unknown error")
+                self.logger.error(f"Failed to send password reset email: {error_message}")
+                # Don't raise exception for security reasons - don't reveal if email exists
+                return
+            
+            self.logger.info(f"Password reset email sent successfully to {email}")
+            
         except Exception as e:
             self.logger.error(f"Failed to reset password: {str(e)}")
-            raise
+            # Don't raise exception for security reasons - don't reveal if email exists
+            return
 
     def send_email_verification_link(self, email: str) -> None:
         try:

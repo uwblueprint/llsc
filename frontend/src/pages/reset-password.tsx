@@ -5,18 +5,37 @@ import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
+import { resetPassword } from '@/APIClients/authAPIClient';
 
 const veniceBlue = '#1d3448';
 const teal = '#056067';
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would trigger your reset password logic
-    router.push('/set-new-password');
+    setIsLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const success = await resetPassword(email);
+      if (success) {
+        setMessage('If the email exists, a password reset link has been sent to your email address.');
+      } else {
+        setError('Failed to send reset email. Please try again.');
+      }
+    } catch (err) {
+      console.error('Reset password error:', err);
+      setError('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -105,13 +124,21 @@ export default function ResetPasswordPage() {
               _hover={{ bg: '#044953' }}
               px={8}
               py={3}
+              isLoading={isLoading}
             >
               Send Reset Link
             </Button>
           </form>
-          <Text mt={8} color={veniceBlue} fontSize="md" fontWeight={400} fontFamily="'Open Sans', sans-serif">
-            If the email address is linked to an account, a reset link will be sent shortly. Don&apos;t see the email? Check your spam folder.
-          </Text>
+          {message && (
+            <Text mt={8} color="green.600" fontSize="md" fontWeight={400} fontFamily="'Open Sans', sans-serif">
+              {message}
+            </Text>
+          )}
+          {error && (
+            <Text mt={4} color="red.500" fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
+              {error}
+            </Text>
+          )}
           <Text mt={4} color={veniceBlue} fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
             Return to <Link href="/" style={{ color: teal, textDecoration: 'underline', fontWeight: 600 }}>login</Link>.
           </Text>

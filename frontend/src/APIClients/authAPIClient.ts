@@ -149,4 +149,4 @@ const refresh = async (): Promise<boolean> => {
     }
 };
 
-export default { login, logout, loginWithGoogle, resetPassword, refresh };
+export { login, logout, loginWithGoogle, resetPassword, refresh };
