@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Heading, Button, VStack, HStack, Text, Input } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { FormField } from '@/components/ui/form-field';
 import { InputGroup } from '@/components/ui/input-group';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
-import { COLORS } from '@/constants/form';
+import { COLORS, VALIDATION } from '@/constants/form';
 
 // Reusable Select component to replace inline styling
 const StyledSelect: React.FC<{
@@ -106,10 +106,11 @@ const DIAGNOSIS_OPTIONS = [
 ];
 
 interface LovedOneFormProps {
-  onSubmit: () => void;
+  formType?: 'participant' | 'volunteer';
+  onSubmit: (data: LovedOneFormData) => void;
 }
 
-export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
+export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFormProps) {
   const {
     control,
     handleSubmit,
@@ -120,15 +121,23 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
     defaultValues: DEFAULT_VALUES,
   });
 
-  const selectedTreatments = watch('treatments') || [];
-  const selectedExperiences = watch('experiences') || [];
+  // Local state for custom values
+  const [genderIdentityCustom, setGenderIdentityCustom] = useState('');
+
   const otherTreatment = watch('otherTreatment') || '';
   const otherExperience = watch('otherExperience') || '';
+  const genderIdentity = watch('genderIdentity') || '';
 
   const onFormSubmit = async (data: LovedOneFormData) => {
     try {
-      console.log('Loved one form data:', data);
-      onSubmit();
+      // Merge custom values into the data
+      const finalData = {
+        ...data,
+        genderIdentity: data.genderIdentity === 'Self-describe' ? genderIdentityCustom : data.genderIdentity,
+      };
+      
+      console.log('Loved one form data:', finalData);
+      onSubmit(finalData);
     } catch (err) {
       console.error('Error submitting form:', err);
       alert('Error submitting form. Please try again later.');
@@ -146,7 +155,7 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
         fontSize="28px"
         mb={8}
       >
-        First Connection Participant Form
+        First Connection {formType === 'participant' ? 'Participant' : 'Volunteer'} Form
       </Heading>
 
       {/* Progress Bar */}
@@ -174,7 +183,7 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
           fontSize="20px"
           mb={3}
         >
-          Your Loved One's Demographic Information
+          Your Loved One&apos;s Demographic Information
         </Heading>
 
         <Text
@@ -183,52 +192,89 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
           color={COLORS.fieldGray}
           mb={6}
         >
-          This information can be taken into account when matching you with a volunteer.
+          {formType === 'volunteer' 
+            ? 'This information can be taken into account when matching you with a service user.'
+            : 'This information can be taken into account when matching you with a volunteer.'
+          }
         </Text>
 
-        <VStack gap={5}>
-          {/* Gender Identity and Age */}
-          <HStack gap={4} w="full">
-            <FormField label="Gender Identity" error={errors.genderIdentity?.message} flex="1">
-              <Controller
-                name="genderIdentity"
-                control={control}
-                render={({ field }) => (
-                  <StyledSelect {...field} error={!!errors.genderIdentity}>
-                    <option value="">Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="non-binary">Non-binary</option>
-                    <option value="prefer-not-to-say">Prefer not to say</option>
-                  </StyledSelect>
-                )}
-              />
-            </FormField>
+        <VStack gap={5} align="stretch">
+          {/* Gender Identity */}
+          <HStack gap={8} w="full" align="start">
+            <Box w="50%">
+              <FormField label="Gender Identity" error={errors.genderIdentity?.message}>
+                <Controller
+                  name="genderIdentity"
+                  control={control}
+                  rules={{ 
+                    validate: (value) => {
+                      if (!value) return 'Gender identity is required';
+                      if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
+                        return 'Please specify gender identity when selecting Self-describe';
+                      }
+                      return true;
+                    }
+                  }}
+                  render={({ field }) => (
+                    <StyledSelect {...field} error={!!errors.genderIdentity}>
+                      <option value="">Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Non-binary">Non-binary</option>
+                      <option value="Transgender">Transgender</option>
+                      <option value="Prefer not to answer">Prefer not to answer</option>
+                      <option value="Self-describe">Self-describe</option>
+                    </StyledSelect>
+                  )}
+                />
+              </FormField>
+            </Box>
 
-            <FormField label="Age" error={errors.age?.message} flex="1">
-              <Controller
-                name="age"
-                control={control}
-                render={({ field }) => (
-                  <InputGroup>
-                    <Input
-                      {...field}
-                      placeholder="25"
-                      type="number"
-                      fontFamily="system-ui, -apple-system, sans-serif"
-                      fontSize="14px"
-                      color={COLORS.veniceBlue}
-                      borderColor={errors.age ? 'red.500' : '#d1d5db'}
-                      borderRadius="6px"
-                      h="40px"
-                      _placeholder={{ color: '#9ca3af' }}
-                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
-                    />
-                  </InputGroup>
-                )}
-              />
-            </FormField>
+            {genderIdentity === 'Self-describe' && (
+              <Box w="50%">
+                <FormField label="Please specify">
+                  <Input
+                    value={genderIdentityCustom}
+                    onChange={(e) => setGenderIdentityCustom(e.target.value)}
+                    placeholder="Please specify gender identity"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    border="1px solid"
+                    px={3}
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                  />
+                </FormField>
+              </Box>
+            )}
           </HStack>
+
+          {/* Age */}
+          <FormField label="Age" error={errors.age?.message}>
+            <Controller
+              name="age"
+              control={control}
+              rules={{ required: 'Age is required' }}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  placeholder="Age"
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  fontSize="14px"
+                  color={COLORS.veniceBlue}
+                  borderColor={errors.age ? 'red.500' : '#d1d5db'}
+                  borderRadius="6px"
+                  h="40px"
+                  _placeholder={{ color: '#9ca3af' }}
+                  _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                />
+              )}
+            />
+          </FormField>
         </VStack>
       </Box>
 
@@ -242,7 +288,7 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
           fontSize="20px"
           mb={3}
         >
-          Your Loved One's Cancer Experience
+          Your Loved One&apos;s Cancer Experience
         </Heading>
 
         <Text
@@ -251,7 +297,10 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
           color={COLORS.fieldGray}
           mb={6}
         >
-          This information can also be taken into account when matching you with a volunteer.
+          {formType === 'volunteer' 
+            ? 'This information can also be taken into account when matching you with a service user.'
+            : 'This information can also be taken into account when matching you with a volunteer.'
+          }
         </Text>
 
         <VStack gap={6}>
@@ -261,9 +310,10 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
               <Controller
                 name="diagnosis"
                 control={control}
+                rules={{ required: 'Diagnosis is required' }}
                 render={({ field }) => (
                   <StyledSelect {...field} error={!!errors.diagnosis}>
-                    <option value="">Acute Myeloid Leukaemia</option>
+                    <option value="">Select their diagnosis</option>
                     {DIAGNOSIS_OPTIONS.map((option) => (
                       <option key={option} value={option}>
                         {option}
@@ -282,6 +332,13 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
               <Controller
                 name="dateOfDiagnosis"
                 control={control}
+                rules={{ 
+                  required: 'Date of diagnosis is required',
+                  pattern: {
+                    value: VALIDATION.DATE,
+                    message: 'Please enter a valid date (DD/MM/YYYY)'
+                  }
+                }}
                 render={({ field }) => (
                   <InputGroup>
                     <Input
@@ -327,6 +384,14 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
               <Controller
                 name="treatments"
                 control={control}
+                rules={{
+                  validate: (value) => {
+                    if (value && value.includes('Other') && !otherTreatment.trim()) {
+                      return 'Please specify the other treatment';
+                    }
+                    return true;
+                  }
+                }}
                 render={({ field }) => (
                   <CheckboxGroup
                     options={TREATMENT_OPTIONS}
@@ -339,6 +404,11 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
                   />
                 )}
               />
+              {errors.treatments && (
+                <Text color="red.500" fontSize="12px" mt={2}>
+                  {errors.treatments.message}
+                </Text>
+              )}
             </Box>
 
             {/* Experience Section */}
@@ -364,6 +434,14 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
               <Controller
                 name="experiences"
                 control={control}
+                rules={{
+                  validate: (value) => {
+                    if (value && value.includes('Other') && !otherExperience.trim()) {
+                      return 'Please specify the other experience';
+                    }
+                    return true;
+                  }
+                }}
                 render={({ field }) => (
                   <CheckboxGroup
                     options={EXPERIENCE_OPTIONS}
@@ -376,6 +454,11 @@ export function LovedOneForm({ onSubmit }: LovedOneFormProps) {
                   />
                 )}
               />
+              {errors.experiences && (
+                <Text color="red.500" fontSize="12px" mt={2}>
+                  {errors.experiences.message}
+                </Text>
+              )}
             </Box>
           </HStack>
         </VStack>

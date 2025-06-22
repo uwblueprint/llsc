@@ -1,12 +1,12 @@
 import { useForm } from 'react-hook-form';
-import { FormData, DEFAULT_FORM_VALUES } from '@/constants/form';
+import { IntakeFormData, INITIAL_INTAKE_FORM_DATA } from '@/constants/form';
 
 export const useIntakeForm = () => {
-  const form = useForm<FormData>({
-    defaultValues: DEFAULT_FORM_VALUES,
+  const form = useForm<IntakeFormData>({
+    defaultValues: INITIAL_INTAKE_FORM_DATA,
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: IntakeFormData) => {
     try {
       // TODO: Add API call to submit form data
       console.log('Form data:', data);

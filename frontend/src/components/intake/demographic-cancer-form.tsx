@@ -4,7 +4,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { FormField } from '@/components/ui/form-field';
 import { InputGroup } from '@/components/ui/input-group';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
-import { COLORS } from '@/constants/form';
+import { COLORS, VALIDATION } from '@/constants/form';
 
 // Reusable Select component to replace inline styling
 const StyledSelect: React.FC<{
@@ -39,11 +39,8 @@ const StyledSelect: React.FC<{
 
 interface DemographicCancerFormData {
   genderIdentity: string;
-  genderIdentityCustom: string;
   pronouns: string[];
-  pronounsCustom: string;
   ethnicGroup: string[];
-  ethnicGroupCustom: string;
   maritalStatus: string;
   hasKids: string;
   diagnosis: string;
@@ -56,11 +53,8 @@ interface DemographicCancerFormData {
 
 const DEFAULT_VALUES: DemographicCancerFormData = {
   genderIdentity: '',
-  genderIdentityCustom: '',
   pronouns: [],
-  pronounsCustom: '',
   ethnicGroup: [],
-  ethnicGroupCustom: '',
   maritalStatus: '',
   hasKids: '',
   diagnosis: '',
@@ -118,7 +112,8 @@ const DIAGNOSIS_OPTIONS = [
 ];
 
 interface DemographicCancerFormProps {
-  onNext: () => void;
+  formType?: 'participant' | 'volunteer';
+  onNext: (data: DemographicCancerFormData) => void;
 }
 
 // Updated options to match Figma design - moved Self-describe to bottom
@@ -299,7 +294,7 @@ const MultiSelectDropdown: React.FC<{
   );
 };
 
-export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
+export function DemographicCancerForm({ formType, onNext }: DemographicCancerFormProps) {
   const {
     control,
     handleSubmit,
@@ -310,6 +305,11 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
     defaultValues: DEFAULT_VALUES,
   });
 
+  // Local state for custom values
+  const [genderIdentityCustom, setGenderIdentityCustom] = useState('');
+  const [pronounsCustom, setPronounsCustom] = useState('');
+  const [ethnicGroupCustom, setEthnicGroupCustom] = useState('');
+
   const otherTreatment = watch('otherTreatment') || '';
   const otherExperience = watch('otherExperience') || '';
   const genderIdentity = watch('genderIdentity') || '';
@@ -318,8 +318,20 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
 
   const onSubmit = async (data: DemographicCancerFormData) => {
     try {
-      console.log('Demographic cancer form data:', data);
-      onNext();
+      // Merge custom values into the arrays
+      const finalData = {
+        ...data,
+        genderIdentity: data.genderIdentity === 'Self-describe' ? genderIdentityCustom : data.genderIdentity,
+        pronouns: data.pronouns.includes('Self-describe') 
+          ? data.pronouns.map(p => p === 'Self-describe' ? pronounsCustom : p)
+          : data.pronouns,
+        ethnicGroup: data.ethnicGroup.includes('Self-describe')
+          ? data.ethnicGroup.map(e => e === 'Self-describe' ? ethnicGroupCustom : e)
+          : data.ethnicGroup,
+      };
+      
+      console.log('Demographic cancer form data:', finalData);
+      onNext(finalData);
     } catch (err) {
       console.error('Error submitting form:', err);
       alert('Error submitting form. Please try again later.');
@@ -337,7 +349,7 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
         fontSize="28px"
         mb={8}
       >
-        First Connection Participant Form
+        First Connection {formType === 'participant' ? 'Participant' : 'Volunteer'} Form
       </Heading>
 
       {/* Progress Bar */}
@@ -374,7 +386,10 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
           color={COLORS.fieldGray}
           mb={6}
         >
-          This information can be taken into account when matching you with a service user.
+          {formType === 'volunteer' 
+            ? 'This information can be taken into account when matching you with a service user.'
+            : 'This information can be taken into account when matching you with a volunteer.'
+          }
         </Text>
 
         <VStack gap={5} align="stretch">
@@ -385,8 +400,18 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
                 <Controller
                   name="genderIdentity"
                   control={control}
+                  rules={{ 
+                    validate: (value) => {
+                      if (!value) return 'Gender identity is required';
+                      if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
+                        return 'Please specify your gender identity when selecting Self-describe';
+                      }
+                      return true;
+                    }
+                  }}
                   render={({ field }) => (
                     <StyledSelect {...field} error={!!errors.genderIdentity}>
+                      <option value="">Gender Identity</option>
                       {GENDER_IDENTITY_OPTIONS.map((option) => (
                         <option key={option} value={option}>
                           {option}
@@ -400,26 +425,21 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
             
             {genderIdentity === 'Self-describe' && (
               <Box w="50%">
-                <FormField label="Please specify" error={errors.genderIdentityCustom?.message}>
-                  <Controller
-                    name="genderIdentityCustom"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="Please specify"
-                        fontFamily="system-ui, -apple-system, sans-serif"
-                        fontSize="14px"
-                        color={COLORS.veniceBlue}
-                        borderColor={errors.genderIdentityCustom ? 'red.500' : '#d1d5db'}
-                        borderRadius="6px"
-                        h="40px"
-                        border="1px solid"
-                        px={3}
-                        _placeholder={{ color: '#9ca3af' }}
-                        _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
-                      />
-                    )}
+                <FormField label="Please specify">
+                  <Input
+                    value={genderIdentityCustom}
+                    onChange={(e) => setGenderIdentityCustom(e.target.value)}
+                    placeholder="Please specify"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    border="1px solid"
+                    px={3}
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
                   />
                 </FormField>
               </Box>
@@ -433,6 +453,17 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
                 <Controller
                   name="pronouns"
                   control={control}
+                  rules={{
+                    validate: (value) => {
+                      if (!value || value.length === 0) {
+                        return 'Please select at least one pronoun option';
+                      }
+                      if (value.includes('Self-describe') && !pronounsCustom.trim()) {
+                        return 'Please specify your pronouns when selecting Self-describe';
+                      }
+                      return true;
+                    }
+                  }}
                   render={({ field }) => (
                     <MultiSelectDropdown
                       options={PRONOUNS_OPTIONS}
@@ -447,26 +478,21 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
             
             {pronouns.includes('Self-describe') && (
               <Box w="50%">
-                <FormField label="Please specify" error={errors.pronounsCustom?.message}>
-                  <Controller
-                    name="pronounsCustom"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="Please specify"
-                        fontFamily="system-ui, -apple-system, sans-serif"
-                        fontSize="14px"
-                        color={COLORS.veniceBlue}
-                        borderColor={errors.pronounsCustom ? 'red.500' : '#d1d5db'}
-                        borderRadius="6px"
-                        h="40px"
-                        border="1px solid"
-                        px={3}
-                        _placeholder={{ color: '#9ca3af' }}
-                        _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
-                      />
-                    )}
+                <FormField label="Please specify">
+                  <Input
+                    value={pronounsCustom}
+                    onChange={(e) => setPronounsCustom(e.target.value)}
+                    placeholder="Please specify"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    border="1px solid"
+                    px={3}
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
                   />
                 </FormField>
               </Box>
@@ -480,6 +506,17 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
                 <Controller
                   name="ethnicGroup"
                   control={control}
+                  rules={{
+                    validate: (value) => {
+                      if (!value || value.length === 0) {
+                        return 'Please select at least one ethnic or cultural group';
+                      }
+                      if (value.includes('Self-describe') && !ethnicGroupCustom.trim()) {
+                        return 'Please specify your ethnic or cultural group when selecting Self-describe';
+                      }
+                      return true;
+                    }
+                  }}
                   render={({ field }) => (
                     <MultiSelectDropdown
                       options={ETHNIC_OPTIONS}
@@ -494,26 +531,21 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
             
             {ethnicGroup.includes('Self-describe') && (
               <Box w="50%">
-                <FormField label="Please specify" error={errors.ethnicGroupCustom?.message}>
-                  <Controller
-                    name="ethnicGroupCustom"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="Please specify"
-                        fontFamily="system-ui, -apple-system, sans-serif"
-                        fontSize="14px"
-                        color={COLORS.veniceBlue}
-                        borderColor={errors.ethnicGroupCustom ? 'red.500' : '#d1d5db'}
-                        borderRadius="6px"
-                        h="40px"
-                        border="1px solid"
-                        px={3}
-                        _placeholder={{ color: '#9ca3af' }}
-                        _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
-                      />
-                    )}
+                <FormField label="Please specify">
+                  <Input
+                    value={ethnicGroupCustom}
+                    onChange={(e) => setEthnicGroupCustom(e.target.value)}
+                    placeholder="Please specify"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    border="1px solid"
+                    px={3}
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
                   />
                 </FormField>
               </Box>
@@ -526,9 +558,10 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
               <Controller
                 name="maritalStatus"
                 control={control}
+                rules={{ required: 'Marital status is required' }}
                 render={({ field }) => (
                   <StyledSelect {...field} error={!!errors.maritalStatus}>
-                    
+                    <option value="">Marital Status</option>
                     <option value="single">Single</option>
                     <option value="married">Married</option>
                     <option value="divorced">Divorced</option>
@@ -545,9 +578,10 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
               <Controller
                 name="hasKids"
                 control={control}
+                rules={{ required: 'Please specify if you have kids' }}
                 render={({ field }) => (
                   <StyledSelect {...field} error={!!errors.hasKids}>
-                    
+                    <option value="">Do you have kids?</option>
                     <option value="yes">Yes</option>
                     <option value="no">No</option>
                     <option value="prefer-not-to-answer">Prefer not to answer</option>
@@ -578,7 +612,10 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
           color={COLORS.fieldGray}
           mb={6}
         >
-          This information can also be taken into account when matching you with a volunteer.
+          {formType === 'volunteer' 
+            ? 'This information can also be taken into account when matching you with a service user.'
+            : 'This information can also be taken into account when matching you with a volunteer.'
+          }
         </Text>
 
         <VStack gap={6}>
@@ -588,9 +625,10 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
               <Controller
                 name="diagnosis"
                 control={control}
+                rules={{ required: 'Diagnosis is required' }}
                 render={({ field }) => (
                   <StyledSelect {...field} error={!!errors.diagnosis}>
-                    <option value="">Acute Myeloid Leukaemia</option>
+                    <option value="">Select your diagnosis</option>
                     {DIAGNOSIS_OPTIONS.map((option) => (
                       <option key={option} value={option}>
                         {option}
@@ -609,6 +647,13 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
               <Controller
                 name="dateOfDiagnosis"
                 control={control}
+                rules={{ 
+                  required: 'Date of diagnosis is required',
+                  pattern: {
+                    value: VALIDATION.DATE,
+                    message: 'Please enter a valid date (DD/MM/YYYY)'
+                  }
+                }}
                 render={({ field }) => (
                   <InputGroup>
                     <Input
@@ -654,6 +699,14 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
               <Controller
                 name="treatments"
                 control={control}
+                rules={{
+                  validate: (value) => {
+                    if (value && value.includes('Other') && !otherTreatment.trim()) {
+                      return 'Please specify the other treatment';
+                    }
+                    return true;
+                  }
+                }}
                 render={({ field }) => (
                   <CheckboxGroup
                     options={TREATMENT_OPTIONS}
@@ -666,6 +719,11 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
                   />
                 )}
               />
+              {errors.treatments && (
+                <Text color="red.500" fontSize="12px" mt={2}>
+                  {errors.treatments.message}
+                </Text>
+              )}
             </Box>
 
             {/* Experience Section */}
@@ -691,6 +749,14 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
               <Controller
                 name="experiences"
                 control={control}
+                rules={{
+                  validate: (value) => {
+                    if (value && value.includes('Other') && !otherExperience.trim()) {
+                      return 'Please specify the other experience';
+                    }
+                    return true;
+                  }
+                }}
                 render={({ field }) => (
                   <CheckboxGroup
                     options={EXPERIENCE_OPTIONS}
@@ -703,6 +769,11 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
                   />
                 )}
               />
+              {errors.experiences && (
+                <Text color="red.500" fontSize="12px" mt={2}>
+                  {errors.experiences.message}
+                </Text>
+              )}
             </Box>
           </HStack>
         </VStack>
@@ -725,6 +796,347 @@ export function DemographicCancerForm({ onNext }: DemographicCancerFormProps) {
           px={6}
         >
           Next Section →
+        </Button>
+      </Box>
+    </form>
+  );
+}
+
+// Basic Demographics Form for users with no cancer experience
+interface BasicDemographicsFormData {
+  genderIdentity: string;
+  pronouns: string[];
+  ethnicGroup: string[];
+  maritalStatus: string;
+  hasKids: string;
+}
+
+const BASIC_DEFAULT_VALUES: BasicDemographicsFormData = {
+  genderIdentity: '',
+  pronouns: [],
+  ethnicGroup: [],
+  maritalStatus: '',
+  hasKids: '',
+};
+
+interface BasicDemographicsFormProps {
+  formType?: 'participant' | 'volunteer';
+  onNext: (data: BasicDemographicsFormData) => void;
+}
+
+export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFormProps) {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm<BasicDemographicsFormData>({
+    defaultValues: BASIC_DEFAULT_VALUES,
+  });
+
+  // Local state for custom values
+  const [genderIdentityCustom, setGenderIdentityCustom] = useState('');
+  const [pronounsCustom, setPronounsCustom] = useState('');
+  const [ethnicGroupCustom, setEthnicGroupCustom] = useState('');
+
+  const genderIdentity = watch('genderIdentity') || '';
+  const pronouns = watch('pronouns') || [];
+  const ethnicGroup = watch('ethnicGroup') || [];
+
+  const onSubmit = async (data: BasicDemographicsFormData) => {
+    try {
+      // Merge custom values into the arrays
+      const finalData = {
+        ...data,
+        genderIdentity: data.genderIdentity === 'Self-describe' ? genderIdentityCustom : data.genderIdentity,
+        pronouns: data.pronouns.includes('Self-describe') 
+          ? data.pronouns.map(p => p === 'Self-describe' ? pronounsCustom : p)
+          : data.pronouns,
+        ethnicGroup: data.ethnicGroup.includes('Self-describe')
+          ? data.ethnicGroup.map(e => e === 'Self-describe' ? ethnicGroupCustom : e)
+          : data.ethnicGroup,
+      };
+      
+      console.log('Basic demographics form data:', finalData);
+      onNext(finalData);
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      alert('Error submitting form. Please try again later.');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {/* Header */}
+      <Heading
+        as="h1"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontWeight={600}
+        color={COLORS.veniceBlue}
+        fontSize="28px"
+        mb={8}
+      >
+        First Connection {formType === 'participant' ? 'Participant' : 'Volunteer'} Form
+      </Heading>
+
+      {/* Progress Bar */}
+      <Box mb={10}>
+        <HStack gap={3}>
+          <Box flex="1">
+            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
+          </Box>
+          <Box flex="1">
+            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
+          </Box>
+          <Box flex="1">
+            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
+          </Box>
+        </HStack>
+      </Box>
+
+      {/* Demographic Information Section */}
+      <Box mb={10}>
+        <Heading
+          as="h2"
+          fontFamily="system-ui, -apple-system, sans-serif"
+          fontWeight={600}
+          color={COLORS.veniceBlue}
+          fontSize="20px"
+          mb={3}
+        >
+          Your Demographic Information
+        </Heading>
+
+        <Text
+          fontFamily="system-ui, -apple-system, sans-serif"
+          fontSize="14px"
+          color={COLORS.fieldGray}
+          mb={6}
+        >
+          {formType === 'volunteer' 
+            ? 'This information helps us understand how you might be able to support others in the future.'
+            : 'This information helps us understand your background and how we might be able to support you.'
+          }
+        </Text>
+
+        <VStack gap={5} align="stretch">
+          {/* Gender Identity */}
+          <HStack gap={4} w="full" align="start">
+            <Box w="50%">
+              <FormField label="Gender Identity" error={errors.genderIdentity?.message}>
+                <Controller
+                  name="genderIdentity"
+                  control={control}
+                  rules={{ 
+                    validate: (value) => {
+                      if (!value) return 'Gender identity is required';
+                      if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
+                        return 'Please specify your gender identity when selecting Self-describe';
+                      }
+                      return true;
+                    }
+                  }}
+                  render={({ field }) => (
+                    <StyledSelect {...field} error={!!errors.genderIdentity}>
+                      <option value="">Gender Identity</option>
+                      {GENDER_IDENTITY_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </StyledSelect>
+                  )}
+                />
+              </FormField>
+            </Box>
+            
+            {genderIdentity === 'Self-describe' && (
+              <Box w="50%">
+                <FormField label="Please specify">
+                  <Input
+                    value={genderIdentityCustom}
+                    onChange={(e) => setGenderIdentityCustom(e.target.value)}
+                    placeholder="Please specify"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    border="1px solid"
+                    px={3}
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                  />
+                </FormField>
+              </Box>
+            )}
+          </HStack>
+
+          {/* Pronouns */}
+          <HStack gap={4} w="full" align="start">
+            <Box w="50%">
+              <FormField label="Pronouns" error={errors.pronouns?.message}>
+                <Controller
+                  name="pronouns"
+                  control={control}
+                  rules={{
+                    validate: (value) => {
+                      if (!value || value.length === 0) {
+                        return 'Please select at least one pronoun option';
+                      }
+                      if (value.includes('Self-describe') && !pronounsCustom.trim()) {
+                        return 'Please specify your pronouns when selecting Self-describe';
+                      }
+                      return true;
+                    }
+                  }}
+                  render={({ field }) => (
+                    <MultiSelectDropdown
+                      options={PRONOUNS_OPTIONS}
+                      selectedValues={field.value || []}
+                      onSelectionChange={field.onChange}
+                      placeholder="Pronouns"
+                    />
+                  )}
+                />
+              </FormField>
+            </Box>
+            
+            {pronouns.includes('Self-describe') && (
+              <Box w="50%">
+                <FormField label="Please specify">
+                  <Input
+                    value={pronounsCustom}
+                    onChange={(e) => setPronounsCustom(e.target.value)}
+                    placeholder="Please specify"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    border="1px solid"
+                    px={3}
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                  />
+                </FormField>
+              </Box>
+            )}
+          </HStack>
+
+          {/* Ethnic or Cultural Group */}
+          <HStack gap={4} w="full" align="start">
+            <Box w="50%">
+              <FormField label="Ethnic or Cultural Group" error={errors.ethnicGroup?.message}>
+                <Controller
+                  name="ethnicGroup"
+                  control={control}
+                  rules={{
+                    validate: (value) => {
+                      if (!value || value.length === 0) {
+                        return 'Please select at least one ethnic or cultural group';
+                      }
+                      if (value.includes('Self-describe') && !ethnicGroupCustom.trim()) {
+                        return 'Please specify your ethnic or cultural group when selecting Self-describe';
+                      }
+                      return true;
+                    }
+                  }}
+                  render={({ field }) => (
+                    <MultiSelectDropdown
+                      options={ETHNIC_OPTIONS}
+                      selectedValues={field.value || []}
+                      onSelectionChange={field.onChange}
+                      placeholder="Ethnic or Cultural Group"
+                    />
+                  )}
+                />
+              </FormField>
+            </Box>
+            
+            {ethnicGroup.includes('Self-describe') && (
+              <Box w="50%">
+                <FormField label="Please specify">
+                  <Input
+                    value={ethnicGroupCustom}
+                    onChange={(e) => setEthnicGroupCustom(e.target.value)}
+                    placeholder="Please specify"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                    borderColor="#d1d5db"
+                    borderRadius="6px"
+                    h="40px"
+                    border="1px solid"
+                    px={3}
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                  />
+                </FormField>
+              </Box>
+            )}
+          </HStack>
+
+          {/* Marital Status and Kids */}
+          <HStack gap={4} w="full">
+            <FormField label="Marital Status" error={errors.maritalStatus?.message} flex="1">
+              <Controller
+                name="maritalStatus"
+                control={control}
+                rules={{ required: 'Marital status is required' }}
+                render={({ field }) => (
+                  <StyledSelect {...field} error={!!errors.maritalStatus}>
+                    <option value="">Marital Status</option>
+                    <option value="single">Single</option>
+                    <option value="married">Married</option>
+                    <option value="divorced">Divorced</option>
+                    <option value="widowed">Widowed</option>
+                    <option value="separated">Separated</option>
+                    <option value="common-law">Common Law</option>
+                    <option value="prefer-not-to-answer">Prefer not to answer</option>
+                  </StyledSelect>
+                )}
+              />
+            </FormField>
+
+            <FormField label="Do you have kids?" error={errors.hasKids?.message} flex="1">
+              <Controller
+                name="hasKids"
+                control={control}
+                rules={{ required: 'Please specify if you have kids' }}
+                render={({ field }) => (
+                  <StyledSelect {...field} error={!!errors.hasKids}>
+                    <option value="">Do you have kids?</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                    <option value="prefer-not-to-answer">Prefer not to answer</option>
+                  </StyledSelect>
+                )}
+              />
+            </FormField>
+          </HStack>
+        </VStack>
+      </Box>
+
+      {/* Submit Button */}
+      <Box w="full" display="flex" justifyContent="flex-end">
+        <Button
+          type="submit"
+          bg={COLORS.teal}
+          color="white"
+          _hover={{ bg: COLORS.teal }}
+          _active={{ bg: COLORS.teal }}
+          loading={isSubmitting}
+          loadingText="Submitting..."
+          w="auto"
+          h="40px"
+          fontSize="14px"
+          fontWeight={500}
+          px={6}
+        >
+          Complete Registration →
         </Button>
       </Box>
     </form>

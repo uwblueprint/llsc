@@ -1,16 +1,20 @@
 import React from 'react';
 import { Box, Heading, Text, VStack, HStack } from '@chakra-ui/react';
-import { Control, Controller } from 'react-hook-form';
+import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import { CustomRadio } from '@/components/CustomRadio';
-import { FormData } from '@/constants/form';
 import { COLORS } from '@/constants/form';
 
-interface ExperienceTypeSectionProps {
-  control: Control<FormData>;
+interface ExperienceFields extends FieldValues {
+  hasBloodCancer: 'yes' | 'no' | '';
+  caringForSomeone: 'yes' | 'no' | '';
+}
+
+interface ExperienceTypeSectionProps<T extends ExperienceFields> {
+  control: Control<T>;
   errors: Record<string, { message?: string }>;
 }
 
-export const ExperienceTypeSection: React.FC<ExperienceTypeSectionProps> = ({ control, errors }) => {
+export const ExperienceTypeSection = <T extends ExperienceFields>({ control, errors }: ExperienceTypeSectionProps<T>) => {
   return (
     <Box mb={12}>
       <Heading
@@ -42,7 +46,7 @@ export const ExperienceTypeSection: React.FC<ExperienceTypeSectionProps> = ({ co
               Do you have blood cancer?
             </Text>
             <Controller
-              name="hasBloodCancer"
+              name={'hasBloodCancer' as Path<T>}
               control={control}
               rules={{ required: 'This field is required' }}
               render={({ field }) => (
@@ -89,7 +93,7 @@ export const ExperienceTypeSection: React.FC<ExperienceTypeSectionProps> = ({ co
               Are you caring for anyone with blood cancer?
             </Text>
             <Controller
-              name="caringForSomeone"
+              name={'caringForSomeone' as Path<T>}
               control={control}
               rules={{ required: 'This field is required' }}
               render={({ field }) => (

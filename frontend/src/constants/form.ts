@@ -33,12 +33,74 @@ export const VALIDATION = {
   DATE: /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/,
 } as const;
 
-// Form field types
-export interface FormData {
-  hasBloodCancer: string;
-  caringForSomeone: string;
-  caringFor: string;
-  otherCaringFor: string;
+// Comprehensive intake form data structure
+export interface IntakeFormData {
+  // Form type and flow control
+  formType: 'participant' | 'volunteer';
+  hasBloodCancer: 'yes' | 'no' | '';
+  caringForSomeone: 'yes' | 'no' | '';
+  
+  // Personal Information
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    dateOfBirth: string;
+    phoneNumber: string;
+    postalCode: string;
+    city: string;
+    province: string;
+  };
+  
+  // User's Demographic Information
+  demographics: {
+    genderIdentity: string;
+    pronouns: string[];
+    ethnicGroup: string[];
+    maritalStatus: string;
+    hasKids: string;
+  };
+  
+  // User's Cancer Experience (if applicable)
+  cancerExperience?: {
+    diagnosis: string;
+    dateOfDiagnosis: string;
+    treatments: string[];
+    experiences: string[];
+    otherTreatment?: string;
+    otherExperience?: string;
+  };
+  
+  // User's Caregiver Experience (if applicable)
+  caregiverExperience?: {
+    experiences: string[];
+    otherExperience?: string;
+  };
+  
+  // Loved One's Information (if applicable)
+  lovedOne?: {
+    demographics: {
+      genderIdentity: string;
+      genderIdentityCustom?: string;
+      age: string;
+    };
+    cancerExperience: {
+      diagnosis: string;
+      dateOfDiagnosis: string;
+      treatments: string[];
+      experiences: string[];
+      otherTreatment?: string;
+      otherExperience?: string;
+    };
+  };
+}
+
+// Type definitions for form submissions
+export interface ExperienceData {
+  hasBloodCancer: 'yes' | 'no' | '';
+  caringForSomeone: 'yes' | 'no' | '';
+}
+
+export interface PersonalData {
   firstName: string;
   lastName: string;
   dateOfBirth: string;
@@ -48,17 +110,52 @@ export interface FormData {
   province: string;
 }
 
-// Default form values
-export const DEFAULT_FORM_VALUES: FormData = {
-  hasBloodCancer: 'no',
-  caringForSomeone: 'yes',
-  caringFor: 'spouse',
-  otherCaringFor: '',
-  firstName: '',
-  lastName: '',
-  dateOfBirth: '',
-  phoneNumber: '',
-  postalCode: '',
-  city: '',
-  province: '',
+export interface DemographicsData {
+  genderIdentity: string;
+  pronouns: string[];
+  ethnicGroup: string[];
+  maritalStatus: string;
+  hasKids: string;
+}
+
+export interface CancerExperienceData {
+  diagnosis: string;
+  dateOfDiagnosis: string;
+  treatments: string[];
+  experiences: string[];
+  otherTreatment?: string;
+  otherExperience?: string;
+}
+
+export interface CaregiverExperienceData {
+  experiences: string[];
+  otherExperience?: string;
+}
+
+export interface LovedOneData {
+  demographics: DemographicsData;
+  cancerExperience: CancerExperienceData;
+}
+
+// Initial empty form data
+export const INITIAL_INTAKE_FORM_DATA: IntakeFormData = {
+  formType: 'participant',
+  hasBloodCancer: '',
+  caringForSomeone: '',
+  personalInfo: {
+    firstName: '',
+    lastName: '',
+    dateOfBirth: '',
+    phoneNumber: '',
+    postalCode: '',
+    city: '',
+    province: '',
+  },
+  demographics: {
+    genderIdentity: '',
+    pronouns: [],
+    ethnicGroup: [],
+    maritalStatus: '',
+    hasKids: '',
+  },
 }; 

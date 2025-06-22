@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Heading, Text, VStack } from '@chakra-ui/react';
-import { COLORS } from '@/constants/form';
+import { COLORS, IntakeFormData } from '@/constants/form';
 
 // Check mark icon component
 const CheckMarkIcon: React.FC = () => (
@@ -33,7 +33,11 @@ const CheckMarkIcon: React.FC = () => (
   </Box>
 );
 
-export function ThankYouScreen() {
+interface ThankYouScreenProps {
+  formData?: IntakeFormData;
+}
+
+export function ThankYouScreen({ formData }: ThankYouScreenProps) {
   return (
     <Box
       minH="100vh"
@@ -45,7 +49,7 @@ export function ThankYouScreen() {
     >
       <Box
         w="full"
-        maxW="600px"
+        maxW="800px"
         bg="white"
         borderRadius="8px"
         boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
@@ -91,6 +95,39 @@ export function ThankYouScreen() {
             </Text>
             .
           </Text>
+
+          {/* Debug: Display form data */}
+          {formData && (
+            <Box
+              mt={8}
+              p={6}
+              bg="gray.50"
+              borderRadius="8px"
+              w="full"
+              textAlign="left"
+            >
+              <Heading
+                as="h3"
+                fontSize="18px"
+                fontWeight={600}
+                color={COLORS.veniceBlue}
+                mb={4}
+              >
+                Collected Form Data (Debug)
+              </Heading>
+              <Box
+                as="pre"
+                fontSize="12px"
+                color={COLORS.fieldGray}
+                fontFamily="monospace"
+                whiteSpace="pre-wrap"
+                overflow="auto"
+                maxH="400px"
+              >
+                {JSON.stringify(formData, null, 2)}
+              </Box>
+            </Box>
+          )}
         </VStack>
       </Box>
     </Box>

@@ -1,27 +1,81 @@
 import React from 'react';
-import { Box, Heading, Button, VStack, HStack } from '@chakra-ui/react';
-import { Controller, Control, FieldErrors } from 'react-hook-form';
+import { Box, Heading, Button, VStack, HStack, Text } from '@chakra-ui/react';
+import { Controller, useForm } from 'react-hook-form';
 import { Input } from '@chakra-ui/react';
 import { InputGroup } from '@/components/ui/input-group';
 import { FormField } from '@/components/ui/form-field';
 import { ExperienceTypeSection } from '@/components/intake/experience-type-section';
-import { COLORS, PROVINCES, VALIDATION, FormData } from '@/constants/form';
+import { COLORS, PROVINCES, VALIDATION, ExperienceData, PersonalData } from '@/constants/form';
+
+interface PersonalInfoFormData {
+  hasBloodCancer: 'yes' | 'no' | '';
+  caringForSomeone: 'yes' | 'no' | '';
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  phoneNumber: string;
+  postalCode: string;
+  city: string;
+  province: string;
+}
 
 interface PersonalInfoFormProps {
-  control: Control<FormData>;
-  errors: FieldErrors<FormData>;
-  onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
-  isSubmitting: boolean;
+  formType: 'participant' | 'volunteer';
+  onSubmit: (experienceData: ExperienceData, personalData: PersonalData) => void;
 }
 
 export function PersonalInfoForm({
-  control,
-  errors,
+  formType,
   onSubmit,
-  isSubmitting,
 }: PersonalInfoFormProps) {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<PersonalInfoFormData>({
+    defaultValues: {
+      hasBloodCancer: '',
+      caringForSomeone: '',
+      firstName: '',
+      lastName: '',
+      dateOfBirth: '',
+      phoneNumber: '',
+      postalCode: '',
+      city: '',
+      province: '',
+    },
+  });
+
+  const onFormSubmit = (data: PersonalInfoFormData) => {
+    // Validate required experience fields
+    if (!data.hasBloodCancer || !data.caringForSomeone) {
+      return; // Form validation will show errors
+    }
+
+    const experienceData: ExperienceData = {
+      hasBloodCancer: data.hasBloodCancer as 'yes' | 'no',
+      caringForSomeone: data.caringForSomeone as 'yes' | 'no',
+    };
+    
+    const personalData: PersonalData = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      dateOfBirth: data.dateOfBirth,
+      phoneNumber: data.phoneNumber,
+      postalCode: data.postalCode,
+      city: data.city,
+      province: data.province,
+    };
+    
+    onSubmit(experienceData, personalData);
+  };
+
+  const formTitle = formType === 'participant' 
+    ? 'First Connection Participant Form'
+    : 'First Connection Volunteer Form';
+
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleSubmit(onFormSubmit)}>
       {/* Header */}
       <Heading
         as="h1"
@@ -31,7 +85,7 @@ export function PersonalInfoForm({
         fontSize="28px"
         mb={8}
       >
-        First Connection Participant Form
+        {formTitle}
       </Heading>
 
       {/* Progress Bar */}
@@ -64,6 +118,14 @@ export function PersonalInfoForm({
         >
           Personal Information
         </Heading>
+        <Text
+          color={COLORS.fieldGray}
+          fontFamily="system-ui, -apple-system, sans-serif"
+          fontSize="15px"
+          mb={8}
+        >
+          Please provide your contact details and address.
+        </Text>
 
         <VStack gap={5}>
           {/* Name Fields */}
@@ -119,8 +181,32 @@ export function PersonalInfoForm({
             </FormField>
           </HStack>
 
-          {/* Phone Number */}
+          {/* Date of Birth and Phone Number */}
           <HStack gap={4} w="full">
+            <FormField label="Date of Birth" error={errors.dateOfBirth?.message} flex="1">
+              <Controller
+                name="dateOfBirth"
+                control={control}
+                rules={{ required: 'Date of birth is required' }}
+                render={({ field }) => (
+                  <InputGroup>
+                    <Input
+                      {...field}
+                      placeholder="DD/MM/YYYY"
+                      fontFamily="system-ui, -apple-system, sans-serif"
+                      fontSize="14px"
+                      color={COLORS.veniceBlue}
+                      borderColor={errors.dateOfBirth ? 'red.500' : '#d1d5db'}
+                      borderRadius="6px"
+                      h="40px"
+                      _placeholder={{ color: '#9ca3af' }}
+                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                    />
+                  </InputGroup>
+                )}
+              />
+            </FormField>
+
             <FormField label="Phone Number" error={errors.phoneNumber?.message} flex="1">
               <Controller
                 name="phoneNumber"
@@ -150,11 +236,40 @@ export function PersonalInfoForm({
                 )}
               />
             </FormField>
-            <Box flex="1" /> {/* Empty box to maintain two-column layout */}
           </HStack>
 
-          {/* Address Fields */}
+          {/* Postal Code and City */}
           <HStack gap={4} w="full">
+            <FormField label="Postal Code" error={errors.postalCode?.message} flex="1">
+              <Controller
+                name="postalCode"
+                control={control}
+                rules={{
+                  required: 'Postal code is required',
+                  pattern: {
+                    value: VALIDATION.POSTAL_CODE,
+                    message: 'Please enter a valid postal code',
+                  },
+                }}
+                render={({ field }) => (
+                  <InputGroup>
+                    <Input
+                      {...field}
+                      placeholder="ZIP Code"
+                      fontFamily="system-ui, -apple-system, sans-serif"
+                      fontSize="14px"
+                      color={COLORS.veniceBlue}
+                      borderColor={errors.postalCode ? 'red.500' : '#d1d5db'}
+                      borderRadius="6px"
+                      h="40px"
+                      _placeholder={{ color: '#9ca3af' }}
+                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                    />
+                  </InputGroup>
+                )}
+              />
+            </FormField>
+
             <FormField label="City" error={errors.city?.message} flex="1">
               <Controller
                 name="city"
@@ -164,7 +279,7 @@ export function PersonalInfoForm({
                   <InputGroup>
                     <Input
                       {...field}
-                      placeholder="Enter your city"
+                      placeholder="City"
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color={COLORS.veniceBlue}
@@ -179,7 +294,10 @@ export function PersonalInfoForm({
                 )}
               />
             </FormField>
+          </HStack>
 
+          {/* Province */}
+          <HStack gap={4} w="full">
             <FormField label="Province" error={errors.province?.message} flex="1">
               <Controller
                 name="province"
@@ -189,7 +307,7 @@ export function PersonalInfoForm({
                   <InputGroup>
                     <Input
                       {...field}
-                      placeholder="Select your province"
+                      placeholder="Province"
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color={COLORS.veniceBlue}
@@ -208,39 +326,6 @@ export function PersonalInfoForm({
                   <option key={province} value={province} />
                 ))}
               </datalist>
-            </FormField>
-          </HStack>
-
-          {/* Postal Code */}
-          <HStack gap={4} w="full">
-            <FormField label="Postal Code" error={errors.postalCode?.message} flex="1">
-              <Controller
-                name="postalCode"
-                control={control}
-                rules={{
-                  required: 'Postal code is required',
-                  pattern: {
-                    value: VALIDATION.POSTAL_CODE,
-                    message: 'Please enter a valid postal code',
-                  },
-                }}
-                render={({ field }) => (
-                  <InputGroup>
-                    <Input
-                      {...field}
-                      placeholder="A1A 1A1"
-                      fontFamily="system-ui, -apple-system, sans-serif"
-                      fontSize="14px"
-                      color={COLORS.veniceBlue}
-                      borderColor={errors.postalCode ? 'red.500' : '#d1d5db'}
-                      borderRadius="6px"
-                      h="40px"
-                      _placeholder={{ color: '#9ca3af' }}
-                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
-                    />
-                  </InputGroup>
-                )}
-              />
             </FormField>
             <Box flex="1" /> {/* Empty box to maintain two-column layout */}
           </HStack>
@@ -263,7 +348,7 @@ export function PersonalInfoForm({
           fontWeight={500}
           px={6}
         >
-          Continue
+          Next Section →
         </Button>
       </Box>
     </form>
