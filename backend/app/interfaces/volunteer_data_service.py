@@ -50,4 +50,4 @@ class IVolunteerDataService(ABC):
     @abstractmethod
     async def delete_volunteer_data_by_id(self, volunteer_data_id: str) -> None:
         """Delete volunteer data by ID"""
-        pass 
+        pass

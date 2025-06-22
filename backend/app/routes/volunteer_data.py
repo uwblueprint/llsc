@@ -132,4 +132,4 @@ async def delete_volunteer_data(
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))

@@ -32,7 +32,7 @@ class VolunteerDataService(IVolunteerDataService):
             )
             if existing_data:
                 raise HTTPException(
-                    status_code=409, 
+                    status_code=409,
                     detail="Volunteer data already exists for this user"
                 )
 
@@ -66,7 +66,7 @@ class VolunteerDataService(IVolunteerDataService):
             )
             if not volunteer_data:
                 raise HTTPException(status_code=404, detail="Volunteer data not found")
-            
+
             return VolunteerDataResponse.model_validate(volunteer_data)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid volunteer data ID format")
@@ -85,7 +85,7 @@ class VolunteerDataService(IVolunteerDataService):
             )
             if not volunteer_data:
                 raise HTTPException(status_code=404, detail="Volunteer data not found for this user")
-            
+
             return VolunteerDataResponse.model_validate(volunteer_data)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid user ID format")
@@ -154,4 +154,4 @@ class VolunteerDataService(IVolunteerDataService):
         except Exception as e:
             self.db.rollback()
             self.logger.error(f"Error deleting volunteer data {volunteer_data_id}: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e)) 
+            raise HTTPException(status_code=500, detail=str(e))
