@@ -17,7 +17,14 @@ class AuthMiddleware(BaseHTTPMiddleware):
         self.logger = logging.getLogger(LOGGER_NAME("auth_middleware"))
 
     def is_public_path(self, path: str) -> bool:
-        return path in self.public_paths
+        for public_path in self.public_paths:
+            # Handle parameterized routes by checking if path starts with the pattern
+            if public_path.endswith('{email}') and path.startswith(public_path.replace('{email}', '')):
+                return True
+            # Exact match for non-parameterized routes
+            if path == public_path:
+                return True
+        return False
 
     async def dispatch(self, request: Request, call_next):
         if self.is_public_path(request.url.path):

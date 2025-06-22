@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from ..middleware.auth import UserRole
@@ -77,3 +77,17 @@ async def refresh(
         return auth_service.renew_token(refresh_data.refresh_token)
     except Exception as e:
         raise HTTPException(status_code=401, detail=str(e))
+
+
+@router.post("/resetPassword/{email}")
+async def reset_password(
+    email: str, auth_service: AuthService = Depends(get_auth_service)
+):
+    try:
+        auth_service.reset_password(email)
+        # Return 204 No Content for successful password reset email sending
+        return Response(status_code=204)
+    except Exception as e:
+        # Don't reveal if email exists or not for security reasons
+        # Always return success even if email doesn't exist
+        return Response(status_code=204)
