@@ -5,6 +5,7 @@ from app.schemas.user import UserRole
 from app.schemas.volunteer_data import (
     VolunteerDataCreateRequest,
     VolunteerDataListResponse,
+    VolunteerDataPublicSubmission,
     VolunteerDataResponse,
     VolunteerDataUpdateRequest,
 )
@@ -15,6 +16,27 @@ router = APIRouter(
     prefix="/volunteer-data",
     tags=["volunteer-data"],
 )
+
+
+# Public endpoint - anyone can submit volunteer data
+@router.post("/submit", response_model=VolunteerDataResponse)
+async def submit_volunteer_data(
+    volunteer_data: VolunteerDataPublicSubmission,
+    volunteer_data_service: VolunteerDataService = Depends(get_volunteer_data_service),
+):
+    """Public endpoint for volunteers to submit their application data"""
+    try:
+        create_request = VolunteerDataCreateRequest(
+            user_id=None,
+            experience=volunteer_data.experience,
+            references_json=volunteer_data.references_json,
+            additional_comments=volunteer_data.additional_comments,
+        )
+        return await volunteer_data_service.create_volunteer_data(create_request)
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Admin only - create volunteer data

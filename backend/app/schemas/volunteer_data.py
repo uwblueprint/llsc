@@ -25,7 +25,15 @@ class VolunteerDataCreateRequest(VolunteerDataBase):
     Request schema for creating volunteer data
     """
     
-    user_id: UUID = Field(..., description="User ID this volunteer data belongs to")
+    user_id: Optional[UUID] = Field(None, description="User ID this volunteer data belongs to (optional for public submissions)")
+
+
+class VolunteerDataPublicSubmission(VolunteerDataBase):
+    """
+    Request schema for public volunteer data submissions (no user_id required)
+    """
+    
+    pass
 
 
 class VolunteerDataUpdateRequest(BaseModel):
