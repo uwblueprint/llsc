@@ -7,9 +7,11 @@ import {
   Stack,
   VStack,
   Flex,
+  Textarea,
 } from '@chakra-ui/react';
 import ProfileTextInput from './ProfileTextInput';
 import ProfileDropdown from './ProfileDropdown';
+import ProfileHeader from './ProfileHeader';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
@@ -21,6 +23,7 @@ interface PersonalDetailsProps {
     birthday: string;
     gender: string;
     timezone: string;
+    pronouns: string;
     overview: string;
   };
   setPersonalDetails: React.Dispatch<React.SetStateAction<{
@@ -29,6 +32,7 @@ interface PersonalDetailsProps {
     birthday: string;
     gender: string;
     timezone: string;
+    pronouns: string;
     overview: string;
   }>>;
 }
@@ -52,20 +56,8 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
   ];
 
   return (
-    <Box bg="white" p={6} h="494px">
-      <Heading 
-        w="519px"
-        h="40px"
-        fontSize="1.625rem"
-        fontWeight={600}
-        lineHeight="40px"
-        letterSpacing="0%"
-        color="#1D3448"
-        fontFamily="'Open Sans', sans-serif"
-        mb={6}
-      >
-        Personal details
-      </Heading>
+    <Box bg="white" p={0} minH="556px">
+      <ProfileHeader>Personal details</ProfileHeader>
       
       <Flex gap="6.5%" mt="32px" align="start">
         <VStack gap={8} flex="1" align="stretch">
@@ -87,6 +79,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
             onChange={(e) => setPersonalDetails(prev => ({ ...prev, timezone: e.target.value }))}
             options={timezoneOptions}
           />
+          
         </VStack>
 
         <VStack gap={8} flex="1" align="stretch">
@@ -102,21 +95,25 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
             onChange={(e) => setPersonalDetails(prev => ({ ...prev, gender: e.target.value }))}
             options={genderOptions}
           />
-          
-          <Box>
-            <ProfileTextInput
-              label="Overview"
-              value={personalDetails.overview}
-              onChange={(e) => setPersonalDetails(prev => ({ ...prev, overview: e.target.value }))}
-              isTextarea={true}
-              rows={4}
-            />
-            <Text fontSize="sm" color={fieldGray} fontFamily="'Open Sans', sans-serif" mt={2}>
-              Explain your story! Participants will be able to learn more about you.
-            </Text>
-          </Box>
+
+          <ProfileTextInput
+            label="Pronouns"
+            value={personalDetails.pronouns}
+            onChange={(e) => setPersonalDetails(prev => ({ ...prev, pronouns: e.target.value }))}
+          />
         </VStack>
       </Flex>
+      
+      <Box mt={8}>
+        <ProfileTextInput
+          label="Overview"
+          value={personalDetails.overview}
+          onChange={(e) => setPersonalDetails(prev => ({ ...prev, overview: e.target.value }))}
+          isTextarea={true}
+          rows={2}
+          helperText="Explain your story! Participants will be able to learn more about you."
+        />
+      </Box>
     </Box>
   );
 };

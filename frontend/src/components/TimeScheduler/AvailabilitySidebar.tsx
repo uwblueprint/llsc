@@ -37,10 +37,6 @@ const AvailabilitySidebar: React.FC<AvailabilitySidebarProps> = ({
 
   return (
     <Box>
-      <Text fontWeight="bold" mb={4} fontSize="md">
-        Your Availability
-      </Text>
-      
       <VStack gap={4} align="stretch">
         {sortedDays.length > 0 ? (
           sortedDays.map((day) => (

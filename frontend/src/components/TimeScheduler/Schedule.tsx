@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { BiArrowBack } from 'react-icons/bi';
 import TimeScheduler from './TimeScheduler';
-import AvailabilitySidebar from './AvailabilitySidebar';
+import ProfileHeader from '../profile/ProfileHeader';
 import type { TimeSlot } from './types';
 
 interface ScheduleProps {
@@ -76,15 +76,7 @@ const Schedule: React.FC<ScheduleProps> = ({ onConfirm }) => {
             <VStack gap={8} align="stretch">
               {/* Schedule Section Header */}
               <Box>
-                <Heading
-                  size="2xl"
-                  mb={2}
-                  color="#1D3448"
-                  fontFamily="'Open Sans', sans-serif"
-                  fontWeight={600}
-                >
-                  Select your availability
-                </Heading>
+                <ProfileHeader>Select your availability</ProfileHeader>
                 <Text
                   color="#414651"
                   fontSize="md"
@@ -97,23 +89,11 @@ const Schedule: React.FC<ScheduleProps> = ({ onConfirm }) => {
               </Box>
 
               {/* Main Grid Layout */}
-              <HStack gap={8} align="start">
-                {/* Time Grid */}
-                <Box flex="2">
-                  <Text fontWeight="medium" mb={4} color="veniceBlue" fontFamily="body">
-                    Your availability:
-                  </Text>
-                  <TimeScheduler
-                    selectedTimeSlots={selectedTimeSlots}
-                    onTimeSlotToggle={handleTimeSlotToggle}
-                  />
-                </Box>
-
-                {/* Sidebar */}
-                <Box flex="1">
-                  <AvailabilitySidebar selectedTimeSlots={selectedTimeSlots} />
-                </Box>
-              </HStack>
+              <TimeScheduler
+                selectedTimeSlots={selectedTimeSlots}
+                onTimeSlotToggle={handleTimeSlotToggle}
+                showAvailability={true}
+              />
 
               {/* Additional Information */}
               <Box>

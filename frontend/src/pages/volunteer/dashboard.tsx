@@ -16,6 +16,8 @@ import { useRouter } from 'next/router';
 import { BiArrowBack } from 'react-icons/bi';
 import PersonalDetails from '../../components/profile/PersonalDetails';
 import BloodCancerExperience from '../../components/profile/BloodCancerExperience';
+import ProfileHeader from '@/components/profile/ProfileHeader';
+import ActionButton from '../../components/profile/EditButton';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
@@ -35,26 +37,21 @@ const VolunteerDashboard: React.FC = () => {
     email: 'john@llsc.ca',
     birthday: 'May 22, 2004',
     gender: 'Male',
+    pronouns: 'he/him',
     timezone: 'Eastern Standard Time (EST) • 11:40 AM',
     overview: 'My journey with blood cancer started when I was about twelve years old and getting treatment for the first time was extremely stress-inducing. My journey with blood cancer started when I was about twelve years old and getting treatment for the first time was extremely stress-inducing.'
   });
 
   // Blood cancer experience state for profile
   const [cancerExperience, setCancerExperience] = useState({
-    diagnosis: 'Acute Myeloid Leukemia',
+    diagnosis: ['Acute Myeloid Leukemia', 'Acute Promyelocytic Leukemia'],
     dateOfDiagnosis: '',
     treatments: ['Chemotherapy'],
     experiences: ['Brain Fog', 'Fertility Issues', 'Speaking to your family or friends about the diagnosis']
   });
 
   // Availability state for profile
-  const [profileTimeSlots, setProfileTimeSlots] = useState<TimeSlot[]>([
-    { day: 'Monday', time: '12:00 - 1:00', selected: true },
-    { day: 'Monday', time: '1:00 - 2:00', selected: true },
-    { day: 'Monday', time: '2:00 - 3:00', selected: true },
-    { day: 'Monday', time: '3:00 - 4:00', selected: true },
-    { day: 'Monday', time: '4:00 - 5:00', selected: true },
-  ]);
+  const [profileTimeSlots, setProfileTimeSlots] = useState<TimeSlot[]>([]);
 
   useEffect(() => {
     // Example: Check localStorage for a flag
@@ -194,6 +191,7 @@ const VolunteerDashboard: React.FC = () => {
           <TimeScheduler
             selectedTimeSlots={selectedTimeSlots}
             onTimeSlotToggle={handleTimeSlotToggle}
+            showAvailability={false}
           />
         </Box>
         
@@ -229,7 +227,7 @@ const VolunteerDashboard: React.FC = () => {
   // Profile Page Content
   return (
     <Box minH="100vh" bg="white" py={6} display="flex" justifyContent="center">
-      <Box minH="2409px" overflow="auto">
+      <Box minH="2409px" overflow="auto" w="85%">
         <VStack gap={6} align="stretch" p={6}>
           {/* Back Button */}
           <HStack gap={2} align="center" cursor="pointer" onClick={handleBack}>
@@ -256,81 +254,37 @@ const VolunteerDashboard: React.FC = () => {
                 Edit Profile
               </Heading>
 
-              {/* Wrapper for Personal Details, Blood Cancer Experience, and Availability */}
               <Box mt="48px">
                 <VStack gap={0} align="stretch">
-                  {/* Personal Details Section - Using Component */}
                   <PersonalDetails
                     personalDetails={personalDetails}
                     setPersonalDetails={setPersonalDetails}
                   />
-
-                  {/* Blood Cancer Experience Section - Using Component */}
                   <BloodCancerExperience
                     cancerExperience={cancerExperience}
                     setCancerExperience={setCancerExperience}
                     onEditTreatments={handleEditTreatments}
                     onEditExperiences={handleEditExperiences}
                   />
-
-                  {/* Availability Section - Reusing TimeScheduler */}
-                  <Box bg="white" p={6}>
+                  <Box bg="white" p={0} mt="116px">
                     <HStack justify="space-between" align="center" mb={6}>
-                      <Heading 
-                        size="md" 
-                        color={veniceBlue} 
-                        fontFamily="'Open Sans', sans-serif"
-                        fontWeight={600}
-                      >
-                        Your availability
-                      </Heading>
-                      <Button 
-                        size="sm" 
-                        bg={teal} 
-                        color="white" 
-                        onClick={handleEditAvailability}
-                        fontFamily="'Open Sans', sans-serif"
-                        _hover={{ bg: "#044d4d" }}
-                      >
+                    <ProfileHeader>Your availability</ProfileHeader>
+                      <ActionButton onClick={handleEditAvailability}>
                         Edit
-                      </Button>
+                      </ActionButton>
                     </HStack>
                     
                     <Text fontSize="sm" color={fieldGray} mb={4} fontFamily="'Open Sans', sans-serif">
                       We require that availability be provided in sessions of at least 2 hours.
                     </Text>
 
-                    <HStack gap={8} align="start">
-                      {/* Time Grid - Reusing TimeScheduler */}
-                      <Box flex="2" h="400px">
-                        <TimeScheduler
-                          selectedTimeSlots={profileTimeSlots}
-                          onTimeSlotToggle={handleProfileTimeSlotToggle}
-                        />
-                      </Box>
-
-                      {/* Availability Summary */}
-                      <Box flex="1">
-                        <Text fontWeight="bold" mb={4} fontSize="md" color={veniceBlue} fontFamily="'Open Sans', sans-serif">
-                          Your Availability
-                        </Text>
-                        
-                        <VStack gap={2} align="stretch">
-                          <Text fontWeight="medium" fontSize="sm" color={fieldGray} fontFamily="'Open Sans', sans-serif">
-                            Monday
-                          </Text>
-                          {profileTimeSlots
-                            .filter(slot => slot.day === 'Monday')
-                            .map((slot, index) => (
-                              <HStack key={index}>
-                                <Text fontSize="sm" color="blue.600" fontFamily="'Open Sans', sans-serif">
-                                  {slot.time}
-                                </Text>
-                              </HStack>
-                            ))}
-                        </VStack>
-                      </Box>
-                    </HStack>
+                    <Box h="400px">
+                      <TimeScheduler
+                        selectedTimeSlots={profileTimeSlots}
+                        onTimeSlotToggle={handleProfileTimeSlotToggle}
+                        showAvailability={true}
+                      />
+                    </Box>
                   </Box>
                 </VStack>
               </Box>

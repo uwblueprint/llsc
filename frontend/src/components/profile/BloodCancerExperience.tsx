@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Heading,
@@ -7,9 +7,14 @@ import {
   HStack,
   Button,
   Stack,
+  Flex,
 } from '@chakra-ui/react';
 import ProfileTextInput from './ProfileTextInput';
 import ProfileDropdown from './ProfileDropdown';
+import ProfileMultiSelectDropdown from './ProfileMultiSelectDropdown';
+import ProfileHeader from './ProfileHeader';
+import ActionButton from './EditButton';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
@@ -17,13 +22,13 @@ const teal = '#056067';
 
 interface BloodCancerExperienceProps {
   cancerExperience: {
-    diagnosis: string;
+    diagnosis: string[];
     dateOfDiagnosis: string;
     treatments: string[];
     experiences: string[];
   };
   setCancerExperience: React.Dispatch<React.SetStateAction<{
-    diagnosis: string;
+    diagnosis: string[];
     dateOfDiagnosis: string;
     treatments: string[];
     experiences: string[];
@@ -38,35 +43,95 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
   onEditTreatments,
   onEditExperiences,
 }) => {
+  const [isEditingTreatments, setIsEditingTreatments] = useState(false);
+  const [isEditingExperiences, setIsEditingExperiences] = useState(false);
+  const [otherTreatment, setOtherTreatment] = useState('');
+  const [otherExperience, setOtherExperience] = useState('');
+
+  const treatmentOptions = [
+    'Unknown',
+    'Watch and Wait / Active Surveillance',
+    'Chemotherapy',
+    'Immunotherapy',
+    'Oral Chemotherapy',
+    'Radiation',
+    'Maintenance Chemotherapy',
+    'Palliative Care',
+    'Transfusions',
+    'Autologous Stem Cell Transplant',
+    'Allogeneic Stem Cell Transplant',
+    'Haplo Stem Cell Transplant',
+    'CAR-T',
+    'BTK Inhibitors',
+    'Other'
+  ];
+
+  const experienceOptions = [
+    'Hair loss',
+    'Fatigue and weakness',
+    'Nausea and vomiting',
+    'Loss of appetite',
+    'Weight changes',
+    'Mouth sores',
+    'Skin changes',
+    'Peripheral neuropathy',
+    'Infection risk',
+    'Bleeding or bruising',
+    'Memory and concentration issues',
+    'Emotional challenges',
+    'Sleep disturbances',
+    'Pain management',
+    'Fertility concerns',
+    'Other'
+  ];
+
+  const handleTreatmentToggle = (treatment: string) => {
+    setCancerExperience(prev => ({
+      ...prev,
+      treatments: prev.treatments.includes(treatment)
+        ? prev.treatments.filter(t => t !== treatment)
+        : prev.treatments.length < 2
+          ? [...prev.treatments, treatment]
+          : prev.treatments
+    }));
+  };
+
+  const handleExperienceToggle = (experience: string) => {
+    setCancerExperience(prev => ({
+      ...prev,
+      experiences: prev.experiences.includes(experience)
+        ? prev.experiences.filter(e => e !== experience)
+        : prev.experiences.length < 5
+          ? [...prev.experiences, experience]
+          : prev.experiences
+    }));
+  };
+
   const diagnosisOptions = [
+    { value: 'Unknown', label: 'Unknown' },
     { value: 'Acute Myeloid Leukemia', label: 'Acute Myeloid Leukemia' },
-    { value: 'Acute Lymphoid Leukemia', label: 'Acute Lymphoid Leukemia' },
+    { value: 'Acute Lymphoblastic Leukemia', label: 'Acute Lymphoblastic Leukemia' },
+    { value: 'Acute Promyelocytic Leukemia', label: 'Acute Promyelocytic Leukemia' },
+    { value: 'Mixed Phenotype Leukemia', label: 'Mixed Phenotype Leukemia' },
+    { value: 'Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma', label: 'Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma' },
     { value: 'Chronic Myeloid Leukemia', label: 'Chronic Myeloid Leukemia' },
-    { value: 'Chronic Lymphoid Leukemia', label: 'Chronic Lymphoid Leukemia' },
-    { value: 'Hodgkin Lymphoma', label: 'Hodgkin Lymphoma' },
-    { value: 'Non-Hodgkin Lymphoma', label: 'Non-Hodgkin Lymphoma' },
-    { value: 'Multiple Myeloma', label: 'Multiple Myeloma' },
+    { value: 'Hairy Cell Leukemia', label: 'Hairy Cell Leukemia' },
+    { value: 'Myeloma/Multiple Myeloma', label: 'Myeloma/Multiple Myeloma' },
   ];
 
   return (
-    <Box bg="white" p={6}>
-      <Heading 
-        size="md" 
-        mb={6} 
-        color={veniceBlue} 
-        fontFamily="'Open Sans', sans-serif"
-        fontWeight={600}
-      >
-        Blood cancer experience information
-      </Heading>
+    <Box bg="white" p={0} mt="116px" minH="288px">
+      <ProfileHeader>Blood cancer experience information</ProfileHeader>
       
-      <Stack gap={6}>
-        <HStack gap={6} align="start">
-          <ProfileDropdown
+      <VStack gap={8} mt="32px" align="stretch">
+        <Flex gap="6.5%" align="start">
+          <ProfileMultiSelectDropdown
             label="Your Diagnosis"
             value={cancerExperience.diagnosis}
-            onChange={(e) => setCancerExperience(prev => ({ ...prev, diagnosis: e.target.value }))}
+            onChange={(selectedValues) => setCancerExperience(prev => ({ ...prev, diagnosis: selectedValues }))}
             options={diagnosisOptions}
+            maxSelections={3}
+            flex="1"
           />
           
           <ProfileTextInput
@@ -74,79 +139,196 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
             value={cancerExperience.dateOfDiagnosis}
             onChange={(e) => setCancerExperience(prev => ({ ...prev, dateOfDiagnosis: e.target.value }))}
             placeholder="DD/MM/YYYY"
+            flex="1"
           />
-        </HStack>
+        </Flex>
 
-        <HStack gap={6} align="start">
+        <Flex gap="6.5%" align="start">
           <Box flex="1">
-            <Box
-              w="580px"
-              h="30px"
-              fontSize="1rem"
-              fontWeight={600}
-              lineHeight="30px"
-              letterSpacing="0%"
-              color="#1D3448"
-              fontFamily="'Open Sans', sans-serif"
-              mb={4}
-            >
-              Treatments you have done
-            </Box>
-            <HStack>
-              <Text fontSize="sm" color={fieldGray} fontFamily="'Open Sans', sans-serif">
-                Chemotherapy
-              </Text>
-              <Button 
-                size="sm" 
-                bg={teal} 
-                color="white" 
-                onClick={onEditTreatments}
+            <HStack justify="space-between" align="center" mb={4}>
+              <Box
+                fontSize="1rem"
+                fontWeight={600}
+                lineHeight="30px"
+                letterSpacing="0%"
+                color="#1D3448"
                 fontFamily="'Open Sans', sans-serif"
-                _hover={{ bg: "#044d4d" }}
               >
-                Edit
-              </Button>
+                Treatments you have done
+              </Box>
+              <ActionButton onClick={() => setIsEditingTreatments(!isEditingTreatments)}>
+                {isEditingTreatments ? 'Save' : 'Edit'}
+              </ActionButton>
             </HStack>
+            
+            {isEditingTreatments ? (
+              <VStack align="start" gap={3}>
+                <Box mb={6}>
+                  <Text 
+                    fontSize="14px"
+                    color="#495D6C"
+                    fontFamily="'Open Sans', sans-serif"
+                    fontWeight={500}
+                    fontStyle="italic"
+                  >
+                    You can select a maximum of 2.
+                  </Text>
+                </Box>
+                {treatmentOptions.map((treatment) => {
+                  const isSelected = cancerExperience.treatments.includes(treatment);
+                  const isDisabled = !isSelected && cancerExperience.treatments.length >= 2;
+                  
+                  return (
+                    <VStack key={treatment} align="start" gap={2}>
+                      <HStack
+                        align="center"
+                        gap={2}
+                        cursor={isDisabled ? 'not-allowed' : 'pointer'}
+                        opacity={isDisabled ? 0.5 : 1}
+                        onClick={() => !isDisabled && handleTreatmentToggle(treatment)}
+                      >
+                        <Checkbox
+                          checked={isSelected}
+                          disabled={isDisabled}
+                          onChange={() => handleTreatmentToggle(treatment)}
+                        />
+                        <Text 
+                          fontSize="16px"
+                          fontWeight={400}
+                          lineHeight="100%"
+                          letterSpacing="0%"
+                          color="#495D6C"
+                          fontFamily="'Open Sans', sans-serif"
+                        >
+                          {treatment}
+                        </Text>
+                      </HStack>
+                      {treatment === 'Other' && isSelected && (
+                        <Box ml={6}>
+                          <ProfileTextInput
+                            label=""
+                            value={otherTreatment}
+                            onChange={(e) => setOtherTreatment(e.target.value)}
+                            placeholder="Please specify..."
+                          />
+                        </Box>
+                      )}
+                    </VStack>
+                  );
+                })}
+              </VStack>
+            ) : (
+              <VStack align="start" gap={2}>
+                {cancerExperience.treatments.map((treatment, index) => (
+                  <Text 
+                    key={index}
+                    fontSize="16px"
+                    fontWeight={400}
+                    lineHeight="100%"
+                    letterSpacing="0%"
+                    color="#495D6C"
+                    fontFamily="'Open Sans', sans-serif"
+                  >
+                    {treatment}
+                  </Text>
+                ))}
+              </VStack>
+            )}
           </Box>
-          
+
           <Box flex="1">
-            <Box
-              w="580px"
-              h="30px"
-              fontSize="1rem"
-              fontWeight={600}
-              lineHeight="30px"
-              letterSpacing="0%"
-              color="#1D3448"
-              fontFamily="'Open Sans', sans-serif"
-              mb={4}
-            >
-              Experiences you had
-            </Box>
-            <VStack align="start" gap={2}>
-              <Text fontSize="sm" color={fieldGray} fontFamily="'Open Sans', sans-serif">
-                Brain Fog
-              </Text>
-              <Text fontSize="sm" color={fieldGray} fontFamily="'Open Sans', sans-serif">
-                Fertility Issues
-              </Text>
-              <Text fontSize="sm" color={fieldGray} fontFamily="'Open Sans', sans-serif">
-                Speaking to your family or friends about the diagnosis
-              </Text>
-              <Button 
-                size="sm" 
-                bg={teal} 
-                color="white" 
-                onClick={onEditExperiences}
+            <HStack justify="space-between" align="center" mb={4}>
+              <Box
+                fontSize="1rem"
+                fontWeight={600}
+                lineHeight="30px"
+                letterSpacing="0%"
+                color="#1D3448"
                 fontFamily="'Open Sans', sans-serif"
-                _hover={{ bg: "#044d4d" }}
               >
-                Edit
-              </Button>
-            </VStack>
+                Experiences you had
+              </Box>
+              <ActionButton onClick={() => setIsEditingExperiences(!isEditingExperiences)}>
+                {isEditingExperiences ? 'Save' : 'Edit'}
+              </ActionButton>
+            </HStack>
+            
+            {isEditingExperiences ? (
+              <VStack align="start" gap={3}>
+                <Box mb={6}>
+                  <Text 
+                    fontSize="14px"
+                    color="#495D6C"
+                    fontFamily="'Open Sans', sans-serif"
+                    fontWeight={500}
+                    fontStyle="italic"
+                  >
+                    You can select a maximum of 5.
+                  </Text>
+                </Box>
+                {experienceOptions.map((experience) => {
+                  const isSelected = cancerExperience.experiences.includes(experience);
+                  const isDisabled = !isSelected && cancerExperience.experiences.length >= 5;
+                  
+                  return (
+                    <VStack key={experience} align="start" gap={2}>
+                      <HStack
+                        align="center"
+                        gap={2}
+                        cursor={isDisabled ? 'not-allowed' : 'pointer'}
+                        opacity={isDisabled ? 0.5 : 1}
+                        onClick={() => !isDisabled && handleExperienceToggle(experience)}
+                      >
+                        <Checkbox
+                          checked={isSelected}
+                          disabled={isDisabled}
+                          onChange={() => handleExperienceToggle(experience)}
+                        />
+                        <Text 
+                          fontSize="16px"
+                          fontWeight={400}
+                          lineHeight="100%"
+                          letterSpacing="0%"
+                          color="#495D6C"
+                          fontFamily="'Open Sans', sans-serif"
+                        >
+                          {experience}
+                        </Text>
+                      </HStack>
+                      {experience === 'Other' && isSelected && (
+                        <Box ml={6}>
+                          <ProfileTextInput
+                            label=""
+                            value={otherExperience}
+                            onChange={(e) => setOtherExperience(e.target.value)}
+                            placeholder="Please specify..."
+                          />
+                        </Box>
+                      )}
+                    </VStack>
+                  );
+                })}
+              </VStack>
+            ) : (
+              <VStack align="start" gap={2}>
+                {cancerExperience.experiences.map((experience, index) => (
+                  <Text 
+                    key={index}
+                    fontSize="16px"
+                    fontWeight={400}
+                    lineHeight="100%"
+                    letterSpacing="0%"
+                    color="#495D6C"
+                    fontFamily="'Open Sans', sans-serif"
+                  >
+                    {experience}
+                  </Text>
+                ))}
+              </VStack>
+            )}
           </Box>
-        </HStack>
-      </Stack>
+        </Flex>
+      </VStack>
     </Box>
   );
 };

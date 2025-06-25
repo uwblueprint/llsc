@@ -1,6 +1,8 @@
 import React from 'react';
 import {
   Box,
+  Text,
+  Textarea,
 } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 
@@ -12,6 +14,7 @@ interface ProfileTextInputProps {
   isTextarea?: boolean;
   rows?: number;
   flex?: string;
+  helperText?: string;
 }
 
 const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
@@ -20,21 +23,40 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
   onChange,
   placeholder,
   isTextarea = false,
-  rows = 4,
+  rows = 2,
   flex = "1",
+  helperText,
 }) => {
   const styledLabel = (
-    <Box
-      w="100%"
-      h="30px"
-      fontSize="1rem"
-      fontWeight={600}
-      lineHeight="30px"
-      letterSpacing="0%"
-      color="#1D3448"
-      fontFamily="'Open Sans', sans-serif"
-    >
-      {label}
+    <Box>
+      <Box
+        w="100%"
+        h="30px"
+        fontSize="1rem"
+        fontWeight={600}
+        lineHeight="30px"
+        letterSpacing="0%"
+        color="#1D3448"
+        fontFamily="'Open Sans', sans-serif"
+      >
+        {label}
+      </Box>
+      {helperText && (
+        <Text 
+          w="580px"
+          h="22px"
+          fontSize="16px" 
+          fontWeight={400}
+          lineHeight="100%"
+          letterSpacing="0%"
+          color="#495D6C" 
+          fontFamily="'Open Sans', sans-serif" 
+          mt={1} 
+          mb={2}
+        >
+          {helperText}
+        </Text>
+      )}
     </Box>
   );
 
@@ -61,7 +83,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
   if (isTextarea) {
     return (
       <Field label={styledLabel} flex={flex}>
-        <textarea
+        <Textarea
           value={value}
           onChange={onChange as any}
           placeholder={placeholder}
@@ -69,7 +91,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
           style={{
             ...inputStyles,
             resize: 'vertical',
-            minHeight: `${rows * 24 + 20}px`,
+            minHeight: `${rows * 20 + 24}px`,
           }}
           onFocus={(e) => {
             e.target.style.borderColor = '#319795';
