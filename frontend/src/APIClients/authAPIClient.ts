@@ -103,18 +103,15 @@ export const register = async ({
 };
 
 const resetPassword = async (email: string | undefined): Promise<boolean> => {
-    const bearerToken = `Bearer ${getLocalStorageObjProperty(
-      AUTHENTICATED_USER_KEY,
-      "accessToken",
-    )}`;
     try {
       await baseAPIClient.post(
         `/auth/resetPassword/${email}`,
         {},
-        { headers: { Authorization: bearerToken } },
+        { withCredentials: true },
       );
       return true;
     } catch (error) {
+      console.error('Reset password error:', error);
       return false;
     }
 };
