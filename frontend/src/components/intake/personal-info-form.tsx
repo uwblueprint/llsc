@@ -6,6 +6,8 @@ import { InputGroup } from '@/components/ui/input-group';
 import { FormField } from '@/components/ui/form-field';
 import { ExperienceTypeSection } from '@/components/intake/experience-type-section';
 import { COLORS, PROVINCES, VALIDATION, ExperienceData, PersonalData } from '@/constants/form';
+import { CustomRadio } from '@/components/CustomRadio';
+import { useRouter } from 'next/router';
 
 interface PersonalInfoFormData {
   hasBloodCancer: 'yes' | 'no' | '';
@@ -17,6 +19,7 @@ interface PersonalInfoFormData {
   postalCode: string;
   city: string;
   province: string;
+  hasCriminalRecord: 'yes' | 'no' | '';
 }
 
 interface PersonalInfoFormProps {
@@ -24,10 +27,8 @@ interface PersonalInfoFormProps {
   onSubmit: (experienceData: ExperienceData, personalData: PersonalData) => void;
 }
 
-export function PersonalInfoForm({
-  formType,
-  onSubmit,
-}: PersonalInfoFormProps) {
+export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) {
+  const router = useRouter();
   const {
     control,
     handleSubmit,
@@ -43,6 +44,7 @@ export function PersonalInfoForm({
       postalCode: '',
       city: '',
       province: '',
+      hasCriminalRecord: '',
     },
   });
 
@@ -52,11 +54,18 @@ export function PersonalInfoForm({
       return; // Form validation will show errors
     }
 
+    // Check if user has criminal record (only for volunteers)
+    if (formType === 'volunteer' && data.hasCriminalRecord === 'yes') {
+      // Redirect to rejection page
+      router.push('/rejection');
+      return;
+    }
+
     const experienceData: ExperienceData = {
       hasBloodCancer: data.hasBloodCancer as 'yes' | 'no',
       caringForSomeone: data.caringForSomeone as 'yes' | 'no',
     };
-    
+
     const personalData: PersonalData = {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -66,13 +75,14 @@ export function PersonalInfoForm({
       city: data.city,
       province: data.province,
     };
-    
+
     onSubmit(experienceData, personalData);
   };
 
-  const formTitle = formType === 'participant' 
-    ? 'First Connection Participant Form'
-    : 'First Connection Volunteer Form';
+  const formTitle =
+    formType === 'participant'
+      ? 'First Connection Participant Form'
+      : 'First Connection Volunteer Form';
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
@@ -331,6 +341,63 @@ export function PersonalInfoForm({
           </HStack>
         </VStack>
       </Box>
+
+      {/* Criminal Record Section */}
+      {formType === 'volunteer' && (
+        <Box mb={10}>
+          <Text
+            color={COLORS.veniceBlue}
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontWeight={500}
+            fontSize="14px"
+            mb={4}
+          >
+            Do you have a criminal record?
+          </Text>
+          <Controller
+            name="hasCriminalRecord"
+            control={control}
+            rules={{ required: formType === 'volunteer' ? 'This field is required' : false }}
+            render={({ field }) => (
+              <VStack align="start" gap={1}>
+                <CustomRadio
+                  name="hasCriminalRecord"
+                  value="yes"
+                  checked={field.value === 'yes'}
+                  onChange={(value) => field.onChange(value)}
+                >
+                  <Text
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                  >
+                    Yes
+                  </Text>
+                </CustomRadio>
+                <CustomRadio
+                  name="hasCriminalRecord"
+                  value="no"
+                  checked={field.value === 'no'}
+                  onChange={(value) => field.onChange(value)}
+                >
+                  <Text
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                  >
+                    No
+                  </Text>
+                </CustomRadio>
+                {errors.hasCriminalRecord && (
+                  <Text color="red.500" fontSize="12px" mt={1}>
+                    {errors.hasCriminalRecord.message}
+                  </Text>
+                )}
+              </VStack>
+            )}
+          />
+        </Box>
+      )}
 
       {/* Submit Button */}
       <Box w="full" display="flex" justifyContent="flex-end">
