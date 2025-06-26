@@ -52,7 +52,8 @@ class AuthService(IAuthService):
             url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={os.getenv('FIREBASE_WEB_API_KEY')}"
             data = {
                 "requestType": "PASSWORD_RESET",
-                "email": email
+                "email": email,
+                "continueUrl": "http://localhost:3000/set-new-password"  # Custom action URL
             }
             
             response = requests.post(url, json=data)
