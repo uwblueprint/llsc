@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -7,11 +8,17 @@ import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
 import authAPIClient from '@/APIClients/authAPIClient';
 import { UserRole } from '@/types/AuthTypes';
+=======
+import React from 'react';
+import { Box, Flex, Heading, Text, Button, VStack } from '@chakra-ui/react';
+import { useRouter } from 'next/router';
+import { COLORS } from '@/constants/form';
+>>>>>>> origin/richieb21/LLSC-66-intake-form
 
-const veniceBlue = '#1d3448';
-const fieldGray = '#414651';
-const teal = '#056067';
+export default function HomePage() {
+  const router = useRouter();
 
+<<<<<<< HEAD
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -52,50 +59,39 @@ export default function LoginPage() {
     }
   };
 
+=======
+>>>>>>> origin/richieb21/LLSC-66-intake-form
   return (
-    <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Left: Login Form */}
-      <Flex
-        flex="1"
-        align="center"
-        justify="center"
-        px={{ base: 4, md: 12 }}
-        py={{ base: 16, md: 0 }}
+    <Flex minH="100vh" bg={COLORS.lightGray} justify="center" alignItems="center" py={12}>
+      <Box
+        w="full"
+        maxW="600px"
         bg="white"
-        minH={{ base: '60vh', md: '100vh' }}
+        borderRadius="8px"
+        boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+        p={12}
+        textAlign="center"
       >
-        <Box w="full" maxW="520px">
+        <VStack gap={8}>
           <Heading
             as="h1"
-            fontFamily="'Open Sans', sans-serif"
+            fontFamily="system-ui, -apple-system, sans-serif"
             fontWeight={600}
-            color={veniceBlue}
-            fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}
-            lineHeight="50px"
-            mb={2}
+            color={COLORS.veniceBlue}
+            fontSize="32px"
           >
-            First Connection Peer<br />Support Program
+            First Connection
           </Heading>
-          <Heading
-            as="h2"
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={600}
-            color={veniceBlue}
-            fontSize={{ base: 'xl', md: '2xl' }}
-            mb={6}
-            mt={8}
-          >
-            Welcome Back!
-          </Heading>
+          
           <Text
-            mb={8}
-            color={veniceBlue}
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={400}
-            fontSize="lg"
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontSize="16px"
+            color={COLORS.fieldGray}
+            lineHeight="1.6"
           >
-            Sign in with your email and password.
+            Choose your intake form type to get started
           </Text>
+<<<<<<< HEAD
           <form onSubmit={handleSubmit}>
             <Field
               label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
@@ -166,17 +162,15 @@ export default function LoginPage() {
                 {error}
               </Text>
             )}
+=======
+
+          <VStack gap={4} w="full" maxW="400px">
+>>>>>>> origin/richieb21/LLSC-66-intake-form
             <Button
-              type="submit"
-              w="100%"
-              maxW="518px"
-              mt={2}
-              size="lg"
-              fontWeight={600}
-              fontFamily="'Open Sans', sans-serif"
-              fontSize="lg"
-              bg={teal}
+              onClick={() => router.push('/participant/intake')}
+              bg={COLORS.teal}
               color="white"
+<<<<<<< HEAD
               borderRadius="8px"
               border="1px solid #056067"
               boxShadow="0 1px 2px 0 #0A0D12, 0 0 0 0 transparent"
@@ -185,30 +179,51 @@ export default function LoginPage() {
               py={3}
               loading={isLoading}
               loadingText="Signing In..."
+=======
+              _hover={{ bg: COLORS.teal, opacity: 0.9 }}
+              _active={{ bg: COLORS.teal }}
+              w="full"
+              h="50px"
+              fontSize="16px"
+              fontWeight={500}
+>>>>>>> origin/richieb21/LLSC-66-intake-form
             >
-              Sign In
+              Participant Intake Form
             </Button>
+<<<<<<< HEAD
           </form>
           <Text mt={8} color={veniceBlue} fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
             Don&apos;t have an account?{' '}
             <Link
               href="/participant-form"
               style={{ color: teal, textDecoration: 'underline', fontWeight: 600, fontFamily: 'Open Sans, sans-serif' }}
+=======
+
+            <Button
+              onClick={() => router.push('/volunteer/intake')}
+              bg={COLORS.veniceBlue}
+              color="white"
+              _hover={{ bg: COLORS.veniceBlue, opacity: 0.9 }}
+              _active={{ bg: COLORS.veniceBlue }}
+              w="full"
+              h="50px"
+              fontSize="16px"
+              fontWeight={500}
+>>>>>>> origin/richieb21/LLSC-66-intake-form
             >
-              Complete our First Connection Participant Form.
-            </Link>
+              Volunteer Intake Form
+            </Button>
+          </VStack>
+
+          <Text
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontSize="14px"
+            color={COLORS.fieldGray}
+            mt={4}
+          >
+            The form will adapt based on your selections about blood cancer experience and caregiving status.
           </Text>
-        </Box>
-      </Flex>
-      {/* Right: Image */}
-      <Box flex="1" display={{ base: 'none', md: 'block' }} position="relative" minH="100vh">
-        <Image
-          src="/login.png"
-          alt="First Connection Peer Support"
-          fill
-          style={{ objectFit: 'cover', objectPosition: '90% 50%' }}
-          priority
-        />
+        </VStack>
       </Box>
     </Flex>
   );
