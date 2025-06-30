@@ -35,7 +35,10 @@ class UserDataBase(BaseModel):
     children_status: Optional[bool] = None
     treatment: Optional[str] = None
     experience: Optional[str] = None
-    preferences: Optional[str] = None
+    # NOTE: preferences can either be a comma-separated string or an array of strings coming from the
+    # client. We keep the underlying DB column as Text but allow the schema to accept both shapes so
+    # that the service layer can serialise the list form when necessary.
+    preferences: Optional[str | list[str]] = None  # type: ignore[valid-type]
 
 
 class UserDataCreateRequest(UserDataBase):

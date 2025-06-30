@@ -19,6 +19,36 @@ class UserDataService(IUserDataService):
         self.db = db
         self.logger = logging.getLogger(LOGGER_NAME("user_data_service"))
 
+    # ---------------------------------------------------------------------
+    # Internal helpers
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def _serialise_preferences(preferences):
+        """Ensure preferences are stored as a comma-separated string.
+
+        The API allows the client to send either a list of strings **or** a
+        comma-separated string.  This helper converts the list form into the
+        canonical string representation used in the database.
+        """
+        if preferences is None:
+            return None
+
+        # If the incoming value is already a string, strip extra whitespace
+        if isinstance(preferences, str):
+            # Collapse any excess whitespace around commas
+            return ", ".join([p.strip() for p in preferences.split(",") if p.strip()])
+
+        # If it is a list/tuple, join using a comma and space
+        if isinstance(preferences, (list, tuple)):
+            return ", ".join([str(p).strip() for p in preferences if str(p).strip()])
+
+        # Fallback – we do not expect other types, but log in case
+        logging.getLogger(LOGGER_NAME("user_data_service")).warning(
+            "Unexpected preferences data type %s – storing as string", type(preferences)
+        )
+        return str(preferences)
+
     def get_user_data_by_id(self, user_data_id: UUID) -> UserDataResponse:
         """Get user data by its ID"""
         user_data = self.db.query(UserData).filter(UserData.id == user_data_id).first()
@@ -52,8 +82,14 @@ class UserDataService(IUserDataService):
                     detail=f"User data already exists for user {user_data.user_id}",
                 )
 
+            # Prepare payload – ensure preferences field is in the correct format
+            data_dict = user_data.model_dump()
+            data_dict["preferences"] = self._serialise_preferences(
+                data_dict.get("preferences")
+            )
+
             # Create new user data
-            db_user_data = UserData(**user_data.model_dump())
+            db_user_data = UserData(**data_dict)
             self.db.add(db_user_data)
             self.db.commit()
             self.db.refresh(db_user_data)
@@ -83,6 +119,11 @@ class UserDataService(IUserDataService):
 
             # Update only provided fields
             update_data = user_data.model_dump(exclude_unset=True)
+
+            # Serialise preferences if present
+            if "preferences" in update_data:
+                update_data["preferences"] = self._serialise_preferences(update_data["preferences"])
+
             for key, value in update_data.items():
                 setattr(db_user_data, key, value)
 
