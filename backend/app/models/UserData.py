@@ -10,9 +10,7 @@ from .Base import Base
 class UserData(Base):
     __tablename__ = "user_data"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, unique=True
-    )
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, unique=True)
     date_of_birth = Column(Date, nullable=True)
     email = Column(String(120), nullable=True)
     phone = Column(String(20), nullable=True)

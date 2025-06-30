@@ -5,9 +5,7 @@ from app.schemas.user_data import UserDataCreateRequest, UserDataUpdateRequest
 
 
 class IUserDataService(ABC):
-    """
-    UserDataService interface with user data management methods
-    """
+    """Interface with user data management methods."""
 
     @abstractmethod
     def get_user_data_by_id(self, user_data_id: UUID):
@@ -49,9 +47,7 @@ class IUserDataService(ABC):
         pass
 
     @abstractmethod
-    def update_user_data_by_user_id(
-        self, user_id: UUID, user_data: UserDataUpdateRequest
-    ):
+    def update_user_data_by_user_id(self, user_id: UUID, user_data: UserDataUpdateRequest):
         """
         Update user data for a user
 

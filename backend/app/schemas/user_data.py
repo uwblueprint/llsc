@@ -11,9 +11,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserDataBase(BaseModel):
-    """
-    Base schema for user data with common attributes shared across schemas.
-    """
+    """Base schema for user data with common attributes shared across schemas."""
 
     date_of_birth: Optional[date] = None
     email: Optional[EmailStr] = None
