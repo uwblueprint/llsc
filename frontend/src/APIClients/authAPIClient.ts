@@ -116,35 +116,6 @@ const resetPassword = async (email: string | undefined): Promise<boolean> => {
     }
 };
 
-const sendEmailVerification = async (email: string | undefined): Promise<boolean> => {
-    try {
-      console.log(' Attempting to send email verification for:', email);
-      
-      const response = await baseAPIClient.post(
-        `/auth/sendEmailVerification/${email}`,
-        {},
-        { withCredentials: true },
-      );
-      
-      console.log(' Email verification sent successfully');
-      return true;
-    } catch (error: any) {
-      console.error(' Send email verification error:', error);
-      console.error('Error details:', {
-        message: error?.message,
-        status: error?.response?.status,
-        data: error?.response?.data
-      });
-      
-      // Provide more specific error messages
-      if (error?.response?.data?.detail) {
-        console.error('Backend error detail:', error.response.data.detail);
-      }
-      
-      return false;
-    }
-};
-
 const refresh = async (): Promise<boolean> => {
     try {
         const refreshToken = getLocalStorageObjProperty(
@@ -175,4 +146,4 @@ const refresh = async (): Promise<boolean> => {
     }
 };
 
-export { login, logout, loginWithGoogle, resetPassword, sendEmailVerification, refresh };
+export { login, logout, loginWithGoogle, resetPassword, refresh };

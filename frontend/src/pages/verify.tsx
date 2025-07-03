@@ -1,35 +1,10 @@
 import { useRouter } from 'next/router';
-import { Box, Flex, Heading, Text, Button } from '@chakra-ui/react';
-import { useState } from 'react';
-import { sendEmailVerification } from '@/APIClients/authAPIClient';
+import { Box, Flex, Heading, Text } from '@chakra-ui/react';
 
 export default function VerifyPage() {
   const router = useRouter();
   const { email } = router.query;
   const displayEmail = email || 'john.doe@gmail.com';
-  const [isResending, setIsResending] = useState(false);
-  const [resendMessage, setResendMessage] = useState('');
-
-  const handleResendVerification = async () => {
-    if (!email || typeof email !== 'string') return;
-    
-    setIsResending(true);
-    setResendMessage('');
-    
-    try {
-      const success = await sendEmailVerification(email);
-      if (success) {
-        setResendMessage('Verification email sent successfully!');
-      } else {
-        setResendMessage('Failed to send verification email. Please try again.');
-      }
-    } catch (err) {
-      console.error('Resend verification error:', err);
-      setResendMessage('An error occurred. Please try again.');
-    } finally {
-      setIsResending(false);
-    }
-  };
 
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
@@ -44,28 +19,14 @@ export default function VerifyPage() {
           <Text mb={8} color="#1d3448" fontFamily="'Open Sans', sans-serif" fontWeight={400} fontSize="lg">
             We sent a confirmation link to <b>{displayEmail}</b>
           </Text>
-          
-          {resendMessage && (
-            <Text mb={4} color={resendMessage.includes('successfully') ? 'green.500' : 'red.500'} fontFamily="'Open Sans', sans-serif" fontWeight={400}>
-              {resendMessage}
-            </Text>
-          )}
-          
           <Text color="#1d3448" fontFamily="'Open Sans', sans-serif" fontWeight={400} fontSize="md">
             Didn&apos;t get a link?{' '}
-            <Button
-              variant="link"
-              color="#056067"
-              textDecoration="underline"
-              fontWeight={600}
-              fontFamily="'Open Sans', sans-serif"
-              onClick={handleResendVerification}
-              isLoading={isResending}
-              loadingText="Sending..."
-              _hover={{ color: '#044953' }}
+            <span
+              style={{ color: '#056067', textDecoration: 'underline', fontWeight: 600, fontFamily: 'Open Sans, sans-serif', cursor: 'pointer' }}
+              onClick={() => router.push('/confirmed')}
             >
               Resend link.
-            </Button>
+            </span>
           </Text>
         </Box>
       </Flex>
