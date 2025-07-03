@@ -5,7 +5,7 @@ import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { Radio, RadioGroup } from '@/components/ui/radio';
-import { register, sendEmailVerification } from '@/APIClients/authAPIClient';
+import { register } from '@/APIClients/authAPIClient';
 import { useRouter } from 'next/router';
 import { UserRole, SignUpMethod } from '@/types/authTypes';
 
@@ -39,11 +39,6 @@ export function ParticipantFormPage() {
       };
       const result = await register(userData);
       console.log('Registration success:', result);
-      
-      // Add a small delay to ensure Firebase user is fully created
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      await sendEmailVerification(email);
       router.push(`/verify?email=${encodeURIComponent(email)}&role=${signupType}`);
     } catch (err: unknown) {
       console.error('Registration error:', err);

@@ -5,8 +5,8 @@ import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
-import { register, sendEmailVerification } from '@/APIClients/authAPIClient';
-import { UserRole, SignUpMethod } from '@/types/AuthTypes';
+import { register } from '@/APIClients/authAPIClient';
+import { UserRole, SignUpMethod } from '@/types/authTypes';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
@@ -39,11 +39,6 @@ export default function AdminLoginPage() {
       };
       const result = await register(userData);
       console.log('Admin registration success:', result);
-      
-      // Add a small delay to ensure Firebase user is fully created
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      await sendEmailVerification(email);
       router.push(`/verify?email=${encodeURIComponent(email)}&role=admin`);
     } catch (err: unknown) {
       console.error('Admin registration error:', err);
