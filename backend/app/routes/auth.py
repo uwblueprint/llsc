@@ -91,3 +91,21 @@ async def reset_password(
         # Don't reveal if email exists or not for security reasons
         # Always return success even if email doesn't exist
         return Response(status_code=204)
+
+
+@router.post("/verify/{email}")
+async def verify_email(
+    email: str, auth_service: AuthService = Depends(get_auth_service)
+):
+    try:
+        auth_service.verify_email(email)
+        return Response(status_code=200)
+    except ValueError as e:
+        # Log the error for debugging but don't expose it to the client
+        print(f"Email verification failed for {email}: {str(e)}")
+        # Return 404 for user not found instead of 400
+        return Response(status_code=404)
+    except Exception as e:
+        # Log unexpected errors
+        print(f"Unexpected error during email verification for {email}: {str(e)}")
+        return Response(status_code=500)

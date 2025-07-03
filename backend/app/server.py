@@ -25,6 +25,7 @@ PUBLIC_PATHS = [
     "/auth/login",
     "/auth/register",
     "/auth/resetPassword/{email}",
+    "/auth/verify/{email}",
     "/health",
     "/test-middleware-public",
     "/email/send-test-email",
