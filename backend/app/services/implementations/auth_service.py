@@ -53,7 +53,7 @@ class AuthService(IAuthService):
             data = {
                 "requestType": "PASSWORD_RESET",
                 "email": email,
-                "continueUrl": "http://localhost:3000/set-new-password"  # Custom action URL
+                "continueUrl": "http://localhost:3000/action"  # Use action handler page
             }
             
             response = requests.post(url, json=data)
@@ -74,7 +74,24 @@ class AuthService(IAuthService):
 
     def send_email_verification_link(self, email: str) -> None:
         try:
-            firebase_admin.auth.generate_email_verification_link(email)
+            # Use Firebase REST API to send email verification with custom action URL
+            url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={os.getenv('FIREBASE_WEB_API_KEY')}"
+            data = {
+                "requestType": "VERIFY_EMAIL",
+                "email": email,
+                "continueUrl": "http://localhost:3000/action"  # Use action handler page
+            }
+            
+            response = requests.post(url, json=data)
+            response_json = response.json()
+            
+            if response.status_code != 200:
+                error_message = response_json.get("error", {}).get("message", "Unknown error")
+                self.logger.error(f"Failed to send verification email: {error_message}")
+                raise Exception(f"Failed to send verification email: {error_message}")
+            
+            self.logger.info(f"Email verification link sent successfully to {email}")
+            
         except Exception as e:
             self.logger.error(f"Failed to send verification email: {str(e)}")
             raise

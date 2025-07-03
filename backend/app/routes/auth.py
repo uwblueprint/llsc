@@ -91,3 +91,17 @@ async def reset_password(
         # Don't reveal if email exists or not for security reasons
         # Always return success even if email doesn't exist
         return Response(status_code=204)
+
+
+@router.post("/sendEmailVerification/{email}")
+async def send_email_verification(
+    email: str, auth_service: AuthService = Depends(get_auth_service)
+):
+    try:
+        auth_service.send_email_verification_link(email)
+        # Return 204 No Content for successful email verification sending
+        return Response(status_code=204)
+    except Exception as e:
+        # Don't reveal if email exists or not for security reasons
+        # Always return success even if email doesn't exist
+        return Response(status_code=204)
