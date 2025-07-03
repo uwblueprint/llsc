@@ -6,7 +6,7 @@ import { camelizeKeys, decamelizeKeys } from "humps";
 import AUTHENTICATED_USER_KEY from "../constants/AuthConstants";
 import { setLocalStorageObjProperty } from "../utils/LocalStorageUtils";
 
-import { DecodedJWT } from "../types/AuthTypes";
+import { DecodedJWT } from "../types/authTypes";
 
 const baseAPIClient = axios.create({
   // TODO: Fix this

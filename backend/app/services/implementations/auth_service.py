@@ -108,3 +108,27 @@ class AuthService(IAuthService):
         except Exception as e:
             print(f"Authorization error: {str(e)}")
             return False
+
+    def verify_email(self, email: str):
+        try:
+            user = self.user_service.get_user_by_email(email)
+            if not user:
+                self.logger.error(f"User not found for email: {email}")
+                raise ValueError("User not found")
+            
+            if not user.auth_id:
+                self.logger.error(f"User {user.id} has no auth_id")
+                raise ValueError("User has no auth_id")
+            
+            self.logger.info(f"Updating email verification for user {user.id} with auth_id {user.auth_id}")
+            firebase_admin.auth.update_user(user.auth_id, email_verified=True)
+            self.logger.info(f"Successfully verified email for user {user.id}")
+            
+        except ValueError as e:
+            # User not found in database - this might happen if there's a timing issue
+            # between Firebase user creation and database user creation
+            self.logger.warning(f"User not found in database for email {email}: {str(e)}")
+            raise
+        except Exception as e:
+            self.logger.error(f"Failed to verify email for {email}: {str(e)}")
+            raise
