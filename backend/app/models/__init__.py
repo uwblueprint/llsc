@@ -16,16 +16,17 @@ from .Role import Role
 from .SuggestedTime import suggested_times
 from .TimeBlock import TimeBlock
 from .User import User
+from .UserData import UserData
 
 # Used to avoid import errors for the models
 __all__ = [
     "Base",
     "User",
     "Role",
+    "UserData",
     "TimeBlock",
     "Match",
     "MatchStatus",
-    "User",
     "available_times",
     "suggested_times",
 ]
