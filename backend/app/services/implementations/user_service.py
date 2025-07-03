@@ -1,6 +1,8 @@
 import logging
 from typing import List
 from uuid import UUID
+import os
+import requests
 
 import firebase_admin.auth
 from fastapi import HTTPException
@@ -28,7 +30,54 @@ class UserService(IUserService):
         firebase_user = None
         try:
             if user.signup_method == SignUpMethod.PASSWORD:
-                firebase_user = firebase_admin.auth.create_user(email=user.email, password=user.password)
+                # Use Firebase REST API to create user and get ID token
+                url = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={os.getenv('FIREBASE_WEB_API_KEY')}"
+                data = {
+                    "email": user.email,
+                    "password": user.password,
+                    "returnSecureToken": True
+                }
+                
+                self.logger.info(f"Creating Firebase user via REST API: {user.email}")
+                response = requests.post(url, json=data)
+                response_json = response.json()
+                
+                self.logger.info(f"Firebase signup response status: {response.status_code}")
+                self.logger.info(f"Firebase signup response: {response_json}")
+                
+                if response.status_code == 200:
+                    # User created successfully, get the Firebase user and ID token
+                    auth_id = response_json.get("localId")
+                    id_token = response_json.get("idToken")
+                    firebase_user = firebase_admin.auth.get_user(auth_id)
+                    
+                    # Send verification email using the ID token for authentication
+                    self.logger.info(f"User created successfully, sending verification email to {user.email}")
+                    
+                    verify_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={os.getenv('FIREBASE_WEB_API_KEY')}"
+                    verify_data = {
+                        "requestType": "VERIFY_EMAIL",
+                        "idToken": id_token,
+                        "continueUrl": "http://localhost:3000/action"
+                    }
+                    
+                    verify_response = requests.post(verify_url, json=verify_data)
+                    verify_response_json = verify_response.json()
+                    
+                    self.logger.info(f"Verification email response status: {verify_response.status_code}")
+                    self.logger.info(f"Verification email response: {verify_response_json}")
+                    
+                    if verify_response.status_code == 200:
+                        self.logger.info(f"Verification email sent successfully to {user.email}")
+                    else:
+                        error_message = verify_response_json.get("error", {}).get("message", "Unknown error")
+                        self.logger.error(f"Failed to send verification email: {error_message}")
+                        # Don't fail user creation if email verification fails
+                else:
+                    error_message = response_json.get("error", {}).get("message", "Unknown error")
+                    self.logger.error(f"Failed to create Firebase user: {error_message}")
+                    raise HTTPException(status_code=400, detail=f"Failed to create user: {error_message}")
+                    
             ## TO DO: SSO functionality depends a lot on frontend implementation,
             ##   so we may need to update this when we have a better idea of what
             ##   that looks like
