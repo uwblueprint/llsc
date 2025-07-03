@@ -23,7 +23,7 @@ export const PROVINCES = [
   'Saskatchewan',
   'Northwest Territories',
   'Nunavut',
-  'Yukon'
+  'Yukon',
 ] as const;
 
 // Validation patterns
@@ -39,7 +39,7 @@ export interface IntakeFormData {
   formType: 'participant' | 'volunteer';
   hasBloodCancer: 'yes' | 'no' | '';
   caringForSomeone: 'yes' | 'no' | '';
-  
+
   // Personal Information
   personalInfo: {
     firstName: string;
@@ -50,7 +50,7 @@ export interface IntakeFormData {
     city: string;
     province: string;
   };
-  
+
   // User's Demographic Information
   demographics: {
     genderIdentity: string;
@@ -59,7 +59,7 @@ export interface IntakeFormData {
     maritalStatus: string;
     hasKids: string;
   };
-  
+
   // User's Cancer Experience (if applicable)
   cancerExperience?: {
     diagnosis: string;
@@ -69,13 +69,13 @@ export interface IntakeFormData {
     otherTreatment?: string;
     otherExperience?: string;
   };
-  
+
   // User's Caregiver Experience (if applicable)
   caregiverExperience?: {
     experiences: string[];
     otherExperience?: string;
   };
-  
+
   // Loved One's Information (if applicable)
   lovedOne?: {
     demographics: {
@@ -158,4 +158,4 @@ export const INITIAL_INTAKE_FORM_DATA: IntakeFormData = {
     maritalStatus: '',
     hasKids: '',
   },
-}; 
+};

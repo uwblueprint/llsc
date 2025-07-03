@@ -14,7 +14,10 @@ interface ExperienceTypeSectionProps<T extends ExperienceFields> {
   errors: Record<string, { message?: string }>;
 }
 
-export const ExperienceTypeSection = <T extends ExperienceFields>({ control, errors }: ExperienceTypeSectionProps<T>) => {
+export const ExperienceTypeSection = <T extends ExperienceFields>({
+  control,
+  errors,
+}: ExperienceTypeSectionProps<T>) => {
   return (
     <Box mb={12}>
       <Heading
@@ -27,7 +30,12 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({ control, err
       >
         Experience Type
       </Heading>
-      <Text color={COLORS.fieldGray} fontFamily="system-ui, -apple-system, sans-serif" fontSize="15px" mb={8}>
+      <Text
+        color={COLORS.fieldGray}
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="15px"
+        mb={8}
+      >
         Help us learn more about your experience with cancer.
       </Text>
 
@@ -57,7 +65,11 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({ control, err
                     checked={field.value === 'yes'}
                     onChange={(value) => field.onChange(value)}
                   >
-                    <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={COLORS.veniceBlue}>
+                    <Text
+                      fontFamily="system-ui, -apple-system, sans-serif"
+                      fontSize="14px"
+                      color={COLORS.veniceBlue}
+                    >
                       Yes
                     </Text>
                   </CustomRadio>
@@ -67,7 +79,11 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({ control, err
                     checked={field.value === 'no'}
                     onChange={(value) => field.onChange(value)}
                   >
-                    <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={COLORS.veniceBlue}>
+                    <Text
+                      fontFamily="system-ui, -apple-system, sans-serif"
+                      fontSize="14px"
+                      color={COLORS.veniceBlue}
+                    >
                       No
                     </Text>
                   </CustomRadio>
@@ -104,7 +120,11 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({ control, err
                     checked={field.value === 'yes'}
                     onChange={(value) => field.onChange(value)}
                   >
-                    <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={COLORS.veniceBlue}>
+                    <Text
+                      fontFamily="system-ui, -apple-system, sans-serif"
+                      fontSize="14px"
+                      color={COLORS.veniceBlue}
+                    >
                       Yes
                     </Text>
                   </CustomRadio>
@@ -114,7 +134,11 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({ control, err
                     checked={field.value === 'no'}
                     onChange={(value) => field.onChange(value)}
                   >
-                    <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color={COLORS.veniceBlue}>
+                    <Text
+                      fontFamily="system-ui, -apple-system, sans-serif"
+                      fontSize="14px"
+                      color={COLORS.veniceBlue}
+                    >
                       No
                     </Text>
                   </CustomRadio>
@@ -131,4 +155,4 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({ control, err
       </VStack>
     </Box>
   );
-}; 
+};

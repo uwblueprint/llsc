@@ -29,16 +29,10 @@ export const FormField: React.FC<FormFieldProps> = ({ label, error, children, fl
         {children}
       </Field>
       {error && (
-        <Text
-          color="red.500"
-          fontSize="12px"
-          position="absolute"
-          bottom="-20px"
-          left="0"
-        >
+        <Text color="red.500" fontSize="12px" position="absolute" bottom="-20px" left="0">
           {error}
         </Text>
       )}
     </Box>
   );
-}; 
+};

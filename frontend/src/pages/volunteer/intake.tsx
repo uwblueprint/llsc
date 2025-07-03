@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { Box, Flex } from '@chakra-ui/react';
 import { PersonalInfoForm } from '@/components/intake/personal-info-form';
-import { DemographicCancerForm, BasicDemographicsForm } from '@/components/intake/demographic-cancer-form';
+import {
+  DemographicCancerForm,
+  BasicDemographicsForm,
+} from '@/components/intake/demographic-cancer-form';
 import { LovedOneForm } from '@/components/intake/loved-one-form';
 import { ThankYouScreen } from '@/components/intake/thank-you-screen';
-import { 
-  COLORS, 
-  IntakeFormData, 
+import {
+  COLORS,
+  IntakeFormData,
   INITIAL_INTAKE_FORM_DATA,
   ExperienceData,
-  PersonalData
+  PersonalData,
 } from '@/constants/form';
 
 // Import the component data types
@@ -51,18 +54,18 @@ export default function VolunteerIntakePage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<IntakeFormData>({
     ...INITIAL_INTAKE_FORM_DATA,
-    formType: 'volunteer'
+    formType: 'volunteer',
   });
 
   // Determine flow based on experience type selections
   const getFlowSteps = () => {
     const { hasBloodCancer, caringForSomeone } = formData;
-    
+
     if (hasBloodCancer === 'yes' && caringForSomeone === 'no') {
       // Flow 6: Volunteer - Cancer Patient
       return ['experience-personal', 'demographics-cancer', 'thank-you'];
     } else if (hasBloodCancer === 'no' && caringForSomeone === 'yes') {
-      // Flow 4: Volunteer - Caregiver Without Cancer  
+      // Flow 4: Volunteer - Caregiver Without Cancer
       return ['experience-personal', 'demographics-caregiver', 'loved-one', 'thank-you'];
     } else if (hasBloodCancer === 'yes' && caringForSomeone === 'yes') {
       // Flow 3: Volunteer - Caregiver with Cancer
@@ -71,7 +74,7 @@ export default function VolunteerIntakePage() {
       // Flow 8: Volunteer - No Cancer Experience
       return ['experience-personal', 'demographics-basic', 'thank-you'];
     }
-    
+
     // Default to first step if selections not made yet
     return ['experience-personal'];
   };
@@ -79,18 +82,21 @@ export default function VolunteerIntakePage() {
   const currentFlowSteps = getFlowSteps();
   const currentStepType = currentFlowSteps[currentStep - 1];
 
-  const handleExperiencePersonalSubmit = (experienceData: ExperienceData, personalData: PersonalData) => {
-    setFormData(prev => ({
+  const handleExperiencePersonalSubmit = (
+    experienceData: ExperienceData,
+    personalData: PersonalData,
+  ) => {
+    setFormData((prev) => ({
       ...prev,
       hasBloodCancer: experienceData.hasBloodCancer,
       caringForSomeone: experienceData.caringForSomeone,
-      personalInfo: personalData
+      personalInfo: personalData,
     }));
     setCurrentStep(2);
   };
 
   const handleDemographicsNext = (data: DemographicCancerFormData) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       demographics: {
         genderIdentity: data.genderIdentity,
@@ -108,21 +114,22 @@ export default function VolunteerIntakePage() {
           experiences: data.experiences,
           otherTreatment: data.otherTreatment,
           otherExperience: data.otherExperience,
-        }
+        },
       }),
       // Add caregiver experience if they're a caregiver without cancer
-      ...(prev.hasBloodCancer === 'no' && prev.caringForSomeone === 'yes' && {
-        caregiverExperience: {
-          experiences: data.experiences,
-          otherExperience: data.otherExperience,
-        }
-      })
+      ...(prev.hasBloodCancer === 'no' &&
+        prev.caringForSomeone === 'yes' && {
+          caregiverExperience: {
+            experiences: data.experiences,
+            otherExperience: data.otherExperience,
+          },
+        }),
     }));
     setCurrentStep(currentStep + 1);
   };
 
   const handleLovedOneNext = (data: LovedOneFormData) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       lovedOne: {
         demographics: {
@@ -137,14 +144,14 @@ export default function VolunteerIntakePage() {
           experiences: data.experiences,
           otherTreatment: data.otherTreatment,
           otherExperience: data.otherExperience,
-        }
-      }
+        },
+      },
     }));
     setCurrentStep(currentStep + 1);
   };
 
   const handleBasicDemographicsNext = (data: BasicDemographicsFormData) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       demographics: {
         genderIdentity: data.genderIdentity,
@@ -173,40 +180,25 @@ export default function VolunteerIntakePage() {
         p={10}
       >
         {currentStepType === 'experience-personal' && (
-          <PersonalInfoForm
-            formType="volunteer"
-            onSubmit={handleExperiencePersonalSubmit}
-          />
+          <PersonalInfoForm formType="volunteer" onSubmit={handleExperiencePersonalSubmit} />
         )}
 
         {currentStepType === 'demographics-cancer' && (
-          <DemographicCancerForm 
-            formType="volunteer"
-            onNext={handleDemographicsNext} 
-          />
+          <DemographicCancerForm formType="volunteer" onNext={handleDemographicsNext} />
         )}
 
         {currentStepType === 'demographics-caregiver' && (
-          <DemographicCancerForm 
-            formType="volunteer"
-            onNext={handleDemographicsNext} 
-          />
+          <DemographicCancerForm formType="volunteer" onNext={handleDemographicsNext} />
         )}
 
         {currentStepType === 'loved-one' && (
-          <LovedOneForm 
-            formType="volunteer"
-            onSubmit={handleLovedOneNext} 
-          />
+          <LovedOneForm formType="volunteer" onSubmit={handleLovedOneNext} />
         )}
 
         {currentStepType === 'demographics-basic' && (
-          <BasicDemographicsForm 
-            formType="volunteer"
-            onNext={handleBasicDemographicsNext} 
-          />
+          <BasicDemographicsForm formType="volunteer" onNext={handleBasicDemographicsNext} />
         )}
       </Box>
     </Flex>
   );
-} 
+}

@@ -10,15 +10,17 @@ interface CustomRadioProps {
   children: React.ReactNode;
 }
 
-export const CustomRadio: React.FC<CustomRadioProps> = ({ 
-  name, 
-  value, 
-  checked, 
-  onChange, 
-  children 
+export const CustomRadio: React.FC<CustomRadioProps> = ({
+  name,
+  value,
+  checked,
+  onChange,
+  children,
 }) => {
   return (
-    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '8px' }}>
+    <label
+      style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '8px' }}
+    >
       <input
         type="radio"
         name={name}
@@ -57,4 +59,4 @@ export const CustomRadio: React.FC<CustomRadioProps> = ({
       {children}
     </label>
   );
-}; 
+};

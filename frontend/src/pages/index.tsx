@@ -27,7 +27,7 @@ export default function HomePage() {
           >
             First Connection
           </Heading>
-          
+
           <Text
             fontFamily="system-ui, -apple-system, sans-serif"
             fontSize="16px"
@@ -73,7 +73,8 @@ export default function HomePage() {
             color={COLORS.fieldGray}
             mt={4}
           >
-            The form will adapt based on your selections about blood cancer experience and caregiving status.
+            The form will adapt based on your selections about blood cancer experience and
+            caregiving status.
           </Text>
         </VStack>
       </Box>

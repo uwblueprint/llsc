@@ -133,9 +133,10 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
       // Merge custom values into the data
       const finalData = {
         ...data,
-        genderIdentity: data.genderIdentity === 'Self-describe' ? genderIdentityCustom : data.genderIdentity,
+        genderIdentity:
+          data.genderIdentity === 'Self-describe' ? genderIdentityCustom : data.genderIdentity,
       };
-      
+
       console.log('Loved one form data:', finalData);
       onSubmit(finalData);
     } catch (err) {
@@ -192,10 +193,9 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
           color={COLORS.fieldGray}
           mb={6}
         >
-          {formType === 'volunteer' 
+          {formType === 'volunteer'
             ? 'This information can be taken into account when matching you with a service user.'
-            : 'This information can be taken into account when matching you with a volunteer.'
-          }
+            : 'This information can be taken into account when matching you with a volunteer.'}
         </Text>
 
         <VStack gap={5} align="stretch">
@@ -206,14 +206,14 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                 <Controller
                   name="genderIdentity"
                   control={control}
-                  rules={{ 
+                  rules={{
                     validate: (value) => {
                       if (!value) return 'Gender identity is required';
                       if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
                         return 'Please specify gender identity when selecting Self-describe';
                       }
                       return true;
-                    }
+                    },
                   }}
                   render={({ field }) => (
                     <StyledSelect {...field} error={!!errors.genderIdentity}>
@@ -297,10 +297,9 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
           color={COLORS.fieldGray}
           mb={6}
         >
-          {formType === 'volunteer' 
+          {formType === 'volunteer'
             ? 'This information can also be taken into account when matching you with a service user.'
-            : 'This information can also be taken into account when matching you with a volunteer.'
-          }
+            : 'This information can also be taken into account when matching you with a volunteer.'}
         </Text>
 
         <VStack gap={6}>
@@ -332,12 +331,12 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
               <Controller
                 name="dateOfDiagnosis"
                 control={control}
-                rules={{ 
+                rules={{
                   required: 'Date of diagnosis is required',
                   pattern: {
                     value: VALIDATION.DATE,
-                    message: 'Please enter a valid date (DD/MM/YYYY)'
-                  }
+                    message: 'Please enter a valid date (DD/MM/YYYY)',
+                  },
                 }}
                 render={({ field }) => (
                   <InputGroup>
@@ -390,7 +389,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                       return 'Please specify the other treatment';
                     }
                     return true;
-                  }
+                  },
                 }}
                 render={({ field }) => (
                   <CheckboxGroup
@@ -440,7 +439,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                       return 'Please specify the other experience';
                     }
                     return true;
-                  }
+                  },
                 }}
                 render={({ field }) => (
                   <CheckboxGroup

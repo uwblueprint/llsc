@@ -119,20 +119,20 @@ interface DemographicCancerFormProps {
 // Updated options to match Figma design - moved Self-describe to bottom
 const GENDER_IDENTITY_OPTIONS = [
   'Male',
-  'Female', 
+  'Female',
   'Non-binary',
   'Transgender',
   'Prefer not to answer',
-  'Self-describe'
+  'Self-describe',
 ];
 
 const PRONOUNS_OPTIONS = [
   'He/Him',
-  'She/Her', 
+  'She/Her',
   'They/Them',
   'Ze/Zir',
   'Prefer not to answer',
-  'Self-describe'
+  'Self-describe',
 ];
 
 const ETHNIC_OPTIONS = [
@@ -149,7 +149,7 @@ const ETHNIC_OPTIONS = [
   'West Asian',
   'White',
   'Prefer not to answer',
-  'Self-describe'
+  'Self-describe',
 ];
 
 // Multi-select dropdown component
@@ -183,7 +183,7 @@ const MultiSelectDropdown: React.FC<{
     if (checked) {
       onSelectionChange([...selectedValues, option]);
     } else {
-      onSelectionChange(selectedValues.filter(val => val !== option));
+      onSelectionChange(selectedValues.filter((val) => val !== option));
     }
   };
 
@@ -220,21 +220,23 @@ const MultiSelectDropdown: React.FC<{
           e.target.style.boxShadow = 'none';
         }}
       >
-        <span style={{ 
-          flex: '1', 
-          textAlign: 'left', 
-          overflow: 'hidden', 
-          textOverflow: 'ellipsis', 
-          whiteSpace: 'nowrap',
-          color: selectedValues.length > 0 ? COLORS.veniceBlue : '#9ca3af'
-        }}>
+        <span
+          style={{
+            flex: '1',
+            textAlign: 'left',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            color: selectedValues.length > 0 ? COLORS.veniceBlue : '#9ca3af',
+          }}
+        >
           {displayText}
         </span>
         <span style={{ fontSize: '12px', color: '#9ca3af', marginLeft: '8px' }}>
           {isOpen ? '▲' : '▼'}
         </span>
       </button>
-      
+
       {isOpen && (
         <Box
           position="absolute"
@@ -273,7 +275,7 @@ const MultiSelectDropdown: React.FC<{
                   width: '18px',
                   height: '18px',
                   accentColor: COLORS.teal,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
                 }}
                 onClick={(e) => e.stopPropagation()}
               />
@@ -321,15 +323,16 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
       // Merge custom values into the arrays
       const finalData = {
         ...data,
-        genderIdentity: data.genderIdentity === 'Self-describe' ? genderIdentityCustom : data.genderIdentity,
-        pronouns: data.pronouns.includes('Self-describe') 
-          ? data.pronouns.map(p => p === 'Self-describe' ? pronounsCustom : p)
+        genderIdentity:
+          data.genderIdentity === 'Self-describe' ? genderIdentityCustom : data.genderIdentity,
+        pronouns: data.pronouns.includes('Self-describe')
+          ? data.pronouns.map((p) => (p === 'Self-describe' ? pronounsCustom : p))
           : data.pronouns,
         ethnicGroup: data.ethnicGroup.includes('Self-describe')
-          ? data.ethnicGroup.map(e => e === 'Self-describe' ? ethnicGroupCustom : e)
+          ? data.ethnicGroup.map((e) => (e === 'Self-describe' ? ethnicGroupCustom : e))
           : data.ethnicGroup,
       };
-      
+
       console.log('Demographic cancer form data:', finalData);
       onNext(finalData);
     } catch (err) {
@@ -386,10 +389,9 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
           color={COLORS.fieldGray}
           mb={6}
         >
-          {formType === 'volunteer' 
+          {formType === 'volunteer'
             ? 'This information can be taken into account when matching you with a service user.'
-            : 'This information can be taken into account when matching you with a volunteer.'
-          }
+            : 'This information can be taken into account when matching you with a volunteer.'}
         </Text>
 
         <VStack gap={5} align="stretch">
@@ -400,14 +402,14 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
                 <Controller
                   name="genderIdentity"
                   control={control}
-                  rules={{ 
+                  rules={{
                     validate: (value) => {
                       if (!value) return 'Gender identity is required';
                       if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
                         return 'Please specify your gender identity when selecting Self-describe';
                       }
                       return true;
-                    }
+                    },
                   }}
                   render={({ field }) => (
                     <StyledSelect {...field} error={!!errors.genderIdentity}>
@@ -422,7 +424,7 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
                 />
               </FormField>
             </Box>
-            
+
             {genderIdentity === 'Self-describe' && (
               <Box w="50%">
                 <FormField label="Please specify">
@@ -462,7 +464,7 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
                         return 'Please specify your pronouns when selecting Self-describe';
                       }
                       return true;
-                    }
+                    },
                   }}
                   render={({ field }) => (
                     <MultiSelectDropdown
@@ -475,7 +477,7 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
                 />
               </FormField>
             </Box>
-            
+
             {pronouns.includes('Self-describe') && (
               <Box w="50%">
                 <FormField label="Please specify">
@@ -515,7 +517,7 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
                         return 'Please specify your ethnic or cultural group when selecting Self-describe';
                       }
                       return true;
-                    }
+                    },
                   }}
                   render={({ field }) => (
                     <MultiSelectDropdown
@@ -528,7 +530,7 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
                 />
               </FormField>
             </Box>
-            
+
             {ethnicGroup.includes('Self-describe') && (
               <Box w="50%">
                 <FormField label="Please specify">
@@ -612,10 +614,9 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
           color={COLORS.fieldGray}
           mb={6}
         >
-          {formType === 'volunteer' 
+          {formType === 'volunteer'
             ? 'This information can also be taken into account when matching you with a service user.'
-            : 'This information can also be taken into account when matching you with a volunteer.'
-          }
+            : 'This information can also be taken into account when matching you with a volunteer.'}
         </Text>
 
         <VStack gap={6}>
@@ -647,12 +648,12 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
               <Controller
                 name="dateOfDiagnosis"
                 control={control}
-                rules={{ 
+                rules={{
                   required: 'Date of diagnosis is required',
                   pattern: {
                     value: VALIDATION.DATE,
-                    message: 'Please enter a valid date (DD/MM/YYYY)'
-                  }
+                    message: 'Please enter a valid date (DD/MM/YYYY)',
+                  },
                 }}
                 render={({ field }) => (
                   <InputGroup>
@@ -705,7 +706,7 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
                       return 'Please specify the other treatment';
                     }
                     return true;
-                  }
+                  },
                 }}
                 render={({ field }) => (
                   <CheckboxGroup
@@ -755,7 +756,7 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
                       return 'Please specify the other experience';
                     }
                     return true;
-                  }
+                  },
                 }}
                 render={({ field }) => (
                   <CheckboxGroup
@@ -848,15 +849,16 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
       // Merge custom values into the arrays
       const finalData = {
         ...data,
-        genderIdentity: data.genderIdentity === 'Self-describe' ? genderIdentityCustom : data.genderIdentity,
-        pronouns: data.pronouns.includes('Self-describe') 
-          ? data.pronouns.map(p => p === 'Self-describe' ? pronounsCustom : p)
+        genderIdentity:
+          data.genderIdentity === 'Self-describe' ? genderIdentityCustom : data.genderIdentity,
+        pronouns: data.pronouns.includes('Self-describe')
+          ? data.pronouns.map((p) => (p === 'Self-describe' ? pronounsCustom : p))
           : data.pronouns,
         ethnicGroup: data.ethnicGroup.includes('Self-describe')
-          ? data.ethnicGroup.map(e => e === 'Self-describe' ? ethnicGroupCustom : e)
+          ? data.ethnicGroup.map((e) => (e === 'Self-describe' ? ethnicGroupCustom : e))
           : data.ethnicGroup,
       };
-      
+
       console.log('Basic demographics form data:', finalData);
       onNext(finalData);
     } catch (err) {
@@ -913,10 +915,9 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
           color={COLORS.fieldGray}
           mb={6}
         >
-          {formType === 'volunteer' 
+          {formType === 'volunteer'
             ? 'This information helps us understand how you might be able to support others in the future.'
-            : 'This information helps us understand your background and how we might be able to support you.'
-          }
+            : 'This information helps us understand your background and how we might be able to support you.'}
         </Text>
 
         <VStack gap={5} align="stretch">
@@ -927,14 +928,14 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                 <Controller
                   name="genderIdentity"
                   control={control}
-                  rules={{ 
+                  rules={{
                     validate: (value) => {
                       if (!value) return 'Gender identity is required';
                       if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
                         return 'Please specify your gender identity when selecting Self-describe';
                       }
                       return true;
-                    }
+                    },
                   }}
                   render={({ field }) => (
                     <StyledSelect {...field} error={!!errors.genderIdentity}>
@@ -949,7 +950,7 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                 />
               </FormField>
             </Box>
-            
+
             {genderIdentity === 'Self-describe' && (
               <Box w="50%">
                 <FormField label="Please specify">
@@ -989,7 +990,7 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                         return 'Please specify your pronouns when selecting Self-describe';
                       }
                       return true;
-                    }
+                    },
                   }}
                   render={({ field }) => (
                     <MultiSelectDropdown
@@ -1002,7 +1003,7 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                 />
               </FormField>
             </Box>
-            
+
             {pronouns.includes('Self-describe') && (
               <Box w="50%">
                 <FormField label="Please specify">
@@ -1042,7 +1043,7 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                         return 'Please specify your ethnic or cultural group when selecting Self-describe';
                       }
                       return true;
-                    }
+                    },
                   }}
                   render={({ field }) => (
                     <MultiSelectDropdown
@@ -1055,7 +1056,7 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                 />
               </FormField>
             </Box>
-            
+
             {ethnicGroup.includes('Self-describe') && (
               <Box w="50%">
                 <FormField label="Please specify">
