@@ -46,6 +46,64 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
     }
   };
 
+  const formatTimeSlot = (timeSlot: string) => {
+    // Convert "17:00 - 18:00" to "5-6 PM"
+    const [startTime, endTime] = timeSlot.split(' - ');
+    const startHour = parseInt(startTime.split(':')[0]);
+    const endHour = parseInt(endTime.split(':')[0]);
+    
+    const formatHour = (hour: number) => {
+      if (hour === 0) return 12;
+      if (hour <= 12) return hour;
+      return hour - 12;
+    };
+    
+    const getPeriod = (hour: number) => {
+      return hour < 12 ? 'AM' : 'PM';
+    };
+    
+    const startFormatted = formatHour(startHour);
+    const endFormatted = formatHour(endHour);
+    const startPeriod = getPeriod(startHour);
+    const endPeriod = getPeriod(endHour);
+    
+    return `${startFormatted}${startPeriod} - ${endFormatted}${endPeriod}`;
+  };
+
+  const combineContiguousSlots = (timeSlots: string[]) => {
+    if (timeSlots.length <= 1) return timeSlots;
+    
+    // Parse and sort time slots
+    const parsedSlots = timeSlots.map(slot => {
+      const [startTime, endTime] = slot.split(' - ');
+      const startHour = parseInt(startTime.split(':')[0]);
+      const endHour = parseInt(endTime.split(':')[0]);
+      return { start: startHour, end: endHour, original: slot };
+    }).sort((a, b) => a.start - b.start);
+    
+    const combined = [];
+    let currentSlot = parsedSlots[0];
+    
+    for (let i = 1; i < parsedSlots.length; i++) {
+      const nextSlot = parsedSlots[i];
+      
+      // Check if slots are contiguous
+      if (currentSlot.end === nextSlot.start) {
+        // Extend the current slot
+        currentSlot.end = nextSlot.end;
+      } else {
+        // Add current slot and start a new one
+        combined.push(`${currentSlot.start}:00 - ${currentSlot.end}:00`);
+        currentSlot = nextSlot;
+      }
+    }
+    
+    // Add the last slot
+    combined.push(`${currentSlot.start}:00 - ${currentSlot.end}:00`);
+    
+    return combined;
+  };
+
   const handleMouseDown = (day: string, hour: number) => {
     const isSelected = isTimeSlotSelected(day, hour);
     setIsDragging(true);
@@ -174,7 +232,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
         
                  {/* Availability List - positioned alongside time grid */}
          {showAvailability && (
-           <Box w="300px" pt={0} pb={4} px={4} alignSelf="flex-start">
+           <Box w="300px" pt={0} pb={4} px={4} mr={0} alignSelf="flex-start">
             <Text 
               fontFamily="'Open Sans', sans-serif"
               fontWeight={600}
@@ -206,23 +264,24 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
                        {day}:
                      </Text>
                      <Box display="flex" flexDirection="column" gap={2} alignItems="flex-end">
-                       {groupedSlots[day].map((timeSlot, index) => (
+                       {combineContiguousSlots(groupedSlots[day]).map((timeSlot, index) => (
                          <Box
                            key={`${day}-${index}`}
                            bg="rgba(179, 206, 209, 0.3)"
                            color="#1D3448"
                            px="10px"
-                           py="4px"
+                           py="2px"
                            borderRadius="16px"
                            fontSize="14px"
                            fontWeight={400}
                            lineHeight="1.2"
                            fontFamily="'Open Sans', sans-serif"
                            textAlign="center"
-                           minW="auto"
-                           minH="28px"
+                           w="fit-content"
+                           h="24px"
                            display="flex"
                            alignItems="center"
+                           justifyContent="center"
                          >
                            <Text 
                              fontSize="14px"
@@ -235,7 +294,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
                              whiteSpace="normal"
                              wordBreak="break-word"
                            >
-                             {timeSlot}
+                             {formatTimeSlot(timeSlot)}
                            </Text>
                          </Box>
                        ))}

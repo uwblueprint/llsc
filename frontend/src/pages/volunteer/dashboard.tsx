@@ -284,7 +284,7 @@ const VolunteerDashboard: React.FC = () => {
                       We require that availability be provided in sessions of at least 2 hours.
                     </Text>
 
-                    <Box h="800px" w="100%">
+                    <Box h="800px" w="100%" mr={0}>
                       <TimeScheduler
                         selectedTimeSlots={profileTimeSlots}
                         onTimeSlotToggle={handleProfileTimeSlotToggle}
