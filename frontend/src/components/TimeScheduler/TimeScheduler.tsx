@@ -119,152 +119,156 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
             {day}
           </Box>
         ))}
+        {showAvailability && (
+          <Box w="300px" />
+        )}
       </Box>
 
-      {/* Time Grid */}
-      <Box flex="1" display="flex" flexDirection="column">
-        {hours.map(hour => (
-          <Box key={hour} display="flex" h="7%">
-            {/* Time Label */}
-            <Box
-              w={["16", "20", "24"]}
-              maxW="160px"
-              color="gray.600"
-              fontWeight="normal"
-              fontSize={["xs", "sm"]}
-              fontFamily="'Open Sans', sans-serif"
-              display="flex"
-              alignItems="center"
-              opacity={0.4}
-            >
-              {formatTime(hour)}
-            </Box>
-            
-            {/* Day Cells */}
-            {daysFull.map((dayFull, dayIndex) => (
+      {/* Time Grid with Availability List */}
+      <Box flex="1" display="flex" flexDirection="row">
+        {/* Time Grid */}
+        <Box flex="1" display="flex" flexDirection="column">
+                     {hours.map(hour => (
+             <Box key={hour} display="flex" h="6.92%">
+              {/* Time Label */}
               <Box
-                key={`${dayFull}-${hour}`}
-                flex="1"
+                w={["16", "20", "24"]}
                 maxW="160px"
-                cursor="pointer"
-                bg={isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" : "white"}
-                transition="background 0.2s"
-                borderTop="0.91px solid"
-                borderBottom="0.91px solid"
-                borderLeft={dayIndex === 0 ? "0.91px solid" : "none"}
-                borderRight="0.91px solid"
-                borderColor="#e3e3e3"
-                _hover={{
-                  bg: isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" :"rgba(255, 187, 138, 0.1)" 
-                }}
-                onMouseDown={() => handleMouseDown(dayFull, hour)}
-                onMouseEnter={() => handleMouseEnter(dayFull, hour)}
-                onMouseUp={handleMouseUp}
-                userSelect="none"
-              />
-            ))}
-          </Box>
-        ))}
-      </Box>
-    </Box>
-  );
-
-  const renderAvailabilityList = () => (
-    <Box>
-      <Text fontWeight="medium" fontSize="md" color="#1D3448" fontFamily="'Open Sans', sans-serif" mb={4}>
-        Your Availability
-      </Text>
-      
-      <VStack gap={4} align="stretch">
-        {sortedDays.length > 0 ? (
-          sortedDays.map((day) => (
-            <Box key={day}>
-              <Text 
+                color="gray.600"
+                fontWeight="normal"
+                fontSize={["xs", "sm"]}
                 fontFamily="'Open Sans', sans-serif"
-                fontWeight={400}
-                fontSize="1rem"
-                lineHeight="100%"
-                letterSpacing="-1.5%"
-                color="#000000"
-                mb={2}
+                display="flex"
+                alignItems="center"
+                opacity={0.4}
               >
-                {day}:
-              </Text>
-              <Box display="flex" flexWrap="wrap" gap={2}>
-                {groupedSlots[day].map((timeSlot, index) => (
-                  <Box
-                    key={`${day}-${index}`}
-                    bg="rgba(179, 206, 209, 0.3)"
-                    color="#1D3448"
-                    px="10px"
-                    py="4px"
-                    borderRadius="16px"
-                    fontSize="14px"
-                    fontWeight={400}
-                    lineHeight="1.2"
-                    fontFamily="'Open Sans', sans-serif"
-                    textAlign="center"
-                    minW="auto"
-                    minH="28px"
-                    display="flex"
-                    alignItems="center"
-                  >
-                    <Text 
-                      fontSize="14px"
-                      fontWeight={400}
-                      lineHeight="1.2"
-                      letterSpacing="0%"
-                      textAlign="center"
-                      color="#056067"
-                      fontFamily="'Open Sans', sans-serif"
-                      whiteSpace="normal"
-                      wordBreak="break-word"
-                    >
-                      {timeSlot}
-                    </Text>
-                  </Box>
-                ))}
+                {formatTime(hour)}
               </Box>
+              
+              {/* Day Cells */}
+              {daysFull.map((dayFull, dayIndex) => (
+                <Box
+                  key={`${dayFull}-${hour}`}
+                  flex="1"
+                  maxW="160px"
+                  cursor="pointer"
+                  bg={isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" : "white"}
+                  transition="background 0.2s"
+                  borderTop="0.91px solid"
+                  borderBottom="0.91px solid"
+                  borderLeft={dayIndex === 0 ? "0.91px solid" : "none"}
+                  borderRight="0.91px solid"
+                  borderColor="#e3e3e3"
+                  _hover={{
+                    bg: isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" :"rgba(255, 187, 138, 0.1)" 
+                  }}
+                  onMouseDown={() => handleMouseDown(dayFull, hour)}
+                  onMouseEnter={() => handleMouseEnter(dayFull, hour)}
+                  onMouseUp={handleMouseUp}
+                  userSelect="none"
+                />
+              ))}
             </Box>
-          ))
-        ) : (
-          <Box 
-            p={4} 
-            bg="gray.50" 
-            borderRadius="md" 
-            textAlign="center"
-            border="1px dashed"
-            borderColor="gray.300"
-          >
-            <Text fontSize="sm" color="gray.500">
-              No time slots selected
+          ))}
+        </Box>
+        
+                 {/* Availability List - positioned alongside time grid */}
+         {showAvailability && (
+           <Box w="300px" pt={0} pb={4} px={4} alignSelf="flex-start">
+            <Text 
+              fontFamily="'Open Sans', sans-serif"
+              fontWeight={600}
+              fontSize="1.125rem"
+              lineHeight="1.875rem"
+              letterSpacing="0%"
+              textAlign="center"
+              color="#1D3448"
+              mb={4}
+              mt={0}
+            >
+              Your Availability
             </Text>
-            <Text fontSize="xs" color="gray.400" mt={1}>
-              Click on the calendar to add your availability
-            </Text>
+            
+            <VStack gap={4} align="stretch">
+                             {sortedDays.length > 0 ? (
+                 sortedDays.map((day) => (
+                   <Box key={day} display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+                     <Text 
+                       fontFamily="'Open Sans', sans-serif"
+                       fontWeight={400}
+                       fontSize="1rem"
+                       lineHeight="100%"
+                       letterSpacing="-1.5%"
+                       color="#000000"
+                       minW="fit-content"
+                       mr={4}
+                     >
+                       {day}:
+                     </Text>
+                     <Box display="flex" flexDirection="column" gap={2} alignItems="flex-end">
+                       {groupedSlots[day].map((timeSlot, index) => (
+                         <Box
+                           key={`${day}-${index}`}
+                           bg="rgba(179, 206, 209, 0.3)"
+                           color="#1D3448"
+                           px="10px"
+                           py="4px"
+                           borderRadius="16px"
+                           fontSize="14px"
+                           fontWeight={400}
+                           lineHeight="1.2"
+                           fontFamily="'Open Sans', sans-serif"
+                           textAlign="center"
+                           minW="auto"
+                           minH="28px"
+                           display="flex"
+                           alignItems="center"
+                         >
+                           <Text 
+                             fontSize="14px"
+                             fontWeight={400}
+                             lineHeight="1.2"
+                             letterSpacing="0%"
+                             textAlign="center"
+                             color="#056067"
+                             fontFamily="'Open Sans', sans-serif"
+                             whiteSpace="normal"
+                             wordBreak="break-word"
+                           >
+                             {timeSlot}
+                           </Text>
+                         </Box>
+                       ))}
+                     </Box>
+                   </Box>
+                 ))
+               ) : (
+                <Box 
+                  p={4} 
+                  bg="gray.50" 
+                  borderRadius="md" 
+                  textAlign="center"
+                  border="1px dashed"
+                  borderColor="gray.300"
+                >
+                  <Text fontSize="sm" color="gray.500">
+                    No time slots selected
+                  </Text>
+                  <Text fontSize="xs" color="gray.400" mt={1}>
+                    Click on the calendar to add your availability
+                  </Text>
+                </Box>
+              )}
+            </VStack>
           </Box>
         )}
-      </VStack>
+      </Box>
     </Box>
   );
 
-  if (!showAvailability) {
-    return renderScheduleGrid();
-  }
 
-  return (
-    <HStack justify="space-between" align="start" h="100%" w="100%">
-      {/* Schedule Grid - Fixed width */}
-      <Box w="95%" h="100%">
-        {renderScheduleGrid()}
-      </Box>
 
-      {/* Availability List - Pushed to far right */}
-      <Box w="300px">
-        {renderAvailabilityList()}
-      </Box>
-    </HStack>
-  );
+  return renderScheduleGrid();
 };
 
 export default TimeScheduler; 
