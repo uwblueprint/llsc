@@ -18,10 +18,7 @@ import PersonalDetails from '../../components/profile/PersonalDetails';
 import BloodCancerExperience from '../../components/profile/BloodCancerExperience';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ActionButton from '../../components/profile/EditButton';
-
-const veniceBlue = '#1d3448';
-const fieldGray = '#414651';
-const teal = '#056067';
+import { COLORS } from '@/constants/form';
 
 const VolunteerDashboard: React.FC = () => {
   // Placeholder: Replace with real logic (API/localStorage) for first-time check
@@ -38,13 +35,13 @@ const VolunteerDashboard: React.FC = () => {
     birthday: 'May 22, 2004',
     gender: 'Male',
     pronouns: 'he/him',
-    timezone: 'Eastern Standard Time (EST) • 11:40 AM',
+    timezone: 'Eastern Standard Time (EST)',
     overview: 'My journey with blood cancer started when I was about twelve years old and getting treatment for the first time was extremely stress-inducing. My journey with blood cancer started when I was about twelve years old and getting treatment for the first time was extremely stress-inducing.'
   });
 
   // Blood cancer experience state for profile
   const [cancerExperience, setCancerExperience] = useState({
-    diagnosis: ['Acute Myeloid Leukemia', 'Acute Promyelocytic Leukemia'],
+    diagnosis: ['Acute Myeloid Leukaemia', 'Chronic Myeloid Leukaemia'],
     dateOfDiagnosis: '',
     treatments: ['Chemotherapy'],
     experiences: ['Brain Fog', 'Fertility Issues', 'Speaking to your family or friends about the diagnosis']
@@ -177,7 +174,7 @@ const VolunteerDashboard: React.FC = () => {
       <Box bg="white" h="100vh" w="100vw" display="flex" flexDirection="column" alignItems="center" justifyContent="space-evenly" py={8}>
         {/* Header */}
         <Stack align="start" gap="1.85vh" w="1240px">
-          <Heading as="h1" fontSize="2.25rem" fontWeight="600" color="#1D3448" lineHeight="1" letterSpacing="-1.5%" fontFamily="'Open Sans', sans-serif">
+          <Heading as="h1" fontSize="2.25rem" fontWeight="600" color={COLORS.veniceBlue} lineHeight="1" letterSpacing="-1.5%" fontFamily="'Open Sans', sans-serif">
             Select your availability
           </Heading>
           <Text fontSize="1.125rem" fontWeight="400" color="gray.600" lineHeight="1" letterSpacing="-1.5%" fontFamily="'Open Sans', sans-serif" maxW="2xl" whiteSpace="nowrap">
@@ -199,7 +196,7 @@ const VolunteerDashboard: React.FC = () => {
         <Box display="flex" justifyContent="flex-end" w="1240px">
           <Button
             size="2xl"
-            bg="#056067"
+            bg={COLORS.teal}
             color="white"
             fontWeight="medium"
             w="227px"
@@ -208,7 +205,7 @@ const VolunteerDashboard: React.FC = () => {
             py="16px"
             fontSize="lg"
             borderRadius="8px"
-            border="1px solid #056067"
+            border={`1px solid ${COLORS.teal}`}
             boxShadow="sm"
             fontFamily="'Open Sans', sans-serif"
             _hover={{
@@ -231,8 +228,8 @@ const VolunteerDashboard: React.FC = () => {
         <VStack gap={6} align="stretch" p={6}>
           {/* Back Button */}
           <HStack gap={2} align="center" cursor="pointer" onClick={handleBack}>
-            <BiArrowBack color={veniceBlue} />
-            <Text fontSize="sm" color={fieldGray} fontFamily="'Open Sans', sans-serif">
+            <BiArrowBack color={COLORS.veniceBlue} />
+            <Text fontSize="sm" color={COLORS.fieldGray} fontFamily="'Open Sans', sans-serif">
               Back
             </Text>
           </HStack>
@@ -248,7 +245,7 @@ const VolunteerDashboard: React.FC = () => {
                 fontWeight={600}
                 lineHeight="100%"
                 letterSpacing="-1.5%"
-                color="#1D3448"
+                color={COLORS.veniceBlue}
                 fontFamily="'Open Sans', sans-serif"
               >
                 Edit Profile
@@ -266,19 +263,28 @@ const VolunteerDashboard: React.FC = () => {
                     onEditTreatments={handleEditTreatments}
                     onEditExperiences={handleEditExperiences}
                   />
-                  <Box bg="white" p={0} mt="116px">
-                    <HStack justify="space-between" align="center" mb={6}>
+                  <Box bg="white" p={0} mt="116px" w="100%" h="1000px">
+                    <HStack justify="space-between" align="center" mb={0}>
                     <ProfileHeader>Your availability</ProfileHeader>
                       <ActionButton onClick={handleEditAvailability}>
                         Edit
                       </ActionButton>
                     </HStack>
                     
-                    <Text fontSize="sm" color={fieldGray} mb={4} fontFamily="'Open Sans', sans-serif">
+                    <Text 
+                      fontSize="1rem" 
+                      fontWeight={400}
+                      lineHeight="100%"
+                      letterSpacing="0%"
+                      color="#495D6C" 
+                      mb={4} 
+                      mt={0} 
+                      fontFamily="'Open Sans', sans-serif"
+                    >
                       We require that availability be provided in sessions of at least 2 hours.
                     </Text>
 
-                    <Box h="400px">
+                    <Box h="800px" w="100%">
                       <TimeScheduler
                         selectedTimeSlots={profileTimeSlots}
                         onTimeSlotToggle={handleProfileTimeSlotToggle}

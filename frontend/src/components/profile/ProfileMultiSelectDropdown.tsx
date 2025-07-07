@@ -121,13 +121,11 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
             fontFamily: "'Open Sans', sans-serif",
             border: '1px solid #D5D7DA',
             borderRadius: '8px',
-            minHeight: value.length === 0 ? '44px' : 
-                      value.length === 1 ? '60px' : 
-                      value.length === 2 ? '80px' : '100px',
+            height: '44px',
             paddingLeft: '14px',
             paddingRight: '40px',
-            paddingTop: '12px',
-            paddingBottom: '12px',
+            paddingTop: '10px',
+            paddingBottom: '10px',
             fontSize: '1rem',
             fontWeight: 400,
             lineHeight: '24px',
@@ -138,7 +136,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
             justifyContent: 'flex-start',
             position: 'relative',
             cursor: 'pointer',
-            alignItems: 'flex-start',
+            alignItems: 'center',
           }}
           _hover={{
             bg: 'white',

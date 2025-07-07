@@ -8,7 +8,6 @@ import {
   Stack,
   HStack,
   VStack,
-  Badge,
 } from '@chakra-ui/react';
 import type { TimeSlot } from './types';
 
@@ -85,18 +84,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
     return dayOrder.indexOf(a) - dayOrder.indexOf(b);
   });
 
-  const getTimeDisplayColor = (day: string) => {
-    const colors = {
-      'Monday': 'blue',
-      'Tuesday': 'green',
-      'Wednesday': 'purple',
-      'Thursday': 'orange',
-      'Friday': 'teal',
-      'Saturday': 'pink',
-      'Sunday': 'cyan',
-    };
-    return colors[day as keyof typeof colors] || 'gray';
-  };
+
 
   const renderScheduleGrid = () => (
     <Box h="100%" w="100%" display="flex" flexDirection="column" overflow="hidden">
@@ -191,25 +179,52 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
         {sortedDays.length > 0 ? (
           sortedDays.map((day) => (
             <Box key={day}>
-              <Text fontWeight="medium" fontSize="sm" mb={2} color="gray.700">
-                {day}
+              <Text 
+                fontFamily="'Open Sans', sans-serif"
+                fontWeight={400}
+                fontSize="1rem"
+                lineHeight="100%"
+                letterSpacing="-1.5%"
+                color="#000000"
+                mb={2}
+              >
+                {day}:
               </Text>
-              <VStack gap={2} align="stretch">
+              <Box display="flex" flexWrap="wrap" gap={2}>
                 {groupedSlots[day].map((timeSlot, index) => (
-                  <HStack key={`${day}-${index}`} justify="space-between">
-                    <Badge
-                      colorScheme={getTimeDisplayColor(day)}
-                      variant="subtle"
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                      fontSize="xs"
+                  <Box
+                    key={`${day}-${index}`}
+                    bg="rgba(179, 206, 209, 0.3)"
+                    color="#1D3448"
+                    px="10px"
+                    py="4px"
+                    borderRadius="16px"
+                    fontSize="14px"
+                    fontWeight={400}
+                    lineHeight="1.2"
+                    fontFamily="'Open Sans', sans-serif"
+                    textAlign="center"
+                    minW="auto"
+                    minH="28px"
+                    display="flex"
+                    alignItems="center"
+                  >
+                    <Text 
+                      fontSize="14px"
+                      fontWeight={400}
+                      lineHeight="1.2"
+                      letterSpacing="0%"
+                      textAlign="center"
+                      color="#056067"
+                      fontFamily="'Open Sans', sans-serif"
+                      whiteSpace="normal"
+                      wordBreak="break-word"
                     >
                       {timeSlot}
-                    </Badge>
-                  </HStack>
+                    </Text>
+                  </Box>
                 ))}
-              </VStack>
+              </Box>
             </Box>
           ))
         ) : (
@@ -240,7 +255,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
   return (
     <HStack justify="space-between" align="start" h="100%" w="100%">
       {/* Schedule Grid - Fixed width */}
-      <Box w="63.5%">
+      <Box w="95%" h="100%">
         {renderScheduleGrid()}
       </Box>
 

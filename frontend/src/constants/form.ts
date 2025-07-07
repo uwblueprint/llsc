@@ -26,6 +26,123 @@ export const PROVINCES = [
   'Yukon'
 ] as const;
 
+// Gender identity options
+export const GENDER_IDENTITY_OPTIONS = [
+  'Male',
+  'Female', 
+  'Non-binary',
+  'Transgender',
+  'Prefer not to answer',
+  'Self-describe'
+] as const;
+
+// Pronouns options
+export const PRONOUNS_OPTIONS = [
+  'He/Him',
+  'She/Her', 
+  'They/Them',
+  'Ze/Zir',
+  'Prefer not to answer',
+  'Self-describe'
+] as const;
+
+// Ethnic group options
+export const ETHNIC_OPTIONS = [
+  'Indigenous',
+  'Arab',
+  'Black',
+  'Chinese',
+  'Filipino',
+  'Japanese',
+  'Korean',
+  'Latin American',
+  'South Asian',
+  'Southeast Asian',
+  'West Asian',
+  'White',
+  'Prefer not to answer',
+  'Self-describe'
+] as const;
+
+// Marital status options
+export const MARITAL_STATUS_OPTIONS = [
+  'Single',
+  'Married',
+  'Common-law',
+  'Divorced',
+  'Separated',
+  'Widowed',
+  'Prefer not to answer'
+] as const;
+
+// Treatment options for blood cancer
+export const TREATMENT_OPTIONS = [
+  'Unknown',
+  'Watch and Wait / Active Surveillance',
+  'Chemotherapy',
+  'Immunotherapy',
+  'Oral Chemotherapy',
+  'Radiation',
+  'Maintenance Chemotherapy',
+  'Palliative Care',
+  'Transfusions',
+  'Autologous Stem Cell Transplant',
+  'Allogeneic Stem Cell Transplant',
+  'Haplo Stem Cell Transplant',
+  'CAR-T',
+  'BTK Inhibitors',
+] as const;
+
+// Experience options for blood cancer
+export const EXPERIENCE_OPTIONS = [
+  'Brain Fog',
+  'Caregiver Fatigue',
+  'Communication Challenges',
+  'Feeling Overwhelmed',
+  'Fatigue',
+  'Fertility Issues',
+  'Graft vs Host',
+  'Returning to work or school after/during treatment',
+  'Speaking to your family or friends about the diagnosis',
+  'Relapse',
+  'Anxiety / Depression',
+  'PTSD',
+] as const;
+
+// Diagnosis options for blood cancer
+export const DIAGNOSIS_OPTIONS = [
+  'Acute Myeloid Leukaemia',
+  'Acute Lymphoblastic Leukaemia',
+  'Chronic Myeloid Leukaemia',
+  'Chronic Lymphocytic Leukaemia',
+  'Hodgkin Lymphoma',
+  'Non-Hodgkin Lymphoma',
+  'Multiple Myeloma',
+  'Myelodysplastic Syndrome',
+  'Myelofibrosis',
+  'Aplastic Anemia',
+  'Other',
+] as const;
+
+// Convert arrays to dropdown options format
+export const DIAGNOSIS_DROPDOWN_OPTIONS = DIAGNOSIS_OPTIONS.map(option => ({
+  value: option,
+  label: option
+}));
+
+export const GENDER_DROPDOWN_OPTIONS = GENDER_IDENTITY_OPTIONS.map(option => ({
+  value: option,
+  label: option
+}));
+
+// Timezone options (keeping existing ones)
+export const TIMEZONE_OPTIONS = [
+  { value: 'Eastern Standard Time (EST)', label: 'Eastern Standard Time (EST)' },
+  { value: 'Central Standard Time (CST)', label: 'Central Standard Time (CST)' },
+  { value: 'Mountain Standard Time (MST)', label: 'Mountain Standard Time (MST)' },
+  { value: 'Pacific Standard Time (PST)', label: 'Pacific Standard Time (PST)' },
+] as const;
+
 // Validation patterns
 export const VALIDATION = {
   PHONE: /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/,

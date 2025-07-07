@@ -15,10 +15,12 @@ import ProfileMultiSelectDropdown from './ProfileMultiSelectDropdown';
 import ProfileHeader from './ProfileHeader';
 import ActionButton from './EditButton';
 import { Checkbox } from '@/components/ui/checkbox';
-
-const veniceBlue = '#1d3448';
-const fieldGray = '#414651';
-const teal = '#056067';
+import { 
+  DIAGNOSIS_DROPDOWN_OPTIONS, 
+  TREATMENT_OPTIONS, 
+  EXPERIENCE_OPTIONS,
+  COLORS 
+} from '@/constants/form';
 
 interface BloodCancerExperienceProps {
   cancerExperience: {
@@ -48,43 +50,6 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
   const [otherTreatment, setOtherTreatment] = useState('');
   const [otherExperience, setOtherExperience] = useState('');
 
-  const treatmentOptions = [
-    'Unknown',
-    'Watch and Wait / Active Surveillance',
-    'Chemotherapy',
-    'Immunotherapy',
-    'Oral Chemotherapy',
-    'Radiation',
-    'Maintenance Chemotherapy',
-    'Palliative Care',
-    'Transfusions',
-    'Autologous Stem Cell Transplant',
-    'Allogeneic Stem Cell Transplant',
-    'Haplo Stem Cell Transplant',
-    'CAR-T',
-    'BTK Inhibitors',
-    'Other'
-  ];
-
-  const experienceOptions = [
-    'Hair loss',
-    'Fatigue and weakness',
-    'Nausea and vomiting',
-    'Loss of appetite',
-    'Weight changes',
-    'Mouth sores',
-    'Skin changes',
-    'Peripheral neuropathy',
-    'Infection risk',
-    'Bleeding or bruising',
-    'Memory and concentration issues',
-    'Emotional challenges',
-    'Sleep disturbances',
-    'Pain management',
-    'Fertility concerns',
-    'Other'
-  ];
-
   const handleTreatmentToggle = (treatment: string) => {
     setCancerExperience(prev => ({
       ...prev,
@@ -107,17 +72,11 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
     }));
   };
 
-  const diagnosisOptions = [
-    { value: 'Unknown', label: 'Unknown' },
-    { value: 'Acute Myeloid Leukemia', label: 'Acute Myeloid Leukemia' },
-    { value: 'Acute Lymphoblastic Leukemia', label: 'Acute Lymphoblastic Leukemia' },
-    { value: 'Acute Promyelocytic Leukemia', label: 'Acute Promyelocytic Leukemia' },
-    { value: 'Mixed Phenotype Leukemia', label: 'Mixed Phenotype Leukemia' },
-    { value: 'Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma', label: 'Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma' },
-    { value: 'Chronic Myeloid Leukemia', label: 'Chronic Myeloid Leukemia' },
-    { value: 'Hairy Cell Leukemia', label: 'Hairy Cell Leukemia' },
-    { value: 'Myeloma/Multiple Myeloma', label: 'Myeloma/Multiple Myeloma' },
-  ];
+  // Create treatment options with "Other" option
+  const treatmentOptionsWithOther = [...TREATMENT_OPTIONS, 'Other'];
+  
+  // Create experience options with "Other" option  
+  const experienceOptionsWithOther = [...EXPERIENCE_OPTIONS, 'Other'];
 
   return (
     <Box bg="white" p={0} mt="116px" minH="288px">
@@ -129,7 +88,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
             label="Your Diagnosis"
             value={cancerExperience.diagnosis}
             onChange={(selectedValues) => setCancerExperience(prev => ({ ...prev, diagnosis: selectedValues }))}
-            options={diagnosisOptions}
+            options={DIAGNOSIS_DROPDOWN_OPTIONS}
             maxSelections={3}
             flex="1"
           />
@@ -151,7 +110,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                 fontWeight={600}
                 lineHeight="30px"
                 letterSpacing="0%"
-                color="#1D3448"
+                color={COLORS.veniceBlue}
                 fontFamily="'Open Sans', sans-serif"
               >
                 Treatments you have done
@@ -163,18 +122,17 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
             
             {isEditingTreatments ? (
               <VStack align="start" gap={3}>
-                <Box mb={6}>
+                <Box mb={3}>
                   <Text 
                     fontSize="14px"
                     color="#495D6C"
                     fontFamily="'Open Sans', sans-serif"
-                    fontWeight={500}
-                    fontStyle="italic"
+                    fontWeight={400}
                   >
-                    You can select a maximum of 2.
+                    You can select a <Text as="span" fontWeight={700}>maximum of 2</Text>.
                   </Text>
                 </Box>
-                {treatmentOptions.map((treatment) => {
+                {treatmentOptionsWithOther.map((treatment) => {
                   const isSelected = cancerExperience.treatments.includes(treatment);
                   const isDisabled = !isSelected && cancerExperience.treatments.length >= 2;
                   
@@ -243,7 +201,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                 fontWeight={600}
                 lineHeight="30px"
                 letterSpacing="0%"
-                color="#1D3448"
+                color={COLORS.veniceBlue}
                 fontFamily="'Open Sans', sans-serif"
               >
                 Experiences you had
@@ -255,18 +213,17 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
             
             {isEditingExperiences ? (
               <VStack align="start" gap={3}>
-                <Box mb={6}>
+                <Box mb={3}>
                   <Text 
                     fontSize="14px"
                     color="#495D6C"
                     fontFamily="'Open Sans', sans-serif"
-                    fontWeight={500}
-                    fontStyle="italic"
+                    fontWeight={400}
                   >
-                    You can select a maximum of 5.
+                    You can select a <Text as="span" fontWeight={700}>maximum of 5</Text>.
                   </Text>
                 </Box>
-                {experienceOptions.map((experience) => {
+                {experienceOptionsWithOther.map((experience) => {
                   const isSelected = cancerExperience.experiences.includes(experience);
                   const isDisabled = !isSelected && cancerExperience.experiences.length >= 5;
                   

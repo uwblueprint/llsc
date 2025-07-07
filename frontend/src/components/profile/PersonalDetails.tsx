@@ -12,9 +12,7 @@ import {
 import ProfileTextInput from './ProfileTextInput';
 import ProfileDropdown from './ProfileDropdown';
 import ProfileHeader from './ProfileHeader';
-
-const veniceBlue = '#1d3448';
-const fieldGray = '#414651';
+import { GENDER_DROPDOWN_OPTIONS, TIMEZONE_OPTIONS, COLORS } from '@/constants/form';
 
 interface PersonalDetailsProps {
   personalDetails: {
@@ -41,20 +39,6 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
   personalDetails,
   setPersonalDetails,
 }) => {
-  const genderOptions = [
-    { value: 'Male', label: 'Male' },
-    { value: 'Female', label: 'Female' },
-    { value: 'Non-binary', label: 'Non-binary' },
-    { value: 'Prefer not to say', label: 'Prefer not to say' },
-  ];
-
-  const timezoneOptions = [
-    { value: 'Eastern Standard Time (EST) • 11:40 AM', label: 'Eastern Standard Time (EST) • 11:40 AM' },
-    { value: 'Central Standard Time (CST)', label: 'Central Standard Time (CST)' },
-    { value: 'Mountain Standard Time (MST)', label: 'Mountain Standard Time (MST)' },
-    { value: 'Pacific Standard Time (PST)', label: 'Pacific Standard Time (PST)' },
-  ];
-
   return (
     <Box bg="white" p={0} minH="556px">
       <ProfileHeader>Personal details</ProfileHeader>
@@ -77,7 +61,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
             label="Timezone"
             value={personalDetails.timezone}
             onChange={(e) => setPersonalDetails(prev => ({ ...prev, timezone: e.target.value }))}
-            options={timezoneOptions}
+            options={TIMEZONE_OPTIONS}
           />
           
         </VStack>
@@ -93,7 +77,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
             label="Gender"
             value={personalDetails.gender}
             onChange={(e) => setPersonalDetails(prev => ({ ...prev, gender: e.target.value }))}
-            options={genderOptions}
+            options={GENDER_DROPDOWN_OPTIONS}
           />
 
           <ProfileTextInput

@@ -8,7 +8,7 @@ interface ProfileDropdownProps {
   label: string;
   value: string;
   onChange: (e: any) => void;
-  options: { value: string; label: string }[];
+  options: readonly { readonly value: string; readonly label: string }[];
   flex?: string;
 }
 

@@ -38,6 +38,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
         letterSpacing="0%"
         color="#1D3448"
         fontFamily="'Open Sans', sans-serif"
+        mb={2}
       >
         {label}
       </Box>
