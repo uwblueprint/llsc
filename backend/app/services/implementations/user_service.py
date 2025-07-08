@@ -114,6 +114,23 @@ class UserService(IUserService):
             self.logger.error(f"Error deleting user {user_id}: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
+    async def soft_delete_user_by_id(self, user_id: str):
+        try:
+            db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            db_user.active = False
+            self.db.commit()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error deactivating user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+
     async def get_user_id_by_auth_id(self, auth_id: str) -> str:
         """Get user ID for a user by their Firebase auth_id"""
         user = self.db.query(User).filter(User.auth_id == auth_id).first()

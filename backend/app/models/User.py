@@ -17,6 +17,7 @@ class User(Base):
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
     auth_id = Column(String, nullable=False)
     approved = Column(Boolean, default=False)
+    active = Column(Boolean, nullable=False, default=True)
 
     role = relationship("Role")
 
