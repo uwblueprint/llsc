@@ -20,6 +20,7 @@ class User(Base):
     active = Column(Boolean, nullable=False, default=True)
 
     role = relationship("Role")
+    user_data = relationship("UserData", back_populates="user", uselist=False)
 
     # time blocks in an availability for a user
     availability = relationship("TimeBlock", secondary="available_times", back_populates="users")
