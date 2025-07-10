@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Text,
   Textarea,
+  Button,
 } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 
@@ -15,6 +16,7 @@ interface ProfileTextInputProps {
   rows?: number;
   flex?: string;
   helperText?: string;
+  edit?: boolean;
 }
 
 const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
@@ -26,6 +28,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
   rows = 2,
   flex = "1",
   helperText,
+  onFocus,
 }) => {
   const styledLabel = (
     <Box>
@@ -97,6 +100,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
           onFocus={(e) => {
             e.target.style.borderColor = '#319795';
             e.target.style.boxShadow = '0 0 0 2px rgba(49, 151, 149, 0.2)';
+            onFocus?.();
           }}
           onBlur={(e) => {
             e.target.style.borderColor = '#D5D7DA';
@@ -121,6 +125,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
         onFocus={(e) => {
           e.target.style.borderColor = '#319795';
           e.target.style.boxShadow = '0 0 0 2px rgba(49, 151, 149, 0.2)';
+          onFocus?.();
         }}
         onBlur={(e) => {
           e.target.style.borderColor = '#D5D7DA';
