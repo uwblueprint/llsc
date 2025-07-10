@@ -27,3 +27,5 @@ class User(Base):
     participant_matches = relationship("Match", back_populates="participant", foreign_keys=[Match.participant_id])
 
     volunteer_matches = relationship("Match", back_populates="volunteer", foreign_keys=[Match.volunteer_id])
+
+    volunteer_data = relationship("VolunteerData", back_populates="user", uselist=False)
