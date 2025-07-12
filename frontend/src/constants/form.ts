@@ -91,6 +91,7 @@ export const TREATMENT_OPTIONS = [
   'Haplo Stem Cell Transplant',
   'CAR-T',
   'BTK Inhibitors',
+  'Other',
 ] as const;
 
 // Experience options for blood cancer
@@ -111,17 +112,26 @@ export const EXPERIENCE_OPTIONS = [
 
 // Diagnosis options for blood cancer
 export const DIAGNOSIS_OPTIONS = [
-  'Acute Myeloid Leukaemia',
-  'Acute Lymphoblastic Leukaemia',
-  'Chronic Myeloid Leukaemia',
-  'Chronic Lymphocytic Leukaemia',
-  'Hodgkin Lymphoma',
-  'Non-Hodgkin Lymphoma',
-  'Multiple Myeloma',
-  'Myelodysplastic Syndrome',
+  'Unknown',
+  'Acute Myeloid Leukemia',
+  'Acute Lymphoblastic Leukemia',
+  'Acute Promyelocytic Leukemia',
+  'Mixed Phenotype Leukemia',
+  'Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma',
+  'Chronic Myeloid Leukemia',
+  'Hairy Cell Leukemia',
+  'Myeloma/Multiple Myeloma',
+  'Hodgkin\'s Lymphoma',
+  'Indolent/Low Grade Non-Hodgkin\'s Lymphoma',
+  'Aggressive/High Grade Non-Hodgkin\'s Lymphoma',
+  'Low Risk MDS',
+  'High Risk MDS',
   'Myelofibrosis',
-  'Aplastic Anemia',
-  'Other',
+  'Essential Thrombocythemia',
+  'Polycythemia Vera',
+  'MPN unclassified',
+  'Low Grade/Indolent Non-Hodgkin\'s Lymphoma',
+  'High Grade/Aggressive Non-Hodgkin\'s Lymphoma',
 ] as const;
 
 // Convert arrays to dropdown options format

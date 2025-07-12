@@ -27,6 +27,8 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const badgeContainerRef = useRef<HTMLDivElement>(null);
+  const [dropdownHeight, setDropdownHeight] = useState(44);
 
   const handleOptionToggle = (optionValue: string) => {
     const newValue = value.includes(optionValue)
@@ -44,7 +46,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
     if (value.length === 0) return null;
     
     return (
-      <Box display="flex" flexWrap="wrap" gap={2}>
+      <Box ref={badgeContainerRef} display="flex" flexWrap="wrap" gap={2}>
         {value.map((selectedValue, index) => (
           <Box
             key={index}
@@ -82,6 +84,26 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
       </Box>
     );
   };
+
+  // Calculate dropdown height based on content
+  useEffect(() => {
+    if (value.length === 0) {
+      setDropdownHeight(44);
+      return;
+    }
+
+    // Use a timeout to ensure the DOM is updated
+    const timeout = setTimeout(() => {
+      if (badgeContainerRef.current) {
+        const containerHeight = badgeContainerRef.current.scrollHeight;
+        // Add padding (20px total: 10px top + 10px bottom)
+        const calculatedHeight = Math.max(44, containerHeight + 20);
+        setDropdownHeight(calculatedHeight);
+      }
+    }, 0);
+
+    return () => clearTimeout(timeout);
+  }, [value]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -121,7 +143,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
             fontFamily: "'Open Sans', sans-serif",
             border: '1px solid #D5D7DA',
             borderRadius: '8px',
-            height: '44px',
+            height: `${dropdownHeight}px`,
             paddingLeft: '14px',
             paddingRight: '40px',
             paddingTop: '10px',
@@ -136,7 +158,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
             justifyContent: 'flex-start',
             position: 'relative',
             cursor: 'pointer',
-            alignItems: 'center',
+            alignItems: dropdownHeight > 60 ? 'flex-start' : 'center',
           }}
           _hover={{
             bg: 'white',

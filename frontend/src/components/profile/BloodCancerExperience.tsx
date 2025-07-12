@@ -72,8 +72,8 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
     }));
   };
 
-  // Create treatment options with "Other" option
-  const treatmentOptionsWithOther = [...TREATMENT_OPTIONS, 'Other'];
+  // Use treatment options directly (now includes "Other")
+  const treatmentOptionsWithOther = TREATMENT_OPTIONS;
   
   // Create experience options with "Other" option  
   const experienceOptionsWithOther = [...EXPERIENCE_OPTIONS, 'Other'];
