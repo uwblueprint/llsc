@@ -17,6 +17,7 @@ interface ProfileTextInputProps {
   flex?: string;
   helperText?: string;
   edit?: boolean;
+  onFocus?: () => void;
 }
 
 const ProfileTextInput: React.FC<ProfileTextInputProps> = ({

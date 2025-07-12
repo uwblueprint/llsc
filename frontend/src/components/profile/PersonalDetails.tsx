@@ -109,12 +109,31 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
             </Box>
           )}
           
-          <ProfileDropdown
-            label="Timezone"
-            value={personalDetails.timezone}
-            onChange={(e) => setPersonalDetails(prev => ({ ...prev, timezone: e.target.value }))}
-            options={TIMEZONE_OPTIONS}
+          <ProfileTextInput
+            label="Pronouns"
+            value={personalDetails.pronouns}
+            onChange={(e) => setPersonalDetails(prev => ({ ...prev, pronouns: e.target.value }))}
+            onFocus={() => handleInputFocus('pronouns')}
           />
+          {editingField === 'pronouns' && (
+            <Box mt={2} display="flex" justifyContent="flex-end">
+              <Button
+                onClick={handleSave}
+                bg="#056067"
+                color="white"
+                px={4}
+                py={1}
+                borderRadius="6px"
+                fontFamily="'Open Sans', sans-serif"
+                fontWeight={600}
+                fontSize="0.875rem"
+                _hover={{ bg: "#044d52" }}
+                _active={{ bg: "#033e42" }}
+              >
+                Save
+              </Button>
+            </Box>
+          )}
           
         </VStack>
 
@@ -152,31 +171,24 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
             options={GENDER_DROPDOWN_OPTIONS}
           />
 
-          <ProfileTextInput
-            label="Pronouns"
-            value={personalDetails.pronouns}
-            onChange={(e) => setPersonalDetails(prev => ({ ...prev, pronouns: e.target.value }))}
-            onFocus={() => handleInputFocus('pronouns')}
+          <ProfileDropdown
+            label="Timezone"
+            value={personalDetails.timezone}
+            onChange={(e) => setPersonalDetails(prev => ({ ...prev, timezone: e.target.value }))}
+            options={TIMEZONE_OPTIONS.map(option => ({
+              value: option.value,
+              label: `${option.label} • ${new Date().toLocaleTimeString('en-US', {
+                timeZone: option.value === 'Eastern Standard Time (EST)' ? 'America/New_York' :
+                         option.value === 'Pacific Standard Time (PST)' ? 'America/Los_Angeles' :
+                         option.value === 'Central Standard Time (CST)' ? 'America/Chicago' :
+                         option.value === 'Mountain Standard Time (MST)' ? 'America/Denver' :
+                         'America/New_York',
+                hour12: true,
+                hour: 'numeric',
+                minute: '2-digit'
+              })}`
+            }))}
           />
-          {editingField === 'pronouns' && (
-            <Box mt={2} display="flex" justifyContent="flex-end">
-              <Button
-                onClick={handleSave}
-                bg="#056067"
-                color="white"
-                px={4}
-                py={1}
-                borderRadius="6px"
-                fontFamily="'Open Sans', sans-serif"
-                fontWeight={600}
-                fontSize="0.875rem"
-                _hover={{ bg: "#044d52" }}
-                _active={{ bg: "#033e42" }}
-              >
-                Save
-              </Button>
-            </Box>
-          )}
         </VStack>
       </Flex>
       

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { TimeScheduler } from '../../components/TimeScheduler';
-import type { TimeSlot } from '../../components/TimeScheduler/types';
-import { useAvailability } from '../../hooks/useAvailability';
+import { TimeScheduler } from '../../../components/TimeScheduler';
+import type { TimeSlot } from '../../../components/TimeScheduler/types';
+import { useAvailability } from '../../../hooks/useAvailability';
 import {
   Box,
   Container,
@@ -14,16 +14,17 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { BiArrowBack } from 'react-icons/bi';
-import PersonalDetails from '../../components/profile/PersonalDetails';
-import BloodCancerExperience from '../../components/profile/BloodCancerExperience';
+import PersonalDetails from '../../../components/profile/PersonalDetails';
+import BloodCancerExperience from '../../../components/profile/BloodCancerExperience';
 import ProfileHeader from '@/components/profile/ProfileHeader';
-import ActionButton from '../../components/profile/EditButton';
+import ActionButton from '../../../components/profile/EditButton';
 import { COLORS } from '@/constants/form';
 
 const VolunteerDashboard: React.FC = () => {
   // Placeholder: Replace with real logic (API/localStorage) for first-time check
   const [showSchedule, setShowSchedule] = useState(true);
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([]);
+  const [isEditingAvailability, setIsEditingAvailability] = useState(false);
 
   const { createAvailability, getAvailability, updateAvailability, loading, error } = useAvailability();
   const router = useRouter();
@@ -166,7 +167,34 @@ const VolunteerDashboard: React.FC = () => {
   };
 
   const handleEditAvailability = () => {
-    console.log('Edit availability');
+    setIsEditingAvailability(true);
+  };
+
+  const handleClearAvailability = () => {
+    setProfileTimeSlots([]);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingAvailability(false);
+    // Reset to original state if needed
+  };
+
+  const handleSaveAvailability = async () => {
+    // Convert profile time slots to API format and save
+    const availableTimes = convertTimeSlotsToAvailableTimes(profileTimeSlots);
+    
+    try {
+      const result = await updateAvailability(availableTimes);
+      
+      if (result) {
+        console.log('Availability updated successfully:', result);
+        setIsEditingAvailability(false);
+      } else {
+        console.error('Failed to update availability');
+      }
+    } catch (err) {
+      console.error('Error updating availability:', err);
+    }
   };
 
   if (showSchedule) {
@@ -265,10 +293,72 @@ const VolunteerDashboard: React.FC = () => {
                   />
                   <Box bg="white" p={0} mt="116px" w="100%" h="1000px">
                     <HStack justify="space-between" align="center" mb={0}>
-                    <ProfileHeader>Your availability</ProfileHeader>
-                      <ActionButton onClick={handleEditAvailability}>
-                        Edit
-                      </ActionButton>
+                      <Heading 
+                        w="519px"
+                        h="40px"
+                        fontSize="1.625rem"
+                        fontWeight={600}
+                        lineHeight="40px"
+                        letterSpacing="0%"
+                        color="#1D3448"
+                        fontFamily="'Open Sans', sans-serif"
+                        mb="8px"
+                      >
+                        Your availability
+                      </Heading>
+                      {!isEditingAvailability ? (
+                        <ActionButton onClick={handleEditAvailability}>
+                          Edit
+                        </ActionButton>
+                      ) : (
+                        <HStack gap={3}>
+                          <Button
+                            bg="#B91C1C"
+                            color="white"
+                            px={4}
+                            py={2}
+                            borderRadius="6px"
+                            fontFamily="'Open Sans', sans-serif"
+                            fontWeight={600}
+                            fontSize="0.875rem"
+                            _hover={{ bg: "#991B1B" }}
+                            _active={{ bg: "#7F1D1D" }}
+                            onClick={handleClearAvailability}
+                          >
+                            Clear Availability
+                          </Button>
+                          <Button
+                            bg="#6B7280"
+                            color="white"
+                            px={4}
+                            py={2}
+                            borderRadius="6px"
+                            fontFamily="'Open Sans', sans-serif"
+                            fontWeight={600}
+                            fontSize="0.875rem"
+                            _hover={{ bg: "#4B5563" }}
+                            _active={{ bg: "#374151" }}
+                            onClick={handleCancelEdit}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            bg="#056067"
+                            color="white"
+                            px={4}
+                            py={2}
+                            borderRadius="6px"
+                            fontFamily="'Open Sans', sans-serif"
+                            fontWeight={600}
+                            fontSize="0.875rem"
+                            _hover={{ bg: "#044d52" }}
+                            _active={{ bg: "#033e42" }}
+                            onClick={handleSaveAvailability}
+                          >
+                            Save
+                          </Button>
+                        </HStack>
+                      )}
                     </HStack>
                     
                     <Text 
