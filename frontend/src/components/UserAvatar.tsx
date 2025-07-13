@@ -13,6 +13,7 @@ interface UserAvatarProps {
   bgColor?: string;
   textColor?: string;
   fontSize?: string;
+  fontWeight?: number;
   onClick?: () => void;
   opacity?: number;
 }
@@ -23,6 +24,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   bgColor = "#F4F4F4",
   textColor = "#000000",
   fontSize = "36.52px",
+  fontWeight = 600,
   onClick,
   opacity = 1
 }) => {
@@ -46,7 +48,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     >
       <Text 
         fontSize={fontSize}
-        fontWeight={600}
+        fontWeight={fontWeight}
         color={textColor}
         className={inter.className}
         lineHeight="100%"

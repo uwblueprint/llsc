@@ -65,22 +65,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         left="max(24px, calc((100vw - 1269px) / 4))"
         top="80px"
         w="279px"
-        h="359px"
         bg="white"
-        borderRadius="12px"
-        boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
+        borderRadius="8px"
+        border="1px solid rgba(187, 194, 200, 0.5)"
         p={2}
         display="flex"
         flexDirection="column"
         overflow="visible"
       >
         {/* Logo */}
-        <Box mb={4} w="100%" display="flex" alignItems="center" justifyContent="center">
+        <Box mb={0} w="100%" display="flex" alignItems="center" justifyContent="center">
           <Image 
             src="/logo.png" 
             alt="Leukemia & Lymphoma Society of Canada" 
             width="220px"
-            height="auto"
+            height="150px"
             objectFit="contain"
             onError={(e) => {
               console.log('Logo failed to load:', e);
@@ -101,7 +100,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               fontSize="14px"
               fontFamily="'Open Sans', sans-serif"
               justifyContent="flex-start"
-              h="44px"
+              h="50px"
               px="12px"
               py="8px"
               borderRadius="6px"
@@ -136,11 +135,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       >
         <UserAvatar
           initials={userInitials}
-          size="47px"
-          bgColor={COLORS.teal}
-          textColor="#000000"
-          fontSize="36.52px"
-          opacity={0.8}
+          size="64px"
+          bgColor="rgba(179, 206, 209, 0.3)"
+          textColor="#056067"
+          fontSize="1.5rem"
+          fontWeight={500}
           onClick={() => handleNavigation('/volunteer/dashboard/edit-profile')}
         />
       </Box>

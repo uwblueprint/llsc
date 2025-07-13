@@ -6,7 +6,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import MatchBox from '../../components/MatchBox';
+import ProfileCard from '../../components/ProfileCard';
 
 const VolunteerDashboard: React.FC = () => {
   // Mock data for matched participants
@@ -57,7 +57,10 @@ const VolunteerDashboard: React.FC = () => {
             textAlign="left"
             mb={2}
               >
-            Participants have matched with you, John!
+            {matchedParticipants.length > 0 
+              ? "Participants have matched with you, John!"
+              : "No New Matches, John"
+            }
               </Heading>
                     
                     <Text 
@@ -67,12 +70,16 @@ const VolunteerDashboard: React.FC = () => {
             textAlign="left"
             mb={8}
                     >
-            Please schedule calls with your matches.
+            {matchedParticipants.length > 0 
+              ? "Please schedule calls with your matches."
+              : "Keep an eye out on your inbox! We'll notify you when we match you with a participant."
+            }
                     </Text>
 
-                    <VStack gap={6} align="flex-start">
-            {matchedParticipants.map((participant) => (
-              <MatchBox 
+          {matchedParticipants.length > 0 && (
+            <VStack gap={6} align="flex-start">
+              {matchedParticipants.map((participant) => (
+                              <ProfileCard 
                 key={participant.id}
                 participant={participant}
                 onScheduleCall={() => {
@@ -80,8 +87,9 @@ const VolunteerDashboard: React.FC = () => {
                   console.log('Schedule call for', participant.name);
                 }}
               />
-            ))}
+              ))}
             </VStack>
+          )}
           </Box>
       </Box>
     </DashboardLayout>
