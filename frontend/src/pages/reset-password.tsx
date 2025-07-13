@@ -24,14 +24,14 @@ export default function ResetPasswordPage() {
     setMessage('');
 
     try {
-      const success = await resetPassword(email);
-      if (success) {
+      const result = await resetPassword(email);
+      
+      if (result.success) {
         setMessage('If the email exists, a password reset link has been sent to your email address.');
       } else {
-        setError('Failed to send reset email. Please try again.');
+        setError(result.error || 'Failed to send reset email. Please try again.');
       }
-    } catch (err) {
-      console.error('Reset password error:', err);
+    } catch {
       setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -124,7 +124,7 @@ export default function ResetPasswordPage() {
               _hover={{ bg: '#044953' }}
               px={8}
               py={3}
-              isLoading={isLoading}
+              loading={isLoading}
             >
               Send Reset Link
             </Button>
@@ -150,6 +150,7 @@ export default function ResetPasswordPage() {
           src="/login.png"
           alt="First Connection Peer Support"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           style={{ objectFit: 'cover', objectPosition: '90% 50%' }}
           priority
         />

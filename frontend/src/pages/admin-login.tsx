@@ -5,7 +5,7 @@ import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
-import authAPIClient from '@/APIClients/authAPIClient';
+import { login } from '@/APIClients/authAPIClient';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
@@ -22,7 +22,7 @@ export default function AdminLogin() {
     setError('');
     
     try {
-      const result = await authAPIClient.login(email, password);
+      const result = await login(email, password);
       if (result) {
         console.log('Admin login success:', result);
         router.push('/admin/dashboard');
@@ -187,6 +187,7 @@ export default function AdminLogin() {
           src="/admin.png"
           alt="Admin Portal Visual"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           style={{ objectFit: 'cover', objectPosition: '90% 50%' }}
           priority
         />

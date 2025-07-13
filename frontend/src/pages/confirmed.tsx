@@ -22,7 +22,7 @@ export default function ConfirmedPage() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const router = useRouter();
-  const { mode, oobCode } = router.query;
+  const { mode, oobCode, verified } = router.query;
 
   // Listen for Firebase auth state changes
   useEffect(() => {
@@ -32,13 +32,21 @@ export default function ConfirmedPage() {
     return () => unsubscribe();
   }, []);
 
-  // If signed in and have oobCode, verify email
+  // If verification was already completed in action page, show success
   useEffect(() => {
-    if (firebaseUser && mode === 'verifyEmail' && oobCode) {
+    if (verified === 'true' && mode === 'verifyEmail') {
+      setVerificationStatus('success');
+      setVerificationMessage('Email verified successfully! You can now sign in.');
+    }
+  }, [verified, mode]);
+
+  // If signed in and have oobCode, verify email (fallback for direct access)
+  useEffect(() => {
+    if (firebaseUser && mode === 'verifyEmail' && oobCode && verificationStatus === 'idle') {
       handleEmailVerification();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [firebaseUser, mode, oobCode]);
+  }, [firebaseUser, mode, oobCode, verificationStatus]);
 
   const handleEmailVerification = async () => {
     setVerificationStatus('verifying');
@@ -271,6 +279,7 @@ export default function ConfirmedPage() {
           src="/login.png"
           alt="First Connection Peer Support"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           style={{ objectFit: 'cover', objectPosition: '90% 50%' }}
           priority
         />

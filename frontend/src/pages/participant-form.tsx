@@ -238,6 +238,7 @@ export function ParticipantFormPage() {
           src="/login.png"
           alt="First Connection Peer Support"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           style={{ objectFit: 'cover', objectPosition: '90% 50%' }}
           priority
         />

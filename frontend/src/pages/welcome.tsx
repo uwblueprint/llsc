@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Box, Flex, Heading, Text, Button, Stack } from '@chakra-ui/react';
+import { Box, Flex, Heading, Text, Button } from '@chakra-ui/react';
 
 export default function WelcomePage() {
   return (
@@ -42,7 +42,7 @@ export default function WelcomePage() {
             <a href="#" style={{ color: "#056067", textDecoration: "underline" }}>here</a>.
           </Text>
           <Text mb={5} color="#1d3448" fontFamily="'Open Sans', sans-serif" fontWeight={400} fontSize="md">
-            We're going to ask you a few questions to get started.
+            We&apos;re going to ask you a few questions to get started.
           </Text>
           <Text mb={8} color="#1d3448" fontFamily="'Open Sans', sans-serif" fontWeight={400} fontSize="md">
             This form takes ~10 minutes to complete. Your responses will not be saved if you close the tab, or exit this web page.

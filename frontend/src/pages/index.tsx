@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
+import { login } from '@/APIClients/authAPIClient';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
@@ -12,10 +13,31 @@ const teal = '#056067';
 
 export default function LoginPage() {
   const router = useRouter();
-  const handleSubmit = (e: React.FormEvent) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/welcome');
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const result = await login(email, password);
+      
+      if (result.success) {
+        router.push('/welcome');
+      } else {
+        setError(result.error || 'Login failed. Please try again.');
+      }
+    } catch {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
       {/* Left: Login Form */}
@@ -80,6 +102,8 @@ export default function LoginPage() {
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -102,6 +126,8 @@ export default function LoginPage() {
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -121,6 +147,11 @@ export default function LoginPage() {
                 Forgot Password?
               </span>
             </Box>
+            {error && (
+              <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
+                {error}
+              </Text>
+            )}
             <Button
               type="submit"
               w="100%"
@@ -138,6 +169,7 @@ export default function LoginPage() {
               _hover={{ bg: '#044953' }}
               px={8}
               py={3}
+              loading={isLoading}
             >
               Sign In
             </Button>
@@ -159,6 +191,7 @@ export default function LoginPage() {
           src="/login.png"
           alt="First Connection Peer Support"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           style={{ objectFit: 'cover', objectPosition: '90% 50%' }}
           priority
         />
