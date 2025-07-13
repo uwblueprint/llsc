@@ -47,9 +47,9 @@ jobs:
       - name: Lint frontend
         if: steps.changes.outputs.frontend == 'true'
         working-directory: ./frontend
-        run: npm run lint
+        run: npx prettier . --check
       
       - name: Lint Python backend
         if: steps.changes.outputs.backend == 'true'
         working-directory: ./backend
-        run: pip install ruff && ruff check . && ruff format --check .
+        run: pip install ruff && ruff check --line-length 120 . && ruff format --check .

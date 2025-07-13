@@ -110,6 +110,21 @@ pdm run ruff format .
 ## Environment Variables
 Environment variables are currently stored in an .env file within the base repository (not the backend folder). You will need to copy the local environment variables stored in the following notion [page](https://www.notion.so/uwblueprintexecs/Environment-Variables-11910f3fb1dc80e4bc67d35c3d65d073?pvs=4) to get the database working.
 
+### Firebase Configuration
+To set up Firebase authentication:
+
+1. Place your `serviceAccountKey.json` file in the `backend/` directory
+   - This file should be obtained from your Firebase Console
+   - Go to Project Settings > Service Accounts > Generate New Private Key
+   - The file contains sensitive credentials and is automatically gitignored
+
+2. Ensure your `.env` file includes the following Firebase-related variables:
+   ```
+   FIREBASE_WEB_API_KEY=your_web_api_key
+   ```
+   You can find these values in your Firebase Console under Project Settings.
+
+Note: Never commit `serviceAccountKey.json` to version control. It's already added to `.gitignore` for security.
 
 ## Adding a new model
 When adding a new model, make sure to add it to `app/models/__init__.py` so that the migration script can pick it up when autogenerating the new migration.
@@ -136,3 +151,15 @@ To apply the migration, run the following command:
 ```bash
 pdm run alembic upgrade head
 ```
+
+### Logging
+
+To add a logger to a new service or file, use the `LOGGER_NAME` function in `app/utilities/constants.py`
+
+```python
+from app.utilities.constants import LOGGER_NAME
+
+log = logging.getLogger(LOGGER_NAME("my_service"))
+```
+
+If you'd like to create a new logger name in the hierarchy, you'll need to add it to `alembic.ini` under the logger section. Following the pre-existing examples for `logger_uvicorn` for example.

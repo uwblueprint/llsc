@@ -4,22 +4,36 @@ from typing import Union
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import email
+from . import models
+from .middleware.auth_middleware import AuthMiddleware
+from .routes import auth, availability, match, send_email, suggested_times, test, user
+from .utilities.constants import LOGGER_NAME
+from .utilities.firebase_init import initialize_firebase
+from .utilities.ses.ses_init import ensure_ses_templates
 
 load_dotenv()
 
-# we need to load env variables before initialization code runs
-from . import models  # noqa: E402
-from .routes import user  # noqa: E402
-from .utilities.firebase_init import initialize_firebase  # noqa: E402
+log = logging.getLogger(LOGGER_NAME("server"))
 
-log = logging.getLogger("uvicorn")
+PUBLIC_PATHS = [
+    "/",
+    "/docs",
+    "/redoc",
+    "/openapi.json",
+    "/auth/login",
+    "/auth/register",
+    "/health",
+    "/test-middleware-public",
+    "/email/send-test-email",
+]
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     log.info("Starting up...")
+    ensure_ses_templates()
     models.run_migrations()
     initialize_firebase()
     yield
@@ -29,13 +43,34 @@ async def lifespan(_: FastAPI):
 # Source: https://stackoverflow.com/questions/77170361/
 # running-alembic-migrations-on-fastapi-startup
 app = FastAPI(lifespan=lifespan)
-app.include_router(user.router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://uw-blueprint-starter-code.firebaseapp.com",
+        "https://uw-blueprint-starter-code.web.app",
+        # TODO: create a separate middleware function to dynamically
+        # determine this value
+        # re.compile("^https:\/\/uw-blueprint-starter-code--pr.*\.web\.app$"),
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app.include_router(email.router)
+app.add_middleware(AuthMiddleware, public_paths=PUBLIC_PATHS)
+app.include_router(auth.router)
+app.include_router(user.router)
+app.include_router(availability.router)
+app.include_router(suggested_times.router)
+app.include_router(match.router)
+app.include_router(send_email.router)
+app.include_router(test.router)
 
 
 @app.get("/")
 def read_root():
+    log.info("Hello World")
     return {"Hello": "World"}
 
 

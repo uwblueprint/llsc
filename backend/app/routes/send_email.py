@@ -3,8 +3,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.interfaces.email_service import IEmailService
+from app.schemas.email_template import EmailContent, EmailTemplateType, MockEmailData
+from app.services.email.amazon_ses_provider import (
+    get_email_service_provider,
+)
 from app.services.email.email_service import EmailService
-from app.services.email.email_service_provider import AmazonSESEmailProvider
 
 router = APIRouter(
     prefix="/email",
@@ -13,16 +16,17 @@ router = APIRouter(
 
 
 def get_email_service() -> IEmailService:
-    email_provider = AmazonSESEmailProvider(aws_access_key="", aws_secret_key="")
-    return EmailService(email_provider)
+    return EmailService(provider=get_email_service_provider())
 
 
 # TODO (Mayank, Nov 30th) - Remove test emails once email service is fully implemented
-@router.post("/send-test-email/")
+@router.post("/send-test")
 async def send_welcome_email(
     recipient: str,
     user_name: str,
     email_service: Annotated[IEmailService, Depends(get_email_service)],
 ):
-    email_service.send_welcome_email(recipient, user_name)
-    return {"message": f"Welcome email sent to {user_name}!"}
+    return email_service.send_email(
+        templateType=EmailTemplateType.TEST,
+        content=EmailContent[MockEmailData](recipient=recipient, data=MockEmailData(name=user_name, date="2021-12-01")),
+    )

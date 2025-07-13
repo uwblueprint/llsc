@@ -2,15 +2,11 @@ import os
 
 import requests
 
-from ..resources.token import Token
+from ..schemas.auth import Token
 
-FIREBASE_SIGN_IN_URL = (
-    "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
-)
+FIREBASE_SIGN_IN_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 FIREBASE_REFRESH_TOKEN_URL = "https://securetoken.googleapis.com/v1/token"
-FIREBASE_OAUTH_SIGN_IN_URL = (
-    "https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp"
-)
+FIREBASE_OAUTH_SIGN_IN_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp"
 
 
 class FirebaseRestClient:
@@ -43,9 +39,7 @@ class FirebaseRestClient:
         # get URL-encoded
         # e.g. "@" in the email address will get converted to "%40" which is incorrect
         response = requests.post(
-            "{base_url}?key={api_key}".format(
-                base_url=FIREBASE_SIGN_IN_URL, api_key=os.getenv("FIREBASE_WEB_API_KEY")
-            ),
+            "{base_url}?key={api_key}".format(base_url=FIREBASE_SIGN_IN_URL, api_key=os.getenv("FIREBASE_WEB_API_KEY")),
             headers=headers,
             data=str(data),
         )
@@ -63,7 +57,10 @@ class FirebaseRestClient:
 
             raise Exception("Failed to sign-in via Firebase REST API")
 
-        return Token(response_json["idToken"], response_json["refreshToken"])
+        return Token(
+            access_token=response_json["idToken"],
+            refresh_token=response_json["refreshToken"],
+        )
 
     # docs: https://firebase.google.com/docs/reference/rest/auth/#section-sign-in-with-oauth-credential
     def sign_in_with_google(self, id_token):
@@ -120,9 +117,7 @@ class FirebaseRestClient:
         :raises Exception: if Firebase API call fails
         """
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        data = "grant_type=refresh_token&refresh_token={refresh_token}".format(
-            refresh_token=ref_token
-        )
+        data = "grant_type=refresh_token&refresh_token={refresh_token}".format(refresh_token=ref_token)
 
         response = requests.post(
             "{base_url}?key={api_key}".format(
@@ -146,4 +141,7 @@ class FirebaseRestClient:
 
             raise Exception("Failed to refresh token via Firebase REST API")
 
-        return Token(response_json["id_token"], response_json["refresh_token"])
+        return Token(
+            access_token=response_json["id_token"],
+            refresh_token=response_json["refresh_token"],
+        )
