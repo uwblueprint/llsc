@@ -15,6 +15,11 @@ const EMAIL_FOR_SIGN_IN_KEY = 'emailForSignIn';
 export const sendEmailVerificationToUser = async (): Promise<boolean> => {
     try {
         const user = auth.currentUser;
+        console.log('[EMAIL_VERIFICATION] Current auth state:', {
+            user: user ? { email: user.email, uid: user.uid, emailVerified: user.emailVerified } : null,
+            authState: auth.currentUser ? 'authenticated' : 'not authenticated'
+        });
+        
         if (!user) {
             console.error('No authenticated user found. User must be signed in to send email verification.');
             return false;
@@ -26,6 +31,7 @@ export const sendEmailVerificationToUser = async (): Promise<boolean> => {
             return true;
         }
 
+        console.log('[EMAIL_VERIFICATION] Sending verification email to:', user.email);
         await firebaseSendEmailVerification(user);
         console.log('Email verification sent successfully');
         return true;
@@ -42,6 +48,8 @@ export const sendEmailVerificationToUser = async (): Promise<boolean> => {
                 console.error('Too many requests. Please wait before trying again.');
             } else if (errorCode === 'auth/invalid-user') {
                 console.error('Invalid user state. User may not be properly authenticated.');
+            } else if (errorCode === 'auth/user-not-found') {
+                console.error('User not found. Authentication state may be invalid.');
             }
         }
         

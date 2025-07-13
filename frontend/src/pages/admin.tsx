@@ -210,6 +210,7 @@ export default function AdminLoginPage() {
           src="/admin.png"
           alt="Admin Portal Visual"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           style={{ objectFit: 'cover', objectPosition: '90% 50%' }}
           priority
         />
