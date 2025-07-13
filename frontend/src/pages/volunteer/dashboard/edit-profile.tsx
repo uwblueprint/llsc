@@ -1,32 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { TimeScheduler } from '../../../components/TimeScheduler';
 import type { TimeSlot } from '../../../components/TimeScheduler/types';
 import { useAvailability } from '../../../hooks/useAvailability';
 import {
   Box,
-  Container,
   Heading,
   Text,
   VStack,
   HStack,
   Button,
-  Stack,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { BiArrowBack } from 'react-icons/bi';
 import PersonalDetails from '../../../components/profile/PersonalDetails';
 import BloodCancerExperience from '../../../components/profile/BloodCancerExperience';
-import ProfileHeader from '@/components/profile/ProfileHeader';
 import ActionButton from '../../../components/profile/EditButton';
 import { COLORS } from '@/constants/form';
 
-const VolunteerDashboard: React.FC = () => {
-  // Placeholder: Replace with real logic (API/localStorage) for first-time check
-  const [showSchedule, setShowSchedule] = useState(true);
-  const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([]);
+const EditProfile: React.FC = () => {
   const [isEditingAvailability, setIsEditingAvailability] = useState(false);
-
-  const { createAvailability, getAvailability, updateAvailability, loading, error } = useAvailability();
+  const { updateAvailability } = useAvailability();
   const router = useRouter();
 
   // Personal details state for profile
@@ -42,7 +35,7 @@ const VolunteerDashboard: React.FC = () => {
 
   // Blood cancer experience state for profile
   const [cancerExperience, setCancerExperience] = useState({
-    diagnosis: ['Acute Myeloid Leukaemia', 'Chronic Myeloid Leukaemia'],
+    diagnosis: ['Acute Myeloid Leukemia', 'Chronic Myeloid Leukemia'],
     dateOfDiagnosis: '',
     treatments: ['Chemotherapy'],
     experiences: ['Brain Fog', 'Fertility Issues', 'Speaking to your family or friends about the diagnosis']
@@ -50,14 +43,6 @@ const VolunteerDashboard: React.FC = () => {
 
   // Availability state for profile
   const [profileTimeSlots, setProfileTimeSlots] = useState<TimeSlot[]>([]);
-
-  useEffect(() => {
-    // Example: Check localStorage for a flag
-    const hasSetAvailability = localStorage.getItem('hasSetAvailability');
-    if (hasSetAvailability === 'true') {
-      setShowSchedule(false);
-    }
-  }, []);
 
   // Helper function to convert day name to day number (Monday = 1, Sunday = 0)
   const getDayNumber = (dayName: string): number => {
@@ -67,27 +52,21 @@ const VolunteerDashboard: React.FC = () => {
 
   // Convert selectedTimeSlots to API format with actual datetime strings
   const convertTimeSlotsToAvailableTimes = (timeSlots: TimeSlot[]) => {
-    // Use the week of 1970-01-05 (Monday) as the base date
-    // 1970-01-05 = Monday, 1970-01-06 = Tuesday, etc.
     const baseMonday = new Date('1970-01-05T00:00:00.000Z');
 
     return timeSlots
       .filter(slot => slot.selected)
       .map(slot => {
-        // Parse the time string (e.g., "13:00 - 14:00")
         const [startTime, endTime] = slot.time.split(' - ');
         const [startHour, startMinute] = startTime.split(':').map(Number);
         const [endHour, endMinute] = endTime.split(':').map(Number);
 
-        // Get the day offset from Monday (Monday = 0, Tuesday = 1, etc.)
-        const dayOffset = getDayNumber(slot.day) === 0 ? 6 : getDayNumber(slot.day) - 1; // Sunday = 6, Monday = 0
+        const dayOffset = getDayNumber(slot.day) === 0 ? 6 : getDayNumber(slot.day) - 1;
         
-        // Create start datetime
         const startDateTime = new Date(baseMonday);
         startDateTime.setDate(baseMonday.getDate() + dayOffset);
         startDateTime.setHours(startHour, startMinute, 0, 0);
 
-        // Create end datetime
         const endDateTime = new Date(baseMonday);
         endDateTime.setDate(baseMonday.getDate() + dayOffset);
         endDateTime.setHours(endHour, endMinute, 0, 0);
@@ -97,24 +76,6 @@ const VolunteerDashboard: React.FC = () => {
           endTime: endDateTime
         };
       });
-  };
-
-  const handleTimeSlotToggle = (day: string, hour: number) => {
-    const timeStr = `${hour}:00 - ${hour + 1}:00`;
-    
-    setSelectedTimeSlots(prev => {
-      const existingSlotIndex = prev.findIndex(
-        slot => slot.day === day && slot.time === timeStr
-      );
-
-      if (existingSlotIndex >= 0) {
-        // Remove the time slot if it exists
-        return prev.filter((_, index) => index !== existingSlotIndex);
-      } else {
-        // Add the time slot if it doesn't exist
-        return [...prev, { day, time: timeStr, selected: true }];
-      }
-    });
   };
 
   const handleProfileTimeSlotToggle = (day: string, hour: number) => {
@@ -133,37 +94,16 @@ const VolunteerDashboard: React.FC = () => {
     });
   };
 
-  const handleConfirmAvailability = async () => {
-    // Convert time slots to API format
-    const availableTimes = convertTimeSlotsToAvailableTimes(selectedTimeSlots);
-    
-    try {
-      const result = await createAvailability(availableTimes);
-      
-      if (result) {
-        console.log('Availability created successfully:', result);
-        // Set flag so schedule doesn't show again
-        localStorage.setItem('hasSetAvailability', 'true');
-        // Show profile instead of redirecting
-        setShowSchedule(false);
-      } else {
-        console.error('Failed to create availability');
-      }
-    } catch (err) {
-      console.error('Error creating availability:', err);
-    }
-  };
-
-  const handleBack = () => {
-    router.back();
-  };
-
   const handleEditTreatments = () => {
     console.log('Edit treatments');
   };
 
   const handleEditExperiences = () => {
     console.log('Edit experiences');
+  };
+
+  const handleBack = () => {
+    router.back();
   };
 
   const handleEditAvailability = () => {
@@ -176,11 +116,9 @@ const VolunteerDashboard: React.FC = () => {
 
   const handleCancelEdit = () => {
     setIsEditingAvailability(false);
-    // Reset to original state if needed
   };
 
   const handleSaveAvailability = async () => {
-    // Convert profile time slots to API format and save
     const availableTimes = convertTimeSlotsToAvailableTimes(profileTimeSlots);
     
     try {
@@ -197,59 +135,6 @@ const VolunteerDashboard: React.FC = () => {
     }
   };
 
-  if (showSchedule) {
-    return (
-      <Box bg="white" h="100vh" w="100vw" display="flex" flexDirection="column" alignItems="center" justifyContent="space-evenly" py={8}>
-        {/* Header */}
-        <Stack align="start" gap="1.85vh" w="1240px">
-          <Heading as="h1" fontSize="2.25rem" fontWeight="600" color={COLORS.veniceBlue} lineHeight="1" letterSpacing="-1.5%" fontFamily="'Open Sans', sans-serif">
-            Select your availability
-          </Heading>
-          <Text fontSize="1.125rem" fontWeight="400" color="gray.600" lineHeight="1" letterSpacing="-1.5%" fontFamily="'Open Sans', sans-serif" maxW="2xl" whiteSpace="nowrap">
-            Drag to select all the times you will usually be available to meet with participants.
-            You will also be able to edit later in your profile.
-          </Text>
-        </Stack>
-        
-        {/* TimeScheduler Container */}
-        <Box w="1240px" h="787px">
-          <TimeScheduler
-            selectedTimeSlots={selectedTimeSlots}
-            onTimeSlotToggle={handleTimeSlotToggle}
-            showAvailability={false}
-          />
-        </Box>
-        
-        {/* Button */}
-        <Box display="flex" justifyContent="flex-end" w="1240px">
-          <Button
-            size="2xl"
-            bg={COLORS.teal}
-            color="white"
-            fontWeight="medium"
-            w="227px"
-            h="52px"
-            px="28px"
-            py="16px"
-            fontSize="lg"
-            borderRadius="8px"
-            border={`1px solid ${COLORS.teal}`}
-            boxShadow="sm"
-            fontFamily="'Open Sans', sans-serif"
-            _hover={{
-              bg: "#044953"
-            }}
-            transition="background 0.2s"
-            onClick={handleConfirmAvailability}
-          >
-            Confirm Availability
-          </Button>
-        </Box>
-      </Box>
-    );
-  }
-
-  // Profile Page Content
   return (
     <Box minH="100vh" bg="white" py={6} display="flex" justifyContent="center">
       <Box minH="2409px" overflow="auto" w="85%">
@@ -392,4 +277,4 @@ const VolunteerDashboard: React.FC = () => {
   );
 };
 
-export default VolunteerDashboard; 
+export default EditProfile; 
