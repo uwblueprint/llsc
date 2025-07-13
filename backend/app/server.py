@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import models
 from .middleware.auth_middleware import AuthMiddleware
-from .routes import auth, availability, match, send_email, suggested_times, test, user
+from .routes import auth, availability, intake, match, send_email, suggested_times, test, user
 from .utilities.constants import LOGGER_NAME
 from .utilities.firebase_init import initialize_firebase
 from .utilities.ses.ses_init import ensure_ses_templates
@@ -64,6 +64,7 @@ app.include_router(user.router)
 app.include_router(availability.router)
 app.include_router(suggested_times.router)
 app.include_router(match.router)
+app.include_router(intake.router)
 app.include_router(send_email.router)
 app.include_router(test.router)
 
