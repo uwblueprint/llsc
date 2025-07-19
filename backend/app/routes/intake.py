@@ -10,6 +10,7 @@ from app.middleware.auth import has_roles
 from app.schemas.user import UserRole
 from app.models import FormSubmission, Form, User
 from app.utilities.db_utils import get_db
+from app.services.implementations.intake_form_processor import IntakeFormProcessor
 
 # ===== Schemas =====
 
@@ -48,8 +49,6 @@ def is_owner_or_admin(user_id: UUID):
     Custom dependency that checks if the current user is either:
     1. The owner of the resource (matching user_id)
     2. An admin
-    
-    This allows users to access their own data while admins can access everything.
     """
     async def validator(
         request: Request,
@@ -58,24 +57,16 @@ def is_owner_or_admin(user_id: UUID):
     ) -> bool:
         # Get current user info from request state (set by auth middleware)
         current_user_auth_id = request.state.user_id
-        
-        # Get the current user from database
         current_user = db.query(User).filter(User.auth_id == current_user_auth_id).first()
+        
         if not current_user:
             raise HTTPException(status_code=401, detail="User not found")
         
-        # Check if user is admin (role_id 3)
-        if current_user.role_id == 3:  # Admin role
+        # Check if user is admin or the owner of the resource
+        if current_user.role.name == "admin" or current_user.id == user_id:
             return True
         
-        # Check if user is the owner
-        if str(current_user.id) == str(user_id):
-            return True
-        
-        raise HTTPException(
-            status_code=403,
-            detail="Access denied: You can only access your own submissions"
-        )
+        raise HTTPException(status_code=403, detail="Access denied")
     
     return Depends(validator)
 
@@ -98,7 +89,7 @@ async def create_form_submission(
     authorized: bool = has_roles([UserRole.ADMIN, UserRole.PARTICIPANT, UserRole.VOLUNTEER])
 ):
     """
-    Create a new form submission.
+    Create a new form submission and process it into structured data.
     
     Users can only create submissions for themselves.
     """
@@ -117,7 +108,7 @@ async def create_form_submission(
         if not form:
             raise HTTPException(status_code=404, detail="Intake form not found")
         
-        # Create the submission
+        # Create the raw form submission record
         db_submission = FormSubmission(
             form_id=submission.form_id,
             user_id=current_user.id,  # Always use the current user's ID
@@ -125,6 +116,16 @@ async def create_form_submission(
         )
         
         db.add(db_submission)
+        db.flush()  # Get the submission ID without committing
+        
+        # Process the form data into structured tables
+        processor = IntakeFormProcessor(db)
+        user_data = processor.process_form_submission(
+            user_id=str(current_user.id), 
+            form_data=submission.answers
+        )
+        
+        # Commit everything together
         db.commit()
         db.refresh(db_submission)
         
@@ -134,7 +135,7 @@ async def create_form_submission(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error processing form submission: {str(e)}")
 
 
 @router.get("/submissions", response_model=FormSubmissionListResponse)

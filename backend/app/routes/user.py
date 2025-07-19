@@ -103,3 +103,18 @@ async def delete_user(
         raise http_ex
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# soft delete user
+@router.post("/{user_id}/deactivate")
+async def deactivate_user(
+    user_id: str,
+    user_service: UserService = Depends(get_user_service),
+):
+    try:
+        await user_service.soft_delete_user_by_id(user_id)
+        return {"message": "User deactivated successfully"}
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
