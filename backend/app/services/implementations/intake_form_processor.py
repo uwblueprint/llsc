@@ -1,4 +1,5 @@
 import logging
+import uuid as uuid_module
 from datetime import datetime
 from typing import Any, Dict, Tuple
 
@@ -79,8 +80,6 @@ class IntakeFormProcessor:
     def _get_or_create_user_data(self, user_id: str) -> Tuple[UserData, bool]:
         """Get existing UserData or create new one. Returns (user_data, is_new)."""
         # Convert string UUID to UUID object if needed
-        import uuid as uuid_module
-
         if isinstance(user_id, str):
             try:
                 user_uuid = uuid_module.UUID(user_id)

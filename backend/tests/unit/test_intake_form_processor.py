@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.models.Experience import Experience
+from app.models.Role import Role
 from app.models.Treatment import Treatment
 from app.models.User import User
 from app.models.UserData import UserData
@@ -22,8 +23,6 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 def db_session():
     """Provide a clean database session for each test"""
     # Create tables excluding FormSubmission to avoid JSONB issues
-    from app.models import Experience, Role, Treatment, User, UserData
-
     tables_to_create = [
         Role.__table__,
         User.__table__,
@@ -86,8 +85,6 @@ def db_session():
         session.rollback()
         session.close()
         # Clean up - drop the tables we created
-        from app.models import UserData
-
         tables_to_drop = [
             UserData.__table__.metadata.tables.get("user_loved_one_experiences"),
             UserData.__table__.metadata.tables.get("user_loved_one_treatments"),

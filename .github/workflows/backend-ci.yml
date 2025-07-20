@@ -58,7 +58,7 @@ jobs:
     - name: Install dependencies
       working-directory: ./backend
       run: |
-        pdm install --dev
+        pdm install --group test,lint,dev
         
     - name: Set up environment variables
       working-directory: ./backend
@@ -147,7 +147,7 @@ jobs:
     - name: Install dependencies
       working-directory: ./backend
       run: |
-        pdm install --dev
+        pdm install --group test,lint,dev
         
     - name: Set up environment variables
       working-directory: ./backend
