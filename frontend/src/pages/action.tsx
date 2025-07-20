@@ -21,7 +21,7 @@ export default function ActionPage() {
           const result = await verifyEmailWithCode(oobCode as string);
           
           if (result.success) {
-            router.replace(`/confirmed?mode=verifyEmail&oobCode=${oobCode}&verified=true`);
+            router.replace(`/?verified=true&mode=verifyEmail`);
           } else {
             setError(result.error || 'Verification failed');
             setIsProcessing(false);
