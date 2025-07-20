@@ -14,6 +14,7 @@ export default function SetNewPasswordPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState(''); // For password mismatch only
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -33,10 +34,11 @@ export default function SetNewPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setPasswordError(''); // Clear previous password errors
     setIsLoading(true);
     
     if (password !== confirmPassword) {
-      setError('Passwords do not match. Please try again.');
+      setPasswordError('Passwords do not match. Please try again.');
       setIsLoading(false);
       return;
     }
@@ -177,10 +179,10 @@ export default function SetNewPasswordPage() {
                     fontSize={14}
                     color={veniceBlue}
                     bg="white"
-                    borderColor={error ? '#E53E3E' : '#D5D7DA'}
-                    borderWidth={error ? 2 : 1}
-                    boxShadow={error ? '0 0 0 2px #E53E3E' : 'none'}
-                    _focus={error ? { borderColor: '#E53E3E', boxShadow: '0 0 0 2px #E53E3E' } : { borderColor: teal, boxShadow: '0 0 0 1px #319795' }}
+                    borderColor={passwordError ? '#E53E3E' : '#D5D7DA'}
+                    borderWidth={passwordError ? 2 : 1}
+                    boxShadow={passwordError ? '0 0 0 2px #E53E3E' : 'none'}
+                    _focus={passwordError ? { borderColor: '#E53E3E', boxShadow: '0 0 0 2px #E53E3E' } : { borderColor: teal, boxShadow: '0 0 0 1px #319795' }}
                     _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
@@ -188,6 +190,12 @@ export default function SetNewPasswordPage() {
                   />
                 </InputGroup>
               </Field>
+              {/* Show password mismatch error only after submit attempt */}
+              {passwordError && (
+                <Text color="red.500" mb={4} fontWeight={400} fontFamily="'Open Sans', sans-serif" fontSize="sm">
+                  {passwordError}
+                </Text>
+              )}
               <Button
                 type="submit"
                 w="100%"
