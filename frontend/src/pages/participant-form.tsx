@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
-import { Radio, RadioGroup } from '@/components/ui/radio';
 import { register } from '@/APIClients/authAPIClient';
 import { useRouter } from 'next/router';
 import { UserRole, SignUpMethod } from '@/types/authTypes';
@@ -170,28 +169,42 @@ export function ParticipantFormPage() {
             <Text mt={2} mb={2} color={fieldGray} fontWeight={600} fontFamily="'Open Sans', sans-serif" fontSize={15}>
               I am signing up:
             </Text>
-            <RadioGroup
-              value={signupType}
-              onValueChange={details => setSignupType(details.value)}
-              mb={6}
-            >
-              <div className="radio-options-container" style={{ display: 'flex', flexDirection: 'row', gap: 40 }}>
-                <Radio
-                  value="volunteer"
-                  style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#414651', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}
-                  data-control-style={{ borderColor: '#A0AEC0', background: '#E2E8F0', width: 16, height: 16 }}
-                >
-                  As a Peer Support Volunteer
-                </Radio>
-                <Radio
-                  value="request"
-                  style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#414651', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}
-                  data-control-style={{ borderColor: '#A0AEC0', background: '#E2E8F0', width: 16, height: 16 }}
-                >
-                  To Request Peer Support
-                </Radio>
+            <div className="radio-options-container" style={{ display: 'flex', flexDirection: 'row', gap: 40, marginBottom: 24 }}>
+              <div 
+                className={`custom-radio ${signupType === 'volunteer' ? 'selected' : ''}`}
+                onClick={() => setSignupType('volunteer')}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 8, 
+                  cursor: 'pointer',
+                  fontFamily: "'Open Sans', sans-serif", 
+                  fontSize: 14, 
+                  color: '#414651', 
+                  fontWeight: 600 
+                }}
+              >
+                <div className="radio-circle"></div>
+                As a Peer Support Volunteer
               </div>
-            </RadioGroup>
+              <div 
+                className={`custom-radio ${signupType === 'request' ? 'selected' : ''}`}
+                onClick={() => setSignupType('request')}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 8, 
+                  cursor: 'pointer',
+                  fontFamily: "'Open Sans', sans-serif", 
+                  fontSize: 14, 
+                  color: '#414651', 
+                  fontWeight: 600 
+                }}
+              >
+                <div className="radio-circle"></div>
+                To Request Peer Support
+              </div>
+            </div>
             {error && (
               <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
                 {typeof error === 'string' ? error : JSON.stringify(error)}
@@ -252,12 +265,40 @@ export default function ParticipantFormPageWrapper() {
     <>
       <ParticipantFormPage />
       <style jsx global>{`
-        .radio-options-container [data-part="control"] {
-          border: 2px solid #A0AEC0 !important;
-          background: #E2E8F0 !important;
-          width: 16px !important;
-          height: 16px !important;
-          box-shadow: none !important;
+        .radio-circle {
+          width: 18px;
+          height: 18px;
+          border: 2px solid #718096;
+          border-radius: 50%;
+          background: white;
+          position: relative;
+          flex-shrink: 0;
+        }
+        
+        .custom-radio.selected .radio-circle {
+          border-color: #056067;
+          background: #056067;
+        }
+        
+        .custom-radio.selected .radio-circle::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 6px;
+          height: 6px;
+          background: white;
+          border-radius: 50%;
+        }
+        
+        .custom-radio:hover .radio-circle {
+          border-color: #056067;
+          background: #F0F9FF;
+        }
+        
+        .custom-radio.selected:hover .radio-circle {
+          background: #056067;
         }
       `}</style>
     </>
