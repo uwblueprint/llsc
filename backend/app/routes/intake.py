@@ -16,7 +16,7 @@ from app.services.implementations.intake_form_processor import IntakeFormProcess
 
 class FormSubmissionCreate(BaseModel):
     """Schema for creating a new form submission"""
-    form_id: UUID
+    form_id: Optional[UUID] = Field(None, description="Form ID (optional - will be auto-detected from formType if not provided)")
     answers: dict = Field(..., description="Form answers as JSON")
 
 
@@ -92,6 +92,9 @@ async def create_form_submission(
     Create a new form submission and process it into structured data.
     
     Users can only create submissions for themselves.
+    
+    The form_id is optional - if not provided, it will be auto-detected 
+    from the 'formType' field in the answers (participant/volunteer).
     """
     try:
         # Get current user
@@ -100,9 +103,37 @@ async def create_form_submission(
         if not current_user:
             raise HTTPException(status_code=401, detail="User not found")
         
+        # Determine form_id if not provided
+        form_id = submission.form_id
+        if not form_id:
+            # Auto-detect form based on formType in answers
+            form_type = submission.answers.get("formType")
+            if not form_type:
+                raise HTTPException(status_code=400, detail="formType must be specified in answers when form_id is not provided")
+            
+            # Map formType to form name
+            form_name_mapping = {
+                "participant": "Participant Intake Form",
+                "volunteer": "Volunteer Intake Form"
+            }
+            
+            form_name = form_name_mapping.get(form_type)
+            if not form_name:
+                raise HTTPException(status_code=400, detail=f"Invalid formType: {form_type}. Must be 'participant' or 'volunteer'")
+            
+            # Find the form
+            form = db.query(Form).filter(
+                Form.type == "intake",
+                Form.name == form_name
+            ).first()
+            
+            if not form:
+                raise HTTPException(status_code=500, detail=f"Intake form '{form_name}' not found in database")
+            form_id = form.id
+        
         # Verify the form exists and is of type 'intake'
         form = db.query(Form).filter(
-            Form.id == submission.form_id,
+            Form.id == form_id,
             Form.type == "intake"
         ).first()
         if not form:
@@ -110,7 +141,7 @@ async def create_form_submission(
         
         # Create the raw form submission record
         db_submission = FormSubmission(
-            form_id=submission.form_id,
+            form_id=form_id,
             user_id=current_user.id,  # Always use the current user's ID
             answers=submission.answers
         )

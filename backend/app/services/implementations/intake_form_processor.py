@@ -43,6 +43,10 @@ class IntakeFormProcessor:
             self._process_treatments(user_data, form_data.get('cancerExperience', {}))
             self._process_experiences(user_data, form_data.get('cancerExperience', {}))
             
+            # Process caregiver experience for volunteers (separate from cancer experience)
+            if 'caregiverExperience' in form_data:
+                self._process_caregiver_experience(user_data, form_data['caregiverExperience'])
+            
             # Process loved one data if present
             if 'lovedOne' in form_data:
                 self._process_loved_one_data(user_data, form_data['lovedOne'])
@@ -196,6 +200,46 @@ class IntakeFormProcessor:
             else:
                 # Create new experience for custom entry
                 logger.info(f"Creating new experience: {experience_name}")
+                new_experience = Experience(name=experience_name)
+                self.db.add(new_experience)
+                self.db.flush()  # Get the ID
+                user_data.experiences.append(new_experience)
+    
+    def _process_caregiver_experience(self, user_data: UserData, caregiver_exp: Dict[str, Any]):
+        """
+        Process caregiver experience for volunteers who are caregivers without cancer.
+        Maps caregiver experiences to the same user_experiences table as cancer experiences.
+        """
+        if not caregiver_exp:
+            return
+        
+        # Handle "Other" caregiver experience text
+        user_data.other_experience = caregiver_exp.get('otherExperience')
+        
+        # Process caregiver experiences - map to same experiences table
+        experience_names = caregiver_exp.get('experiences', [])
+        if not experience_names:
+            return
+        
+        # Note: We don't clear existing experiences here in case user has both 
+        # cancer and caregiver experiences (though that would be in cancerExperience)
+        
+        for experience_name in experience_names:
+            if not experience_name:
+                continue
+                
+            # Find existing experience
+            experience = self.db.query(Experience).filter(
+                Experience.name == experience_name
+            ).first()
+            
+            if experience:
+                # Only add if not already present
+                if experience not in user_data.experiences:
+                    user_data.experiences.append(experience)
+            else:
+                # Create new experience for custom entry
+                logger.info(f"Creating new caregiver experience: {experience_name}")
                 new_experience = Experience(name=experience_name)
                 self.db.add(new_experience)
                 self.db.flush()  # Get the ID
