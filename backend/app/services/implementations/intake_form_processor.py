@@ -1,10 +1,10 @@
-from typing import Dict, List, Optional, Any
-from datetime import datetime
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
-
-from app.models import UserData, Treatment, Experience, User
 import logging
+from datetime import datetime
+from typing import Any, Dict, Tuple
+
+from sqlalchemy.orm import Session
+
+from app.models import Experience, Treatment, UserData
 
 logger = logging.getLogger(__name__)
 
@@ -14,156 +14,187 @@ class IntakeFormProcessor:
     Processes intake form JSON submissions into structured database tables.
     Handles both predefined options and custom "Other" entries.
     """
-    
+
     def __init__(self, db: Session):
+        """Initialize the processor with a database session."""
         self.db = db
-    
+
     def process_form_submission(self, user_id: str, form_data: Dict[str, Any]) -> UserData:
         """
-        Main method to process a complete intake form submission.
-        
+        Process a form submission and create/update UserData.
+
         Args:
-            user_id: The user's UUID
-            form_data: The complete form data from frontend
-            
+            user_id: UUID string of the user
+            form_data: Dictionary containing form submission data
+
         Returns:
-            UserData: The created/updated user data record
+            UserData: The created or updated UserData object
+
+        Raises:
+            ValueError: For invalid UUIDs, dates, or other validation errors
+            KeyError: For missing required fields
         """
         try:
-            # Get or create UserData record
-            user_data = self._get_or_create_user_data(user_id)
-            
+            # Validate required fields first
+            self._validate_required_fields(form_data)
+
+            # Get or create UserData
+            user_data, is_new = self._get_or_create_user_data(user_id)
+
+            # Add to session early to avoid relationship warnings
+            if is_new:
+                self.db.add(user_data)
+                self.db.flush()  # Get ID assigned before processing relationships
+
             # Process different sections of the form
-            self._process_personal_info(user_data, form_data.get('personalInfo', {}))
-            self._process_demographics(user_data, form_data.get('demographics', {}))
-            self._process_cancer_experience(user_data, form_data.get('cancerExperience', {}))
+            self._process_personal_info(user_data, form_data.get("personalInfo", {}))
+            self._process_demographics(user_data, form_data.get("demographics", {}))
+            self._process_cancer_experience(user_data, form_data.get("cancerExperience", {}))
             self._process_flow_control(user_data, form_data)
-            
+
             # Process treatments and experiences (many-to-many)
-            self._process_treatments(user_data, form_data.get('cancerExperience', {}))
-            self._process_experiences(user_data, form_data.get('cancerExperience', {}))
-            
+            self._process_treatments(user_data, form_data.get("cancerExperience", {}))
+            self._process_experiences(user_data, form_data.get("cancerExperience", {}))
+
             # Process caregiver experience for volunteers (separate from cancer experience)
-            if 'caregiverExperience' in form_data:
-                self._process_caregiver_experience(user_data, form_data['caregiverExperience'])
-            
+            if "caregiverExperience" in form_data:
+                self._process_caregiver_experience(user_data, form_data["caregiverExperience"])
+
             # Process loved one data if present
-            if 'lovedOne' in form_data:
-                self._process_loved_one_data(user_data, form_data['lovedOne'])
-            
-            # Save to database
-            self.db.add(user_data)
+            if "lovedOne" in form_data:
+                self._process_loved_one_data(user_data, form_data["lovedOne"])
+
+            # Commit all changes
             self.db.commit()
             self.db.refresh(user_data)
-            
+
             logger.info(f"Successfully processed intake form for user {user_id}")
             return user_data
-            
+
         except Exception as e:
             self.db.rollback()
             logger.error(f"Error processing intake form for user {user_id}: {str(e)}")
             raise
-    
-    def _get_or_create_user_data(self, user_id: str) -> UserData:
-        """Get existing UserData or create new one."""
-        user_data = self.db.query(UserData).filter(UserData.id == user_id).first()
+
+    def _get_or_create_user_data(self, user_id: str) -> Tuple[UserData, bool]:
+        """Get existing UserData or create new one. Returns (user_data, is_new)."""
+        # Convert string UUID to UUID object if needed
+        import uuid as uuid_module
+
+        if isinstance(user_id, str):
+            try:
+                user_uuid = uuid_module.UUID(user_id)
+            except ValueError:
+                raise ValueError(f"Invalid UUID format: {user_id}")
+        else:
+            user_uuid = user_id
+
+        # Look for existing UserData by user_id foreign key
+        user_data = self.db.query(UserData).filter(UserData.user_id == user_uuid).first()
         if not user_data:
-            user_data = UserData(id=user_id)
-        return user_data
-    
+            user_data = UserData(user_id=user_uuid)
+            return user_data, True  # New object
+        return user_data, False  # Existing object
+
+    def _validate_required_fields(self, form_data: Dict[str, Any]):
+        """Validate that required fields are present."""
+        if "personalInfo" not in form_data:
+            raise KeyError("personalInfo section is required")
+
+        personal_info = form_data["personalInfo"]
+        required_fields = ["firstName", "lastName", "dateOfBirth", "phoneNumber", "city", "province", "postalCode"]
+
+        for field in required_fields:
+            if field not in personal_info:
+                raise KeyError(f"Required field missing: personalInfo.{field}")
+
+    def _trim_text(self, text: str) -> str:
+        """Trim whitespace from text fields."""
+        if isinstance(text, str):
+            return text.strip()
+        return text
+
+    def _parse_date(self, date_str: str):
+        """Parse date string with strict validation."""
+        if not date_str:
+            return None
+
+        # Try DD/MM/YYYY format first (frontend format)
+        try:
+            return datetime.strptime(date_str, "%d/%m/%Y").date()
+        except ValueError:
+            pass
+
+        # Try ISO format as fallback
+        try:
+            return datetime.fromisoformat(date_str).date()
+        except ValueError:
+            raise ValueError(f"Invalid date format: {date_str}. Expected DD/MM/YYYY or ISO format.")
+
     def _process_personal_info(self, user_data: UserData, personal_info: Dict[str, Any]):
         """Process personal information fields."""
-        if not personal_info:
-            return
-            
-        user_data.first_name = personal_info.get('firstName')
-        user_data.last_name = personal_info.get('lastName')
-        user_data.city = personal_info.get('city')
-        user_data.province = personal_info.get('province')
-        user_data.postal_code = personal_info.get('postalCode')
-        user_data.phone = personal_info.get('phoneNumber')
-        
-        # Parse date of birth
-        dob_str = personal_info.get('dateOfBirth')
-        if dob_str:
+        user_data.first_name = self._trim_text(personal_info.get("firstName"))
+        user_data.last_name = self._trim_text(personal_info.get("lastName"))
+        user_data.email = self._trim_text(personal_info.get("email"))
+        user_data.phone = self._trim_text(personal_info.get("phoneNumber"))
+        user_data.city = self._trim_text(personal_info.get("city"))
+        user_data.province = self._trim_text(personal_info.get("province"))
+        user_data.postal_code = self._trim_text(personal_info.get("postalCode"))
+
+        # Parse date of birth with strict validation
+        if "dateOfBirth" in personal_info:
             try:
-                # Assuming format DD/MM/YYYY from frontend
-                user_data.date_of_birth = datetime.strptime(dob_str, '%d/%m/%Y').date()
+                user_data.date_of_birth = self._parse_date(personal_info["dateOfBirth"])
             except ValueError:
-                try:
-                    # Try ISO format as fallback
-                    user_data.date_of_birth = datetime.fromisoformat(dob_str).date()
-                except ValueError:
-                    logger.warning(f"Could not parse date of birth: {dob_str}")
-    
+                raise ValueError(f"Invalid date format for dateOfBirth: {personal_info['dateOfBirth']}")
+
     def _process_demographics(self, user_data: UserData, demographics: Dict[str, Any]):
         """Process demographic information."""
-        if not demographics:
-            return
-            
-        user_data.gender_identity = demographics.get('genderIdentity')
-        user_data.pronouns = demographics.get('pronouns', [])  # Array
-        user_data.ethnic_group = demographics.get('ethnicGroup', [])  # Array
-        user_data.marital_status = demographics.get('maritalStatus')
-        user_data.has_kids = demographics.get('hasKids')
-        
-        # Handle custom gender identity
-        if user_data.gender_identity == 'Self-describe':
-            user_data.gender_identity_custom = demographics.get('genderIdentityCustom')
-        
-        # Handle custom ethnic group
-        ethnic_groups = demographics.get('ethnicGroup', [])
-        if 'Other' in ethnic_groups:
-            user_data.other_ethnic_group = demographics.get('ethnicGroupCustom')
-    
-    def _process_cancer_experience(self, user_data: UserData, cancer_exp: Dict[str, Any]):
+        user_data.gender_identity = self._trim_text(demographics.get("genderIdentity"))
+        user_data.pronouns = demographics.get("pronouns", [])
+        user_data.ethnic_group = demographics.get("ethnicGroup", [])
+        user_data.marital_status = self._trim_text(demographics.get("maritalStatus"))
+        user_data.has_kids = demographics.get("hasKids")
+        user_data.other_ethnic_group = self._trim_text(demographics.get("ethnicGroupCustom"))
+        user_data.gender_identity_custom = self._trim_text(demographics.get("genderIdentityCustom"))
+
+    def _process_cancer_experience(self, user_data: UserData, cancer_experience: Dict[str, Any]):
         """Process cancer experience information."""
-        if not cancer_exp:
-            return
-            
-        user_data.diagnosis = cancer_exp.get('diagnosis')
-        
-        # Parse diagnosis date
-        diag_date_str = cancer_exp.get('dateOfDiagnosis')
-        if diag_date_str:
+        user_data.diagnosis = self._trim_text(cancer_experience.get("diagnosis"))
+        user_data.other_treatment = self._trim_text(cancer_experience.get("otherTreatment"))
+        user_data.other_experience = self._trim_text(cancer_experience.get("otherExperience"))
+
+        # Parse diagnosis date with strict validation
+        if "dateOfDiagnosis" in cancer_experience:
             try:
-                user_data.date_of_diagnosis = datetime.strptime(diag_date_str, '%d/%m/%Y').date()
+                user_data.date_of_diagnosis = self._parse_date(cancer_experience["dateOfDiagnosis"])
             except ValueError:
-                try:
-                    user_data.date_of_diagnosis = datetime.fromisoformat(diag_date_str).date()
-                except ValueError:
-                    logger.warning(f"Could not parse diagnosis date: {diag_date_str}")
-        
-        # Handle "Other" treatment and experience text
-        user_data.other_treatment = cancer_exp.get('otherTreatment')
-        user_data.other_experience = cancer_exp.get('otherExperience')
-    
+                raise ValueError(f"Invalid date format for dateOfDiagnosis: {cancer_experience['dateOfDiagnosis']}")
+
     def _process_flow_control(self, user_data: UserData, form_data: Dict[str, Any]):
         """Process flow control fields."""
-        user_data.has_blood_cancer = form_data.get('hasBloodCancer')
-        user_data.caring_for_someone = form_data.get('caringForSomeone')
-    
+        user_data.has_blood_cancer = form_data.get("hasBloodCancer")
+        user_data.caring_for_someone = form_data.get("caringForSomeone")
+
     def _process_treatments(self, user_data: UserData, cancer_exp: Dict[str, Any]):
         """
         Process treatments - map frontend names to database records.
         Handles both predefined options and creates new ones for custom entries.
         """
-        treatment_names = cancer_exp.get('treatments', [])
+        treatment_names = cancer_exp.get("treatments", [])
         if not treatment_names:
             return
-        
+
         # Clear existing treatments
         user_data.treatments.clear()
-        
+
         for treatment_name in treatment_names:
             if not treatment_name:
                 continue
-                
+
             # Find existing treatment
-            treatment = self.db.query(Treatment).filter(
-                Treatment.name == treatment_name
-            ).first()
-            
+            treatment = self.db.query(Treatment).filter(Treatment.name == treatment_name).first()
+
             if treatment:
                 user_data.treatments.append(treatment)
             else:
@@ -173,28 +204,26 @@ class IntakeFormProcessor:
                 self.db.add(new_treatment)
                 self.db.flush()  # Get the ID
                 user_data.treatments.append(new_treatment)
-    
+
     def _process_experiences(self, user_data: UserData, cancer_exp: Dict[str, Any]):
         """
         Process experiences - map frontend names to database records.
         Handles both predefined options and creates new ones for custom entries.
         """
-        experience_names = cancer_exp.get('experiences', [])
+        experience_names = cancer_exp.get("experiences", [])
         if not experience_names:
             return
-        
+
         # Clear existing experiences
         user_data.experiences.clear()
-        
+
         for experience_name in experience_names:
             if not experience_name:
                 continue
-                
+
             # Find existing experience
-            experience = self.db.query(Experience).filter(
-                Experience.name == experience_name
-            ).first()
-            
+            experience = self.db.query(Experience).filter(Experience.name == experience_name).first()
+
             if experience:
                 user_data.experiences.append(experience)
             else:
@@ -204,7 +233,7 @@ class IntakeFormProcessor:
                 self.db.add(new_experience)
                 self.db.flush()  # Get the ID
                 user_data.experiences.append(new_experience)
-    
+
     def _process_caregiver_experience(self, user_data: UserData, caregiver_exp: Dict[str, Any]):
         """
         Process caregiver experience for volunteers who are caregivers without cancer.
@@ -212,27 +241,25 @@ class IntakeFormProcessor:
         """
         if not caregiver_exp:
             return
-        
+
         # Handle "Other" caregiver experience text
-        user_data.other_experience = caregiver_exp.get('otherExperience')
-        
+        user_data.other_experience = caregiver_exp.get("otherExperience")
+
         # Process caregiver experiences - map to same experiences table
-        experience_names = caregiver_exp.get('experiences', [])
+        experience_names = caregiver_exp.get("experiences", [])
         if not experience_names:
             return
-        
-        # Note: We don't clear existing experiences here in case user has both 
+
+        # Note: We don't clear existing experiences here in case user has both
         # cancer and caregiver experiences (though that would be in cancerExperience)
-        
+
         for experience_name in experience_names:
             if not experience_name:
                 continue
-                
+
             # Find existing experience
-            experience = self.db.query(Experience).filter(
-                Experience.name == experience_name
-            ).first()
-            
+            experience = self.db.query(Experience).filter(Experience.name == experience_name).first()
+
             if experience:
                 # Only add if not already present
                 if experience not in user_data.experiences:
@@ -244,70 +271,64 @@ class IntakeFormProcessor:
                 self.db.add(new_experience)
                 self.db.flush()  # Get the ID
                 user_data.experiences.append(new_experience)
-    
+
     def _process_loved_one_data(self, user_data: UserData, loved_one_data: Dict[str, Any]):
         """Process loved one data including demographics and cancer experience."""
         if not loved_one_data:
             return
-        
+
         # Process loved one demographics
-        self._process_loved_one_demographics(user_data, loved_one_data.get('demographics', {}))
-        
+        self._process_loved_one_demographics(user_data, loved_one_data.get("demographics", {}))
+
         # Process loved one cancer experience
-        self._process_loved_one_cancer_experience(user_data, loved_one_data.get('cancerExperience', {}))
-        
+        self._process_loved_one_cancer_experience(user_data, loved_one_data.get("cancerExperience", {}))
+
         # Process loved one treatments and experiences
-        self._process_loved_one_treatments(user_data, loved_one_data.get('cancerExperience', {}))
-        self._process_loved_one_experiences(user_data, loved_one_data.get('cancerExperience', {}))
-    
+        self._process_loved_one_treatments(user_data, loved_one_data.get("cancerExperience", {}))
+        self._process_loved_one_experiences(user_data, loved_one_data.get("cancerExperience", {}))
+
     def _process_loved_one_demographics(self, user_data: UserData, demographics: Dict[str, Any]):
         """Process loved one demographic information."""
         if not demographics:
             return
-            
-        user_data.loved_one_gender_identity = demographics.get('genderIdentity')
-        user_data.loved_one_age = demographics.get('age')
-    
+
+        user_data.loved_one_gender_identity = demographics.get("genderIdentity")
+        user_data.loved_one_age = demographics.get("age")
+
     def _process_loved_one_cancer_experience(self, user_data: UserData, cancer_exp: Dict[str, Any]):
         """Process loved one cancer experience information."""
         if not cancer_exp:
             return
-            
-        user_data.loved_one_diagnosis = cancer_exp.get('diagnosis')
-        
-        # Parse loved one diagnosis date
-        diag_date_str = cancer_exp.get('dateOfDiagnosis')
-        if diag_date_str:
+
+        user_data.loved_one_diagnosis = self._trim_text(cancer_exp.get("diagnosis"))
+
+        # Parse loved one diagnosis date with strict validation
+        if "dateOfDiagnosis" in cancer_exp:
             try:
-                user_data.loved_one_date_of_diagnosis = datetime.strptime(diag_date_str, '%d/%m/%Y').date()
+                user_data.loved_one_date_of_diagnosis = self._parse_date(cancer_exp["dateOfDiagnosis"])
             except ValueError:
-                try:
-                    user_data.loved_one_date_of_diagnosis = datetime.fromisoformat(diag_date_str).date()
-                except ValueError:
-                    logger.warning(f"Could not parse loved one diagnosis date: {diag_date_str}")
-        
-        # Handle "Other" treatment and experience text for loved one
-        user_data.loved_one_other_treatment = cancer_exp.get('otherTreatment')
-        user_data.loved_one_other_experience = cancer_exp.get('otherExperience')
-    
+                raise ValueError(f"Invalid date format for loved one dateOfDiagnosis: {cancer_exp['dateOfDiagnosis']}")
+
+        # Handle "Other" treatment and experience text for loved one with trimming
+        user_data.loved_one_other_treatment = self._trim_text(cancer_exp.get("otherTreatment"))
+        user_data.loved_one_other_experience = self._trim_text(cancer_exp.get("otherExperience"))
+
     def _process_loved_one_treatments(self, user_data: UserData, cancer_exp: Dict[str, Any]):
         """Process loved one treatments - map frontend names to database records."""
-        treatment_names = cancer_exp.get('treatments', [])
+        treatment_names = cancer_exp.get("treatments", [])
         if not treatment_names:
             return
-        
+
         # Clear existing loved one treatments
         user_data.loved_one_treatments.clear()
-        
+
         for treatment_name in treatment_names:
             if not treatment_name:
                 continue
-                
+
             # Find existing treatment
-            treatment = self.db.query(Treatment).filter(
-                Treatment.name == treatment_name
-            ).first()
-            
+            treatment = self.db.query(Treatment).filter(Treatment.name == treatment_name).first()
+
             if treatment:
                 user_data.loved_one_treatments.append(treatment)
             else:
@@ -317,25 +338,23 @@ class IntakeFormProcessor:
                 self.db.add(new_treatment)
                 self.db.flush()  # Get the ID
                 user_data.loved_one_treatments.append(new_treatment)
-    
+
     def _process_loved_one_experiences(self, user_data: UserData, cancer_exp: Dict[str, Any]):
         """Process loved one experiences - map frontend names to database records."""
-        experience_names = cancer_exp.get('experiences', [])
+        experience_names = cancer_exp.get("experiences", [])
         if not experience_names:
             return
-        
+
         # Clear existing loved one experiences
         user_data.loved_one_experiences.clear()
-        
+
         for experience_name in experience_names:
             if not experience_name:
                 continue
-                
+
             # Find existing experience
-            experience = self.db.query(Experience).filter(
-                Experience.name == experience_name
-            ).first()
-            
+            experience = self.db.query(Experience).filter(Experience.name == experience_name).first()
+
             if experience:
                 user_data.loved_one_experiences.append(experience)
             else:
@@ -345,15 +364,15 @@ class IntakeFormProcessor:
                 self.db.add(new_experience)
                 self.db.flush()  # Get the ID
                 user_data.loved_one_experiences.append(new_experience)
-    
+
     def process_ranking_form(self, user_id: str, ranking_data: Dict[str, Any]):
         """
         Process ranking form submission for user preferences.
-        
+
         Args:
             user_id: The user's UUID
             ranking_data: The ranking preferences data
         """
         # TODO: Implement ranking preferences processing
         # This would handle RankingPreference model population
-        pass 
+        pass

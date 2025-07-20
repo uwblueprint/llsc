@@ -10,19 +10,19 @@ from .AvailableTime import available_times
 # Make sure all models are here to reflect all current models
 # when autogenerating new migration
 from .Base import Base
+from .Experience import Experience
+from .Form import Form
+from .FormSubmission import FormSubmission
 from .Match import Match
 from .MatchStatus import MatchStatus
+from .Quality import Quality
+from .RankingPreference import RankingPreference
 from .Role import Role
 from .SuggestedTime import suggested_times
 from .TimeBlock import TimeBlock
+from .Treatment import Treatment
 from .User import User
 from .UserData import UserData
-from .Treatment import Treatment
-from .Experience import Experience
-from .Quality import Quality
-from .RankingPreference import RankingPreference
-from .Form import Form
-from .FormSubmission import FormSubmission
 
 # Used to avoid import errors for the models
 __all__ = [
@@ -35,13 +35,13 @@ __all__ = [
     "User",
     "available_times",
     "suggested_times",
-    "UserData", 
-    "Treatment", 
-    "Experience", 
-    "Quality", 
-    "RankingPreference", 
-    "Form", 
-    "FormSubmission"
+    "UserData",
+    "Treatment",
+    "Experience",
+    "Quality",
+    "RankingPreference",
+    "Form",
+    "FormSubmission",
 ]
 
 log = logging.getLogger(LOGGER_NAME("models"))
