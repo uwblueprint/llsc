@@ -18,7 +18,7 @@ jobs:
     
     strategy:
       matrix:
-        python-version: [3.11, 3.12]
+        python-version: [3.12]
         
     services:
       postgres:
@@ -58,7 +58,7 @@ jobs:
     - name: Install dependencies
       working-directory: ./backend
       run: |
-        pdm install --group test,lint,dev
+        pdm sync --group test --group lint --group dev
         
     - name: Set up environment variables
       working-directory: ./backend
@@ -110,7 +110,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: security-report-python-${{ matrix.python-version }}
+        name: security-report
         path: backend/security-report.json
 
   e2e-tests:
@@ -147,7 +147,7 @@ jobs:
     - name: Install dependencies
       working-directory: ./backend
       run: |
-        pdm install --group test,lint,dev
+        pdm sync --group test --group lint --group dev
         
     - name: Set up environment variables
       working-directory: ./backend
