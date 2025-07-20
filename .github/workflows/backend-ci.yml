@@ -63,7 +63,7 @@ jobs:
     - name: Set up environment variables
       working-directory: ./backend
       run: |
-        echo "DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/llsc_test" >> .env
+        echo "POSTGRES_DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/llsc_test" >> .env
         echo "SECRET_KEY=test-secret-key-for-ci" >> .env
         echo "ENVIRONMENT=test" >> .env
         
@@ -152,7 +152,7 @@ jobs:
     - name: Set up environment variables
       working-directory: ./backend
       run: |
-        echo "DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/llsc_test" >> .env
+        echo "POSTGRES_DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/llsc_test" >> .env
         echo "SECRET_KEY=test-secret-key-for-ci" >> .env
         echo "ENVIRONMENT=test" >> .env
         echo "TEST_SCRIPT_BACKEND_URL=http://localhost:8000" >> .env
