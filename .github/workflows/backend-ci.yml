@@ -39,7 +39,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         
@@ -48,7 +48,7 @@ jobs:
         pip install pdm
         
     - name: Cache PDM dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pdm
         key: ${{ runner.os }}-pdm-${{ hashFiles('backend/pdm.lock') }}
@@ -94,7 +94,7 @@ jobs:
         pdm run python -m pytest tests/functional/ -v
         
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./backend/coverage.xml
         directory: ./backend
@@ -107,7 +107,7 @@ jobs:
         pdm run bandit -r app/ -f json -o security-report.json || true
         
     - name: Upload security report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-report-python-${{ matrix.python-version }}
@@ -136,7 +136,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Set up Python 3.12
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.12
         
@@ -184,7 +184,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v3
       
     - name: Build Docker image
       working-directory: ./backend
