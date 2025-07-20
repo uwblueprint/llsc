@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
@@ -17,6 +17,10 @@ export default function SetNewPasswordPage() {
   const [passwordError, setPasswordError] = useState(''); // For password mismatch only
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  
+  // Add refs for the input fields
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
   // Get API key from config
   const apiKey = (firebaseApp.options.apiKey as string) || process.env.NEXT_PUBLIC_FIREBASE_WEB_API_KEY;
@@ -33,6 +37,11 @@ export default function SetNewPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Unfocus both input fields
+    passwordRef.current?.blur();
+    confirmPasswordRef.current?.blur();
+    
     setError('');
     setPasswordError(''); // Clear previous password errors
     setIsLoading(true);
@@ -143,6 +152,7 @@ export default function SetNewPasswordPage() {
               >
                 <InputGroup w="100%">
                   <Input
+                    ref={passwordRef}
                     type="password"
                     placeholder="Enter your new password"
                     required
@@ -168,6 +178,7 @@ export default function SetNewPasswordPage() {
               >
                 <InputGroup w="100%">
                   <Input
+                    ref={confirmPasswordRef}
                     type="password"
                     placeholder="Confirm your new password"
                     required
