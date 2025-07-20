@@ -159,15 +159,15 @@ export const register = async ({
             
             // Wait a moment to ensure Firebase auth state is fully updated
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Now send the verification email
-            const emailSent = await sendEmailVerificationToUser();
-            if (emailSent) {
-                console.log('[REGISTER] Email verification sent successfully after registration');
-            } else {
-                console.warn('[REGISTER] Failed to send email verification after registration');
-            }
-            
+
+        // Now send the verification email
+        const emailSent = await sendEmailVerificationToUser();
+        if (emailSent) {
+            console.log('[REGISTER] Email verification sent successfully after registration');
+        } else {
+            console.warn('[REGISTER] Failed to send email verification after registration');
+        }
+        
         } catch (firebaseError) {
             console.error('[REGISTER] Firebase sign-in failed:', firebaseError);
             // Continue with registration even if Firebase sign-in fails
@@ -177,7 +177,7 @@ export const register = async ({
         // Try backend login but don't fail if it doesn't work
         try {
             const loginResult = await login(email, password);
-            return loginResult;
+        return loginResult;
         } catch (loginError) {
             console.warn('[REGISTER] Backend login failed, but registration was successful:', loginError);
             // Return success even if backend login fails, since Firebase user was created

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
@@ -17,6 +17,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isFromEmailVerification, setIsFromEmailVerification] = useState(false);
+
+  // Check if user is coming from email verification
+  useEffect(() => {
+    const { verified, mode } = router.query;
+    if (verified === 'true' && mode === 'verifyEmail') {
+      setIsFromEmailVerification(true);
+    }
+  }, [router.query]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +80,7 @@ export default function LoginPage() {
             mb={6}
             mt={8}
           >
-            Welcome Back!
+            {isFromEmailVerification ? 'Thank you for confirming!' : 'Welcome Back!'}
           </Heading>
           <Text
             mb={8}
@@ -80,8 +89,12 @@ export default function LoginPage() {
             fontWeight={400}
             fontSize="lg"
           >
-            Sign in with your email and password.
+            {isFromEmailVerification 
+              ? 'Your email has been successfully verified. Please sign in again to continue.'
+              : 'Sign in with your email and password.'
+            }
           </Text>
+          
           <form onSubmit={handleSubmit}>
             <Field
               label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
