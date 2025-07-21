@@ -19,7 +19,6 @@ from backend.matching.data.config import (
 fake = Faker()  # generic faker
 fake_ca = Faker("en_CA")  # canadian faker
 
-
 # TODO: this uses the random and datetime; we can use a seeder like Faker to generate more realistic data
 # TODO: have highlighted relevent fields for the matching algorithm
 class Demographics:
