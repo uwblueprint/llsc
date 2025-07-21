@@ -44,21 +44,66 @@ tests = "pytest -v"
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "function"
 pythonpath = ["."]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["*/tests/*", "*/__pycache__/*", "*/venv/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "migrations"]
+skips = ["B101"]  # Skip assert_used test
 
 [tool.pdm.dev-dependencies]
 test = [
     "pytest>=7.0.0",
-    "pytest-asyncio>=0.24.0",
-    "pytest-mock>=3.10.0",
+    "pytest-asyncio>=0.20.0",
+    "httpx>=0.24.0",
+    "pytest-cov>=4.0.0",
+]
+lint = [
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "bandit>=1.7.0",
+    "types-requests>=2.31.0",
+]
+dev = [
+    "python-dotenv>=1.0.0",
 ]
 
 [tool.ruff]
-target-version = "py312"
-# Read more here https://docs.astral.sh/ruff/rules/
-# By default, Ruff enables Flake8's E and F rules
-# Pyflakes - F, pycodestyle - E, W
-# flake8-builtins - A
-# Pylint - PLC, PLE, PLW
-# isort - I
-lint.select = ['E', 'F', 'W', 'A', 'PLC', 'PLE', 'PLW', 'I']
 line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "A", "PLC", "PLE", "PLW", "I"]
+ignore = ["E501"]  # Line too long (handled by formatter)
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = false  # Disabled for now - too many existing issues
+warn_unused_configs = true
+disallow_untyped_defs = false  # Keep false until ready for strict typing
+ignore_missing_imports = true
+allow_untyped_calls = true
+allow_untyped_defs = true
+allow_incomplete_defs = true
+check_untyped_defs = false
+disallow_any_generics = false
+disallow_subclassing_any = false
+warn_redundant_casts = false
+warn_unused_ignores = false
+warn_no_return = false
+warn_unreachable = false
+strict_optional = false
