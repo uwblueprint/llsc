@@ -10,7 +10,7 @@ import {
 } from '../types/authTypes';
 
 import AUTHENTICATED_USER_KEY from '../constants/AuthConstants';
-import baseAPIClient from './BaseAPIClient';
+import baseAPIClient from './baseAPIClient';
 import { getLocalStorageObjProperty, setLocalStorageObjProperty } from '../utils/LocalStorageUtils';
 import { signInWithEmailAndPassword, applyActionCode } from 'firebase/auth';
 import { auth } from '@/config/firebase';
