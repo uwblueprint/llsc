@@ -103,6 +103,7 @@ const logout = async (): Promise<boolean> => {
         AUTHENTICATED_USER_KEY,
         "accessToken",
     )}`;
+
     try {
         await baseAPIClient.post(
             "/auth/logout",
@@ -114,6 +115,20 @@ const logout = async (): Promise<boolean> => {
     } catch (error) {
         console.error('Logout error:', error);
         return false;
+    }
+};
+
+// Get current authenticated user from localStorage
+const getCurrentUser = (): AuthenticatedUser | null => {
+    try {
+        const userDataString = localStorage.getItem(AUTHENTICATED_USER_KEY);
+        if (!userDataString) return null;
+        
+        const userData = JSON.parse(userDataString);
+        return userData;
+    } catch (error) {
+        console.error('Error retrieving current user:', error);
+        return null;
     }
 };
 
@@ -301,4 +316,4 @@ const refresh = async (): Promise<boolean> => {
     }
 };
 
-export { login, logout, resetPassword, verifyEmail, verifyEmailWithCode, refresh };
+export { login, logout, getCurrentUser, resetPassword, verifyEmail, verifyEmailWithCode, refresh };

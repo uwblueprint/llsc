@@ -1,7 +1,42 @@
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button } from '@chakra-ui/react';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { getCurrentUser } from '@/APIClients/authAPIClient';
+import { AuthenticatedUser } from '@/types/authTypes';
 
 export default function WelcomePage() {
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<AuthenticatedUser>(null);
+
+  useEffect(() => {
+    // Check if user is logged in when component mounts
+    const user = getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
+  const handleContinueInEnglish = () => {
+    
+    // Cast to any to handle the nested user structure
+    const userData = currentUser as any;
+    
+    // Check if user exists and has a roleId
+    if (userData && userData.user && userData.user.roleId) {
+      // Check user role based on roleId - assuming 1=participant, 2=volunteer, 3=admin
+      if (userData.user.roleId === 1) {
+        router.push('/participant/intake');
+      } else if (userData.user.roleId === 2) {
+        router.push('/volunteer/intake');
+      } else {
+        router.push('/participant-form');
+      }
+    } else {
+      console.log('No user logged in, routing to sign-in form');
+      // If no user is logged in, redirect to signup/login
+      router.push('/');    
+    }
+  };
+
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
       {/* Left: Content */}
@@ -66,6 +101,7 @@ export default function WelcomePage() {
             display="flex"
             alignItems="center"
             justifyContent="center"
+            onClick={handleContinueInEnglish}
           >
             Continue in English &nbsp; &rarr;
           </Button>
@@ -90,6 +126,7 @@ export default function WelcomePage() {
             justifyContent="center"
             _focus={{ boxShadow: 'none', outline: 'none' }}
             _active={{ boxShadow: 'none', outline: 'none' }}
+            onClick={handleContinueInEnglish}
           >
             Continue en Francais &nbsp; &rarr;
           </Button>
