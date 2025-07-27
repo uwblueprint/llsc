@@ -17,13 +17,14 @@ export default function SetNewPasswordPage() {
   const [passwordError, setPasswordError] = useState(''); // For password mismatch only
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  
+
   // Add refs for the input fields
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
   // Get API key from config
-  const apiKey = (firebaseApp.options.apiKey as string) || process.env.NEXT_PUBLIC_FIREBASE_WEB_API_KEY;
+  const apiKey =
+    (firebaseApp.options.apiKey as string) || process.env.NEXT_PUBLIC_FIREBASE_WEB_API_KEY;
 
   // Only require oobCode
   useEffect(() => {
@@ -37,15 +38,15 @@ export default function SetNewPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Unfocus both input fields
     passwordRef.current?.blur();
     confirmPasswordRef.current?.blur();
-    
+
     setError('');
     setPasswordError(''); // Clear previous password errors
     setIsLoading(true);
-    
+
     if (password !== confirmPassword) {
       setPasswordError('Passwords do not match. Please try again.');
       setIsLoading(false);
@@ -65,16 +66,19 @@ export default function SetNewPasswordPage() {
         setIsLoading(false);
         return;
       }
-      const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `https://identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            oobCode: oobCode,
+            newPassword: password,
+          }),
         },
-        body: JSON.stringify({
-          oobCode: oobCode,
-          newPassword: password,
-        }),
-      });
+      );
       const data = await response.json();
       if (response.ok && !data.error) {
         setError('');
@@ -117,7 +121,9 @@ export default function SetNewPasswordPage() {
             lineHeight="50px"
             mb={2}
           >
-            First Connection Peer<br />Support Program
+            First Connection Peer
+            <br />
+            Support Program
           </Heading>
           <Heading
             as="h2"
@@ -147,7 +153,18 @@ export default function SetNewPasswordPage() {
           {showForm && (
             <form onSubmit={handleSubmit}>
               <Field
-                label={<span style={{ color: veniceBlue, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>New Password</span>}
+                label={
+                  <span
+                    style={{
+                      color: veniceBlue,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      fontFamily: 'Open Sans, sans-serif',
+                    }}
+                  >
+                    New Password
+                  </span>
+                }
                 mb={4}
               >
                 <InputGroup w="100%">
@@ -167,13 +184,24 @@ export default function SetNewPasswordPage() {
                     borderColor="#D5D7DA"
                     _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                     value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading}
                   />
                 </InputGroup>
               </Field>
               <Field
-                label={<span style={{ color: veniceBlue, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Confirm New Password</span>}
+                label={
+                  <span
+                    style={{
+                      color: veniceBlue,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      fontFamily: 'Open Sans, sans-serif',
+                    }}
+                  >
+                    Confirm New Password
+                  </span>
+                }
                 mb={4}
               >
                 <InputGroup w="100%">
@@ -193,17 +221,27 @@ export default function SetNewPasswordPage() {
                     borderColor={passwordError ? '#E53E3E' : '#D5D7DA'}
                     borderWidth={passwordError ? 2 : 1}
                     boxShadow={passwordError ? '0 0 0 2px #E53E3E' : 'none'}
-                    _focus={passwordError ? { borderColor: '#E53E3E', boxShadow: '0 0 0 2px #E53E3E' } : { borderColor: teal, boxShadow: '0 0 0 1px #319795' }}
+                    _focus={
+                      passwordError
+                        ? { borderColor: '#E53E3E', boxShadow: '0 0 0 2px #E53E3E' }
+                        : { borderColor: teal, boxShadow: '0 0 0 1px #319795' }
+                    }
                     _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                     value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     disabled={isLoading}
                   />
                 </InputGroup>
               </Field>
               {/* Show password mismatch error only after submit attempt */}
               {passwordError && (
-                <Text color="red.500" mb={4} fontWeight={400} fontFamily="'Open Sans', sans-serif" fontSize="sm">
+                <Text
+                  color="red.500"
+                  mb={4}
+                  fontWeight={400}
+                  fontFamily="'Open Sans', sans-serif"
+                  fontSize="sm"
+                >
                   {passwordError}
                 </Text>
               )}
@@ -231,8 +269,18 @@ export default function SetNewPasswordPage() {
               </Button>
             </form>
           )}
-          <Text mt={8} color={veniceBlue} fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
-            Return to <Link href="/" style={{ color: teal, textDecoration: 'underline', fontWeight: 600 }}>login</Link>.
+          <Text
+            mt={8}
+            color={veniceBlue}
+            fontSize="md"
+            fontWeight={600}
+            fontFamily="'Open Sans', sans-serif"
+          >
+            Return to{' '}
+            <Link href="/" style={{ color: teal, textDecoration: 'underline', fontWeight: 600 }}>
+              login
+            </Link>
+            .
           </Text>
         </Box>
       </Flex>
@@ -249,4 +297,4 @@ export default function SetNewPasswordPage() {
       </Box>
     </Flex>
   );
-} 
+}

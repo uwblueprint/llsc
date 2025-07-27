@@ -49,9 +49,22 @@ export default function AdminDashboard() {
           >
             We sent a confirmation link to <b>john.doe@gmail.com</b>
           </Text>
-          <Text color={veniceBlue} fontFamily="'Open Sans', sans-serif" fontWeight={400} fontSize="md">
+          <Text
+            color={veniceBlue}
+            fontFamily="'Open Sans', sans-serif"
+            fontWeight={400}
+            fontSize="md"
+          >
             Didn&apos;t get a link?{' '}
-            <Link href="/admin-login" style={{ color: '#056067', textDecoration: 'underline', fontWeight: 600, fontFamily: 'Open Sans, sans-serif' }}>
+            <Link
+              href="/admin-login"
+              style={{
+                color: '#056067',
+                textDecoration: 'underline',
+                fontWeight: 600,
+                fontFamily: 'Open Sans, sans-serif',
+              }}
+            >
               Click here to resend.
             </Link>
           </Text>
@@ -70,4 +83,4 @@ export default function AdminDashboard() {
       </Box>
     </Flex>
   );
-} 
+}

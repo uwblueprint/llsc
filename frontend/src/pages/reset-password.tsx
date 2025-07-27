@@ -25,9 +25,11 @@ export default function ResetPasswordPage() {
 
     try {
       const result = await resetPassword(email);
-      
+
       if (result.success) {
-        setMessage('If the email exists, a password reset link has been sent to your email address.');
+        setMessage(
+          'If the email exists, a password reset link has been sent to your email address.',
+        );
       } else {
         setError(result.error || 'Failed to send reset email. Please try again.');
       }
@@ -60,7 +62,9 @@ export default function ResetPasswordPage() {
             lineHeight="50px"
             mb={2}
           >
-            First Connection Peer<br />Support Program
+            First Connection Peer
+            <br />
+            Support Program
           </Heading>
           <Heading
             as="h2"
@@ -84,7 +88,18 @@ export default function ResetPasswordPage() {
           </Text>
           <form onSubmit={handleSubmit}>
             <Field
-              label={<span style={{ color: veniceBlue, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
+              label={
+                <span
+                  style={{
+                    color: veniceBlue,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Email
+                </span>
+              }
               mb={4}
             >
               <InputGroup w="100%">
@@ -103,7 +118,7 @@ export default function ResetPasswordPage() {
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -130,17 +145,39 @@ export default function ResetPasswordPage() {
             </Button>
           </form>
           {message && (
-            <Text mt={8} color="green.600" fontSize="md" fontWeight={400} fontFamily="'Open Sans', sans-serif">
+            <Text
+              mt={8}
+              color="green.600"
+              fontSize="md"
+              fontWeight={400}
+              fontFamily="'Open Sans', sans-serif"
+            >
               {message}
             </Text>
           )}
           {error && (
-            <Text mt={4} color="red.500" fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
+            <Text
+              mt={4}
+              color="red.500"
+              fontSize="md"
+              fontWeight={600}
+              fontFamily="'Open Sans', sans-serif"
+            >
               {error}
             </Text>
           )}
-          <Text mt={4} color={veniceBlue} fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
-            Return to <Link href="/" style={{ color: teal, textDecoration: 'underline', fontWeight: 600 }}>login</Link>.
+          <Text
+            mt={4}
+            color={veniceBlue}
+            fontSize="md"
+            fontWeight={600}
+            fontFamily="'Open Sans', sans-serif"
+          >
+            Return to{' '}
+            <Link href="/" style={{ color: teal, textDecoration: 'underline', fontWeight: 600 }}>
+              login
+            </Link>
+            .
           </Text>
         </Box>
       </Flex>
@@ -157,4 +194,4 @@ export default function ResetPasswordPage() {
       </Box>
     </Flex>
   );
-} 
+}

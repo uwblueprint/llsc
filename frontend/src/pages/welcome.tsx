@@ -16,10 +16,9 @@ export default function WelcomePage() {
   }, []);
 
   const handleContinueInEnglish = () => {
-    
     // Cast to any to handle the nested user structure
     const userData = currentUser as any;
-    
+
     // Check if user exists and has a roleId
     if (userData && userData.user && userData.user.roleId) {
       // Check user role based on roleId - assuming 1=participant, 2=volunteer, 3=admin
@@ -33,7 +32,7 @@ export default function WelcomePage() {
     } else {
       console.log('No user logged in, routing to sign-in form');
       // If no user is logged in, redirect to signup/login
-      router.push('/');    
+      router.push('/');
     }
   };
 
@@ -59,7 +58,9 @@ export default function WelcomePage() {
             lineHeight="50px"
             mb={2}
           >
-            First Connection Peer<br />Support Program
+            First Connection Peer
+            <br />
+            Support Program
           </Heading>
           <Heading
             as="h2"
@@ -72,15 +73,37 @@ export default function WelcomePage() {
           >
             Welcome to our application portal!
           </Heading>
-          <Text mb={5} color="#1d3448" fontFamily="'Open Sans', sans-serif" fontWeight={400} fontSize="md">
+          <Text
+            mb={5}
+            color="#1d3448"
+            fontFamily="'Open Sans', sans-serif"
+            fontWeight={400}
+            fontSize="md"
+          >
             You can learn more about the program{' '}
-            <a href="#" style={{ color: "#056067", textDecoration: "underline" }}>here</a>.
+            <a href="#" style={{ color: '#056067', textDecoration: 'underline' }}>
+              here
+            </a>
+            .
           </Text>
-          <Text mb={5} color="#1d3448" fontFamily="'Open Sans', sans-serif" fontWeight={400} fontSize="md">
+          <Text
+            mb={5}
+            color="#1d3448"
+            fontFamily="'Open Sans', sans-serif"
+            fontWeight={400}
+            fontSize="md"
+          >
             We&apos;re going to ask you a few questions to get started.
           </Text>
-          <Text mb={8} color="#1d3448" fontFamily="'Open Sans', sans-serif" fontWeight={400} fontSize="md">
-            This form takes ~10 minutes to complete. Your responses will not be saved if you close the tab, or exit this web page.
+          <Text
+            mb={8}
+            color="#1d3448"
+            fontFamily="'Open Sans', sans-serif"
+            fontWeight={400}
+            fontSize="md"
+          >
+            This form takes ~10 minutes to complete. Your responses will not be saved if you close
+            the tab, or exit this web page.
           </Text>
           <Button
             w="100%"
@@ -130,9 +153,23 @@ export default function WelcomePage() {
           >
             Continue en Francais &nbsp; &rarr;
           </Button>
-          <Text mt={8} color="#1d3448" fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
+          <Text
+            mt={8}
+            color="#1d3448"
+            fontSize="md"
+            fontWeight={600}
+            fontFamily="'Open Sans', sans-serif"
+          >
             Already have an account?{' '}
-            <Link href="/" style={{ color: "#056067", textDecoration: "underline", fontWeight: 600, fontFamily: "Open Sans, sans-serif" }}>
+            <Link
+              href="/"
+              style={{
+                color: '#056067',
+                textDecoration: 'underline',
+                fontWeight: 600,
+                fontFamily: 'Open Sans, sans-serif',
+              }}
+            >
               Sign In
             </Link>
           </Text>
@@ -148,4 +185,4 @@ export default function WelcomePage() {
       </Box>
     </Flex>
   );
-} 
+}

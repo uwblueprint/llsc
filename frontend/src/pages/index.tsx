@@ -34,7 +34,7 @@ export default function LoginPage() {
 
     try {
       const result = await login(email, password);
-      
+
       if (result.success) {
         router.push('/welcome');
       } else {
@@ -69,7 +69,9 @@ export default function LoginPage() {
             lineHeight="50px"
             mb={2}
           >
-            First Connection Peer<br />Support Program
+            First Connection Peer
+            <br />
+            Support Program
           </Heading>
           <Heading
             as="h2"
@@ -89,15 +91,25 @@ export default function LoginPage() {
             fontWeight={400}
             fontSize="lg"
           >
-            {isFromEmailVerification 
+            {isFromEmailVerification
               ? 'Your email has been successfully verified. Please sign in again to continue.'
-              : 'Sign in with your email and password.'
-            }
+              : 'Sign in with your email and password.'}
           </Text>
-          
+
           <form onSubmit={handleSubmit}>
             <Field
-              label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Email
+                </span>
+              }
               mb={4}
             >
               <InputGroup w="100%">
@@ -116,12 +128,23 @@ export default function LoginPage() {
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </InputGroup>
             </Field>
             <Field
-              label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Password</span>}
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Password
+                </span>
+              }
               mb={2}
             >
               <InputGroup w="100%">
@@ -140,7 +163,7 @@ export default function LoginPage() {
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -153,7 +176,7 @@ export default function LoginPage() {
                   fontSize: 15,
                   display: 'inline-block',
                   marginTop: 6,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
                 }}
                 onClick={() => router.push('/reset-password')}
               >
@@ -187,11 +210,22 @@ export default function LoginPage() {
               Sign In
             </Button>
           </form>
-          <Text mt={8} color={veniceBlue} fontSize="md" fontWeight={600} fontFamily="'Open Sans', sans-serif">
+          <Text
+            mt={8}
+            color={veniceBlue}
+            fontSize="md"
+            fontWeight={600}
+            fontFamily="'Open Sans', sans-serif"
+          >
             Don&apos;t have an account?{' '}
             <Link
               href="/participant-form"
-              style={{ color: teal, textDecoration: 'underline', fontWeight: 600, fontFamily: 'Open Sans, sans-serif' }}
+              style={{
+                color: teal,
+                textDecoration: 'underline',
+                fontWeight: 600,
+                fontFamily: 'Open Sans, sans-serif',
+              }}
             >
               Complete our First Connection Participant Form.
             </Link>

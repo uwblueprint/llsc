@@ -20,7 +20,7 @@ export default function AdminLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     try {
       const result = await login(email, password);
       if (result) {
@@ -57,7 +57,9 @@ export default function AdminLogin() {
             lineHeight="50px"
             mb={2}
           >
-            Admin Portal - First Connection Peer<br />Support Program
+            Admin Portal - First Connection Peer
+            <br />
+            Support Program
           </Heading>
           <Heading
             as="h2"
@@ -81,7 +83,18 @@ export default function AdminLogin() {
           </Text>
           <form onSubmit={handleSubmit}>
             <Field
-              label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Email
+                </span>
+              }
               mb={4}
             >
               <InputGroup w="100%">
@@ -100,12 +113,23 @@ export default function AdminLogin() {
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </InputGroup>
             </Field>
             <Field
-              label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Password</span>}
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Password
+                </span>
+              }
               mb={2}
             >
               <InputGroup w="100%">
@@ -124,7 +148,7 @@ export default function AdminLogin() {
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -137,7 +161,7 @@ export default function AdminLogin() {
                   fontSize: 15,
                   display: 'inline-block',
                   marginTop: 6,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
                 }}
                 onClick={() => router.push('/reset-password')}
               >
@@ -170,11 +194,22 @@ export default function AdminLogin() {
               Sign In <span style={{ display: 'inline-block', marginLeft: 8 }}>&#8594;</span>
             </Button>
           </form>
-          <Text mt={8} color={veniceBlue} fontSize="md" fontWeight={400} fontFamily="'Open Sans', sans-serif">
+          <Text
+            mt={8}
+            color={veniceBlue}
+            fontSize="md"
+            fontWeight={400}
+            fontFamily="'Open Sans', sans-serif"
+          >
             Don&apos;t have an account?{' '}
             <Link
               href="/participant-form"
-              style={{ color: teal, textDecoration: 'underline', fontWeight: 600, fontFamily: 'Open Sans, sans-serif' }}
+              style={{
+                color: teal,
+                textDecoration: 'underline',
+                fontWeight: 600,
+                fontFamily: 'Open Sans, sans-serif',
+              }}
             >
               Click here to sign up.
             </Link>
@@ -194,4 +229,4 @@ export default function AdminLogin() {
       </Box>
     </Flex>
   );
-} 
+}

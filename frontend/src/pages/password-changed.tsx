@@ -9,11 +9,31 @@ export default function PasswordChangedPage() {
   return (
     <Flex minH="100vh" align="center" justify="center" bg="white">
       <Box textAlign="center">
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', margin: '0 auto 32px auto' }}>
+        <svg
+          width="80"
+          height="80"
+          viewBox="0 0 80 80"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ display: 'block', margin: '0 auto 32px auto' }}
+        >
           <circle cx="40" cy="40" r="38" stroke={teal} strokeWidth="4" fill="none" />
-          <path d="M25 43L37 55L56 32" stroke={teal} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M25 43L37 55L56 32"
+            stroke={teal}
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
-        <Heading as="h2" size="lg" color="#1d3448" fontWeight={700} mb={4} fontFamily="'Open Sans', sans-serif">
+        <Heading
+          as="h2"
+          size="lg"
+          color="#1d3448"
+          fontWeight={700}
+          mb={4}
+          fontFamily="'Open Sans', sans-serif"
+        >
           Password changed!
         </Heading>
         <Text color="#1d3448" fontSize="lg" mb={8} fontFamily="'Open Sans', sans-serif">
@@ -38,4 +58,4 @@ export default function PasswordChangedPage() {
       </Box>
     </Flex>
   );
-} 
+}

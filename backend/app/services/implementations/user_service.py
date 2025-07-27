@@ -1,8 +1,6 @@
 import logging
 from typing import List
 from uuid import UUID
-import os
-import requests
 
 import firebase_admin.auth
 from fastapi import HTTPException

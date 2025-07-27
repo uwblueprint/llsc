@@ -78,7 +78,7 @@ async def reset_password(
         auth_service.reset_password(email)
         # Return 204 No Content for successful password reset email sending
         return Response(status_code=204)
-    except Exception as e:
+    except Exception:
         # Don't reveal if email exists or not for security reasons
         # Always return success even if email doesn't exist
         return Response(status_code=204)

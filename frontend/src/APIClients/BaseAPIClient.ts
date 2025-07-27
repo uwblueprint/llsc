@@ -1,26 +1,23 @@
-import axios, { AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 // Fix this import
-import { jwtDecode } from "jwt-decode";
-import { camelizeKeys, decamelizeKeys } from "humps";
+import { jwtDecode } from 'jwt-decode';
+import { camelizeKeys, decamelizeKeys } from 'humps';
 
-import AUTHENTICATED_USER_KEY from "../constants/AuthConstants";
-import { setLocalStorageObjProperty } from "../utils/LocalStorageUtils";
+import AUTHENTICATED_USER_KEY from '../constants/AuthConstants';
+import { setLocalStorageObjProperty } from '../utils/LocalStorageUtils';
 
-import { DecodedJWT } from "../types/authTypes";
+import { DecodedJWT } from '../types/authTypes';
 
 const baseAPIClient = axios.create({
   // TODO: Fix this
-  baseURL: process.env.REACT_APP_BACKEND_URL || "http://localhost:8000",
+  baseURL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000',
 });
 
 // Python API uses snake_case, frontend uses camelCase
 // convert request and response data to/from snake_case and camelCase through axios interceptors
 // python {
 baseAPIClient.interceptors.response.use((response: AxiosResponse) => {
-  if (
-    response.data &&
-    response.headers["content-type"] === "application/json"
-  ) {
+  if (response.data && response.headers['content-type'] === 'application/json') {
     response.data = camelizeKeys(response.data);
   }
   return response;
@@ -31,17 +28,17 @@ baseAPIClient.interceptors.request.use(async (config: InternalAxiosRequestConfig
   const newConfig = { ...config };
 
   // if access token in header has expired, do a refresh
-  const authHeaderParts = config.headers.Authorization?.toString().split(" ");
+  const authHeaderParts = config.headers.Authorization?.toString().split(' ');
   if (
     authHeaderParts &&
     authHeaderParts.length >= 2 &&
-    authHeaderParts[0].toLowerCase() === "bearer"
+    authHeaderParts[0].toLowerCase() === 'bearer'
   ) {
     const decodedToken = jwtDecode(authHeaderParts[1]) as DecodedJWT;
 
     if (
       decodedToken &&
-      (typeof decodedToken === "string" ||
+      (typeof decodedToken === 'string' ||
         decodedToken.exp <= Math.round(new Date().getTime() / 1000))
     ) {
       const { data } = await axios.post(
@@ -51,11 +48,7 @@ baseAPIClient.interceptors.request.use(async (config: InternalAxiosRequestConfig
       );
 
       const accessToken = data.accessToken || data.access_token;
-      setLocalStorageObjProperty(
-        AUTHENTICATED_USER_KEY,
-        "accessToken",
-        accessToken,
-      );
+      setLocalStorageObjProperty(AUTHENTICATED_USER_KEY, 'accessToken', accessToken);
 
       newConfig.headers.Authorization = `Bearer ${accessToken}`;
     }

@@ -22,12 +22,12 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-    
+
     try {
       const userData = {
         first_name: '',
@@ -42,7 +42,17 @@ export default function AdminLoginPage() {
       router.push(`/verify?email=${encodeURIComponent(email)}&role=admin`);
     } catch (err: unknown) {
       console.error('Admin registration error:', err);
-      if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'data' in err.response && err.response.data && typeof err.response.data === 'object' && 'detail' in err.response.data) {
+      if (
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response &&
+        typeof err.response === 'object' &&
+        'data' in err.response &&
+        err.response.data &&
+        typeof err.response.data === 'object' &&
+        'detail' in err.response.data
+      ) {
         setError((err.response.data as { detail: string }).detail || 'Registration failed');
       } else {
         setError('Registration failed');
@@ -72,7 +82,9 @@ export default function AdminLoginPage() {
             lineHeight="50px"
             mb={2}
           >
-            Admin Portal - First Connection Peer<br />Support Program
+            Admin Portal - First Connection Peer
+            <br />
+            Support Program
           </Heading>
           <Heading
             as="h2"
@@ -96,7 +108,18 @@ export default function AdminLoginPage() {
           </Text>
           <form onSubmit={handleSubmit}>
             <Field
-              label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Email</span>}
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Email
+                </span>
+              }
               mb={4}
             >
               <InputGroup w="100%">
@@ -115,12 +138,23 @@ export default function AdminLoginPage() {
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </InputGroup>
             </Field>
             <Field
-              label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Password</span>}
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Password
+                </span>
+              }
               mb={2}
             >
               <InputGroup w="100%">
@@ -139,12 +173,23 @@ export default function AdminLoginPage() {
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </InputGroup>
             </Field>
             <Field
-              label={<span style={{ color: fieldGray, fontWeight: 600, fontSize: 14, fontFamily: 'Open Sans, sans-serif' }}>Confirm Password</span>}
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Confirm Password
+                </span>
+              }
               mb={6}
             >
               <InputGroup w="100%">
@@ -163,7 +208,7 @@ export default function AdminLoginPage() {
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                   value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                 />
               </InputGroup>
             </Field>
@@ -193,11 +238,22 @@ export default function AdminLoginPage() {
               Continue <span style={{ display: 'inline-block', marginLeft: 8 }}>&#8594;</span>
             </Button>
           </form>
-          <Text mt={8} color={veniceBlue} fontSize="md" fontWeight={400} fontFamily="'Open Sans', sans-serif">
+          <Text
+            mt={8}
+            color={veniceBlue}
+            fontSize="md"
+            fontWeight={400}
+            fontFamily="'Open Sans', sans-serif"
+          >
             Already have an account?{' '}
             <Link
               href="/admin"
-              style={{ color: teal, textDecoration: 'underline', fontWeight: 600, fontFamily: 'Open Sans, sans-serif' }}
+              style={{
+                color: teal,
+                textDecoration: 'underline',
+                fontWeight: 600,
+                fontFamily: 'Open Sans, sans-serif',
+              }}
             >
               Sign in.
             </Link>
@@ -217,4 +273,4 @@ export default function AdminLoginPage() {
       </Box>
     </Flex>
   );
-} 
+}

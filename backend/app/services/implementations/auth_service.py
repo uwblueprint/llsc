@@ -1,8 +1,8 @@
 import logging
-import requests
 import os
 
 import firebase_admin.auth
+import requests
 from fastapi import HTTPException
 
 from app.utilities.constants import LOGGER_NAME
@@ -55,18 +55,18 @@ class AuthService(IAuthService):
                 "email": email,
                 "continueUrl": "http://localhost:3000/set-new-password"  # Custom action URL
             }
-            
+
             response = requests.post(url, json=data)
             response_json = response.json()
-            
+
             if response.status_code != 200:
                 error_message = response_json.get("error", {}).get("message", "Unknown error")
                 self.logger.error(f"Failed to send password reset email: {error_message}")
                 # Don't raise exception for security reasons - don't reveal if email exists
                 return
-            
+
             self.logger.info(f"Password reset email sent successfully to {email}")
-            
+
         except Exception as e:
             self.logger.error(f"Failed to reset password: {str(e)}")
             # Don't raise exception for security reasons - don't reveal if email exists
@@ -115,15 +115,15 @@ class AuthService(IAuthService):
             if not user:
                 self.logger.error(f"User not found for email: {email}")
                 raise ValueError("User not found")
-            
+
             if not user.auth_id:
                 self.logger.error(f"User {user.id} has no auth_id")
                 raise ValueError("User has no auth_id")
-            
+
             self.logger.info(f"Updating email verification for user {user.id} with auth_id {user.auth_id}")
             firebase_admin.auth.update_user(user.auth_id, email_verified=True)
             self.logger.info(f"Successfully verified email for user {user.id}")
-            
+
         except ValueError as e:
             # User not found in database - this might happen if there's a timing issue
             # between Firebase user creation and database user creation
