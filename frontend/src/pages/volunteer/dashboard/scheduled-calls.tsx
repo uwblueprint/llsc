@@ -108,7 +108,8 @@ const ScheduledCalls: React.FC = () => {
             color="#1D3448"
             fontFamily="'Open Sans', sans-serif"
             textAlign="left"
-            mb={8}
+            mb={6}
+            mt={0}
           >
             Scheduled Calls
           </Heading>

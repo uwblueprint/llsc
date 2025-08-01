@@ -145,7 +145,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       </Box>
 
       {/* Main Content centered */}
-      <Box display="flex" justifyContent="center" w="100%" mt="80px">
+      <Box display="flex" justifyContent="center" w="100%" position="absolute" top="80px" left="0" right="0">
         <Box w="711px">
           {children}
         </Box>
