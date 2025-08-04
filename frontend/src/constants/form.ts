@@ -2,7 +2,7 @@
 export const COLORS = {
   veniceBlue: '#1d3448',
   fieldGray: '#6b7280',
-  teal: '#0d7377',
+  teal: '#056067',
   lightTeal: '#e6f7f7',
   lightGray: '#f3f4f6',
   progressTeal: '#5eead4',
