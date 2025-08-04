@@ -71,9 +71,7 @@ async def refresh(refresh_data: RefreshRequest, auth_service: AuthService = Depe
 
 
 @router.post("/resetPassword/{email}")
-async def reset_password(
-    email: str, auth_service: AuthService = Depends(get_auth_service)
-):
+async def reset_password(email: str, auth_service: AuthService = Depends(get_auth_service)):
     try:
         auth_service.reset_password(email)
         # Return 204 No Content for successful password reset email sending
@@ -85,9 +83,7 @@ async def reset_password(
 
 
 @router.post("/verify/{email}")
-async def verify_email(
-    email: str, auth_service: AuthService = Depends(get_auth_service)
-):
+async def verify_email(email: str, auth_service: AuthService = Depends(get_auth_service)):
     try:
         auth_service.verify_email(email)
         return Response(status_code=200)

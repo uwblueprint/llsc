@@ -28,9 +28,7 @@ class UserService(IUserService):
         firebase_user = None
         try:
             if user.signup_method == SignUpMethod.PASSWORD:
-                firebase_user = firebase_admin.auth.create_user(
-                    email=user.email, password=user.password
-                )
+                firebase_user = firebase_admin.auth.create_user(email=user.email, password=user.password)
             ## TO DO: SSO functionality depends a lot on frontend implementation,
             ##   so we may need to update this when we have a better idea of what
             ##   that looks like

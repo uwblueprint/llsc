@@ -19,7 +19,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     def is_public_path(self, path: str) -> bool:
         for public_path in self.public_paths:
             # Handle parameterized routes by checking if path starts with the pattern
-            if public_path.endswith('{email}') and path.startswith(public_path.replace('{email}', '')):
+            if public_path.endswith("{email}") and path.startswith(public_path.replace("{email}", "")):
                 return True
             # Exact match for non-parameterized routes
             if path == public_path:

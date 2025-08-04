@@ -53,7 +53,7 @@ class AuthService(IAuthService):
             data = {
                 "requestType": "PASSWORD_RESET",
                 "email": email,
-                "continueUrl": "http://localhost:3000/set-new-password"  # Custom action URL
+                "continueUrl": "http://localhost:3000/set-new-password",  # Custom action URL
             }
 
             response = requests.post(url, json=data)
