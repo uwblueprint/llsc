@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Flex, Heading, Text, Button, VStack, HStack } from '@chakra-ui/react';
 import { UserIcon, CheckMarkIcon, DragIcon, WelcomeScreen } from '@/components/ui';
-import { VolunteerMatchingForm, VolunteerRankingForm } from '@/components/ranking';
+import { VolunteerMatchingForm, VolunteerRankingForm, CaregiverMatchingForm, CaregiverQualitiesForm, CaregiverRankingForm } from '@/components/ranking';
 import { COLORS } from '@/constants/form';
 
 const RANKING_STATEMENTS = [
@@ -12,16 +12,32 @@ const RANKING_STATEMENTS = [
   'I would prefer a volunteer with the same parental status as me',
 ];
 
+const CAREGIVER_RANKING_STATEMENTS = [
+  'I would prefer a volunteer with the same age as my loved one',
+  'I would prefer a volunteer with the same diagnosis as my loved one',
+  'I would prefer a volunteer with experience with Relapse',
+  'I would prefer a volunteer with experience with Anxiety / Depression',
+  'I would prefer a volunteer with experience with returning to school or work during/after treatment',
+];
+
 interface RankingFormData {
   selectedQualities: string[];
   rankedPreferences: string[];
+  volunteerType?: string;
 }
 
-export default function ParticipantRankingPage() {
+interface ParticipantRankingPageProps {
+  participantType?: 'cancerPatient' | 'caregiver';
+}
+
+export default function ParticipantRankingPage({ 
+  participantType = 'cancerPatient' 
+}: ParticipantRankingPageProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<RankingFormData>({
     selectedQualities: [],
-    rankedPreferences: [...RANKING_STATEMENTS],
+    rankedPreferences: participantType === 'caregiver' ? [...CAREGIVER_RANKING_STATEMENTS] : [...RANKING_STATEMENTS],
+    volunteerType: participantType === 'caregiver' ? '' : undefined,
   });
 
   const WelcomeScreenStep = () => (
@@ -45,6 +61,13 @@ export default function ParticipantRankingPage() {
       }));
     };
 
+    const handleVolunteerTypeChange = (type: string) => {
+      setFormData(prev => ({
+        ...prev,
+        volunteerType: type
+      }));
+    };
+
     return (
       <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
         <Box
@@ -55,10 +78,50 @@ export default function ParticipantRankingPage() {
           boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
           p={10}
         >
-          <VolunteerMatchingForm
+          {participantType === 'caregiver' ? (
+            <CaregiverMatchingForm
+              volunteerType={formData.volunteerType || ''}
+              onVolunteerTypeChange={handleVolunteerTypeChange}
+              onNext={() => setCurrentStep(3)}
+            />
+          ) : (
+            <VolunteerMatchingForm
+              selectedQualities={formData.selectedQualities}
+              onQualityToggle={toggleQuality}
+              onNext={() => setCurrentStep(3)}
+            />
+          )}
+        </Box>
+      </Flex>
+    );
+  };
+
+  const CaregiverQualitiesScreen = () => {
+    const toggleQuality = (quality: string) => {
+      setFormData(prev => ({
+        ...prev,
+        selectedQualities: prev.selectedQualities.includes(quality)
+          ? prev.selectedQualities.filter(q => q !== quality)
+          : prev.selectedQualities.length < 5 
+            ? [...prev.selectedQualities, quality]
+            : prev.selectedQualities
+      }));
+    };
+
+    return (
+      <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
+        <Box
+          w="full"
+          maxW="1200px"
+          bg="white"
+          borderRadius="8px"
+          boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+          p={10}
+        >
+          <CaregiverQualitiesForm
             selectedQualities={formData.selectedQualities}
             onQualityToggle={toggleQuality}
-            onNext={() => setCurrentStep(3)}
+            onNext={() => setCurrentStep(4)}
           />
         </Box>
       </Flex>
@@ -75,6 +138,10 @@ export default function ParticipantRankingPage() {
       });
     };
 
+    const participantType = 'caregiver';
+
+    const nextStep = participantType === 'caregiver' ? 5 : 4;
+
     return (
       <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
         <Box
@@ -85,11 +152,19 @@ export default function ParticipantRankingPage() {
           boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
           p={10}
         >
-          <VolunteerRankingForm
-            rankedPreferences={formData.rankedPreferences}
-            onMoveItem={moveItem}
-            onSubmit={() => setCurrentStep(4)}
-          />
+          {participantType === 'caregiver' ? (
+            <CaregiverRankingForm
+              rankedPreferences={formData.rankedPreferences}
+              onMoveItem={moveItem}
+              onSubmit={() => setCurrentStep(nextStep)}
+            />
+          ) : (
+            <VolunteerRankingForm
+              rankedPreferences={formData.rankedPreferences}
+              onMoveItem={moveItem}
+              onSubmit={() => setCurrentStep(nextStep)}
+            />
+          )}
         </Box>
       </Flex>
     );
@@ -156,16 +231,33 @@ export default function ParticipantRankingPage() {
     </Box>
   );
 
-  switch (currentStep) {
-    case 1:
-      return <WelcomeScreenStep />;
-    case 2:
-      return <QualitiesScreen />;
-    case 3:
-      return <RankingScreen />;
-    case 4:
-      return <ThankYouScreen />;
-    default:
-      return <WelcomeScreenStep />;
+  if (participantType === 'caregiver') {
+    switch (currentStep) {
+      case 1:
+        return <WelcomeScreenStep />;
+      case 2:
+        return <QualitiesScreen />;
+      case 3:
+        return <CaregiverQualitiesScreen />;
+      case 4:
+        return <RankingScreen />;
+      case 5:
+        return <ThankYouScreen />;
+      default:
+        return <WelcomeScreenStep />;
+    }
+  } else {
+    switch (currentStep) {
+      case 1:
+        return <WelcomeScreenStep />;
+      case 2:
+        return <QualitiesScreen />;
+      case 3:
+        return <RankingScreen />;
+      case 4:
+        return <ThankYouScreen />;
+      default:
+        return <WelcomeScreenStep />;
+    }
   }
 }
