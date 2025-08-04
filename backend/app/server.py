@@ -24,6 +24,8 @@ PUBLIC_PATHS = [
     "/openapi.json",
     "/auth/login",
     "/auth/register",
+    "/auth/resetPassword/{email}",
+    "/auth/verify/{email}",
     "/health",
     "/test-middleware-public",
     "/email/send-test-email",
@@ -47,6 +49,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
+        "http://localhost:3002",
         "https://uw-blueprint-starter-code.firebaseapp.com",
         "https://uw-blueprint-starter-code.web.app",
         # TODO: create a separate middleware function to dynamically

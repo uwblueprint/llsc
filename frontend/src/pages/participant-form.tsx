@@ -1,55 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
+import { register } from '@/APIClients/authAPIClient';
 import { useRouter } from 'next/router';
-import { login } from '@/APIClients/authAPIClient';
+import { UserRole, SignUpMethod } from '@/types/authTypes';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
 const teal = '#056067';
 
-export default function LoginPage() {
-  const router = useRouter();
+export function ParticipantFormPage() {
+  const [signupType, setSignupType] = useState('volunteer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFromEmailVerification, setIsFromEmailVerification] = useState(false);
-
-  // Check if user is coming from email verification
-  useEffect(() => {
-    const { verified, mode } = router.query;
-    if (verified === 'true' && mode === 'verifyEmail') {
-      setIsFromEmailVerification(true);
-    }
-  }, [router.query]);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
-
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
     try {
-      const result = await login(email, password);
-
-      if (result.success) {
-        router.push('/welcome');
+      const userData = {
+        first_name: '',
+        last_name: '',
+        email,
+        password,
+        role: signupType === 'volunteer' ? UserRole.VOLUNTEER : UserRole.PARTICIPANT,
+        signupMethod: SignUpMethod.PASSWORD,
+      };
+      const result = await register(userData);
+      console.log('Registration success:', result);
+      router.push(`/verify?email=${encodeURIComponent(email)}&role=${signupType}`);
+    } catch (err: unknown) {
+      console.error('Registration error:', err);
+      if (
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response &&
+        typeof err.response === 'object' &&
+        'data' in err.response &&
+        err.response.data &&
+        typeof err.response.data === 'object' &&
+        'detail' in err.response.data
+      ) {
+        setError((err.response.data as { detail: string }).detail || 'Registration failed');
       } else {
-        setError(result.error || 'Login failed. Please try again.');
+        setError('Registration failed');
       }
-    } catch {
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Left: Login Form */}
+      {/* Left: Participant Form */}
       <Flex
         flex="1"
         align="center"
@@ -82,7 +94,7 @@ export default function LoginPage() {
             mb={6}
             mt={8}
           >
-            {isFromEmailVerification ? 'Thank you for confirming!' : 'Welcome Back!'}
+            Welcome to our application portal!
           </Heading>
           <Text
             mb={8}
@@ -91,11 +103,8 @@ export default function LoginPage() {
             fontWeight={400}
             fontSize="lg"
           >
-            {isFromEmailVerification
-              ? 'Your email has been successfully verified. Please sign in again to continue.'
-              : 'Sign in with your email and password.'}
+            Let&apos;s start by creating an account.
           </Text>
-
           <form onSubmit={handleSubmit}>
             <Field
               label={
@@ -145,14 +154,14 @@ export default function LoginPage() {
                   Password
                 </span>
               }
-              mb={2}
+              mb={4}
             >
               <InputGroup w="100%">
                 <Input
                   type="password"
                   placeholder=""
                   required
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   w="100%"
                   maxW="518px"
                   fontFamily="'Open Sans', sans-serif"
@@ -167,25 +176,93 @@ export default function LoginPage() {
                 />
               </InputGroup>
             </Field>
-            <Box mt={1} mb={6} textAlign="right">
-              <span
+            <Field
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Confirm Password
+                </span>
+              }
+              mb={4}
+            >
+              <InputGroup w="100%">
+                <Input
+                  type="password"
+                  placeholder=""
+                  required
+                  autoComplete="new-password"
+                  w="100%"
+                  maxW="518px"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  fontSize={14}
+                  color={fieldGray}
+                  bg="white"
+                  borderColor="#D5D7DA"
+                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </InputGroup>
+            </Field>
+            <Text
+              mt={2}
+              mb={2}
+              color={fieldGray}
+              fontWeight={600}
+              fontFamily="'Open Sans', sans-serif"
+              fontSize={15}
+            >
+              I am signing up:
+            </Text>
+            <div
+              className="radio-options-container"
+              style={{ display: 'flex', flexDirection: 'row', gap: 40, marginBottom: 24 }}
+            >
+              <div
+                className={`custom-radio ${signupType === 'volunteer' ? 'selected' : ''}`}
+                onClick={() => setSignupType('volunteer')}
                 style={{
-                  color: '#535862',
-                  fontWeight: 600,
-                  fontFamily: 'Open Sans, sans-serif',
-                  fontSize: 15,
-                  display: 'inline-block',
-                  marginTop: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
                   cursor: 'pointer',
+                  fontFamily: "'Open Sans', sans-serif",
+                  fontSize: 14,
+                  color: '#414651',
+                  fontWeight: 600,
                 }}
-                onClick={() => router.push('/reset-password')}
               >
-                Forgot Password?
-              </span>
-            </Box>
+                <div className="radio-circle"></div>
+                As a Peer Support Volunteer
+              </div>
+              <div
+                className={`custom-radio ${signupType === 'request' ? 'selected' : ''}`}
+                onClick={() => setSignupType('request')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  cursor: 'pointer',
+                  fontFamily: "'Open Sans', sans-serif",
+                  fontSize: 14,
+                  color: '#414651',
+                  fontWeight: 600,
+                }}
+              >
+                <div className="radio-circle"></div>
+                To Request Peer Support
+              </div>
+            </div>
             {error && (
               <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
-                {error}
+                {typeof error === 'string' ? error : JSON.stringify(error)}
               </Text>
             )}
             <Button
@@ -205,9 +282,11 @@ export default function LoginPage() {
               _hover={{ bg: '#044953' }}
               px={8}
               py={3}
-              loading={isLoading}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
             >
-              Sign In
+              Continue <span style={{ fontSize: 22, marginLeft: 8 }}>&rarr;</span>
             </Button>
           </form>
           <Text
@@ -217,9 +296,9 @@ export default function LoginPage() {
             fontWeight={600}
             fontFamily="'Open Sans', sans-serif"
           >
-            Don&apos;t have an account?{' '}
+            Already have an account?{' '}
             <Link
-              href="/participant-form"
+              href="/"
               style={{
                 color: teal,
                 textDecoration: 'underline',
@@ -227,7 +306,7 @@ export default function LoginPage() {
                 fontFamily: 'Open Sans, sans-serif',
               }}
             >
-              Complete our First Connection Participant Form.
+              Sign in
             </Link>
           </Text>
         </Box>
@@ -244,5 +323,50 @@ export default function LoginPage() {
         />
       </Box>
     </Flex>
+  );
+}
+
+export default function ParticipantFormPageWrapper() {
+  return (
+    <>
+      <ParticipantFormPage />
+      <style jsx global>{`
+        .radio-circle {
+          width: 18px;
+          height: 18px;
+          border: 2px solid #718096;
+          border-radius: 50%;
+          background: white;
+          position: relative;
+          flex-shrink: 0;
+        }
+
+        .custom-radio.selected .radio-circle {
+          border-color: #056067;
+          background: #056067;
+        }
+
+        .custom-radio.selected .radio-circle::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 6px;
+          height: 6px;
+          background: white;
+          border-radius: 50%;
+        }
+
+        .custom-radio:hover .radio-circle {
+          border-color: #056067;
+          background: #f0f9ff;
+        }
+
+        .custom-radio.selected:hover .radio-circle {
+          background: #056067;
+        }
+      `}</style>
+    </>
   );
 }

@@ -40,8 +40,8 @@ class UserBase(BaseModel):
     Base schema for user model with common attributes shared across schemas.
     """
 
-    first_name: str = Field(..., min_length=1, max_length=50)
-    last_name: str = Field(..., min_length=1, max_length=50)
+    first_name: Optional[str] = Field(None, min_length=0, max_length=50)
+    last_name: Optional[str] = Field(None, min_length=0, max_length=50)
     email: EmailStr
     role: UserRole
 

@@ -129,3 +129,10 @@ class IAuthService(ABC):
         :rtype: bool
         """
         pass
+
+    @abstractmethod
+    def verify_email(self, email):
+        """
+        Verify the email address of the user with the given email
+        """
+        pass
