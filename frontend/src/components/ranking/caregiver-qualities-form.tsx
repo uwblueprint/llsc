@@ -5,7 +5,7 @@ import { COLORS } from '@/constants/form';
 
 const CAREGIVER_QUALITIES = [
   'the same age as my loved one',
-  'the same gender identity as my loved one', 
+  'the same gender identity as my loved one',
   'the same diagnosis as my loved one',
   'experience with returning to school or work during/after treatment',
   'experience with Relapse',
@@ -20,10 +20,10 @@ interface CaregiverQualitiesFormProps {
   onNext: () => void;
 }
 
-export function CaregiverQualitiesForm({ 
-  selectedQualities, 
-  onQualityToggle, 
-  onNext 
+export function CaregiverQualitiesForm({
+  selectedQualities,
+  onQualityToggle,
+  onNext,
 }: CaregiverQualitiesFormProps) {
   return (
     <Box>
@@ -78,7 +78,8 @@ export function CaregiverQualitiesForm({
           fontWeight={600}
           mb={8}
         >
-          Note that your volunteer is guaranteed to speak your language and have the same availability.
+          Note that your volunteer is guaranteed to speak your language and have the same
+          availability.
         </Text>
 
         <VStack gap={5}>

@@ -3,18 +3,16 @@ import { Box, Heading, Button, VStack, HStack, Text } from '@chakra-ui/react';
 import { DragIcon } from '@/components/ui';
 import { COLORS } from '@/constants/form';
 
-
-
 interface VolunteerRankingFormProps {
   rankedPreferences: string[];
   onMoveItem: (fromIndex: number, toIndex: number) => void;
   onSubmit: () => void;
 }
 
-export function VolunteerRankingForm({ 
-  rankedPreferences, 
-  onMoveItem, 
-  onSubmit 
+export function VolunteerRankingForm({
+  rankedPreferences,
+  onMoveItem,
+  onSubmit,
 }: VolunteerRankingFormProps) {
   const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = React.useState<number | null>(null);
@@ -25,17 +23,17 @@ export function VolunteerRankingForm({
       'the same diagnosis as me',
       'the same marital status as me',
       'the same ethnic or cultural group as me',
-      'the same parental status as me'
+      'the same parental status as me',
     ];
 
-    const phraseToBold = boldPhrases.find(phrase => statement.includes(phrase));
-    
+    const phraseToBold = boldPhrases.find((phrase) => statement.includes(phrase));
+
     if (!phraseToBold) {
       return statement;
     }
 
     const parts = statement.split(phraseToBold);
-    
+
     return (
       <>
         {parts[0]}
@@ -126,7 +124,8 @@ export function VolunteerRankingForm({
           fontWeight={600}
           mb={8}
         >
-          Note that your volunteer is guaranteed to speak your language and have the same availability.
+          Note that your volunteer is guaranteed to speak your language and have the same
+          availability.
         </Text>
 
         <VStack gap={5}>
@@ -152,7 +151,7 @@ export function VolunteerRankingForm({
               {rankedPreferences.map((statement, index) => {
                 const isDragging = draggedIndex === index;
                 const isDropTarget = dropTargetIndex === index;
-                
+
                 return (
                   <HStack
                     key={`ranking-item-${index}-${statement.slice(0, 20)}`}
@@ -169,12 +168,12 @@ export function VolunteerRankingForm({
                     >
                       {index + 1}.
                     </Text>
-                    
+
                     <HStack
                       flex="1"
                       p={4}
-                      bg={isDragging ? "#e5e7eb" : isDropTarget ? "#dbeafe" : "#f9fafb"}
-                      border={`1px solid ${isDropTarget ? COLORS.teal : "#e5e7eb"}`}
+                      bg={isDragging ? '#e5e7eb' : isDropTarget ? '#dbeafe' : '#f9fafb'}
+                      border={`1px solid ${isDropTarget ? COLORS.teal : '#e5e7eb'}`}
                       borderRadius="6px"
                       cursor={isDragging ? 'grabbing' : 'grab'}
                       gap={3}
@@ -186,13 +185,13 @@ export function VolunteerRankingForm({
                       onDragLeave={handleDragLeave}
                       onDrop={(e) => handleDrop(e, index)}
                       onDragEnd={handleDragEnd}
-                      _hover={{ 
+                      _hover={{
                         borderColor: COLORS.teal,
                         boxShadow: `0 0 0 1px ${COLORS.teal}20`,
-                        bg: isDragging ? "#e5e7eb" : "#f3f4f6"
+                        bg: isDragging ? '#e5e7eb' : '#f3f4f6',
                       }}
                     >
-                      <Box 
+                      <Box
                         cursor={isDragging ? 'grabbing' : 'grab'}
                         p={1}
                         _hover={{ opacity: 0.7 }}

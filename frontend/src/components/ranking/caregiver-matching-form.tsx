@@ -4,18 +4,16 @@ import { Box, Heading, Button, VStack, HStack, Text } from '@chakra-ui/react';
 import { CustomRadio } from '@/components/CustomRadio';
 import { COLORS } from '@/constants/form';
 
-
-
 interface CaregiverMatchingFormProps {
   volunteerType: string;
   onVolunteerTypeChange: (type: string) => void;
   onNext: (type: string) => void;
 }
 
-export function CaregiverMatchingForm({ 
+export function CaregiverMatchingForm({
   volunteerType,
   onVolunteerTypeChange,
-  onNext 
+  onNext,
 }: CaregiverMatchingFormProps) {
   return (
     <Box>
@@ -70,7 +68,8 @@ export function CaregiverMatchingForm({
           fontWeight={600}
           mb={8}
         >
-          Note that your volunteer is guaranteed to speak your language and have the same availability.
+          Note that your volunteer is guaranteed to speak your language and have the same
+          availability.
         </Text>
 
         <VStack gap={5}>
@@ -100,7 +99,7 @@ export function CaregiverMatchingForm({
                   has a similar diagnosis
                 </Text>
               </CustomRadio>
-              
+
               <CustomRadio
                 name="volunteerType"
                 value="caringForLovedOne"

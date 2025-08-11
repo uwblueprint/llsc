@@ -4,7 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { COLORS } from '@/constants/form';
 const MATCHING_QUALITIES = [
   'the same age as me',
-  'the same gender identity as me', 
+  'the same gender identity as me',
   'the same ethnic or cultural group as me',
   'the same marital status as me',
   'the same parental status as me',
@@ -23,10 +23,10 @@ interface VolunteerMatchingFormProps {
   onNext: () => void;
 }
 
-export function VolunteerMatchingForm({ 
-  selectedQualities, 
-  onQualityToggle, 
-  onNext 
+export function VolunteerMatchingForm({
+  selectedQualities,
+  onQualityToggle,
+  onNext,
 }: VolunteerMatchingFormProps) {
   return (
     <Box>
@@ -78,7 +78,8 @@ export function VolunteerMatchingForm({
           fontWeight={600}
           mb={8}
         >
-          Note that your volunteer is guaranteed to speak your language and have the same availability.
+          Note that your volunteer is guaranteed to speak your language and have the same
+          availability.
         </Text>
 
         <VStack gap={5}>

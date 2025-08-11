@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { Box, Flex, Heading, Text, VStack } from '@chakra-ui/react';
 import { UserIcon, CheckMarkIcon, WelcomeScreen } from '@/components/ui';
-import { VolunteerMatchingForm, VolunteerRankingForm, CaregiverMatchingForm, CaregiverQualitiesForm, CaregiverRankingForm, CaregiverTwoColumnQualitiesForm } from '@/components/ranking';
+import {
+  VolunteerMatchingForm,
+  VolunteerRankingForm,
+  CaregiverMatchingForm,
+  CaregiverQualitiesForm,
+  CaregiverRankingForm,
+  CaregiverTwoColumnQualitiesForm,
+} from '@/components/ranking';
 import { COLORS } from '@/constants/form';
 
 const RANKING_STATEMENTS = [
@@ -32,14 +39,15 @@ interface ParticipantRankingPageProps {
   caregiverHasCancer?: boolean;
 }
 
-export default function ParticipantRankingPage({ 
+export default function ParticipantRankingPage({
   participantType = 'caregiver',
   caregiverHasCancer = true,
 }: ParticipantRankingPageProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<RankingFormData>({
     selectedQualities: [],
-    rankedPreferences: participantType === 'caregiver' ? [...CAREGIVER_RANKING_STATEMENTS] : [...RANKING_STATEMENTS],
+    rankedPreferences:
+      participantType === 'caregiver' ? [...CAREGIVER_RANKING_STATEMENTS] : [...RANKING_STATEMENTS],
     volunteerType: participantType === 'caregiver' ? '' : undefined,
     isCaregiverVolunteerFlow: undefined,
   });
@@ -55,18 +63,18 @@ export default function ParticipantRankingPage({
 
   const QualitiesScreen = () => {
     const toggleQuality = (quality: string) => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         selectedQualities: prev.selectedQualities.includes(quality)
-          ? prev.selectedQualities.filter(q => q !== quality)
-          : prev.selectedQualities.length < 5 
+          ? prev.selectedQualities.filter((q) => q !== quality)
+          : prev.selectedQualities.length < 5
             ? [...prev.selectedQualities, quality]
-            : prev.selectedQualities
+            : prev.selectedQualities,
       }));
     };
 
     const handleVolunteerTypeChange = (type: string) => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         volunteerType: type,
         // Derive explicit flow flag to avoid any async state timing issues
@@ -90,7 +98,7 @@ export default function ParticipantRankingPage({
               onVolunteerTypeChange={handleVolunteerTypeChange}
               onNext={(type) => {
                 // Ensure state is set before navigating
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   volunteerType: type,
                   isCaregiverVolunteerFlow: type === 'caringForLovedOne',
@@ -104,7 +112,10 @@ export default function ParticipantRankingPage({
               onQualityToggle={toggleQuality}
               onNext={() => {
                 // Build ranking list from selected qualities
-                setFormData(prev => ({ ...prev, rankedPreferences: [...prev.selectedQualities] }));
+                setFormData((prev) => ({
+                  ...prev,
+                  rankedPreferences: [...prev.selectedQualities],
+                }));
                 setCurrentStep(3);
               }}
             />
@@ -116,13 +127,13 @@ export default function ParticipantRankingPage({
 
   const CaregiverQualitiesScreen = () => {
     const toggleQuality = (quality: string) => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         selectedQualities: prev.selectedQualities.includes(quality)
-          ? prev.selectedQualities.filter(q => q !== quality)
-          : prev.selectedQualities.length < 5 
+          ? prev.selectedQualities.filter((q) => q !== quality)
+          : prev.selectedQualities.length < 5
             ? [...prev.selectedQualities, quality]
-            : prev.selectedQualities
+            : prev.selectedQualities,
       }));
     };
 
@@ -136,18 +147,19 @@ export default function ParticipantRankingPage({
           boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
           p={10}
         >
-          {(
-            // Prefer explicit flag; otherwise infer from value
-            (formData.isCaregiverVolunteerFlow ?? false) ||
-            (formData.volunteerType === 'caringForLovedOne') ||
-            // Fallback: any non-similarDiagnosis value implies the loved-one flow
-            (!!formData.volunteerType && formData.volunteerType !== 'similarDiagnosis')
-          ) ? (
+          {// Prefer explicit flag; otherwise infer from value
+          (formData.isCaregiverVolunteerFlow ?? false) ||
+          formData.volunteerType === 'caringForLovedOne' ||
+          // Fallback: any non-similarDiagnosis value implies the loved-one flow
+          (!!formData.volunteerType && formData.volunteerType !== 'similarDiagnosis') ? (
             <CaregiverTwoColumnQualitiesForm
               selectedQualities={formData.selectedQualities}
               onQualityToggle={toggleQuality}
               onNext={() => {
-                setFormData(prev => ({ ...prev, rankedPreferences: [...prev.selectedQualities] }));
+                setFormData((prev) => ({
+                  ...prev,
+                  rankedPreferences: [...prev.selectedQualities],
+                }));
                 setCurrentStep(4);
               }}
             />
@@ -157,7 +169,10 @@ export default function ParticipantRankingPage({
                 selectedQualities={formData.selectedQualities}
                 onQualityToggle={toggleQuality}
                 onNext={() => {
-                  setFormData(prev => ({ ...prev, rankedPreferences: [...prev.selectedQualities] }));
+                  setFormData((prev) => ({
+                    ...prev,
+                    rankedPreferences: [...prev.selectedQualities],
+                  }));
                   setCurrentStep(4);
                 }}
               />
@@ -166,7 +181,10 @@ export default function ParticipantRankingPage({
                 selectedQualities={formData.selectedQualities}
                 onQualityToggle={toggleQuality}
                 onNext={() => {
-                  setFormData(prev => ({ ...prev, rankedPreferences: [...prev.selectedQualities] }));
+                  setFormData((prev) => ({
+                    ...prev,
+                    rankedPreferences: [...prev.selectedQualities],
+                  }));
                   setCurrentStep(4);
                 }}
               />
@@ -176,7 +194,10 @@ export default function ParticipantRankingPage({
               selectedQualities={formData.selectedQualities}
               onQualityToggle={toggleQuality}
               onNext={() => {
-                setFormData(prev => ({ ...prev, rankedPreferences: [...prev.selectedQualities] }));
+                setFormData((prev) => ({
+                  ...prev,
+                  rankedPreferences: [...prev.selectedQualities],
+                }));
                 setCurrentStep(4);
               }}
             />
@@ -188,7 +209,7 @@ export default function ParticipantRankingPage({
 
   const RankingScreen = () => {
     const moveItem = (fromIndex: number, toIndex: number) => {
-      setFormData(prev => {
+      setFormData((prev) => {
         const newRanked = [...prev.rankedPreferences];
         const [movedItem] = newRanked.splice(fromIndex, 1);
         newRanked.splice(toIndex, 0, movedItem);
@@ -196,7 +217,7 @@ export default function ParticipantRankingPage({
       });
     };
 
-    const nextStep = (participantType === 'caregiver') ? 5 : 4;
+    const nextStep = participantType === 'caregiver' ? 5 : 4;
 
     return (
       <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
@@ -276,7 +297,9 @@ export default function ParticipantRankingPage({
             maxW="600px"
             textAlign="center"
           >
-            We are reviewing which volunteers would best fit those preferences. You will receive an email from us in the next 1-2 business days with the next steps. If you would like to connect with a LLSC staff before then, please reach out to{' '}
+            We are reviewing which volunteers would best fit those preferences. You will receive an
+            email from us in the next 1-2 business days with the next steps. If you would like to
+            connect with a LLSC staff before then, please reach out to{' '}
             <Text as="span" color={COLORS.teal} fontWeight={500}>
               FirstConnections@lls.org
             </Text>
