@@ -97,7 +97,8 @@ export function CaregiverTwoColumnQualitiesForm({
           fontWeight={600}
           mb={8}
         >
-          Note that your volunteer is guaranteed to speak your language and have the same availability.
+          Note that your volunteer is guaranteed to speak your language and have the same
+          availability.
         </Text>
 
         <VStack gap={5} align="start">
@@ -117,7 +118,8 @@ export function CaregiverTwoColumnQualitiesForm({
               fontSize="12px"
               mb={4}
             >
-              You can select a maximum of 5 across both categories. Please select at least one quality.
+              You can select a maximum of 5 across both categories. Please select at least one
+              quality.
             </Text>
 
             <SimpleGrid columns={{ base: 1, md: 2 }} gap={8} w="full">
@@ -203,5 +205,3 @@ export function CaregiverTwoColumnQualitiesForm({
     </Box>
   );
 }
-
-
