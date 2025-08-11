@@ -9,7 +9,7 @@ import { COLORS } from '@/constants/form';
 interface CaregiverMatchingFormProps {
   volunteerType: string;
   onVolunteerTypeChange: (type: string) => void;
-  onNext: () => void;
+  onNext: (type: string) => void;
 }
 
 export function CaregiverMatchingForm({ 
@@ -126,7 +126,7 @@ export function CaregiverMatchingForm({
           color="white"
           _hover={{ bg: COLORS.teal }}
           _active={{ bg: COLORS.teal }}
-          onClick={onNext}
+          onClick={() => onNext(volunteerType)}
           disabled={!volunteerType}
           w="auto"
           h="40px"

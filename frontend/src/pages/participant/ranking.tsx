@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Flex, Heading, Text, Button, VStack, HStack } from '@chakra-ui/react';
-import { UserIcon, CheckMarkIcon, DragIcon, WelcomeScreen } from '@/components/ui';
-import { VolunteerMatchingForm, VolunteerRankingForm, CaregiverMatchingForm, CaregiverQualitiesForm, CaregiverRankingForm } from '@/components/ranking';
+import { Box, Flex, Heading, Text, VStack } from '@chakra-ui/react';
+import { UserIcon, CheckMarkIcon, WelcomeScreen } from '@/components/ui';
+import { VolunteerMatchingForm, VolunteerRankingForm, CaregiverMatchingForm, CaregiverQualitiesForm, CaregiverRankingForm, CaregiverTwoColumnQualitiesForm } from '@/components/ranking';
 import { COLORS } from '@/constants/form';
 
 const RANKING_STATEMENTS = [
@@ -24,20 +24,24 @@ interface RankingFormData {
   selectedQualities: string[];
   rankedPreferences: string[];
   volunteerType?: string;
+  isCaregiverVolunteerFlow?: boolean;
 }
 
 interface ParticipantRankingPageProps {
   participantType?: 'cancerPatient' | 'caregiver';
+  caregiverHasCancer?: boolean;
 }
 
 export default function ParticipantRankingPage({ 
-  participantType = 'cancerPatient' 
+  participantType = 'caregiver',
+  caregiverHasCancer = true,
 }: ParticipantRankingPageProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<RankingFormData>({
     selectedQualities: [],
     rankedPreferences: participantType === 'caregiver' ? [...CAREGIVER_RANKING_STATEMENTS] : [...RANKING_STATEMENTS],
     volunteerType: participantType === 'caregiver' ? '' : undefined,
+    isCaregiverVolunteerFlow: undefined,
   });
 
   const WelcomeScreenStep = () => (
@@ -64,7 +68,9 @@ export default function ParticipantRankingPage({
     const handleVolunteerTypeChange = (type: string) => {
       setFormData(prev => ({
         ...prev,
-        volunteerType: type
+        volunteerType: type,
+        // Derive explicit flow flag to avoid any async state timing issues
+        isCaregiverVolunteerFlow: type === 'caringForLovedOne',
       }));
     };
 
@@ -82,13 +88,25 @@ export default function ParticipantRankingPage({
             <CaregiverMatchingForm
               volunteerType={formData.volunteerType || ''}
               onVolunteerTypeChange={handleVolunteerTypeChange}
-              onNext={() => setCurrentStep(3)}
+              onNext={(type) => {
+                // Ensure state is set before navigating
+                setFormData(prev => ({
+                  ...prev,
+                  volunteerType: type,
+                  isCaregiverVolunteerFlow: type === 'caringForLovedOne',
+                }));
+                setCurrentStep(3);
+              }}
             />
           ) : (
             <VolunteerMatchingForm
               selectedQualities={formData.selectedQualities}
               onQualityToggle={toggleQuality}
-              onNext={() => setCurrentStep(3)}
+              onNext={() => {
+                // Build ranking list from selected qualities
+                setFormData(prev => ({ ...prev, rankedPreferences: [...prev.selectedQualities] }));
+                setCurrentStep(3);
+              }}
             />
           )}
         </Box>
@@ -118,11 +136,51 @@ export default function ParticipantRankingPage({
           boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
           p={10}
         >
-          <CaregiverQualitiesForm
-            selectedQualities={formData.selectedQualities}
-            onQualityToggle={toggleQuality}
-            onNext={() => setCurrentStep(4)}
-          />
+          {(
+            // Prefer explicit flag; otherwise infer from value
+            (formData.isCaregiverVolunteerFlow ?? false) ||
+            (formData.volunteerType === 'caringForLovedOne') ||
+            // Fallback: any non-similarDiagnosis value implies the loved-one flow
+            (!!formData.volunteerType && formData.volunteerType !== 'similarDiagnosis')
+          ) ? (
+            <CaregiverTwoColumnQualitiesForm
+              selectedQualities={formData.selectedQualities}
+              onQualityToggle={toggleQuality}
+              onNext={() => {
+                setFormData(prev => ({ ...prev, rankedPreferences: [...prev.selectedQualities] }));
+                setCurrentStep(4);
+              }}
+            />
+          ) : caregiverHasCancer ? (
+            formData.volunteerType === 'similarDiagnosis' ? (
+              <CaregiverQualitiesForm
+                selectedQualities={formData.selectedQualities}
+                onQualityToggle={toggleQuality}
+                onNext={() => {
+                  setFormData(prev => ({ ...prev, rankedPreferences: [...prev.selectedQualities] }));
+                  setCurrentStep(4);
+                }}
+              />
+            ) : (
+              <VolunteerMatchingForm
+                selectedQualities={formData.selectedQualities}
+                onQualityToggle={toggleQuality}
+                onNext={() => {
+                  setFormData(prev => ({ ...prev, rankedPreferences: [...prev.selectedQualities] }));
+                  setCurrentStep(4);
+                }}
+              />
+            )
+          ) : (
+            <CaregiverQualitiesForm
+              selectedQualities={formData.selectedQualities}
+              onQualityToggle={toggleQuality}
+              onNext={() => {
+                setFormData(prev => ({ ...prev, rankedPreferences: [...prev.selectedQualities] }));
+                setCurrentStep(4);
+              }}
+            />
+          )}
         </Box>
       </Flex>
     );
@@ -138,9 +196,7 @@ export default function ParticipantRankingPage({
       });
     };
 
-    const participantType = 'caregiver';
-
-    const nextStep = participantType === 'caregiver' ? 5 : 4;
+    const nextStep = (participantType === 'caregiver') ? 5 : 4;
 
     return (
       <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
