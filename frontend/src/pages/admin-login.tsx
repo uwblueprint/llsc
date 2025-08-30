@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
@@ -11,45 +11,33 @@ const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
 const teal = '#056067';
 
-export default function LoginPage() {
+export default function AdminLogin() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFromEmailVerification, setIsFromEmailVerification] = useState(false);
-
-  // Check if user is coming from email verification
-  useEffect(() => {
-    const { verified, mode } = router.query;
-    if (verified === 'true' && mode === 'verifyEmail') {
-      setIsFromEmailVerification(true);
-    }
-  }, [router.query]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
 
     try {
       const result = await login(email, password);
-
-      if (result.success) {
-        router.push('/welcome');
+      if (result) {
+        console.log('Admin login success:', result);
+        router.push('/admin/dashboard');
       } else {
-        setError(result.error || 'Login failed. Please try again.');
+        setError('Invalid email or password');
       }
-    } catch {
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
+    } catch (err: unknown) {
+      console.error('Admin login error:', err);
+      setError('Login failed. Please try again.');
     }
   };
 
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Left: Login Form */}
+      {/* Left: Admin Login Form */}
       <Flex
         flex="1"
         align="center"
@@ -69,7 +57,7 @@ export default function LoginPage() {
             lineHeight="50px"
             mb={2}
           >
-            First Connection Peer
+            Admin Portal - First Connection Peer
             <br />
             Support Program
           </Heading>
@@ -82,7 +70,7 @@ export default function LoginPage() {
             mb={6}
             mt={8}
           >
-            {isFromEmailVerification ? 'Thank you for confirming!' : 'Welcome Back!'}
+            Welcome Back!
           </Heading>
           <Text
             mb={8}
@@ -91,11 +79,8 @@ export default function LoginPage() {
             fontWeight={400}
             fontSize="lg"
           >
-            {isFromEmailVerification
-              ? 'Your email has been successfully verified. Please sign in again to continue.'
-              : 'Sign in with your email and password.'}
+            Sign in with your email and password.
           </Text>
-
           <form onSubmit={handleSubmit}>
             <Field
               label={
@@ -205,16 +190,15 @@ export default function LoginPage() {
               _hover={{ bg: '#044953' }}
               px={8}
               py={3}
-              loading={isLoading}
             >
-              Sign In
+              Sign In <span style={{ display: 'inline-block', marginLeft: 8 }}>&#8594;</span>
             </Button>
           </form>
           <Text
             mt={8}
             color={veniceBlue}
             fontSize="md"
-            fontWeight={600}
+            fontWeight={400}
             fontFamily="'Open Sans', sans-serif"
           >
             Don&apos;t have an account?{' '}
@@ -227,7 +211,7 @@ export default function LoginPage() {
                 fontFamily: 'Open Sans, sans-serif',
               }}
             >
-              Complete our First Connection Participant Form.
+              Click here to sign up.
             </Link>
           </Text>
         </Box>
@@ -235,8 +219,8 @@ export default function LoginPage() {
       {/* Right: Image */}
       <Box flex="1" display={{ base: 'none', md: 'block' }} position="relative" minH="100vh">
         <Image
-          src="/login.png"
-          alt="First Connection Peer Support"
+          src="/admin.png"
+          alt="Admin Portal Visual"
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
           style={{ objectFit: 'cover', objectPosition: '90% 50%' }}

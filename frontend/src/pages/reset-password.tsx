@@ -1,47 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
-import { login } from '@/APIClients/authAPIClient';
+import { resetPassword } from '@/APIClients/authAPIClient';
 
 const veniceBlue = '#1d3448';
-const fieldGray = '#414651';
 const teal = '#056067';
 
-export default function LoginPage() {
-  const router = useRouter();
+export default function ResetPasswordPage() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isFromEmailVerification, setIsFromEmailVerification] = useState(false);
-
-  // Check if user is coming from email verification
-  useEffect(() => {
-    const { verified, mode } = router.query;
-    if (verified === 'true' && mode === 'verifyEmail') {
-      setIsFromEmailVerification(true);
-    }
-  }, [router.query]);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
+    setError('');
+    setMessage('');
 
     try {
-      const result = await login(email, password);
+      const result = await resetPassword(email);
 
       if (result.success) {
-        router.push('/welcome');
+        setMessage(
+          'If the email exists, a password reset link has been sent to your email address.',
+        );
       } else {
-        setError(result.error || 'Login failed. Please try again.');
+        setError(result.error || 'Failed to send reset email. Please try again.');
       }
     } catch {
-      setError('An unexpected error occurred. Please try again.');
+      setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -49,7 +42,7 @@ export default function LoginPage() {
 
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Left: Login Form */}
+      {/* Left: Reset Password Form */}
       <Flex
         flex="1"
         align="center"
@@ -82,7 +75,7 @@ export default function LoginPage() {
             mb={6}
             mt={8}
           >
-            {isFromEmailVerification ? 'Thank you for confirming!' : 'Welcome Back!'}
+            Reset Your Password
           </Heading>
           <Text
             mb={8}
@@ -91,17 +84,14 @@ export default function LoginPage() {
             fontWeight={400}
             fontSize="lg"
           >
-            {isFromEmailVerification
-              ? 'Your email has been successfully verified. Please sign in again to continue.'
-              : 'Sign in with your email and password.'}
+            Enter the email address associated with your account to receive password reset options.
           </Text>
-
           <form onSubmit={handleSubmit}>
             <Field
               label={
                 <span
                   style={{
-                    color: fieldGray,
+                    color: veniceBlue,
                     fontWeight: 600,
                     fontSize: 14,
                     fontFamily: 'Open Sans, sans-serif',
@@ -123,7 +113,7 @@ export default function LoginPage() {
                   fontFamily="'Open Sans', sans-serif"
                   fontWeight={400}
                   fontSize={14}
-                  color={fieldGray}
+                  color={veniceBlue}
                   bg="white"
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
@@ -132,62 +122,6 @@ export default function LoginPage() {
                 />
               </InputGroup>
             </Field>
-            <Field
-              label={
-                <span
-                  style={{
-                    color: fieldGray,
-                    fontWeight: 600,
-                    fontSize: 14,
-                    fontFamily: 'Open Sans, sans-serif',
-                  }}
-                >
-                  Password
-                </span>
-              }
-              mb={2}
-            >
-              <InputGroup w="100%">
-                <Input
-                  type="password"
-                  placeholder=""
-                  required
-                  autoComplete="current-password"
-                  w="100%"
-                  maxW="518px"
-                  fontFamily="'Open Sans', sans-serif"
-                  fontWeight={400}
-                  fontSize={14}
-                  color={fieldGray}
-                  bg="white"
-                  borderColor="#D5D7DA"
-                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </InputGroup>
-            </Field>
-            <Box mt={1} mb={6} textAlign="right">
-              <span
-                style={{
-                  color: '#535862',
-                  fontWeight: 600,
-                  fontFamily: 'Open Sans, sans-serif',
-                  fontSize: 15,
-                  display: 'inline-block',
-                  marginTop: 6,
-                  cursor: 'pointer',
-                }}
-                onClick={() => router.push('/reset-password')}
-              >
-                Forgot Password?
-              </span>
-            </Box>
-            {error && (
-              <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
-                {error}
-              </Text>
-            )}
             <Button
               type="submit"
               w="100%"
@@ -201,34 +135,49 @@ export default function LoginPage() {
               color="white"
               borderRadius="8px"
               border="1px solid #056067"
-              boxShadow="0 1px 2px 0 #0A0D12, 0 0 0 0 transparent"
+              boxShadow="none"
               _hover={{ bg: '#044953' }}
               px={8}
               py={3}
               loading={isLoading}
             >
-              Sign In
+              Send Reset Link
             </Button>
           </form>
+          {message && (
+            <Text
+              mt={8}
+              color="green.600"
+              fontSize="md"
+              fontWeight={400}
+              fontFamily="'Open Sans', sans-serif"
+            >
+              {message}
+            </Text>
+          )}
+          {error && (
+            <Text
+              mt={4}
+              color="red.500"
+              fontSize="md"
+              fontWeight={600}
+              fontFamily="'Open Sans', sans-serif"
+            >
+              {error}
+            </Text>
+          )}
           <Text
-            mt={8}
+            mt={4}
             color={veniceBlue}
             fontSize="md"
             fontWeight={600}
             fontFamily="'Open Sans', sans-serif"
           >
-            Don&apos;t have an account?{' '}
-            <Link
-              href="/participant-form"
-              style={{
-                color: teal,
-                textDecoration: 'underline',
-                fontWeight: 600,
-                fontFamily: 'Open Sans, sans-serif',
-              }}
-            >
-              Complete our First Connection Participant Form.
+            Return to{' '}
+            <Link href="/" style={{ color: teal, textDecoration: 'underline', fontWeight: 600 }}>
+              login
             </Link>
+            .
           </Text>
         </Box>
       </Flex>

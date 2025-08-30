@@ -1,55 +1,68 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
-import { login } from '@/APIClients/authAPIClient';
+import { register } from '@/APIClients/authAPIClient';
+import { UserRole, SignUpMethod } from '@/types/authTypes';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
 const teal = '#056067';
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFromEmailVerification, setIsFromEmailVerification] = useState(false);
-
-  // Check if user is coming from email verification
-  useEffect(() => {
-    const { verified, mode } = router.query;
-    if (verified === 'true' && mode === 'verifyEmail') {
-      setIsFromEmailVerification(true);
-    }
-  }, [router.query]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
 
     try {
-      const result = await login(email, password);
-
-      if (result.success) {
-        router.push('/welcome');
+      const userData = {
+        first_name: '',
+        last_name: '',
+        email,
+        password,
+        role: UserRole.ADMIN,
+        signupMethod: SignUpMethod.PASSWORD,
+      };
+      const result = await register(userData);
+      console.log('Admin registration success:', result);
+      router.push(`/verify?email=${encodeURIComponent(email)}&role=admin`);
+    } catch (err: unknown) {
+      console.error('Admin registration error:', err);
+      if (
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response &&
+        typeof err.response === 'object' &&
+        'data' in err.response &&
+        err.response.data &&
+        typeof err.response.data === 'object' &&
+        'detail' in err.response.data
+      ) {
+        setError((err.response.data as { detail: string }).detail || 'Registration failed');
       } else {
-        setError(result.error || 'Login failed. Please try again.');
+        setError('Registration failed');
       }
-    } catch {
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Left: Login Form */}
+      {/* Left: Admin Login Form */}
       <Flex
         flex="1"
         align="center"
@@ -69,7 +82,7 @@ export default function LoginPage() {
             lineHeight="50px"
             mb={2}
           >
-            First Connection Peer
+            Admin Portal - First Connection Peer
             <br />
             Support Program
           </Heading>
@@ -82,7 +95,7 @@ export default function LoginPage() {
             mb={6}
             mt={8}
           >
-            {isFromEmailVerification ? 'Thank you for confirming!' : 'Welcome Back!'}
+            Welcome!
           </Heading>
           <Text
             mb={8}
@@ -91,11 +104,8 @@ export default function LoginPage() {
             fontWeight={400}
             fontSize="lg"
           >
-            {isFromEmailVerification
-              ? 'Your email has been successfully verified. Please sign in again to continue.'
-              : 'Sign in with your email and password.'}
+            Let&apos;s start by setting up your admin account.
           </Text>
-
           <form onSubmit={handleSubmit}>
             <Field
               label={
@@ -152,7 +162,7 @@ export default function LoginPage() {
                   type="password"
                   placeholder=""
                   required
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   w="100%"
                   maxW="518px"
                   fontFamily="'Open Sans', sans-serif"
@@ -167,25 +177,44 @@ export default function LoginPage() {
                 />
               </InputGroup>
             </Field>
-            <Box mt={1} mb={6} textAlign="right">
-              <span
-                style={{
-                  color: '#535862',
-                  fontWeight: 600,
-                  fontFamily: 'Open Sans, sans-serif',
-                  fontSize: 15,
-                  display: 'inline-block',
-                  marginTop: 6,
-                  cursor: 'pointer',
-                }}
-                onClick={() => router.push('/reset-password')}
-              >
-                Forgot Password?
-              </span>
-            </Box>
+            <Field
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Confirm Password
+                </span>
+              }
+              mb={6}
+            >
+              <InputGroup w="100%">
+                <Input
+                  type="password"
+                  placeholder=""
+                  required
+                  autoComplete="new-password"
+                  w="100%"
+                  maxW="518px"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  fontSize={14}
+                  color={fieldGray}
+                  bg="white"
+                  borderColor="#D5D7DA"
+                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </InputGroup>
+            </Field>
             {error && (
               <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
-                {error}
+                {typeof error === 'string' ? error : JSON.stringify(error)}
               </Text>
             )}
             <Button
@@ -205,21 +234,20 @@ export default function LoginPage() {
               _hover={{ bg: '#044953' }}
               px={8}
               py={3}
-              loading={isLoading}
             >
-              Sign In
+              Continue <span style={{ display: 'inline-block', marginLeft: 8 }}>&#8594;</span>
             </Button>
           </form>
           <Text
             mt={8}
             color={veniceBlue}
             fontSize="md"
-            fontWeight={600}
+            fontWeight={400}
             fontFamily="'Open Sans', sans-serif"
           >
-            Don&apos;t have an account?{' '}
+            Already have an account?{' '}
             <Link
-              href="/participant-form"
+              href="/admin"
               style={{
                 color: teal,
                 textDecoration: 'underline',
@@ -227,7 +255,7 @@ export default function LoginPage() {
                 fontFamily: 'Open Sans, sans-serif',
               }}
             >
-              Complete our First Connection Participant Form.
+              Sign in.
             </Link>
           </Text>
         </Box>
@@ -235,8 +263,8 @@ export default function LoginPage() {
       {/* Right: Image */}
       <Box flex="1" display={{ base: 'none', md: 'block' }} position="relative" minH="100vh">
         <Image
-          src="/login.png"
-          alt="First Connection Peer Support"
+          src="/admin.png"
+          alt="Admin Portal Visual"
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
           style={{ objectFit: 'cover', objectPosition: '90% 50%' }}
