@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple
 
 from sqlalchemy.orm import Session
 
-from app.models import Experience, Treatment, UserData
+from app.models import Experience, Treatment, UserData, User
 
 logger = logging.getLogger(__name__)
 
@@ -48,22 +48,29 @@ class IntakeFormProcessor:
                 self.db.flush()  # Get ID assigned before processing relationships
 
             # Process different sections of the form
-            self._process_personal_info(user_data, form_data.get("personalInfo", {}))
+            self._process_personal_info(user_data, form_data.get("personal_info", {}))
             self._process_demographics(user_data, form_data.get("demographics", {}))
-            self._process_cancer_experience(user_data, form_data.get("cancerExperience", {}))
+            self._process_cancer_experience(user_data, form_data.get("cancer_experience", {}))
             self._process_flow_control(user_data, form_data)
 
             # Process treatments and experiences (many-to-many)
-            self._process_treatments(user_data, form_data.get("cancerExperience", {}))
-            self._process_experiences(user_data, form_data.get("cancerExperience", {}))
+            cancer_exp = form_data.get("cancer_experience", {})
+            self._process_treatments(user_data, cancer_exp)
+            self._process_experiences(user_data, cancer_exp)
 
             # Process caregiver experience for volunteers (separate from cancer experience)
-            if "caregiverExperience" in form_data:
-                self._process_caregiver_experience(user_data, form_data["caregiverExperience"])
+            if "caregiver_experience" in form_data:
+                self._process_caregiver_experience(user_data, form_data.get("caregiver_experience", {}))
 
             # Process loved one data if present
-            if "lovedOne" in form_data:
-                self._process_loved_one_data(user_data, form_data["lovedOne"])
+            if "loved_one" in form_data:
+                self._process_loved_one_data(user_data, form_data.get("loved_one", {}))
+
+            # Fallback: ensure email is set from the authenticated User if not provided in form
+            if not user_data.email:
+                owning_user = self.db.query(User).filter(User.id == user_data.user_id).first()
+                if owning_user and owning_user.email:
+                    user_data.email = owning_user.email
 
             # Commit all changes
             self.db.commit()
@@ -97,15 +104,23 @@ class IntakeFormProcessor:
 
     def _validate_required_fields(self, form_data: Dict[str, Any]):
         """Validate that required fields are present."""
-        if "personalInfo" not in form_data:
-            raise KeyError("personalInfo section is required")
+        personal_info = form_data.get("personal_info")
+        if not personal_info:
+            raise KeyError("personal_info section is required")
 
-        personal_info = form_data["personalInfo"]
-        required_fields = ["firstName", "lastName", "dateOfBirth", "phoneNumber", "city", "province", "postalCode"]
+        required_fields = [
+            "first_name",
+            "last_name",
+            "date_of_birth",
+            "phone_number",
+            "city",
+            "province",
+            "postal_code",
+        ]
 
-        for field in required_fields:
-            if field not in personal_info:
-                raise KeyError(f"Required field missing: personalInfo.{field}")
+        for key in required_fields:
+            if key not in personal_info:
+                raise KeyError(f"Required field missing: personal_info.{key}")
 
     def _trim_text(self, text: str) -> str:
         """Trim whitespace from text fields."""
@@ -132,48 +147,50 @@ class IntakeFormProcessor:
 
     def _process_personal_info(self, user_data: UserData, personal_info: Dict[str, Any]):
         """Process personal information fields."""
-        user_data.first_name = self._trim_text(personal_info.get("firstName"))
-        user_data.last_name = self._trim_text(personal_info.get("lastName"))
+        user_data.first_name = self._trim_text(personal_info.get("first_name"))
+        user_data.last_name = self._trim_text(personal_info.get("last_name"))
         user_data.email = self._trim_text(personal_info.get("email"))
-        user_data.phone = self._trim_text(personal_info.get("phoneNumber"))
+        user_data.phone = self._trim_text(personal_info.get("phone_number"))
         user_data.city = self._trim_text(personal_info.get("city"))
         user_data.province = self._trim_text(personal_info.get("province"))
-        user_data.postal_code = self._trim_text(personal_info.get("postalCode"))
+        user_data.postal_code = self._trim_text(personal_info.get("postal_code"))
 
         # Parse date of birth with strict validation
-        if "dateOfBirth" in personal_info:
+        if "date_of_birth" in personal_info:
             try:
-                user_data.date_of_birth = self._parse_date(personal_info["dateOfBirth"])
+                user_data.date_of_birth = self._parse_date(personal_info.get("date_of_birth"))
             except ValueError:
-                raise ValueError(f"Invalid date format for dateOfBirth: {personal_info['dateOfBirth']}")
+                raise ValueError(f"Invalid date format for dateOfBirth: {personal_info.get('date_of_birth')}")
 
     def _process_demographics(self, user_data: UserData, demographics: Dict[str, Any]):
         """Process demographic information."""
-        user_data.gender_identity = self._trim_text(demographics.get("genderIdentity"))
+        user_data.gender_identity = self._trim_text(demographics.get("gender_identity"))
         user_data.pronouns = demographics.get("pronouns", [])
-        user_data.ethnic_group = demographics.get("ethnicGroup", [])
-        user_data.marital_status = self._trim_text(demographics.get("maritalStatus"))
-        user_data.has_kids = demographics.get("hasKids")
-        user_data.other_ethnic_group = self._trim_text(demographics.get("ethnicGroupCustom"))
-        user_data.gender_identity_custom = self._trim_text(demographics.get("genderIdentityCustom"))
+        user_data.ethnic_group = demographics.get("ethnic_group", [])
+        user_data.marital_status = self._trim_text(demographics.get("marital_status"))
+        user_data.has_kids = demographics.get("has_kids")
+        user_data.other_ethnic_group = self._trim_text(demographics.get("ethnic_group_custom"))
+        user_data.gender_identity_custom = self._trim_text(demographics.get("gender_identity_custom"))
 
     def _process_cancer_experience(self, user_data: UserData, cancer_experience: Dict[str, Any]):
         """Process cancer experience information."""
         user_data.diagnosis = self._trim_text(cancer_experience.get("diagnosis"))
-        user_data.other_treatment = self._trim_text(cancer_experience.get("otherTreatment"))
-        user_data.other_experience = self._trim_text(cancer_experience.get("otherExperience"))
+        user_data.other_treatment = self._trim_text(cancer_experience.get("other_treatment"))
+        user_data.other_experience = self._trim_text(cancer_experience.get("other_experience"))
 
         # Parse diagnosis date with strict validation
-        if "dateOfDiagnosis" in cancer_experience:
+        if "date_of_diagnosis" in cancer_experience:
             try:
-                user_data.date_of_diagnosis = self._parse_date(cancer_experience["dateOfDiagnosis"])
+                user_data.date_of_diagnosis = self._parse_date(cancer_experience.get("date_of_diagnosis"))
             except ValueError:
-                raise ValueError(f"Invalid date format for dateOfDiagnosis: {cancer_experience['dateOfDiagnosis']}")
+                raise ValueError(
+                    f"Invalid date format for dateOfDiagnosis: {cancer_experience.get('date_of_diagnosis')}"
+                )
 
     def _process_flow_control(self, user_data: UserData, form_data: Dict[str, Any]):
         """Process flow control fields."""
-        user_data.has_blood_cancer = form_data.get("hasBloodCancer")
-        user_data.caring_for_someone = form_data.get("caringForSomeone")
+        user_data.has_blood_cancer = form_data.get("has_blood_cancer")
+        user_data.caring_for_someone = form_data.get("caring_for_someone")
 
     def _process_treatments(self, user_data: UserData, cancer_exp: Dict[str, Any]):
         """
@@ -242,7 +259,7 @@ class IntakeFormProcessor:
             return
 
         # Handle "Other" caregiver experience text
-        user_data.other_experience = caregiver_exp.get("otherExperience")
+        user_data.other_experience = caregiver_exp.get("other_experience")
 
         # Process caregiver experiences - map to same experiences table
         experience_names = caregiver_exp.get("experiences", [])
@@ -280,18 +297,18 @@ class IntakeFormProcessor:
         self._process_loved_one_demographics(user_data, loved_one_data.get("demographics", {}))
 
         # Process loved one cancer experience
-        self._process_loved_one_cancer_experience(user_data, loved_one_data.get("cancerExperience", {}))
+        self._process_loved_one_cancer_experience(user_data, loved_one_data.get("cancer_experience", {}))
 
         # Process loved one treatments and experiences
-        self._process_loved_one_treatments(user_data, loved_one_data.get("cancerExperience", {}))
-        self._process_loved_one_experiences(user_data, loved_one_data.get("cancerExperience", {}))
+        self._process_loved_one_treatments(user_data, loved_one_data.get("cancer_experience", {}))
+        self._process_loved_one_experiences(user_data, loved_one_data.get("cancer_experience", {}))
 
     def _process_loved_one_demographics(self, user_data: UserData, demographics: Dict[str, Any]):
         """Process loved one demographic information."""
         if not demographics:
             return
 
-        user_data.loved_one_gender_identity = demographics.get("genderIdentity")
+        user_data.loved_one_gender_identity = demographics.get("gender_identity")
         user_data.loved_one_age = demographics.get("age")
 
     def _process_loved_one_cancer_experience(self, user_data: UserData, cancer_exp: Dict[str, Any]):
@@ -302,15 +319,17 @@ class IntakeFormProcessor:
         user_data.loved_one_diagnosis = self._trim_text(cancer_exp.get("diagnosis"))
 
         # Parse loved one diagnosis date with strict validation
-        if "dateOfDiagnosis" in cancer_exp:
+        if "date_of_diagnosis" in cancer_exp:
             try:
-                user_data.loved_one_date_of_diagnosis = self._parse_date(cancer_exp["dateOfDiagnosis"])
+                user_data.loved_one_date_of_diagnosis = self._parse_date(cancer_exp.get("date_of_diagnosis"))
             except ValueError:
-                raise ValueError(f"Invalid date format for loved one dateOfDiagnosis: {cancer_exp['dateOfDiagnosis']}")
+                raise ValueError(
+                    f"Invalid date format for loved one dateOfDiagnosis: {cancer_exp.get('date_of_diagnosis')}"
+                )
 
         # Handle "Other" treatment and experience text for loved one with trimming
-        user_data.loved_one_other_treatment = self._trim_text(cancer_exp.get("otherTreatment"))
-        user_data.loved_one_other_experience = self._trim_text(cancer_exp.get("otherExperience"))
+        user_data.loved_one_other_treatment = self._trim_text(cancer_exp.get("other_treatment"))
+        user_data.loved_one_other_experience = self._trim_text(cancer_exp.get("other_experience"))
 
     def _process_loved_one_treatments(self, user_data: UserData, cancer_exp: Dict[str, Any]):
         """Process loved one treatments - map frontend names to database records."""

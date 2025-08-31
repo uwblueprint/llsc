@@ -120,32 +120,32 @@ def test_participant_with_cancer_only(db_session, test_user):
         # Arrange
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "participant",
-            "hasBloodCancer": "yes",
-            "caringForSomeone": "no",
-            "personalInfo": {
-                "firstName": "John",
-                "lastName": "Doe",
-                "dateOfBirth": "15/03/1985",
-                "phoneNumber": "555-123-4567",
+            "form_type": "participant",
+            "has_blood_cancer": "yes",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "John",
+                "last_name": "Doe",
+                "date_of_birth": "15/03/1985",
+                "phone_number": "555-123-4567",
                 "city": "Toronto",
                 "province": "Ontario",
-                "postalCode": "M1A 1A1",
+                "postal_code": "M1A 1A1",
             },
             "demographics": {
-                "genderIdentity": "Male",
+                "gender_identity": "Male",
                 "pronouns": ["he", "him"],
-                "ethnicGroup": ["White"],
-                "maritalStatus": "Married",
-                "hasKids": "yes",
+                "ethnic_group": ["White"],
+                "marital_status": "Married",
+                "has_kids": "yes",
             },
-            "cancerExperience": {
+            "cancer_experience": {
                 "diagnosis": "Leukemia",
-                "dateOfDiagnosis": "01/01/2023",
+                "date_of_diagnosis": "01/01/2023",
                 "treatments": ["Chemotherapy", "Surgery"],
                 "experiences": ["Anxiety", "Fatigue"],
-                "otherTreatment": "Some custom treatment details",
-                "otherExperience": "Custom experience notes",
+                "other_treatment": "Some custom treatment details",
+                "other_experience": "Custom experience notes",
             },
         }
 
@@ -209,32 +209,32 @@ def test_custom_treatments_and_experiences(db_session, test_user):
         # Arrange
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "participant",
-            "hasBloodCancer": "yes",
-            "caringForSomeone": "no",
-            "personalInfo": {
-                "firstName": "Jane",
-                "lastName": "Smith",
-                "dateOfBirth": "20/12/1990",
-                "phoneNumber": "555-987-6543",
+            "form_type": "participant",
+            "has_blood_cancer": "yes",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "Jane",
+                "last_name": "Smith",
+                "date_of_birth": "20/12/1990",
+                "phone_number": "555-987-6543",
                 "city": "Vancouver",
                 "province": "British Columbia",
-                "postalCode": "V6B 1A1",
+                "postal_code": "V6B 1A1",
             },
             "demographics": {
-                "genderIdentity": "Female",
+                "gender_identity": "Female",
                 "pronouns": ["she", "her"],
-                "ethnicGroup": ["Asian"],
-                "maritalStatus": "Single",
-                "hasKids": "no",
+                "ethnic_group": ["Asian"],
+                "marital_status": "Single",
+                "has_kids": "no",
             },
-            "cancerExperience": {
+            "cancer_experience": {
                 "diagnosis": "Lymphoma",
-                "dateOfDiagnosis": "15/06/2022",
+                "date_of_diagnosis": "15/06/2022",
                 "treatments": ["Custom Treatment X", "Experimental Therapy Y"],  # New treatments
                 "experiences": ["Custom Symptom A", "Unique Experience B"],  # New experiences
-                "otherTreatment": "Details about experimental treatment",
-                "otherExperience": "Unique side effects experienced",
+                "other_treatment": "Details about experimental treatment",
+                "other_experience": "Unique side effects experienced",
             },
         }
 
@@ -283,38 +283,38 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
         # Arrange
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "volunteer",
-            "hasBloodCancer": "no",
-            "caringForSomeone": "yes",
-            "personalInfo": {
-                "firstName": "Alice",
-                "lastName": "Volunteer",
-                "dateOfBirth": "25/08/1975",
-                "phoneNumber": "555-111-2222",
+            "form_type": "volunteer",
+            "has_blood_cancer": "no",
+            "caring_for_someone": "yes",
+            "personal_info": {
+                "first_name": "Alice",
+                "last_name": "Volunteer",
+                "date_of_birth": "25/08/1975",
+                "phone_number": "555-111-2222",
                 "city": "Calgary",
                 "province": "Alberta",
-                "postalCode": "T2A 1A1",
+                "postal_code": "T2A 1A1",
             },
             "demographics": {
-                "genderIdentity": "Female",
+                "gender_identity": "Female",
                 "pronouns": ["she", "her"],
-                "ethnicGroup": ["Indigenous"],
-                "maritalStatus": "Divorced",
-                "hasKids": "yes",
+                "ethnic_group": ["Indigenous"],
+                "marital_status": "Divorced",
+                "has_kids": "yes",
             },
-            "caregiverExperience": {  # Note: caregiverExperience, not cancerExperience
+            "caregiver_experience": {
                 "experiences": ["Financial Stress", "Relationship Changes"],
-                "otherExperience": "Dealing with healthcare system complexity",
+                "other_experience": "Dealing with healthcare system complexity",
             },
-            "lovedOne": {
-                "demographics": {"genderIdentity": "Male", "age": "45-54"},
-                "cancerExperience": {
+            "loved_one": {
+                "demographics": {"gender_identity": "Male", "age": "45-54"},
+                "cancer_experience": {
                     "diagnosis": "Brain Cancer",
-                    "dateOfDiagnosis": "10/05/2020",
+                    "date_of_diagnosis": "10/05/2020",
                     "treatments": ["Surgery", "Radiation Therapy"],
                     "experiences": ["Depression", "Cognitive Changes"],
-                    "otherTreatment": "Specialized brain surgery",
-                    "otherExperience": "Memory issues post-surgery",
+                    "other_treatment": "Specialized brain surgery",
+                    "other_experience": "Memory issues post-surgery",
                 },
             },
         }
@@ -375,44 +375,44 @@ def test_form_submission_json_structure(db_session, test_user):
         # Arrange - Complex form data with nested structures
         processor = IntakeFormProcessor(db_session)
         complex_form_data = {
-            "formType": "participant",
-            "hasBloodCancer": "yes",
-            "caringForSomeone": "yes",
-            "personalInfo": {
-                "firstName": "Maria",
-                "lastName": "Complex",
-                "dateOfBirth": "12/11/1988",
-                "phoneNumber": "555-999-8888",
+            "form_type": "participant",
+            "has_blood_cancer": "yes",
+            "caring_for_someone": "yes",
+            "personal_info": {
+                "first_name": "Maria",
+                "last_name": "Complex",
+                "date_of_birth": "12/11/1988",
+                "phone_number": "555-999-8888",
                 "city": "Edmonton",
                 "province": "Alberta",
-                "postalCode": "T5A 2B2",
+                "postal_code": "T5A 2B2",
             },
             "demographics": {
-                "genderIdentity": "Self-describe",
-                "genderIdentityCustom": "Non-binary",
+                "gender_identity": "Self-describe",
+                "gender_identity_custom": "Non-binary",
                 "pronouns": ["they", "them"],
-                "ethnicGroup": ["Other", "Asian"],
-                "ethnicGroupCustom": "Mixed heritage - Filipino and Indigenous",
-                "maritalStatus": "Common-law",
-                "hasKids": "yes",
+                "ethnic_group": ["Other", "Asian"],
+                "ethnic_group_custom": "Mixed heritage - Filipino and Indigenous",
+                "marital_status": "Common-law",
+                "has_kids": "yes",
             },
-            "cancerExperience": {
+            "cancer_experience": {
                 "diagnosis": "Ovarian Cancer",
-                "dateOfDiagnosis": "03/07/2022",
+                "date_of_diagnosis": "03/07/2022",
                 "treatments": ["Chemotherapy", "Custom Treatment Protocol"],
                 "experiences": ["Anxiety", "Custom Side Effect"],
-                "otherTreatment": "Experimental immunotherapy trial",
-                "otherExperience": "Severe neuropathy affecting daily activities",
+                "other_treatment": "Experimental immunotherapy trial",
+                "other_experience": "Severe neuropathy affecting daily activities",
             },
-            "lovedOne": {
-                "demographics": {"genderIdentity": "Female", "age": "65+"},
-                "cancerExperience": {
+            "loved_one": {
+                "demographics": {"gender_identity": "Female", "age": "65+"},
+                "cancer_experience": {
                     "diagnosis": "Lung Cancer",
-                    "dateOfDiagnosis": "15/01/2021",
+                    "date_of_diagnosis": "15/01/2021",
                     "treatments": ["Radiation Therapy", "Palliative Care"],
                     "experiences": ["Sleep Problems", "Loss of Appetite"],
-                    "otherTreatment": "Comfort care measures",
-                    "otherExperience": "End-of-life care planning",
+                    "other_treatment": "Comfort care measures",
+                    "other_experience": "End-of-life care planning",
                 },
             },
         }
@@ -467,26 +467,26 @@ def test_empty_and_minimal_data_handling(db_session, test_user):
         # Arrange - Minimal form data
         processor = IntakeFormProcessor(db_session)
         minimal_form_data = {
-            "formType": "volunteer",
-            "hasBloodCancer": "no",
-            "caringForSomeone": "no",
-            "personalInfo": {
-                "firstName": "Min",
-                "lastName": "Imal",
-                "dateOfBirth": "01/01/2000",
-                "phoneNumber": "",  # Empty string
+            "form_type": "volunteer",
+            "has_blood_cancer": "no",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "Min",
+                "last_name": "Imal",
+                "date_of_birth": "01/01/2000",
+                "phone_number": "",  # Empty string
                 "city": "Toronto",
                 "province": "Ontario",
-                "postalCode": "M1A 1A1",
+                "postal_code": "M1A 1A1",
             },
             "demographics": {
-                "genderIdentity": "Prefer not to say",
+                "gender_identity": "Prefer not to say",
                 "pronouns": [],  # Empty array
-                "ethnicGroup": [],  # Empty array
-                "maritalStatus": "",  # Empty string
-                "hasKids": "",
+                "ethnic_group": [],  # Empty array
+                "marital_status": "",  # Empty string
+                "has_kids": "",
             },
-            # No cancerExperience, caregiverExperience, or lovedOne sections
+            # No cancer_experience, caregiver_experience, or loved_one sections
         }
 
         # Act
@@ -524,34 +524,34 @@ def test_participant_caregiver_without_cancer(db_session, test_user):
         # Arrange
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "participant",
-            "hasBloodCancer": "no",
-            "caringForSomeone": "yes",
-            "personalInfo": {
-                "firstName": "Sarah",
-                "lastName": "Caregiver",
-                "dateOfBirth": "10/09/1975",
-                "phoneNumber": "555-222-3333",
+            "form_type": "participant",
+            "has_blood_cancer": "no",
+            "caring_for_someone": "yes",
+            "personal_info": {
+                "first_name": "Sarah",
+                "last_name": "Caregiver",
+                "date_of_birth": "10/09/1975",
+                "phone_number": "555-222-3333",
                 "city": "Ottawa",
                 "province": "Ontario",
-                "postalCode": "K1A 0A6",
+                "postal_code": "K1A 0A6",
             },
             "demographics": {
-                "genderIdentity": "Female",
+                "gender_identity": "Female",
                 "pronouns": ["she", "her"],
-                "ethnicGroup": ["Black"],
-                "maritalStatus": "Married",
-                "hasKids": "yes",
+                "ethnic_group": ["Black"],
+                "marital_status": "Married",
+                "has_kids": "yes",
             },
-            "lovedOne": {
-                "demographics": {"genderIdentity": "Male", "age": "55-64"},
-                "cancerExperience": {
+            "loved_one": {
+                "demographics": {"gender_identity": "Male", "age": "55-64"},
+                "cancer_experience": {
                     "diagnosis": "Prostate Cancer",
-                    "dateOfDiagnosis": "20/03/2021",
+                    "date_of_diagnosis": "20/03/2021",
                     "treatments": ["Surgery", "Hormone Therapy"],
                     "experiences": ["Anxiety", "Relationship Changes"],
-                    "otherTreatment": "Robotic surgery",
-                    "otherExperience": "Intimacy concerns",
+                    "other_treatment": "Robotic surgery",
+                    "other_experience": "Intimacy concerns",
                 },
             },
         }
@@ -606,43 +606,43 @@ def test_participant_cancer_patient_and_caregiver(db_session, test_user):
         # Arrange
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "participant",
-            "hasBloodCancer": "yes",
-            "caringForSomeone": "yes",
-            "personalInfo": {
-                "firstName": "David",
-                "lastName": "BothRoles",
-                "dateOfBirth": "05/11/1980",
-                "phoneNumber": "555-444-5555",
+            "form_type": "participant",
+            "has_blood_cancer": "yes",
+            "caring_for_someone": "yes",
+            "personal_info": {
+                "first_name": "David",
+                "last_name": "BothRoles",
+                "date_of_birth": "05/11/1980",
+                "phone_number": "555-444-5555",
                 "city": "Halifax",
                 "province": "Nova Scotia",
-                "postalCode": "B3H 3C3",
+                "postal_code": "B3H 3C3",
             },
             "demographics": {
-                "genderIdentity": "Male",
+                "gender_identity": "Male",
                 "pronouns": ["he", "him"],
-                "ethnicGroup": ["White", "Other"],
-                "ethnicGroupCustom": "Mixed European heritage",
-                "maritalStatus": "Married",
-                "hasKids": "yes",
+                "ethnic_group": ["White", "Other"],
+                "ethnic_group_custom": "Mixed European heritage",
+                "marital_status": "Married",
+                "has_kids": "yes",
             },
-            "cancerExperience": {
+            "cancer_experience": {
                 "diagnosis": "Lymphoma",
-                "dateOfDiagnosis": "15/08/2022",
+                "date_of_diagnosis": "15/08/2022",
                 "treatments": ["Chemotherapy", "Radiation Therapy"],
                 "experiences": ["Fatigue", "Depression"],
-                "otherTreatment": "Targeted therapy",
-                "otherExperience": "Cognitive fog",
+                "other_treatment": "Targeted therapy",
+                "other_experience": "Cognitive fog",
             },
-            "lovedOne": {
-                "demographics": {"genderIdentity": "Female", "age": "35-44"},
-                "cancerExperience": {
+            "loved_one": {
+                "demographics": {"gender_identity": "Female", "age": "35-44"},
+                "cancer_experience": {
                     "diagnosis": "Breast Cancer",
-                    "dateOfDiagnosis": "10/01/2023",
+                    "date_of_diagnosis": "10/01/2023",
                     "treatments": ["Surgery", "Chemotherapy"],
                     "experiences": ["Hair Loss", "Body Image Issues"],
-                    "otherTreatment": "Reconstruction surgery",
-                    "otherExperience": "Fertility concerns",
+                    "other_treatment": "Reconstruction surgery",
+                    "other_experience": "Fertility concerns",
                 },
             },
         }
@@ -697,26 +697,26 @@ def test_participant_no_cancer_experience(db_session, test_user):
         # Arrange
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "participant",
-            "hasBloodCancer": "no",
-            "caringForSomeone": "no",
-            "personalInfo": {
-                "firstName": "Emma",
-                "lastName": "NoCancer",
-                "dateOfBirth": "22/04/1995",
-                "phoneNumber": "555-777-8888",
+            "form_type": "participant",
+            "has_blood_cancer": "no",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "Emma",
+                "last_name": "NoCancer",
+                "date_of_birth": "22/04/1995",
+                "phone_number": "555-777-8888",
                 "city": "Winnipeg",
                 "province": "Manitoba",
-                "postalCode": "R3C 3P4",
+                "postal_code": "R3C 3P4",
             },
             "demographics": {
-                "genderIdentity": "Female",
+                "gender_identity": "Female",
                 "pronouns": ["she", "her"],
-                "ethnicGroup": ["Asian", "Indigenous"],
-                "maritalStatus": "Single",
-                "hasKids": "no",
+                "ethnic_group": ["Asian", "Indigenous"],
+                "marital_status": "Single",
+                "has_kids": "no",
             },
-            # No cancerExperience, caregiverExperience, or lovedOne sections
+            # No cancer_experience, caregiver_experience, or loved_one sections
         }
 
         # Act
@@ -766,32 +766,32 @@ def test_volunteer_cancer_patient_only(db_session, test_user):
         # Arrange
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "volunteer",
-            "hasBloodCancer": "yes",
-            "caringForSomeone": "no",
-            "personalInfo": {
-                "firstName": "Michael",
-                "lastName": "VolunteerSurvivor",
-                "dateOfBirth": "18/07/1970",
-                "phoneNumber": "555-101-2020",
+            "form_type": "volunteer",
+            "has_blood_cancer": "yes",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "Michael",
+                "last_name": "VolunteerSurvivor",
+                "date_of_birth": "18/07/1970",
+                "phone_number": "555-101-2020",
                 "city": "Regina",
                 "province": "Saskatchewan",
-                "postalCode": "S4P 3Y2",
+                "postal_code": "S4P 3Y2",
             },
             "demographics": {
-                "genderIdentity": "Male",
+                "gender_identity": "Male",
                 "pronouns": ["he", "him"],
-                "ethnicGroup": ["Indigenous"],
-                "maritalStatus": "Widowed",
-                "hasKids": "yes",
+                "ethnic_group": ["Indigenous"],
+                "marital_status": "Widowed",
+                "has_kids": "yes",
             },
-            "cancerExperience": {
+            "cancer_experience": {
                 "diagnosis": "Myeloma",
-                "dateOfDiagnosis": "12/05/2019",
+                "date_of_diagnosis": "12/05/2019",
                 "treatments": ["Chemotherapy", "Stem Cell Transplant"],
                 "experiences": ["Depression", "Survivorship Concerns"],
-                "otherTreatment": "Maintenance therapy",
-                "otherExperience": "Long-term survivor guilt",
+                "other_treatment": "Maintenance therapy",
+                "other_experience": "Long-term survivor guilt",
             },
         }
 
@@ -839,42 +839,42 @@ def test_volunteer_cancer_patient_and_caregiver(db_session, test_user):
         # Arrange
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "volunteer",
-            "hasBloodCancer": "yes",
-            "caringForSomeone": "yes",
-            "personalInfo": {
-                "firstName": "Lisa",
-                "lastName": "VolunteerBoth",
-                "dateOfBirth": "03/12/1965",
-                "phoneNumber": "555-303-4040",
+            "form_type": "volunteer",
+            "has_blood_cancer": "yes",
+            "caring_for_someone": "yes",
+            "personal_info": {
+                "first_name": "Lisa",
+                "last_name": "VolunteerBoth",
+                "date_of_birth": "03/12/1965",
+                "phone_number": "555-303-4040",
                 "city": "Victoria",
                 "province": "British Columbia",
-                "postalCode": "V8W 1P6",
+                "postal_code": "V8W 1P6",
             },
             "demographics": {
-                "genderIdentity": "Female",
+                "gender_identity": "Female",
                 "pronouns": ["she", "her"],
-                "ethnicGroup": ["White"],
-                "maritalStatus": "Married",
-                "hasKids": "yes",
+                "ethnic_group": ["White"],
+                "marital_status": "Married",
+                "has_kids": "yes",
             },
-            "cancerExperience": {
+            "cancer_experience": {
                 "diagnosis": "Breast Cancer",
-                "dateOfDiagnosis": "08/11/2015",
+                "date_of_diagnosis": "08/11/2015",
                 "treatments": ["Surgery", "Chemotherapy", "Radiation Therapy"],
                 "experiences": ["Hair Loss", "Survivorship Concerns"],
-                "otherTreatment": "Hormone blocking therapy",
-                "otherExperience": "10-year survivor perspective",
+                "other_treatment": "Hormone blocking therapy",
+                "other_experience": "10-year survivor perspective",
             },
-            "lovedOne": {
-                "demographics": {"genderIdentity": "Male", "age": "65+"},
-                "cancerExperience": {
+            "loved_one": {
+                "demographics": {"gender_identity": "Male", "age": "65+"},
+                "cancer_experience": {
                     "diagnosis": "Pancreatic Cancer",
-                    "dateOfDiagnosis": "25/09/2023",
+                    "date_of_diagnosis": "25/09/2023",
                     "treatments": ["Surgery", "Palliative Care"],
                     "experiences": ["Loss of Appetite", "Fatigue"],
-                    "otherTreatment": "Whipple procedure",
-                    "otherExperience": "End-of-life discussions",
+                    "other_treatment": "Whipple procedure",
+                    "other_experience": "End-of-life discussions",
                 },
             },
         }
@@ -924,26 +924,26 @@ def test_volunteer_no_cancer_experience(db_session, test_user):
         # Arrange
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "volunteer",
-            "hasBloodCancer": "no",
-            "caringForSomeone": "no",
-            "personalInfo": {
-                "firstName": "Robert",
-                "lastName": "VolunteerHelper",
-                "dateOfBirth": "14/06/1985",
-                "phoneNumber": "555-505-6060",
+            "form_type": "volunteer",
+            "has_blood_cancer": "no",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "Robert",
+                "last_name": "VolunteerHelper",
+                "date_of_birth": "14/06/1985",
+                "phone_number": "555-505-6060",
                 "city": "Fredericton",
                 "province": "New Brunswick",
-                "postalCode": "E3B 5A3",
+                "postal_code": "E3B 5A3",
             },
             "demographics": {
-                "genderIdentity": "Male",
+                "gender_identity": "Male",
                 "pronouns": ["he", "him"],
-                "ethnicGroup": ["White"],
-                "maritalStatus": "Single",
-                "hasKids": "no",
+                "ethnic_group": ["White"],
+                "marital_status": "Single",
+                "has_kids": "no",
             },
-            # No cancerExperience, caregiverExperience, or lovedOne sections
+            # No cancer_experience, caregiver_experience, or loved_one sections
         }
 
         # Act
@@ -991,17 +991,17 @@ def test_invalid_user_id_format(db_session):
     """Test error handling with invalid UUID format"""
     processor = IntakeFormProcessor(db_session)
     form_data = {
-        "formType": "participant",
-        "hasBloodCancer": "yes",
-        "caringForSomeone": "no",
-        "personalInfo": {
-            "firstName": "Test",
-            "lastName": "User",
-            "dateOfBirth": "01/01/1990",
-            "phoneNumber": "555-1234",
+        "form_type": "participant",
+        "has_blood_cancer": "yes",
+        "caring_for_someone": "no",
+        "personal_info": {
+            "first_name": "Test",
+            "last_name": "User",
+            "date_of_birth": "01/01/1990",
+            "phone_number": "555-1234",
             "city": "Test City",
             "province": "Test Province",
-            "postalCode": "T1T 1T1",
+            "postal_code": "T1T 1T1",
         },
     }
 
@@ -1013,14 +1013,14 @@ def test_missing_personal_info_section(db_session, test_user):
     """Test error handling with missing personalInfo section"""
     processor = IntakeFormProcessor(db_session)
 
-    # Missing personalInfo entirely should raise KeyError
-    with pytest.raises(KeyError, match="personalInfo section is required"):
+    # Missing personal_info entirely should raise KeyError
+    with pytest.raises(KeyError, match="personal_info section is required"):
         processor.process_form_submission(
             str(test_user.id),
             {
-                "formType": "participant",
-                "hasBloodCancer": "yes",
-                # No personalInfo section
+                "form_type": "participant",
+                "has_blood_cancer": "yes",
+                # No personal_info section
             },
         )
 
@@ -1029,15 +1029,15 @@ def test_missing_required_personal_info_fields(db_session, test_user):
     """Test error handling with missing required personalInfo fields"""
     processor = IntakeFormProcessor(db_session)
 
-    # Missing required personalInfo fields
-    with pytest.raises(KeyError, match="Required field missing: personalInfo.lastName"):
+    # Missing required personal_info fields
+    with pytest.raises(KeyError, match="Required field missing: personal_info.last_name"):
         processor.process_form_submission(
             str(test_user.id),
             {
-                "formType": "participant",
-                "hasBloodCancer": "yes",
-                "personalInfo": {
-                    "firstName": "Test"
+                "form_type": "participant",
+                "has_blood_cancer": "yes",
+                "personal_info": {
+                    "first_name": "Test"
                     # Missing other required fields
                 },
             },
@@ -1050,17 +1050,17 @@ def test_malformed_date_formats(db_session, test_user):
 
     # Invalid date format
     form_data = {
-        "formType": "participant",
-        "hasBloodCancer": "yes",
-        "caringForSomeone": "no",
-        "personalInfo": {
-            "firstName": "Test",
-            "lastName": "User",
-            "dateOfBirth": "invalid-date",
-            "phoneNumber": "555-1234",
+        "form_type": "participant",
+        "has_blood_cancer": "yes",
+        "caring_for_someone": "no",
+        "personal_info": {
+            "first_name": "Test",
+            "last_name": "User",
+            "date_of_birth": "invalid-date",
+            "phone_number": "555-1234",
             "city": "Test City",
             "province": "Test Province",
-            "postalCode": "T1T 1T1",
+            "postal_code": "T1T 1T1",
         },
     }
 
@@ -1080,16 +1080,16 @@ def test_database_rollback_on_error(db_session, test_user):
         processor.process_form_submission(
             str(test_user.id),
             {
-                "formType": "participant",
-                "hasBloodCancer": "yes",
-                "personalInfo": {
-                    "firstName": "Test",
-                    "lastName": "User",
-                    "dateOfBirth": "invalid-date",  # This will cause an error
-                    "phoneNumber": "555-1234",
+                "form_type": "participant",
+                "has_blood_cancer": "yes",
+                "personal_info": {
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "date_of_birth": "invalid-date",  # This will cause an error
+                    "phone_number": "555-1234",
                     "city": "Test City",
                     "province": "Test Province",
-                    "postalCode": "T1T 1T1",
+                    "postal_code": "T1T 1T1",
                 },
             },
         )
@@ -1107,21 +1107,21 @@ def test_duplicate_form_submission_handling(db_session, test_user):
     try:
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "participant",
-            "hasBloodCancer": "yes",
-            "caringForSomeone": "no",
-            "personalInfo": {
-                "firstName": "Original",
-                "lastName": "User",
-                "dateOfBirth": "01/01/1990",
-                "phoneNumber": "555-1111",
+            "form_type": "participant",
+            "has_blood_cancer": "yes",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "Original",
+                "last_name": "User",
+                "date_of_birth": "01/01/1990",
+                "phone_number": "555-1111",
                 "city": "Original City",
                 "province": "Original Province",
-                "postalCode": "O1O 1O1",
+                "postal_code": "O1O 1O1",
             },
-            "cancerExperience": {
+            "cancer_experience": {
                 "diagnosis": "Original Cancer",
-                "dateOfDiagnosis": "01/01/2020",
+                "date_of_diagnosis": "01/01/2020",
                 "treatments": ["Surgery"],
                 "experiences": ["Fatigue"],
             },
@@ -1132,9 +1132,9 @@ def test_duplicate_form_submission_handling(db_session, test_user):
         db_session.commit()
 
         # Second submission with different data (should update existing record)
-        form_data["personalInfo"]["firstName"] = "Updated"
-        form_data["personalInfo"]["city"] = "Updated City"
-        form_data["cancerExperience"]["diagnosis"] = "Updated Cancer"
+        form_data["personal_info"]["first_name"] = "Updated"
+        form_data["personal_info"]["city"] = "Updated City"
+        form_data["cancer_experience"]["diagnosis"] = "Updated Cancer"
 
         processor.process_form_submission(str(test_user.id), form_data)
         db_session.commit()
@@ -1159,26 +1159,26 @@ def test_text_trimming_and_normalization(db_session, test_user):
     try:
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "participant",
-            "hasBloodCancer": "yes",
-            "caringForSomeone": "no",
-            "personalInfo": {
-                "firstName": "  John  ",  # Extra spaces
-                "lastName": "\tDoe\n",  # Tabs and newlines
-                "dateOfBirth": "01/01/1990",
-                "phoneNumber": "  555-1234  ",
+            "form_type": "participant",
+            "has_blood_cancer": "yes",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "  John  ",  # Extra spaces
+                "last_name": "\tDoe\n",  # Tabs and newlines
+                "date_of_birth": "01/01/1990",
+                "phone_number": "  555-1234  ",
                 "city": "  Toronto  ",
                 "province": "  Ontario  ",
-                "postalCode": "  M5V 3A1  ",
+                "postal_code": "  M5V 3A1  ",
             },
-            "demographics": {"genderIdentity": "  Male  ", "maritalStatus": "  Single  "},
-            "cancerExperience": {
+            "demographics": {"gender_identity": "  Male  ", "marital_status": "  Single  "},
+            "cancer_experience": {
                 "diagnosis": "  Leukemia  ",
-                "dateOfDiagnosis": "01/01/2020",
+                "date_of_diagnosis": "01/01/2020",
                 "treatments": ["  Surgery  ", "  Chemotherapy  "],
                 "experiences": ["  Fatigue  "],
-                "otherTreatment": "  Custom treatment  ",
-                "otherExperience": "  Custom experience  ",
+                "other_treatment": "  Custom treatment  ",
+                "other_experience": "  Custom experience  ",
             },
         }
 
@@ -1211,24 +1211,24 @@ def test_sql_injection_prevention(db_session, test_user):
 
         # Attempt SQL injection in various fields
         malicious_data = {
-            "formType": "participant",
-            "hasBloodCancer": "yes",
-            "caringForSomeone": "no",
-            "personalInfo": {
-                "firstName": "'; DROP TABLE users; --",
-                "lastName": "Robert'; DELETE FROM user_data; --",
-                "dateOfBirth": "01/01/1990",
-                "phoneNumber": "555-1234",
+            "form_type": "participant",
+            "has_blood_cancer": "yes",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "'; DROP TABLE users; --",
+                "last_name": "Robert'; DELETE FROM user_data; --",
+                "date_of_birth": "01/01/1990",
+                "phone_number": "555-1234",
                 "city": "Toronto'; SELECT * FROM users; --",
                 "province": "Ontario",
-                "postalCode": "M5V 3A1",
+                "postal_code": "M5V 3A1",
             },
-            "cancerExperience": {
+            "cancer_experience": {
                 "diagnosis": "'; UNION SELECT password FROM users; --",
-                "dateOfDiagnosis": "01/01/2020",
+                "date_of_diagnosis": "01/01/2020",
                 "treatments": ["Surgery"],
                 "experiences": ["Fatigue"],
-                "otherTreatment": "'; INSERT INTO admin_users VALUES (1); --",
+                "other_treatment": "'; INSERT INTO admin_users VALUES (1); --",
             },
         }
 
@@ -1256,31 +1256,31 @@ def test_unicode_and_special_characters(db_session, test_user):
     try:
         processor = IntakeFormProcessor(db_session)
         form_data = {
-            "formType": "participant",
-            "hasBloodCancer": "yes",
-            "caringForSomeone": "no",
-            "personalInfo": {
-                "firstName": "José",  # Accented characters
-                "lastName": "François-Müller",  # Multiple special chars
-                "dateOfBirth": "01/01/1990",
-                "phoneNumber": "555-1234",
+            "form_type": "participant",
+            "has_blood_cancer": "yes",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "José",  # Accented characters
+                "last_name": "François-Müller",  # Multiple special chars
+                "date_of_birth": "01/01/1990",
+                "phone_number": "555-1234",
                 "city": "Montréal",  # French accent
                 "province": "Québec",  # French accent
-                "postalCode": "H3A 1A1",
+                "postal_code": "H3A 1A1",
             },
             "demographics": {
-                "genderIdentity": "Non-binary",
+                "gender_identity": "Non-binary",
                 "pronouns": ["they", "them"],
-                "ethnicGroup": ["Other"],
-                "ethnicGroupCustom": "中国人 (Chinese) & हिन्दी (Hindi) 🌍",  # Unicode mix
+                "ethnic_group": ["Other"],
+                "ethnic_group_custom": "中国人 (Chinese) & हिन्दी (Hindi) 🌍",  # Unicode mix
             },
-            "cancerExperience": {
+            "cancer_experience": {
                 "diagnosis": "Leucémie (Leukemia)",
-                "dateOfDiagnosis": "01/01/2020",
+                "date_of_diagnosis": "01/01/2020",
                 "treatments": ["Chimiothérapie"],
                 "experiences": ["Fatigue"],
-                "otherTreatment": "Traitement spécialisé avec émojis 💊🏥",
-                "otherExperience": "Expérience émotionnelle complexe 😔➡️😊",
+                "other_treatment": "Traitement spécialisé avec émojis 💊🏥",
+                "other_experience": "Expérience émotionnelle complexe 😔➡️😊",
             },
         }
 
@@ -1311,21 +1311,21 @@ def test_boundary_date_values(db_session, test_user):
 
         # Test with very old and very recent dates
         form_data = {
-            "formType": "participant",
-            "hasBloodCancer": "yes",
-            "caringForSomeone": "no",
-            "personalInfo": {
-                "firstName": "Old",
-                "lastName": "Person",
-                "dateOfBirth": "01/01/1920",  # Very old date
-                "phoneNumber": "555-1234",
+            "form_type": "participant",
+            "has_blood_cancer": "yes",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "Old",
+                "last_name": "Person",
+                "date_of_birth": "01/01/1920",  # Very old date
+                "phone_number": "555-1234",
                 "city": "Toronto",
                 "province": "Ontario",
-                "postalCode": "M5V 3A1",
+                "postal_code": "M5V 3A1",
             },
-            "cancerExperience": {
+            "cancer_experience": {
                 "diagnosis": "Leukemia",
-                "dateOfDiagnosis": "31/12/2023",  # Very recent date
+                "date_of_diagnosis": "31/12/2023",  # Very recent date
                 "treatments": ["Surgery"],
                 "experiences": ["Fatigue"],
             },

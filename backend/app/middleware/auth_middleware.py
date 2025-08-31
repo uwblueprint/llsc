@@ -27,6 +27,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
         return False
 
     async def dispatch(self, request: Request, call_next):
+        # Allow preflight CORS requests to pass through without auth
+        if request.method.upper() == "OPTIONS":
+            return await call_next(request)
+
         if self.is_public_path(request.url.path):
             self.logger.info(f"Skipping auth for public path: {request.url.path}")
             return await call_next(request)

@@ -45,6 +45,8 @@ async def lifespan(_: FastAPI):
 # Source: https://stackoverflow.com/questions/77170361/
 # running-alembic-migrations-on-fastapi-startup
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(AuthMiddleware, public_paths=PUBLIC_PATHS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -60,8 +62,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.add_middleware(AuthMiddleware, public_paths=PUBLIC_PATHS)
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(availability.router)

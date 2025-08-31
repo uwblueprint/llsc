@@ -40,8 +40,8 @@ class UserService(IUserService):
 
             # Create user in database
             db_user = User(
-                first_name=user.first_name,
-                last_name=user.last_name,
+                first_name=user.first_name or "",
+                last_name=user.last_name or "",
                 email=user.email,
                 role_id=role_id,
                 auth_id=firebase_user.uid,
