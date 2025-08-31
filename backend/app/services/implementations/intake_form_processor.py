@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple
 
 from sqlalchemy.orm import Session
 
-from app.models import Experience, Treatment, UserData, User
+from app.models import Experience, Treatment, User, UserData
 
 logger = logging.getLogger(__name__)
 

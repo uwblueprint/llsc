@@ -1,12 +1,13 @@
+import os
 from uuid import UUID
 
 import pytest
 from fastapi import HTTPException
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from app.models import Role
-from app.models.Base import Base
 from app.models.User import User
 from app.schemas.user import (
     SignUpMethod,
@@ -17,9 +18,14 @@ from app.schemas.user import (
 )
 from app.services.implementations.user_service import UserService
 
-# Test DB Configuration
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+# Test DB Configuration - Always require Postgres for full parity
+POSTGRES_DATABASE_URL = os.getenv("POSTGRES_DATABASE_URL")
+if not POSTGRES_DATABASE_URL:
+    raise RuntimeError(
+        "POSTGRES_DATABASE_URL is not set. Please export a Postgres URL, e.g. "
+        "postgresql+psycopg2://postgres:postgres@localhost:5432/llsc"
+    )
+engine = create_engine(POSTGRES_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -69,37 +75,44 @@ def mock_firebase_auth(monkeypatch):
 
 @pytest.fixture(scope="function")
 def db_session():
-    """Provide a clean database session for each test"""
-    Base.metadata.create_all(bind=engine)
+    """Provide a clean database session for each test (Postgres only).
+
+    Assumes Alembic migrations have run. Seeds roles if missing.
+    """
+
     session = TestingSessionLocal()
 
     try:
-        # Clean up any existing data first
-        session.query(User).delete()
-        session.query(Role).delete()
+        # Clean up any existing data first (ensure no FK violations)
+        session.execute(
+            text(
+                "TRUNCATE TABLE form_submissions, user_loved_one_experiences, user_loved_one_treatments, "
+                "user_experiences, user_treatments, available_times, matches, suggested_times, user_data, users "
+                "RESTART IDENTITY CASCADE"
+            )
+        )
         session.commit()
 
-        # Create test roles
-        roles = [
+        # Ensure roles exist (id 1..3)
+        existing = {r.id for r in session.query(Role).all()}
+        seed_roles = [
             Role(id=1, name=UserRole.PARTICIPANT),
             Role(id=2, name=UserRole.VOLUNTEER),
             Role(id=3, name=UserRole.ADMIN),
         ]
-        for role in roles:
-            session.add(role)
-        session.commit()
+        for role in seed_roles:
+            if role.id not in existing:
+                try:
+                    session.add(role)
+                    session.commit()
+                except IntegrityError:
+                    session.rollback()
 
         yield session
     finally:
         session.rollback()
         session.close()
-        # Clean up
-        session = TestingSessionLocal()
-        session.query(User).delete()
-        session.query(Role).delete()
-        session.commit()
-        session.close()
-        Base.metadata.drop_all(bind=engine)
+        # No DDL teardown for Postgres; database persists across tests
 
 
 @pytest.mark.asyncio

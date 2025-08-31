@@ -103,7 +103,10 @@ export default function VolunteerIntakePage() {
         await baseAPIClient.post('/intake/submissions', { answers: updated });
       } catch (error: any) {
         // eslint-disable-next-line no-console
-        console.error('[INTAKE][SUBMIT][ERROR] Volunteer submission failed', error?.response?.data || error);
+        console.error(
+          '[INTAKE][SUBMIT][ERROR] Volunteer submission failed',
+          error?.response?.data || error,
+        );
         return; // Do not advance on failure
       } finally {
         setSubmitting(false);

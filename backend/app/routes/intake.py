@@ -129,7 +129,8 @@ async def create_form_submission(
             form_name = form_name_mapping.get(effective_form_type)
             if not form_name:
                 raise HTTPException(
-                    status_code=400, detail=f"Invalid formType: {effective_form_type}. Must be 'participant' or 'volunteer'"
+                    status_code=400,
+                    detail=f"Invalid formType: {effective_form_type}. Must be 'participant' or 'volunteer'",
                 )
 
             # Find the form
@@ -168,7 +169,7 @@ async def create_form_submission(
 
         # Process the form data into structured tables
         processor = IntakeFormProcessor(db)
-        user_data = processor.process_form_submission(user_id=str(current_user.id), form_data=submission.answers)
+        processor.process_form_submission(user_id=str(current_user.id), form_data=submission.answers)
 
         # Commit everything together
         db.commit()

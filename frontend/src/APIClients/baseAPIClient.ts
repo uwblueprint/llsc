@@ -36,8 +36,7 @@ baseAPIClient.interceptors.request.use(async (config: InternalAxiosRequestConfig
         newConfig.headers.Authorization = `Bearer ${idToken}`;
       }
     }
-  } catch {
-  }
+  } catch {}
 
   // if access token in header has expired, do a refresh
   const authHeaderParts = config.headers.Authorization?.toString().split(' ');
