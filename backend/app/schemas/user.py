@@ -78,8 +78,8 @@ class UserUpdateRequest(BaseModel):
     Request schema for user updates, all fields optional
     """
 
-    first_name: Optional[str] = Field(None, min_length=1, max_length=50)
-    last_name: Optional[str] = Field(None, min_length=1, max_length=50)
+    first_name: Optional[str] = Field(None, min_length=0, max_length=50)
+    last_name: Optional[str] = Field(None, min_length=0, max_length=50)
     email: Optional[EmailStr] = None
     role: Optional[UserRole] = None
     approved: Optional[bool] = None
@@ -91,8 +91,8 @@ class UserCreateResponse(BaseModel):
     """
 
     id: UUID
-    first_name: str
-    last_name: str
+    first_name: Optional[str]
+    last_name: Optional[str]
     email: EmailStr
     role_id: int
     auth_id: str
@@ -108,8 +108,8 @@ class UserResponse(BaseModel):
     """
 
     id: UUID
-    first_name: str
-    last_name: str
+    first_name: Optional[str]
+    last_name: Optional[str]
     email: EmailStr
     role_id: int
     auth_id: str

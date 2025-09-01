@@ -2,6 +2,7 @@ import axios, { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 // Fix this import
 import { jwtDecode } from 'jwt-decode';
 import { camelizeKeys, decamelizeKeys } from 'humps';
+import { auth } from '@/config/firebase';
 
 import AUTHENTICATED_USER_KEY from '../constants/AuthConstants';
 import { setLocalStorageObjProperty } from '../utils/LocalStorageUtils';
@@ -9,8 +10,7 @@ import { setLocalStorageObjProperty } from '../utils/LocalStorageUtils';
 import { DecodedJWT } from '../types/authTypes';
 
 const baseAPIClient = axios.create({
-  // TODO: Fix this
-  baseURL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000',
+  baseURL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080',
 });
 
 // Python API uses snake_case, frontend uses camelCase
@@ -26,6 +26,17 @@ baseAPIClient.interceptors.response.use((response: AxiosResponse) => {
 
 baseAPIClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   const newConfig = { ...config };
+
+  // Inject Firebase ID token if not already present
+  try {
+    if (!newConfig.headers.Authorization) {
+      const user = auth.currentUser;
+      if (user) {
+        const idToken = await user.getIdToken();
+        newConfig.headers.Authorization = `Bearer ${idToken}`;
+      }
+    }
+  } catch {}
 
   // if access token in header has expired, do a refresh
   const authHeaderParts = config.headers.Authorization?.toString().split(' ');

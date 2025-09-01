@@ -113,23 +113,24 @@ async def create_form_submission(
         if not current_user:
             raise HTTPException(status_code=401, detail="User not found")
 
-        # Determine form_id if not provided
+        # Determine form_id if not provided and derive effective form_type for auth check
         form_id = submission.form_id
+        effective_form_type = None
         if not form_id:
-            # Auto-detect form based on formType in answers
-            form_type = submission.answers.get("formType")
-            if not form_type:
+            effective_form_type = submission.answers.get("form_type")
+            if not effective_form_type:
                 raise HTTPException(
-                    status_code=400, detail="formType must be specified in answers when form_id is not provided"
+                    status_code=400, detail="form_type must be specified in answers when form_id is not provided"
                 )
 
             # Map formType to form name
             form_name_mapping = {"participant": "Participant Intake Form", "volunteer": "Volunteer Intake Form"}
 
-            form_name = form_name_mapping.get(form_type)
+            form_name = form_name_mapping.get(effective_form_type)
             if not form_name:
                 raise HTTPException(
-                    status_code=400, detail=f"Invalid formType: {form_type}. Must be 'participant' or 'volunteer'"
+                    status_code=400,
+                    detail=f"Invalid formType: {effective_form_type}. Must be 'participant' or 'volunteer'",
                 )
 
             # Find the form
@@ -138,11 +139,23 @@ async def create_form_submission(
             if not form:
                 raise HTTPException(status_code=500, detail=f"Intake form '{form_name}' not found in database")
             form_id = form.id
+        else:
+            # Verify the form exists and is of type 'intake'
+            form = db.query(Form).filter(Form.id == form_id, Form.type == "intake").first()
+            if not form:
+                raise HTTPException(status_code=404, detail="Intake form not found")
+            # Derive effective type from form name
+            if "Participant" in form.name:
+                effective_form_type = "participant"
+            elif "Volunteer" in form.name:
+                effective_form_type = "volunteer"
 
-        # Verify the form exists and is of type 'intake'
-        form = db.query(Form).filter(Form.id == form_id, Form.type == "intake").first()
-        if not form:
-            raise HTTPException(status_code=404, detail="Intake form not found")
+        # Enforce role-to-form access (admin exempt)
+        if current_user.role.name != "admin":
+            if current_user.role.name == "volunteer" and effective_form_type != "volunteer":
+                raise HTTPException(status_code=403, detail="Volunteers can only submit the volunteer intake form")
+            if current_user.role.name == "participant" and effective_form_type != "participant":
+                raise HTTPException(status_code=403, detail="Participants can only submit the participant intake form")
 
         # Create the raw form submission record
         db_submission = FormSubmission(

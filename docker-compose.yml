@@ -23,8 +23,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      POSTGRES_DATABASE_URL: ${POSTGRES_DATABASE_URL}
+    env_file:
+      - ./.env
   db:
     container_name: llsc_db
     image: postgres:16-alpine

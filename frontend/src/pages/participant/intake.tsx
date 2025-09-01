@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, Flex } from '@chakra-ui/react';
+import baseAPIClient from '@/APIClients/baseAPIClient';
 import { PersonalInfoForm } from '@/components/intake/personal-info-form';
 import {
   DemographicCancerForm,
@@ -56,11 +57,10 @@ export default function ParticipantIntakePage() {
     ...INITIAL_INTAKE_FORM_DATA,
     formType: 'participant',
   });
+  const [, setSubmitting] = useState(false);
 
-  // Determine flow based on experience type selections
-  const getFlowSteps = () => {
-    const { hasBloodCancer, caringForSomeone } = formData;
-
+  const computeFlowSteps = (data: IntakeFormData) => {
+    const { hasBloodCancer, caringForSomeone } = data;
     if (hasBloodCancer === 'yes' && caringForSomeone === 'no') {
       // Flow 1: Participant - Cancer Patient
       return ['experience-personal', 'demographics-cancer', 'thank-you'];
@@ -79,8 +79,27 @@ export default function ParticipantIntakePage() {
     return ['experience-personal'];
   };
 
-  const currentFlowSteps = getFlowSteps();
+  const currentFlowSteps = useMemo(() => computeFlowSteps(formData), [formData]);
   const currentStepType = currentFlowSteps[currentStep - 1];
+
+  const advanceAfterUpdate = async (updated: IntakeFormData) => {
+    const steps = computeFlowSteps(updated);
+    const nextType = steps[currentStep];
+    if (nextType === 'thank-you') {
+      setSubmitting(true);
+      try {
+        console.log('[INTAKE][SUBMIT] About to submit answers', {
+          currentStep,
+          nextType,
+          answers: updated,
+        });
+        await baseAPIClient.post('/intake/submissions', { answers: updated });
+      } finally {
+        setSubmitting(false);
+      }
+    }
+    setCurrentStep((s) => s + 1);
+  };
 
   const handleExperiencePersonalSubmit = (
     experienceData: ExperienceData,
@@ -96,72 +115,81 @@ export default function ParticipantIntakePage() {
   };
 
   const handleDemographicsNext = (data: DemographicCancerFormData) => {
-    setFormData((prev) => ({
-      ...prev,
-      demographics: {
-        genderIdentity: data.genderIdentity,
-        pronouns: data.pronouns,
-        ethnicGroup: data.ethnicGroup,
-        maritalStatus: data.maritalStatus,
-        hasKids: data.hasKids,
-      },
-      // Add cancer experience if they have cancer
-      ...(prev.hasBloodCancer === 'yes' && {
-        cancerExperience: {
-          diagnosis: data.diagnosis,
-          dateOfDiagnosis: data.dateOfDiagnosis,
-          treatments: data.treatments,
-          experiences: data.experiences,
-          otherTreatment: data.otherTreatment,
-          otherExperience: data.otherExperience,
+    setFormData((prev) => {
+      const updated: IntakeFormData = {
+        ...prev,
+        demographics: {
+          genderIdentity: data.genderIdentity,
+          pronouns: data.pronouns,
+          ethnicGroup: data.ethnicGroup,
+          maritalStatus: data.maritalStatus,
+          hasKids: data.hasKids,
         },
-      }),
-      // Add caregiver experience if they're a caregiver without cancer
-      ...(prev.hasBloodCancer === 'no' &&
-        prev.caringForSomeone === 'yes' && {
-          caregiverExperience: {
+        ...(prev.hasBloodCancer === 'yes' && {
+          cancerExperience: {
+            diagnosis: data.diagnosis,
+            dateOfDiagnosis: data.dateOfDiagnosis,
+            treatments: data.treatments,
             experiences: data.experiences,
+            otherTreatment: data.otherTreatment,
             otherExperience: data.otherExperience,
           },
         }),
-    }));
-    setCurrentStep(currentStep + 1);
+        ...(prev.hasBloodCancer === 'no' &&
+          prev.caringForSomeone === 'yes' && {
+            caregiverExperience: {
+              experiences: data.experiences,
+              otherExperience: data.otherExperience,
+            },
+          }),
+      } as IntakeFormData;
+
+      void advanceAfterUpdate(updated);
+      return updated;
+    });
   };
 
   const handleLovedOneNext = (data: LovedOneFormData) => {
-    setFormData((prev) => ({
-      ...prev,
-      lovedOne: {
-        demographics: {
-          genderIdentity: data.genderIdentity,
-          genderIdentityCustom: data.genderIdentityCustom,
-          age: data.age,
+    setFormData((prev) => {
+      const updated: IntakeFormData = {
+        ...prev,
+        lovedOne: {
+          demographics: {
+            genderIdentity: data.genderIdentity,
+            genderIdentityCustom: data.genderIdentityCustom,
+            age: data.age,
+          },
+          cancerExperience: {
+            diagnosis: data.diagnosis,
+            dateOfDiagnosis: data.dateOfDiagnosis,
+            treatments: data.treatments,
+            experiences: data.experiences,
+            otherTreatment: data.otherTreatment,
+            otherExperience: data.otherExperience,
+          },
         },
-        cancerExperience: {
-          diagnosis: data.diagnosis,
-          dateOfDiagnosis: data.dateOfDiagnosis,
-          treatments: data.treatments,
-          experiences: data.experiences,
-          otherTreatment: data.otherTreatment,
-          otherExperience: data.otherExperience,
-        },
-      },
-    }));
-    setCurrentStep(currentStep + 1);
+      };
+
+      void advanceAfterUpdate(updated);
+      return updated;
+    });
   };
 
   const handleBasicDemographicsNext = (data: BasicDemographicsFormData) => {
-    setFormData((prev) => ({
-      ...prev,
-      demographics: {
-        genderIdentity: data.genderIdentity,
-        pronouns: data.pronouns,
-        ethnicGroup: data.ethnicGroup,
-        maritalStatus: data.maritalStatus,
-        hasKids: data.hasKids,
-      },
-    }));
-    setCurrentStep(currentStep + 1);
+    setFormData((prev) => {
+      const updated: IntakeFormData = {
+        ...prev,
+        demographics: {
+          genderIdentity: data.genderIdentity,
+          pronouns: data.pronouns,
+          ethnicGroup: data.ethnicGroup,
+          maritalStatus: data.maritalStatus,
+          hasKids: data.hasKids,
+        },
+      };
+      void advanceAfterUpdate(updated);
+      return updated;
+    });
   };
 
   // If we're on thank you step, show the screen with form data
