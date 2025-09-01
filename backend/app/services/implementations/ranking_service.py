@@ -3,6 +3,7 @@ from typing import Dict, List
 from sqlalchemy.orm import Session
 
 from app.models import Quality, User, UserData
+from app.models.RankingPreference import RankingPreference
 
 
 class RankingService:
@@ -112,3 +113,61 @@ class RankingService:
             "static_qualities": self._static_qualities(data, target, case),
             "dynamic_options": self._dynamic_options(data, target, case),
         }
+
+    # Preferences persistence
+    def save_preferences(self, user_auth_id: str, target: str, items: List[Dict]) -> None:
+        user = self.db.query(User).filter(User.auth_id == user_auth_id).first()
+        if not user:
+            raise ValueError("User not found")
+
+        # Validate and normalize
+        normalized: List[RankingPreference] = []
+        if len(items) > 5:
+            raise ValueError("A maximum of 5 ranking items is allowed")
+
+        seen_ranks: set[int] = set()
+        seen_keys: set[tuple] = set()
+        for item in items:
+            kind = item.get("kind")
+            scope = item.get("scope")
+            rank = int(item.get("rank"))
+            item_id = item.get("id")
+
+            if kind not in ("quality", "treatment", "experience"):
+                raise ValueError(f"Invalid kind: {kind}")
+            if scope not in ("self", "loved_one"):
+                raise ValueError(f"Invalid scope: {scope}")
+            if rank < 1 or rank > 5:
+                raise ValueError("rank must be between 1 and 5")
+            if rank in seen_ranks:
+                raise ValueError("ranks must be unique")
+            seen_ranks.add(rank)
+            if not isinstance(item_id, int):
+                raise ValueError("id must be an integer")
+
+            key = (kind, item_id, scope)
+            if key in seen_keys:
+                raise ValueError("duplicate item in payload")
+            seen_keys.add(key)
+
+            pref = RankingPreference(
+                user_id=user.id,
+                target_role=target,
+                kind=kind,
+                quality_id=item_id if kind == "quality" else None,
+                treatment_id=item_id if kind == "treatment" else None,
+                experience_id=item_id if kind == "experience" else None,
+                scope=scope,
+                rank=rank,
+            )
+            normalized.append(pref)
+
+        # Overwrite strategy: delete existing rows for (user, target), then bulk insert
+        (
+            self.db.query(RankingPreference)
+            .filter(RankingPreference.user_id == user.id, RankingPreference.target_role == target)
+            .delete(synchronize_session=False)
+        )
+        if normalized:
+            self.db.bulk_save_objects(normalized)
+        self.db.commit()

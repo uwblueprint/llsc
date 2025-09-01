@@ -190,3 +190,49 @@ async def test_options_caregiver_with_cancer(db_session: Session):
     same_diag_c = next(q for q in res_c["static_qualities"] if q["slug"] == "same_diagnosis")
     assert set(same_diag_c["allowed_scopes"]) == {"self", "loved_one"}
     assert {o["scope"] for o in res_c["dynamic_options"]} == {"self", "loved_one"}
+
+
+def test_save_preferences_validation(db_session: Session):
+    # Setup a participant with some options
+    user = _add_user_data(
+        db_session,
+        auth_id="auth_validate",
+        has_blood_cancer="no",
+        caring_for_someone="yes",
+        loved_treatments=["Immunotherapy"],
+        loved_experiences=["Anxiety"],
+    )
+    service = RankingService(db_session)
+
+    # More than 5 items
+    too_many = [
+        {"kind": "quality", "id": 1, "scope": "self", "rank": 1},
+        {"kind": "quality", "id": 2, "scope": "self", "rank": 2},
+        {"kind": "quality", "id": 3, "scope": "self", "rank": 3},
+        {"kind": "quality", "id": 4, "scope": "self", "rank": 4},
+        {"kind": "quality", "id": 5, "scope": "self", "rank": 5},
+        {"kind": "quality", "id": 6, "scope": "self", "rank": 5},
+    ]
+    with pytest.raises(ValueError):
+        service.save_preferences(user_auth_id=user.auth_id, target="patient", items=too_many)
+
+    # Duplicate ranks
+    dup_ranks = [
+        {"kind": "quality", "id": 1, "scope": "self", "rank": 1},
+        {"kind": "quality", "id": 2, "scope": "self", "rank": 1},
+    ]
+    with pytest.raises(ValueError):
+        service.save_preferences(user_auth_id=user.auth_id, target="patient", items=dup_ranks)
+
+    # Rank out of bounds
+    bad_rank = [{"kind": "quality", "id": 1, "scope": "self", "rank": 6}]
+    with pytest.raises(ValueError):
+        service.save_preferences(user_auth_id=user.auth_id, target="patient", items=bad_rank)
+
+    # Duplicate items
+    dup_items = [
+        {"kind": "quality", "id": 1, "scope": "self", "rank": 1},
+        {"kind": "quality", "id": 1, "scope": "self", "rank": 2},
+    ]
+    with pytest.raises(ValueError):
+        service.save_preferences(user_auth_id=user.auth_id, target="patient", items=dup_items)

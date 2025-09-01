@@ -48,3 +48,31 @@ async def get_ranking_options(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class PreferenceItem(BaseModel):
+    kind: str  # 'quality' | 'treatment' | 'experience'
+    id: int
+    scope: str  # 'self' | 'loved_one'
+    rank: int
+
+
+@router.put("/preferences", status_code=204)
+async def put_ranking_preferences(
+    request: Request,
+    target: str = Query(..., pattern="^(patient|caregiver)$"),
+    items: List[PreferenceItem] = [],
+    db: Session = Depends(get_db),
+    authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.ADMIN]),
+) -> None:
+    try:
+        service = RankingService(db)
+        user_auth_id = request.state.user_id
+        # Convert Pydantic models to dicts
+        payload = [i.model_dump() for i in items]
+        service.save_preferences(user_auth_id=user_auth_id, target=target, items=payload)
+        return None
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
