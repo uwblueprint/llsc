@@ -43,14 +43,28 @@ class RankingService:
                 allow_self_diag = True
 
         for q in qualities:
-            allowed_scopes = ["self", "loved_one"]
-            if q.slug == "same_diagnosis":
+            # Default allowed scopes by slug
+            # Only age, gender identity, and diagnosis may include loved_one scope
+            if q.slug == "same_age":
+                allowed_scopes = ["self", "loved_one"]
+            elif q.slug == "same_gender_identity":
+                allowed_scopes = ["self", "loved_one"]
+            elif q.slug == "same_ethnic_or_cultural_group":
+                allowed_scopes = ["self"]
+            elif q.slug == "same_marital_status":
+                allowed_scopes = ["self"]
+            elif q.slug == "same_parental_status":
+                allowed_scopes = ["self"]
+            elif q.slug == "same_diagnosis":
                 scopes: List[str] = []
                 if allow_self_diag:
                     scopes.append("self")
                 if allow_loved_diag:
                     scopes.append("loved_one")
                 allowed_scopes = scopes if scopes else []
+            else:
+                # Any unexpected quality defaults to self only
+                allowed_scopes = ["self"]
             items.append(
                 {
                     "quality_id": q.id,
@@ -112,6 +126,27 @@ class RankingService:
         return {
             "static_qualities": self._static_qualities(data, target, case),
             "dynamic_options": self._dynamic_options(data, target, case),
+        }
+
+    def get_case(self, user_auth_id: str) -> Dict:
+        """Return inferred participant case and raw flags from UserData."""
+        data = self._load_user_and_data(user_auth_id)
+        if not data:
+            return {
+                "case": "caregiver_without_cancer",  # safe default if missing
+                "has_blood_cancer": None,
+                "caring_for_someone": None,
+            }
+        inferred = self._infer_case(data)
+        case_label = (
+            "patient"
+            if inferred["patient"]
+            else ("caregiver_with_cancer" if inferred["caregiver_with_cancer"] else "caregiver_without_cancer")
+        )
+        return {
+            "case": case_label,
+            "has_blood_cancer": data.has_blood_cancer,
+            "caring_for_someone": data.caring_for_someone,
         }
 
     # Preferences persistence

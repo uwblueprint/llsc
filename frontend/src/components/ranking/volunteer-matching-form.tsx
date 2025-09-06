@@ -17,17 +17,25 @@ const MATCHING_QUALITIES = [
   'experience with Fertility Issues',
 ];
 
+type DisplayOption = { key: string; label: string };
+
 interface VolunteerMatchingFormProps {
-  selectedQualities: string[];
-  onQualityToggle: (quality: string) => void;
+  selectedQualities: string[]; // stores option keys
+  onQualityToggle: (key: string) => void;
   onNext: () => void;
+  options?: DisplayOption[];
 }
 
 export function VolunteerMatchingForm({
   selectedQualities,
   onQualityToggle,
   onNext,
+  options,
 }: VolunteerMatchingFormProps) {
+  const qualities: DisplayOption[] =
+    options && options.length > 0
+      ? options
+      : MATCHING_QUALITIES.map((label) => ({ key: label, label }));
   return (
     <Box>
       <Heading
@@ -103,19 +111,19 @@ export function VolunteerMatchingForm({
             </Text>
 
             <VStack align="start" gap={3}>
-              {MATCHING_QUALITIES.map((quality) => (
+              {qualities.map((opt) => (
                 <Checkbox
-                  key={quality}
-                  checked={selectedQualities.includes(quality)}
-                  onChange={() => onQualityToggle(quality)}
-                  disabled={!selectedQualities.includes(quality) && selectedQualities.length >= 5}
+                  key={opt.key}
+                  checked={selectedQualities.includes(opt.key)}
+                  onChange={() => onQualityToggle(opt.key)}
+                  disabled={!selectedQualities.includes(opt.key) && selectedQualities.length >= 5}
                 >
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
                   >
-                    {quality}
+                    {opt.label}
                   </Text>
                 </Checkbox>
               ))}

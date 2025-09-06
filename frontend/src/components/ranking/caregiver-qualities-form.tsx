@@ -14,17 +14,25 @@ const CAREGIVER_QUALITIES = [
   'experience with Fertility Issues',
 ];
 
+type DisplayOption = { key: string; label: string };
+
 interface CaregiverQualitiesFormProps {
   selectedQualities: string[];
-  onQualityToggle: (quality: string) => void;
+  onQualityToggle: (key: string) => void;
   onNext: () => void;
+  options?: DisplayOption[];
 }
 
 export function CaregiverQualitiesForm({
   selectedQualities,
   onQualityToggle,
   onNext,
+  options,
 }: CaregiverQualitiesFormProps) {
+  const qualities: DisplayOption[] =
+    options && options.length > 0
+      ? options
+      : CAREGIVER_QUALITIES.map((label) => ({ key: label, label }));
   return (
     <Box>
       <Heading
@@ -103,19 +111,19 @@ export function CaregiverQualitiesForm({
             </Text>
 
             <VStack align="start" gap={3}>
-              {CAREGIVER_QUALITIES.map((quality) => (
+              {qualities.map((opt) => (
                 <Checkbox
-                  key={quality}
-                  checked={selectedQualities.includes(quality)}
-                  onChange={() => onQualityToggle(quality)}
-                  disabled={!selectedQualities.includes(quality) && selectedQualities.length >= 5}
+                  key={opt.key}
+                  checked={selectedQualities.includes(opt.key)}
+                  onChange={() => onQualityToggle(opt.key)}
+                  disabled={!selectedQualities.includes(opt.key) && selectedQualities.length >= 5}
                 >
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
                   >
-                    {quality}
+                    {opt.label}
                   </Text>
                 </Checkbox>
               ))}

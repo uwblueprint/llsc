@@ -45,9 +45,7 @@ def upgrade() -> None:
         sa.Column("experience_id", sa.Integer(), nullable=True),
         sa.Column("scope", scope_enum, nullable=False),
         sa.Column("rank", sa.Integer(), nullable=False),
-        sa.PrimaryKeyConstraint(
-            "user_id", "target_role", "kind", "quality_id", "treatment_id", "experience_id", "scope"
-        ),
+        sa.PrimaryKeyConstraint("user_id", "target_role", "rank"),
     )
 
     # Add check constraints to enforce exclusivity by kind
@@ -71,12 +69,27 @@ def upgrade() -> None:
     op.create_index("ix_ranking_pref_user_target", "ranking_preferences", ["user_id", "target_role"])
     op.create_index("ix_ranking_pref_user_kind", "ranking_preferences", ["user_id", "kind"])
 
+    # Remove any legacy/static qualities not in the approved set (idempotent)
+    op.execute(
+        """
+        DELETE FROM qualities
+        WHERE slug NOT IN (
+            'same_age',
+            'same_gender_identity',
+            'same_ethnic_or_cultural_group',
+            'same_marital_status',
+            'same_parental_status',
+            'same_diagnosis'
+        );
+        """
+    )
+
     # Seed qualities (idempotent) using slug/label pairs
     # Using plain SQL for ON CONFLICT DO NOTHING
     qualities = [
         ("same_age", "the same age as"),
         ("same_gender_identity", "the same gender identity as"),
-        ("same_ethnic_or_cultural_group", "same ethnic or cultural group as"),
+        ("same_ethnic_or_cultural_group", "the same ethnic or cultural group as"),
         ("same_marital_status", "the same marital status as"),
         ("same_parental_status", "the same parental status as"),
         ("same_diagnosis", "the same diagnosis as"),

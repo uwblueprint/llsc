@@ -5,8 +5,10 @@ import { COLORS } from '@/constants/form';
 
 interface CaregiverTwoColumnQualitiesFormProps {
   selectedQualities: string[];
-  onQualityToggle: (quality: string) => void;
+  onQualityToggle: (key: string) => void;
   onNext: () => void;
+  leftOptions?: { key: string; label: string }[];
+  rightOptions?: { key: string; label: string }[];
 }
 
 // Left column options – The volunteer is/has… ("…as me" phrasing)
@@ -40,9 +42,17 @@ export function CaregiverTwoColumnQualitiesForm({
   selectedQualities,
   onQualityToggle,
   onNext,
+  leftOptions,
+  rightOptions,
 }: CaregiverTwoColumnQualitiesFormProps) {
   const maxSelected = 5;
   const reachedMax = selectedQualities.length >= maxSelected;
+  const volunteerOptions = (leftOptions && leftOptions.length > 0)
+    ? leftOptions
+    : VOLUNTEER_OPTIONS.map((label) => ({ key: label, label }));
+  const lovedOneOptions = (rightOptions && rightOptions.length > 0)
+    ? rightOptions
+    : LOVED_ONE_OPTIONS.map((label) => ({ key: label, label }));
 
   return (
     <Box>
@@ -133,19 +143,19 @@ export function CaregiverTwoColumnQualitiesForm({
                   The volunteer is/has...
                 </Text>
                 <VStack align="start" gap={3}>
-                  {VOLUNTEER_OPTIONS.map((quality) => (
+                  {volunteerOptions.map((opt) => (
                     <Checkbox
-                      key={`vol-${quality}`}
-                      checked={selectedQualities.includes(quality)}
-                      onChange={() => onQualityToggle(quality)}
-                      disabled={!selectedQualities.includes(quality) && reachedMax}
+                      key={`vol-${opt.key}`}
+                      checked={selectedQualities.includes(opt.key)}
+                      onChange={() => onQualityToggle(opt.key)}
+                      disabled={!selectedQualities.includes(opt.key) && reachedMax}
                     >
                       <Text
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
                         color={COLORS.veniceBlue}
                       >
-                        {quality}
+                        {opt.label}
                       </Text>
                     </Checkbox>
                   ))}
@@ -162,19 +172,19 @@ export function CaregiverTwoColumnQualitiesForm({
                   Their loved one is/has...
                 </Text>
                 <VStack align="start" gap={3}>
-                  {LOVED_ONE_OPTIONS.map((quality) => (
+                  {lovedOneOptions.map((opt) => (
                     <Checkbox
-                      key={`loved-${quality}`}
-                      checked={selectedQualities.includes(quality)}
-                      onChange={() => onQualityToggle(quality)}
-                      disabled={!selectedQualities.includes(quality) && reachedMax}
+                      key={`loved-${opt.key}`}
+                      checked={selectedQualities.includes(opt.key)}
+                      onChange={() => onQualityToggle(opt.key)}
+                      disabled={!selectedQualities.includes(opt.key) && reachedMax}
                     >
                       <Text
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
                         color={COLORS.veniceBlue}
                       >
-                        {quality}
+                        {opt.label}
                       </Text>
                     </Checkbox>
                   ))}

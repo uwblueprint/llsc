@@ -13,18 +13,18 @@ class RankingPreference(Base):
     target_role = Column(Enum("patient", "caregiver", name="target_role"), primary_key=True)
 
     # kind of item: quality, treatment, or experience
-    kind = Column(Enum("quality", "treatment", "experience", name="ranking_kind"), primary_key=True)
+    kind = Column(Enum("quality", "treatment", "experience", name="ranking_kind"))
 
     # one of these will be set based on kind
-    quality_id = Column(Integer, nullable=True, primary_key=True)
-    treatment_id = Column(Integer, nullable=True, primary_key=True)
-    experience_id = Column(Integer, nullable=True, primary_key=True)
+    quality_id = Column(Integer, nullable=True)
+    treatment_id = Column(Integer, nullable=True)
+    experience_id = Column(Integer, nullable=True)
 
     # scope: self or loved_one; always required (including qualities)
-    scope = Column(Enum("self", "loved_one", name="ranking_scope"), nullable=False, primary_key=True)
+    scope = Column(Enum("self", "loved_one", name="ranking_scope"), nullable=False)
 
     # rank: 1 is highest
-    rank = Column(Integer, nullable=False)
+    rank = Column(Integer, nullable=False, primary_key=True)
 
     # relationships
     user = relationship("User")

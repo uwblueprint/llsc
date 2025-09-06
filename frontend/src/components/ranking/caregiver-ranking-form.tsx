@@ -7,40 +7,31 @@ interface CaregiverRankingFormProps {
   rankedPreferences: string[];
   onMoveItem: (fromIndex: number, toIndex: number) => void;
   onSubmit: () => void;
+  itemScopes?: Array<'self' | 'loved_one'>;
+  itemKinds?: Array<'quality' | 'treatment' | 'experience'>;
 }
 
 export function CaregiverRankingForm({
   rankedPreferences,
   onMoveItem,
   onSubmit,
+  itemScopes,
+  itemKinds,
 }: CaregiverRankingFormProps) {
   const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = React.useState<number | null>(null);
 
-  const renderStatementWithBold = (statement: string) => {
-    const boldPhrases = [
-      'the same age as my loved one',
-      'the same diagnosis as my loved one',
-      'experience with Relapse',
-      'experience with Anxiety / Depression',
-      'experience with returning to school or work during/after treatment',
-    ];
-
-    const phraseToBold = boldPhrases.find((phrase) => statement.includes(phrase));
-
-    if (!phraseToBold) {
-      return statement;
-    }
-
-    const parts = statement.split(phraseToBold);
-
+  const renderStatement = (index: number, label: string) => {
+    const kind = itemKinds?.[index];
+    const scope = itemScopes?.[index];
+    const isLovedOneQuality = kind === 'quality' && scope === 'loved_one';
+    const prefix = isLovedOneQuality
+      ? 'I would prefer a volunteer whose loved one is '
+      : 'I would prefer a volunteer with ';
     return (
       <>
-        {parts[0]}
-        <Text as="span" fontWeight={700}>
-          {phraseToBold}
-        </Text>
-        {parts[1]}
+        {prefix}
+        <Text as="span" fontWeight={700}>{label}</Text>
       </>
     );
   };
@@ -210,7 +201,7 @@ export function CaregiverRankingForm({
                         flex="1"
                         userSelect="none"
                       >
-                        {renderStatementWithBold(statement)}
+                        {renderStatement(index, statement)}
                       </Text>
                     </HStack>
                   </HStack>

@@ -7,40 +7,31 @@ interface VolunteerRankingFormProps {
   rankedPreferences: string[];
   onMoveItem: (fromIndex: number, toIndex: number) => void;
   onSubmit: () => void;
+  itemScopes?: Array<'self' | 'loved_one'>;
+  itemKinds?: Array<'quality' | 'treatment' | 'experience'>;
 }
 
 export function VolunteerRankingForm({
   rankedPreferences,
   onMoveItem,
   onSubmit,
+  itemScopes,
+  itemKinds,
 }: VolunteerRankingFormProps) {
   const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = React.useState<number | null>(null);
 
-  const renderStatementWithBold = (statement: string) => {
-    const boldPhrases = [
-      'the same age as me',
-      'the same diagnosis as me',
-      'the same marital status as me',
-      'the same ethnic or cultural group as me',
-      'the same parental status as me',
-    ];
-
-    const phraseToBold = boldPhrases.find((phrase) => statement.includes(phrase));
-
-    if (!phraseToBold) {
-      return statement;
-    }
-
-    const parts = statement.split(phraseToBold);
-
+  const renderStatement = (index: number, label: string) => {
+    const kind = itemKinds?.[index];
+    const scope = itemScopes?.[index];
+    const isLovedOneQuality = kind === 'quality' && scope === 'loved_one';
+    const prefix = isLovedOneQuality
+      ? 'I would prefer a volunteer whose loved one is '
+      : 'I would prefer a volunteer with ';
     return (
       <>
-        {parts[0]}
-        <Text as="span" fontWeight={700}>
-          {phraseToBold}
-        </Text>
-        {parts[1]}
+        {prefix}
+        <Text as="span" fontWeight={700}>{label}</Text>
       </>
     );
   };
@@ -206,7 +197,7 @@ export function VolunteerRankingForm({
                         flex="1"
                         userSelect="none"
                       >
-                        {renderStatementWithBold(statement)}
+                        {renderStatement(index, statement)}
                       </Text>
                     </HStack>
                   </HStack>

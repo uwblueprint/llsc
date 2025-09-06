@@ -76,3 +76,26 @@ async def put_ranking_preferences(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class CaseResponse(BaseModel):
+    case: str
+    has_blood_cancer: str | None = None
+    caring_for_someone: str | None = None
+
+
+@router.get("/case", response_model=CaseResponse)
+async def get_participant_case(
+    request: Request,
+    db: Session = Depends(get_db),
+    authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.ADMIN]),
+) -> CaseResponse:
+    try:
+        service = RankingService(db)
+        user_auth_id = request.state.user_id
+        result = service.get_case(user_auth_id)
+        return CaseResponse(**result)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
