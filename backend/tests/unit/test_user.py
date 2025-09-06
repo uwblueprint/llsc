@@ -19,11 +19,11 @@ from app.schemas.user import (
 from app.services.implementations.user_service import UserService
 
 # Test DB Configuration - Always require Postgres for full parity
-POSTGRES_DATABASE_URL = os.getenv("POSTGRES_DATABASE_URL")
+POSTGRES_DATABASE_URL = os.getenv("POSTGRES_TEST_DATABASE_URL")
 if not POSTGRES_DATABASE_URL:
     raise RuntimeError(
         "POSTGRES_DATABASE_URL is not set. Please export a Postgres URL, e.g. "
-        "postgresql+psycopg2://postgres:postgres@localhost:5432/llsc"
+        "postgresql+psycopg2://postgres:postgres@db:5432/llsc_test"
     )
 engine = create_engine(POSTGRES_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -533,11 +533,10 @@ async def test_update_user_by_id(db_session):
         db_session.rollback()
         raise
 
-
 # Error case tests
 @pytest.mark.asyncio
 async def test_delete_nonexistent_user_by_email(db_session):
-    """Test deleting a non-existent user by email"""
+    """Test deleting a non-existent user"""
     user_service = UserService(db_session)
     with pytest.raises(HTTPException) as exc_info:
         await user_service.delete_user_by_email("nonexistent@example.com")
@@ -546,7 +545,7 @@ async def test_delete_nonexistent_user_by_email(db_session):
 
 @pytest.mark.asyncio
 async def test_delete_nonexistent_user_by_id(db_session):
-    """Test deleting a non-existent user by ID"""
+    """Test deleting a non-existent user"""
     user_service = UserService(db_session)
     with pytest.raises(HTTPException) as exc_info:
         await user_service.delete_user_by_id("00000000-0000-0000-0000-000000000000")
@@ -563,7 +562,7 @@ async def test_get_nonexistent_user_by_id(db_session):
 
 
 def test_get_nonexistent_user_by_email(db_session):
-    """Test getting a non-existent user by email"""
+    """Test getting user by email"""
     user_service = UserService(db_session)
     with pytest.raises(ValueError) as exc_info:
         user_service.get_user_by_email("nonexistent@example.com")

@@ -3,6 +3,7 @@ from typing import List
 
 import pytest
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.models import Experience, Quality, Role, Treatment, User, UserData
@@ -10,11 +11,11 @@ from app.schemas.user import UserRole
 from app.services.implementations.ranking_service import RankingService
 
 # Postgres-only configuration (migrations assumed to be applied)
-POSTGRES_DATABASE_URL = os.getenv("POSTGRES_DATABASE_URL")
+POSTGRES_DATABASE_URL = os.getenv("POSTGRES_TEST_DATABASE_URL")
 if not POSTGRES_DATABASE_URL:
     raise RuntimeError(
         "POSTGRES_DATABASE_URL is not set. Please export a Postgres URL, e.g. "
-        "postgresql+psycopg2://postgres:postgres@localhost:5432/llsc"
+        "postgresql+psycopg2://postgres:postgres@db:5432/llsc_test"
     )
 engine = create_engine(POSTGRES_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -47,6 +48,19 @@ def db_session() -> Session:
 
         # Qualities should have been seeded by migrations; assert presence
         assert session.query(Quality).count() >= 6
+
+        # Ensure sequences are aligned after seeding (avoid PK collisions when inserting)
+        session.execute(
+            text(
+                "SELECT setval(pg_get_serial_sequence('treatments','id'), COALESCE((SELECT MAX(id) FROM treatments), 0))"
+            )
+        )
+        session.execute(
+            text(
+                "SELECT setval(pg_get_serial_sequence('experiences','id'), COALESCE((SELECT MAX(id) FROM experiences), 0))"
+            )
+        )
+        session.commit()
 
         yield session
     finally:
@@ -84,19 +98,39 @@ def _add_user_data(
 
     def get_or_create_treatment(name: str) -> Treatment:
         t = session.query(Treatment).filter(Treatment.name == name).first()
-        if not t:
-            t = Treatment(name=name)
-            session.add(t)
-            session.flush()
-        return t
+        if t:
+            return t
+        for _ in range(2):
+            try:
+                t = Treatment(name=name)
+                session.add(t)
+                session.flush()
+                return t
+            except IntegrityError:
+                session.rollback()
+                # Sequence collision consumed an id; retry insert
+                t = session.query(Treatment).filter(Treatment.name == name).first()
+                if t:
+                    return t
+        # Final attempt to read existing
+        return session.query(Treatment).filter(Treatment.name == name).first()
 
     def get_or_create_experience(name: str) -> Experience:
         e = session.query(Experience).filter(Experience.name == name).first()
-        if not e:
-            e = Experience(name=name)
-            session.add(e)
-            session.flush()
-        return e
+        if e:
+            return e
+        for _ in range(2):
+            try:
+                e = Experience(name=name)
+                session.add(e)
+                session.flush()
+                return e
+            except IntegrityError:
+                session.rollback()
+                e = session.query(Experience).filter(Experience.name == name).first()
+                if e:
+                    return e
+        return session.query(Experience).filter(Experience.name == name).first()
 
     for n in self_treatments or []:
         data.treatments.append(get_or_create_treatment(n))
@@ -142,7 +176,7 @@ async def test_options_caregiver_without_cancer(db_session: Session):
         auth_id="auth_cg_no_cancer",
         has_blood_cancer="no",
         caring_for_someone="yes",
-        self_treatments=["Chemo Pills"],
+        self_treatments=["Oral Chemotherapy"],
         self_experiences=["Caregiver Fatigue"],
         loved_one_diagnosis="CLL",
         loved_treatments=["Immunotherapy"],
@@ -172,7 +206,7 @@ async def test_options_caregiver_with_cancer(db_session: Session):
         caring_for_someone="yes",
         diagnosis="MDS",
         loved_one_diagnosis="MM",
-        self_treatments=["Radiation"],
+        self_treatments=["Radiation Therapy"],
         self_experiences=["PTSD"],
         loved_treatments=["Watch and Wait / Active Surveillance"],
         loved_experiences=["Communication Challenges"],
