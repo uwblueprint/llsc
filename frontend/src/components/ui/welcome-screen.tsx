@@ -14,8 +14,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   icon,
   title,
   description,
-  buttonText = "Continue",
-  onContinue
+  buttonText = 'Continue',
+  onContinue,
 }) => (
   <Box
     minH="100vh"
@@ -25,12 +25,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     justifyContent="center"
     px={4}
   >
-    <Box
-      w="full"
-      maxW="384px"
-      mx="auto"
-      textAlign="center"
-    >
+    <Box w="full" maxW="384px" mx="auto" textAlign="center">
       {icon}
 
       <Heading

@@ -47,12 +47,14 @@ export function CaregiverTwoColumnQualitiesForm({
 }: CaregiverTwoColumnQualitiesFormProps) {
   const maxSelected = 5;
   const reachedMax = selectedQualities.length >= maxSelected;
-  const volunteerOptions = (leftOptions && leftOptions.length > 0)
-    ? leftOptions
-    : VOLUNTEER_OPTIONS.map((label) => ({ key: label, label }));
-  const lovedOneOptions = (rightOptions && rightOptions.length > 0)
-    ? rightOptions
-    : LOVED_ONE_OPTIONS.map((label) => ({ key: label, label }));
+  const volunteerOptions =
+    leftOptions && leftOptions.length > 0
+      ? leftOptions
+      : VOLUNTEER_OPTIONS.map((label) => ({ key: label, label }));
+  const lovedOneOptions =
+    rightOptions && rightOptions.length > 0
+      ? rightOptions
+      : LOVED_ONE_OPTIONS.map((label) => ({ key: label, label }));
 
   return (
     <Box>

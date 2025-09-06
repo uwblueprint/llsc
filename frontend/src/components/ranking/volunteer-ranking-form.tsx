@@ -25,7 +25,8 @@ export function VolunteerRankingForm({
     const kind = itemKinds?.[index];
     const scope = itemScopes?.[index];
     const isLovedOneQuality = kind === 'quality' && scope === 'loved_one';
-    const isLovedOneDynamic = (kind === 'treatment' || kind === 'experience') && scope === 'loved_one';
+    const isLovedOneDynamic =
+      (kind === 'treatment' || kind === 'experience') && scope === 'loved_one';
     const prefix = isLovedOneQuality
       ? 'I would prefer a volunteer whose loved one is '
       : isLovedOneDynamic
@@ -34,7 +35,9 @@ export function VolunteerRankingForm({
     return (
       <>
         {prefix}
-        <Text as="span" fontWeight={700}>{label}</Text>
+        <Text as="span" fontWeight={700}>
+          {label}
+        </Text>
       </>
     );
   };

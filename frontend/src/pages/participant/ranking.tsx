@@ -61,7 +61,9 @@ export default function ParticipantRankingPage({
   participantType = 'caregiver',
   caregiverHasCancer = true,
 }: ParticipantRankingPageProps) {
-  const [derivedParticipantType, setDerivedParticipantType] = useState<'cancerPatient' | 'caregiver' | null>(null);
+  const [derivedParticipantType, setDerivedParticipantType] = useState<
+    'cancerPatient' | 'caregiver' | null
+  >(null);
   const [derivedCaregiverHasCancer, setDerivedCaregiverHasCancer] = useState<boolean | null>(null);
   const [isLoadingCase, setIsLoadingCase] = useState<boolean>(false);
 
@@ -133,7 +135,9 @@ export default function ParticipantRankingPage({
     try {
       setIsLoadingOptions(true);
       setOptionsError(null);
-      const { data } = await baseAPIClient.get<OptionsResponse>('/ranking/options', { params: { target } });
+      const { data } = await baseAPIClient.get<OptionsResponse>('/ranking/options', {
+        params: { target },
+      });
       const staticQualitiesExpanded: DisplayOption[] = (data.staticQualities || []).flatMap((q) => {
         const scopes = q.allowedScopes || [];
         return scopes.map((s) => ({
@@ -219,7 +223,11 @@ export default function ParticipantRankingPage({
 
     // For patient flow, fetch options once
     useEffect(() => {
-      if (effectiveParticipantType === 'cancerPatient' && singleColumnOptions.length === 0 && !isLoadingOptions) {
+      if (
+        effectiveParticipantType === 'cancerPatient' &&
+        singleColumnOptions.length === 0 &&
+        !isLoadingOptions
+      ) {
         fetchOptions('patient');
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -236,7 +244,9 @@ export default function ParticipantRankingPage({
           p={10}
         >
           {optionsError ? (
-            <Text color="red.500" mb={4}>{optionsError}</Text>
+            <Text color="red.500" mb={4}>
+              {optionsError}
+            </Text>
           ) : null}
 
           {effectiveParticipantType === 'caregiver' ? (
@@ -303,31 +313,75 @@ export default function ParticipantRankingPage({
           boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
           p={10}
         >
-          {// Prefer explicit flag; otherwise infer from value
-          (formData.isCaregiverVolunteerFlow ?? false) ||
-          formData.volunteerType === 'caringForLovedOne' ||
-          (!!formData.volunteerType && formData.volunteerType !== 'similarDiagnosis') ? (
-            <CaregiverTwoColumnQualitiesForm
-              selectedQualities={formData.selectedQualities}
-              onQualityToggle={toggleQuality}
-              leftOptions={leftColumnOptions}
-              rightOptions={rightColumnOptions}
-              onNext={() => {
-                if (leftColumnOptions.length === 0 && rightColumnOptions.length === 0 && !isLoadingOptions) {
-                  fetchOptions('caregiver');
-                }
-                const keys = formData.selectedQualities;
-                const labels = keys.map((k) => optionsIndex[k]?.label || k);
-                setFormData((prev) => ({
-                  ...prev,
-                  rankedPreferences: [...labels],
-                  rankedKeys: [...keys],
-                }));
-                setCurrentStep(4);
-              }}
-            />
-          ) : effectiveCaregiverHasCancer ? (
-            formData.volunteerType === 'similarDiagnosis' ? (
+          {
+            // Prefer explicit flag; otherwise infer from value
+            (formData.isCaregiverVolunteerFlow ?? false) ||
+            formData.volunteerType === 'caringForLovedOne' ||
+            (!!formData.volunteerType && formData.volunteerType !== 'similarDiagnosis') ? (
+              <CaregiverTwoColumnQualitiesForm
+                selectedQualities={formData.selectedQualities}
+                onQualityToggle={toggleQuality}
+                leftOptions={leftColumnOptions}
+                rightOptions={rightColumnOptions}
+                onNext={() => {
+                  if (
+                    leftColumnOptions.length === 0 &&
+                    rightColumnOptions.length === 0 &&
+                    !isLoadingOptions
+                  ) {
+                    fetchOptions('caregiver');
+                  }
+                  const keys = formData.selectedQualities;
+                  const labels = keys.map((k) => optionsIndex[k]?.label || k);
+                  setFormData((prev) => ({
+                    ...prev,
+                    rankedPreferences: [...labels],
+                    rankedKeys: [...keys],
+                  }));
+                  setCurrentStep(4);
+                }}
+              />
+            ) : effectiveCaregiverHasCancer ? (
+              formData.volunteerType === 'similarDiagnosis' ? (
+                <CaregiverQualitiesForm
+                  selectedQualities={formData.selectedQualities}
+                  onQualityToggle={toggleQuality}
+                  options={singleColumnOptions}
+                  onNext={() => {
+                    if (singleColumnOptions.length === 0 && !isLoadingOptions) {
+                      fetchOptions('patient');
+                    }
+                    const keys = formData.selectedQualities;
+                    const labels = keys.map((k) => optionsIndex[k]?.label || k);
+                    setFormData((prev) => ({
+                      ...prev,
+                      rankedPreferences: [...labels],
+                      rankedKeys: [...keys],
+                    }));
+                    setCurrentStep(4);
+                  }}
+                />
+              ) : (
+                <VolunteerMatchingForm
+                  selectedQualities={formData.selectedQualities}
+                  onQualityToggle={toggleQuality}
+                  options={singleColumnOptions}
+                  onNext={() => {
+                    if (singleColumnOptions.length === 0 && !isLoadingOptions) {
+                      fetchOptions('patient');
+                    }
+                    const keys = formData.selectedQualities;
+                    const labels = keys.map((k) => optionsIndex[k]?.label || k);
+                    setFormData((prev) => ({
+                      ...prev,
+                      rankedPreferences: [...labels],
+                      rankedKeys: [...keys],
+                    }));
+                    setCurrentStep(4);
+                  }}
+                />
+              )
+            ) : (
               <CaregiverQualitiesForm
                 selectedQualities={formData.selectedQualities}
                 onQualityToggle={toggleQuality}
@@ -346,46 +400,8 @@ export default function ParticipantRankingPage({
                   setCurrentStep(4);
                 }}
               />
-            ) : (
-              <VolunteerMatchingForm
-                selectedQualities={formData.selectedQualities}
-                onQualityToggle={toggleQuality}
-                options={singleColumnOptions}
-                onNext={() => {
-                  if (singleColumnOptions.length === 0 && !isLoadingOptions) {
-                    fetchOptions('patient');
-                  }
-                  const keys = formData.selectedQualities;
-                  const labels = keys.map((k) => optionsIndex[k]?.label || k);
-                  setFormData((prev) => ({
-                    ...prev,
-                    rankedPreferences: [...labels],
-                    rankedKeys: [...keys],
-                  }));
-                  setCurrentStep(4);
-                }}
-              />
             )
-          ) : (
-            <CaregiverQualitiesForm
-              selectedQualities={formData.selectedQualities}
-              onQualityToggle={toggleQuality}
-              options={singleColumnOptions}
-              onNext={() => {
-                if (singleColumnOptions.length === 0 && !isLoadingOptions) {
-                  fetchOptions('patient');
-                }
-                const keys = formData.selectedQualities;
-                const labels = keys.map((k) => optionsIndex[k]?.label || k);
-                setFormData((prev) => ({
-                  ...prev,
-                  rankedPreferences: [...labels],
-                  rankedKeys: [...keys],
-                }));
-                setCurrentStep(4);
-              }}
-            />
-          )}
+          }
         </Box>
       </Flex>
     );
@@ -411,7 +427,8 @@ export default function ParticipantRankingPage({
       let target: 'patient' | 'caregiver' = 'patient';
       if (
         effectiveParticipantType === 'caregiver' &&
-        ((formData.isCaregiverVolunteerFlow ?? false) || formData.volunteerType === 'caringForLovedOne')
+        ((formData.isCaregiverVolunteerFlow ?? false) ||
+          formData.volunteerType === 'caringForLovedOne')
       ) {
         target = 'caregiver';
       } else {

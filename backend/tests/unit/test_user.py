@@ -533,6 +533,7 @@ async def test_update_user_by_id(db_session):
         db_session.rollback()
         raise
 
+
 # Error case tests
 @pytest.mark.asyncio
 async def test_delete_nonexistent_user_by_email(db_session):
