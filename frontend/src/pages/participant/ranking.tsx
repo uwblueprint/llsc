@@ -12,6 +12,8 @@ import {
 import { COLORS } from '@/constants/form';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { auth } from '@/config/firebase';
+import { ProtectedPage } from '@/components/auth/ProtectedPage';
+import { UserRole } from '@/types/authTypes';
 
 const RANKING_STATEMENTS = [
   'I would prefer a volunteer with the same age as me',
@@ -546,33 +548,39 @@ export default function ParticipantRankingPage({
     </Box>
   );
 
-  if (participantType === 'caregiver') {
-    switch (currentStep) {
-      case 1:
-        return <WelcomeScreenStep />;
-      case 2:
-        return <QualitiesScreen />;
-      case 3:
-        return <CaregiverQualitiesScreen />;
-      case 4:
-        return <RankingScreen />;
-      case 5:
-        return <ThankYouScreen />;
-      default:
-        return <WelcomeScreenStep />;
-    }
-  } else {
-    switch (currentStep) {
-      case 1:
-        return <WelcomeScreenStep />;
-      case 2:
-        return <QualitiesScreen />;
-      case 3:
-        return <RankingScreen />;
-      case 4:
-        return <ThankYouScreen />;
-      default:
-        return <WelcomeScreenStep />;
-    }
-  }
+  return (
+    <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
+      {participantType === 'caregiver'
+        ? (() => {
+            switch (currentStep) {
+              case 1:
+                return <WelcomeScreenStep />;
+              case 2:
+                return <QualitiesScreen />;
+              case 3:
+                return <CaregiverQualitiesScreen />;
+              case 4:
+                return <RankingScreen />;
+              case 5:
+                return <ThankYouScreen />;
+              default:
+                return <WelcomeScreenStep />;
+            }
+          })()
+        : (() => {
+            switch (currentStep) {
+              case 1:
+                return <WelcomeScreenStep />;
+              case 2:
+                return <QualitiesScreen />;
+              case 3:
+                return <RankingScreen />;
+              case 4:
+                return <ThankYouScreen />;
+              default:
+                return <WelcomeScreenStep />;
+            }
+          })()}
+    </ProtectedPage>
+  );
 }

@@ -12,6 +12,6 @@ def get_user_service(db: Session = Depends(get_db)):
     return UserService(db)
 
 
-def get_auth_service(db: Session = Depends(get_db)):
+def get_auth_service(user_service: UserService = Depends(get_user_service)):
     logger = logging.getLogger(__name__)
-    return AuthService(logger=logger, user_service=UserService(db))
+    return AuthService(logger=logger, user_service=user_service)

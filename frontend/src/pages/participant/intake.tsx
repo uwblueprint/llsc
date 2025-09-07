@@ -15,6 +15,8 @@ import {
   ExperienceData,
   PersonalData,
 } from '@/constants/form';
+import { ProtectedPage } from '@/components/auth/ProtectedPage';
+import { UserRole } from '@/types/authTypes';
 
 // Import the component data types
 interface DemographicCancerFormData {
@@ -194,39 +196,45 @@ export default function ParticipantIntakePage() {
 
   // If we're on thank you step, show the screen with form data
   if (currentStepType === 'thank-you') {
-    return <ThankYouScreen formData={formData} />;
+    return (
+      <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
+        <ThankYouScreen />
+      </ProtectedPage>
+    );
   }
 
   return (
-    <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
-      <Box
-        w="full"
-        maxW="1200px"
-        bg="white"
-        borderRadius="8px"
-        boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-        p={10}
-      >
-        {currentStepType === 'experience-personal' && (
-          <PersonalInfoForm formType="participant" onSubmit={handleExperiencePersonalSubmit} />
-        )}
+    <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
+      <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
+        <Box
+          w="full"
+          maxW="1200px"
+          bg="white"
+          borderRadius="8px"
+          boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+          p={10}
+        >
+          {currentStepType === 'experience-personal' && (
+            <PersonalInfoForm formType="participant" onSubmit={handleExperiencePersonalSubmit} />
+          )}
 
-        {currentStepType === 'demographics-cancer' && (
-          <DemographicCancerForm formType="participant" onNext={handleDemographicsNext} />
-        )}
+          {currentStepType === 'demographics-cancer' && (
+            <DemographicCancerForm formType="participant" onNext={handleDemographicsNext} />
+          )}
 
-        {currentStepType === 'demographics-caregiver' && (
-          <DemographicCancerForm formType="participant" onNext={handleDemographicsNext} />
-        )}
+          {currentStepType === 'demographics-caregiver' && (
+            <DemographicCancerForm formType="participant" onNext={handleDemographicsNext} />
+          )}
 
-        {currentStepType === 'loved-one' && (
-          <LovedOneForm formType="participant" onSubmit={handleLovedOneNext} />
-        )}
+          {currentStepType === 'loved-one' && (
+            <LovedOneForm formType="participant" onSubmit={handleLovedOneNext} />
+          )}
 
-        {currentStepType === 'demographics-basic' && (
-          <BasicDemographicsForm formType="participant" onNext={handleBasicDemographicsNext} />
-        )}
-      </Box>
-    </Flex>
+          {currentStepType === 'demographics-basic' && (
+            <BasicDemographicsForm formType="participant" onNext={handleBasicDemographicsNext} />
+          )}
+        </Box>
+      </Flex>
+    </ProtectedPage>
   );
 }
