@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.orm import Session
 
+from ..models.User import User
 from ..schemas.auth import AuthResponse, LoginRequest, RefreshRequest, Token
 from ..schemas.user import UserCreateRequest, UserCreateResponse, UserRole
 from ..services.implementations.auth_service import AuthService
 from ..services.implementations.user_service import UserService
+from ..utilities.db_utils import get_db
 from ..utilities.service_utils import get_auth_service, get_user_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -96,3 +99,37 @@ async def verify_email(email: str, auth_service: AuthService = Depends(get_auth_
         # Log unexpected errors
         print(f"Unexpected error during email verification for {email}: {str(e)}")
         return Response(status_code=500)
+
+
+@router.get("/me", response_model=UserCreateResponse)
+async def get_current_user(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
+    """Get current authenticated user information including role"""
+    try:
+        # Get user auth_id from request state (set by auth middleware)
+        user_auth_id = request.state.user_id
+        if not user_auth_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+
+        # Query user from database
+        user = db.query(User).filter(User.auth_id == user_auth_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return UserCreateResponse(
+            id=user.id,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            email=user.email,
+            role_id=user.role_id,
+            auth_id=user.auth_id,
+            approved=user.approved,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error getting current user: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -16,7 +16,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      POSTGRES_DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/llsc_test
+        POSTGRES_TEST_DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/llsc_test
     
     strategy:
       matrix:
@@ -65,13 +65,14 @@ jobs:
     - name: Set up environment variables
       working-directory: ./backend
       run: |
-        echo "POSTGRES_DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/llsc_test" >> .env
+        echo "POSTGRES_TEST_DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/llsc_test" >> .env
         echo "SECRET_KEY=test-secret-key-for-ci" >> .env
         echo "ENVIRONMENT=test" >> .env
         
     - name: Run database migrations
       working-directory: ./backend
       run: |
+        export POSTGRES_DATABASE_URL="$POSTGRES_TEST_DATABASE_URL"
         pdm run alembic upgrade heads
         
     - name: Run linting
@@ -118,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     env:
-      POSTGRES_DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/llsc_test
+      POSTGRES_TEST_DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/llsc_test
     
     services:
       postgres:
@@ -155,7 +156,7 @@ jobs:
     - name: Set up environment variables
       working-directory: ./backend
       run: |
-        echo "POSTGRES_DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/llsc_test" >> .env
+        echo "POSTGRES_TEST_DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/llsc_test" >> .env
         echo "SECRET_KEY=test-secret-key-for-ci" >> .env
         echo "ENVIRONMENT=test" >> .env
         echo "TEST_SCRIPT_BACKEND_URL=http://localhost:8000" >> .env
@@ -165,6 +166,7 @@ jobs:
     - name: Run database migrations
       working-directory: ./backend
       run: |
+        export POSTGRES_DATABASE_URL="$POSTGRES_TEST_DATABASE_URL"
         pdm run alembic upgrade heads
         
     - name: Start backend server

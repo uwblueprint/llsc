@@ -15,6 +15,8 @@ import {
   ExperienceData,
   PersonalData,
 } from '@/constants/form';
+import { ProtectedPage } from '@/components/auth/ProtectedPage';
+import { UserRole } from '@/types/authTypes';
 
 // Import the component data types
 interface DemographicCancerFormData {
@@ -94,19 +96,14 @@ export default function VolunteerIntakePage() {
     if (nextType === 'thank-you') {
       setSubmitting(true);
       try {
-        // eslint-disable-next-line no-console
-        console.log('[INTAKE][SUBMIT] About to submit answers (volunteer)', {
-          currentStep,
-          nextType,
-          answers: updated,
-        });
         await baseAPIClient.post('/intake/submissions', { answers: updated });
-      } catch (error: any) {
+      } catch (error: unknown) {
         // eslint-disable-next-line no-console
-        console.error(
-          '[INTAKE][SUBMIT][ERROR] Volunteer submission failed',
-          error?.response?.data || error,
-        );
+        const errorData =
+          error && typeof error === 'object' && 'response' in error
+            ? (error as { response?: { data?: unknown } })?.response?.data || error
+            : error;
+        console.error('[INTAKE][SUBMIT][ERROR] Volunteer submission failed', errorData);
         return; // Do not advance on failure
       } finally {
         setSubmitting(false);
@@ -208,39 +205,45 @@ export default function VolunteerIntakePage() {
 
   // If we're on thank you step, show the screen with form data
   if (currentStepType === 'thank-you') {
-    return <ThankYouScreen formData={formData} />;
+    return (
+      <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
+        <ThankYouScreen />
+      </ProtectedPage>
+    );
   }
 
   return (
-    <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
-      <Box
-        w="full"
-        maxW="1200px"
-        bg="white"
-        borderRadius="8px"
-        boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-        p={10}
-      >
-        {currentStepType === 'experience-personal' && (
-          <PersonalInfoForm formType="volunteer" onSubmit={handleExperiencePersonalSubmit} />
-        )}
+    <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
+      <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
+        <Box
+          w="full"
+          maxW="1200px"
+          bg="white"
+          borderRadius="8px"
+          boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+          p={10}
+        >
+          {currentStepType === 'experience-personal' && (
+            <PersonalInfoForm formType="volunteer" onSubmit={handleExperiencePersonalSubmit} />
+          )}
 
-        {currentStepType === 'demographics-cancer' && (
-          <DemographicCancerForm formType="volunteer" onNext={handleDemographicsNext} />
-        )}
+          {currentStepType === 'demographics-cancer' && (
+            <DemographicCancerForm formType="volunteer" onNext={handleDemographicsNext} />
+          )}
 
-        {currentStepType === 'demographics-caregiver' && (
-          <DemographicCancerForm formType="volunteer" onNext={handleDemographicsNext} />
-        )}
+          {currentStepType === 'demographics-caregiver' && (
+            <DemographicCancerForm formType="volunteer" onNext={handleDemographicsNext} />
+          )}
 
-        {currentStepType === 'loved-one' && (
-          <LovedOneForm formType="volunteer" onSubmit={handleLovedOneNext} />
-        )}
+          {currentStepType === 'loved-one' && (
+            <LovedOneForm formType="volunteer" onSubmit={handleLovedOneNext} />
+          )}
 
-        {currentStepType === 'demographics-basic' && (
-          <BasicDemographicsForm formType="volunteer" onNext={handleBasicDemographicsNext} />
-        )}
-      </Box>
-    </Flex>
+          {currentStepType === 'demographics-basic' && (
+            <BasicDemographicsForm formType="volunteer" onNext={handleBasicDemographicsNext} />
+          )}
+        </Box>
+      </Flex>
+    </ProtectedPage>
   );
 }
