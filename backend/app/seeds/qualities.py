@@ -7,7 +7,7 @@ from app.models.Quality import Quality
 
 def seed_qualities(session: Session) -> None:
     """Seed the qualities table with matching qualities."""
-    
+
     qualities_data = [
         {"slug": "same_age", "label": "the same age as"},
         {"slug": "same_gender_identity", "label": "the same gender identity as"},
@@ -16,7 +16,7 @@ def seed_qualities(session: Session) -> None:
         {"slug": "same_parental_status", "label": "the same parental status as"},
         {"slug": "same_diagnosis", "label": "the same diagnosis as"},
     ]
-    
+
     for quality_data in qualities_data:
         # Check if quality already exists
         existing_quality = session.query(Quality).filter_by(slug=quality_data["slug"]).first()
@@ -28,5 +28,5 @@ def seed_qualities(session: Session) -> None:
             # Update label in case it changed
             existing_quality.label = quality_data["label"]
             print(f"Quality already exists (updated label): {quality_data['slug']}")
-    
+
     session.commit()

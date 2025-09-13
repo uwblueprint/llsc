@@ -7,7 +7,7 @@ from app.models.Treatment import Treatment
 
 def seed_treatments(session: Session) -> None:
     """Seed the treatments table with cancer treatments."""
-    
+
     treatments_data = [
         {"id": 1, "name": "Unknown"},
         {"id": 2, "name": "Watch and Wait / Active Surveillance"},
@@ -24,7 +24,7 @@ def seed_treatments(session: Session) -> None:
         {"id": 13, "name": "CAR-T"},
         {"id": 14, "name": "BTK Inhibitors"},
     ]
-    
+
     for treatment_data in treatments_data:
         # Check if treatment already exists
         existing_treatment = session.query(Treatment).filter_by(id=treatment_data["id"]).first()
@@ -34,5 +34,5 @@ def seed_treatments(session: Session) -> None:
             print(f"Added treatment: {treatment_data['name']}")
         else:
             print(f"Treatment already exists: {treatment_data['name']}")
-    
+
     session.commit()

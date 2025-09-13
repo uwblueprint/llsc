@@ -7,7 +7,7 @@ from app.models.Experience import Experience
 
 def seed_experiences(session: Session) -> None:
     """Seed the experiences table with cancer-related experiences."""
-    
+
     experiences_data = [
         {"id": 1, "name": "Brain Fog"},
         {"id": 2, "name": "Communication Challenges"},
@@ -22,7 +22,7 @@ def seed_experiences(session: Session) -> None:
         {"id": 11, "name": "Anxiety / Depression"},
         {"id": 12, "name": "PTSD"},
     ]
-    
+
     for experience_data in experiences_data:
         # Check if experience already exists
         existing_experience = session.query(Experience).filter_by(id=experience_data["id"]).first()
@@ -32,5 +32,5 @@ def seed_experiences(session: Session) -> None:
             print(f"Added experience: {experience_data['name']}")
         else:
             print(f"Experience already exists: {experience_data['name']}")
-    
+
     session.commit()
