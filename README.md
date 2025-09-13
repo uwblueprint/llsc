@@ -331,3 +331,15 @@ To apply the migration, run the following command:
 ```bash
 pdm run alembic upgrade head
 ```
+
+## Database Seeding
+
+```bash
+# Seed the database with reference data
+cd backend && pdm run seed
+
+### Adding New Seed Data
+
+1. Create or modify seed files in `backend/app/seeds/`
+2. Update the runner in `backend/app/seeds/runner.py`
+3. Run `pdm run seed` to apply changes

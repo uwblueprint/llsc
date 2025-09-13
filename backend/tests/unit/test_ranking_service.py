@@ -46,7 +46,7 @@ def db_session() -> Session:
                 session.add(r)
         session.commit()
 
-        # Qualities should have been seeded by migrations; assert presence
+        # Qualities should be seeded by CI before tests run
         assert session.query(Quality).count() >= 6
 
         # Ensure sequences are aligned after seeding (avoid PK collisions when inserting)

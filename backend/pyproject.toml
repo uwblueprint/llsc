@@ -38,6 +38,8 @@ docker-db = {composite = ["dc-down", "dc-up"]}
 db-dev = {composite = ["docker-db", "dev"]}
 revision = "alembic revision --autogenerate"
 upgrade = "alembic upgrade head"
+seed = "python -m app.seeds.runner"
+db-reset = {composite = ["docker-db", "upgrade", "seed"]}
 tests = "pytest -v"
 
 [tool.pytest.ini_options]
