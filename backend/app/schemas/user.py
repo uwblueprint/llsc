@@ -45,6 +45,8 @@ class UserBase(BaseModel):
     email: EmailStr
     role: UserRole
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class UserCreateRequest(UserBase):
     """
