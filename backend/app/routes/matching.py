@@ -12,14 +12,13 @@ router = APIRouter(
     tags=["matching"],
 )
 
+
 def get_matching_service(db: Session = Depends(get_db)):
     return MatchingService(db)
 
+
 @router.get("/{user_id}", response_model=RelevantUsersResponse)
-async def get_matches(
-    user_id: UUID,
-    matching_service: MatchingService = Depends(get_matching_service)
-):
+async def get_matches(user_id: UUID, matching_service: MatchingService = Depends(get_matching_service)):
     """
     Get potential user matches based on the user's profile.
     """

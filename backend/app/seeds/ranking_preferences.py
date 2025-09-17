@@ -32,7 +32,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "quality",
             "quality_id": QualityId.SAME_DIAGNOSIS,
             "scope": "self",
-            "rank": 1
+            "rank": 1,
         },
         {
             "user_id": sarah_id,
@@ -40,7 +40,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "quality",
             "quality_id": QualityId.SAME_GENDER_IDENTITY,
             "scope": "self",
-            "rank": 2
+            "rank": 2,
         },
         {
             "user_id": sarah_id,
@@ -48,7 +48,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "quality",
             "quality_id": QualityId.SAME_AGE,
             "scope": "self",
-            "rank": 3
+            "rank": 3,
         },
         {
             "user_id": sarah_id,
@@ -56,7 +56,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "treatment",
             "treatment_id": TreatmentId.CHEMOTHERAPY,
             "scope": "self",
-            "rank": 4
+            "rank": 4,
         },
         {
             "user_id": sarah_id,
@@ -64,9 +64,8 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "treatment",
             "treatment_id": TreatmentId.RADIATION,
             "scope": "self",
-            "rank": 5
+            "rank": 5,
         },
-
         # CASE 2: Lisa (caregiver) wants ONLY patient volunteers - 5 preferences
         {
             "user_id": lisa_id,
@@ -74,7 +73,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "quality",
             "quality_id": QualityId.SAME_DIAGNOSIS,
             "scope": "loved_one",
-            "rank": 1
+            "rank": 1,
         },
         {
             "user_id": lisa_id,
@@ -82,7 +81,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "quality",
             "quality_id": QualityId.SAME_GENDER_IDENTITY,
             "scope": "loved_one",
-            "rank": 2
+            "rank": 2,
         },
         {
             "user_id": lisa_id,
@@ -90,7 +89,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "quality",
             "quality_id": QualityId.SAME_AGE,
             "scope": "loved_one",
-            "rank": 3
+            "rank": 3,
         },
         {
             "user_id": lisa_id,
@@ -98,7 +97,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "treatment",
             "treatment_id": TreatmentId.CHEMOTHERAPY,
             "scope": "loved_one",
-            "rank": 4
+            "rank": 4,
         },
         {
             "user_id": lisa_id,
@@ -106,9 +105,8 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "treatment",
             "treatment_id": TreatmentId.RADIATION,
             "scope": "loved_one",
-            "rank": 5
+            "rank": 5,
         },
-
         # CASE 3: Karen (caregiver) wants ONLY caregiver volunteers - 5 preferences
         {
             "user_id": karen_id,
@@ -116,7 +114,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "quality",
             "quality_id": QualityId.SAME_MARITAL_STATUS,
             "scope": "self",
-            "rank": 1
+            "rank": 1,
         },
         {
             "user_id": karen_id,
@@ -124,7 +122,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "quality",
             "quality_id": QualityId.SAME_PARENTAL_STATUS,
             "scope": "self",
-            "rank": 2
+            "rank": 2,
         },
         {
             "user_id": karen_id,
@@ -132,7 +130,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "quality",
             "quality_id": QualityId.SAME_GENDER_IDENTITY,
             "scope": "self",
-            "rank": 3
+            "rank": 3,
         },
         {
             "user_id": karen_id,
@@ -140,7 +138,7 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "quality",
             "quality_id": QualityId.SAME_AGE,
             "scope": "self",
-            "rank": 4
+            "rank": 4,
         },
         {
             "user_id": karen_id,
@@ -148,9 +146,9 @@ def seed_ranking_preferences(session: Session) -> None:
             "kind": "quality",
             "quality_id": QualityId.SAME_DIAGNOSIS,
             "scope": "loved_one",  # Match caregiver's loved one diagnosis with volunteer's loved one
-            "rank": 5
-                }
-        ]
+            "rank": 5,
+        },
+    ]
 
     for pref_data in ranking_data:
         # Skip Karen's preferences if she doesn't exist yet
@@ -158,18 +156,26 @@ def seed_ranking_preferences(session: Session) -> None:
             continue
 
         # Check if preference already exists
-        existing_pref = session.query(RankingPreference).filter_by(
-            user_id=pref_data["user_id"],
-            target_role=pref_data["target_role"],
-            kind=pref_data["kind"],
-            rank=pref_data["rank"]
-        ).first()
+        existing_pref = (
+            session.query(RankingPreference)
+            .filter_by(
+                user_id=pref_data["user_id"],
+                target_role=pref_data["target_role"],
+                kind=pref_data["kind"],
+                rank=pref_data["rank"],
+            )
+            .first()
+        )
 
         if not existing_pref:
             preference = RankingPreference(**pref_data)
             session.add(preference)
-            print(f"Added ranking preference: {pref_data['kind']} rank {pref_data['rank']} for user {pref_data['user_id']}")
+            print(
+                f"Added ranking preference: {pref_data['kind']} rank {pref_data['rank']} for user {pref_data['user_id']}"
+            )
         else:
-            print(f"Ranking preference already exists: {pref_data['kind']} rank {pref_data['rank']} for user {pref_data['user_id']}")
+            print(
+                f"Ranking preference already exists: {pref_data['kind']} rank {pref_data['rank']} for user {pref_data['user_id']}"
+            )
 
     session.commit()

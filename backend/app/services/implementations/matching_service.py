@@ -79,17 +79,16 @@ class MatchingService(IMatchingService):
             if limit:
                 scored_volunteers = scored_volunteers[:limit]
 
-
             # Convert to response models with scores
             return [
                 {
-                    'user': UserBase(
+                    "user": UserBase(
                         first_name=volunteer.first_name,
                         last_name=volunteer.last_name,
                         email=volunteer.email,
-                        role=UserRole(volunteer.role.name)
+                        role=UserRole(volunteer.role.name),
                     ),
-                    'score': score
+                    "score": score,
                 }
                 for volunteer, score in scored_volunteers
             ]
@@ -112,37 +111,39 @@ class MatchingService(IMatchingService):
         preference_data = []
         for pref in preferences:
             pref_info = {
-                'target_role': pref.target_role,
-                'kind': pref.kind,
-                'scope': pref.scope,
-                'rank': pref.rank,
-                'object': None
+                "target_role": pref.target_role,
+                "kind": pref.kind,
+                "scope": pref.scope,
+                "rank": pref.rank,
+                "object": None,
             }
 
             # Get the actual object based on kind
-            if pref.kind == 'quality' and pref.quality_id:
+            if pref.kind == "quality" and pref.quality_id:
                 quality = self.db.query(Quality).filter(Quality.id == pref.quality_id).first()
-                pref_info['object'] = quality
-            elif pref.kind == 'treatment' and pref.treatment_id:
+                pref_info["object"] = quality
+            elif pref.kind == "treatment" and pref.treatment_id:
                 treatment = self.db.query(Treatment).filter(Treatment.id == pref.treatment_id).first()
-                pref_info['object'] = treatment
-            elif pref.kind == 'experience' and pref.experience_id:
+                pref_info["object"] = treatment
+            elif pref.kind == "experience" and pref.experience_id:
                 experience = self.db.query(Experience).filter(Experience.id == pref.experience_id).first()
-                pref_info['object'] = experience
+                pref_info["object"] = experience
 
-            if pref_info['object']:
+            if pref_info["object"]:
                 preference_data.append(pref_info)
 
         return preference_data
 
-    def _calculate_match_score(self, participant_data: UserData, volunteer_data: UserData, preferences: List[Dict[str, Any]]) -> float:
+    def _calculate_match_score(
+        self, participant_data: UserData, volunteer_data: UserData, preferences: List[Dict[str, Any]]
+    ) -> float:
         """
         Calculate match score using complex preference system with target roles, kinds, and scopes.
         """
 
         # Group preferences by target role
-        patient_prefs = [p for p in preferences if p['target_role'] == 'patient']
-        caregiver_prefs = [p for p in preferences if p['target_role'] == 'caregiver']
+        patient_prefs = [p for p in preferences if p["target_role"] == "patient"]
+        caregiver_prefs = [p for p in preferences if p["target_role"] == "caregiver"]
 
         # Check user conditions directly
         has_cancer = (participant_data.has_blood_cancer or "").lower() == "yes"
@@ -151,25 +152,29 @@ class MatchingService(IMatchingService):
 
         # Case 1: Participant (patient) wants cancer patient volunteer
         if patient_prefs and wants_patient:
-            return self._score_preferences(patient_prefs, participant_data, volunteer_data,
-                                          "self", "self")
+            return self._score_preferences(patient_prefs, participant_data, volunteer_data, "self", "self")
 
         # Case 2: Participant (caregiver) wants ONLY cancer patient volunteers
         # Match caregiver's loved one data with volunteer's patient data
         if patient_prefs and is_caregiver and not caregiver_prefs:
-            return self._score_preferences(patient_prefs, participant_data, volunteer_data,
-                                          "loved_one", "self")
+            return self._score_preferences(patient_prefs, participant_data, volunteer_data, "loved_one", "self")
 
         # Case 3: Participant (caregiver) wants caregiver volunteers
         # Match based on both patient and caregiver qualities
         if caregiver_prefs and is_caregiver and not patient_prefs:
-            return self._score_preferences(caregiver_prefs, participant_data, volunteer_data,
-                                          "self", "self") + self._score_preferences(patient_prefs, participant_data, volunteer_data,
-                                          "loved_one", "loved_one")
+            return self._score_preferences(
+                caregiver_prefs, participant_data, volunteer_data, "self", "self"
+            ) + self._score_preferences(patient_prefs, participant_data, volunteer_data, "loved_one", "loved_one")
 
         return 0.0
 
-    def _print_comparison_table(self, participant_data: UserData, volunteer_data: UserData, volunteer_name: str, preferences: List[Dict[str, Any]]) -> None:
+    def _print_comparison_table(
+        self,
+        participant_data: UserData,
+        volunteer_data: UserData,
+        volunteer_name: str,
+        preferences: List[Dict[str, Any]],
+    ) -> None:
         """Print a side-by-side comparison table of participant vs volunteer data with preference indicators."""
 
         print(f"{'Field':<25} | {'Participant':<30} | {volunteer_name:<30}")
@@ -178,13 +183,13 @@ class MatchingService(IMatchingService):
         # Extract preference information for marking
         preference_fields = set()
         for pref in preferences:
-            obj = pref.get('object')
-            kind = pref.get('kind')
-            if obj and kind == 'quality':
+            obj = pref.get("object")
+            kind = pref.get("kind")
+            if obj and kind == "quality":
                 preference_fields.add(obj.slug)
-            elif obj and kind == 'treatment':
+            elif obj and kind == "treatment":
                 preference_fields.add(f"treatment_{obj.name}")
-            elif obj and kind == 'experience':
+            elif obj and kind == "experience":
                 preference_fields.add(f"experience_{obj.name}")
 
         # Key matching fields
@@ -207,7 +212,11 @@ class MatchingService(IMatchingService):
                 ("LO Gender", participant_data.loved_one_gender_identity, volunteer_data.loved_one_gender_identity),
                 ("LO Age", participant_data.loved_one_age, volunteer_data.loved_one_age),
                 ("LO Diagnosis", participant_data.loved_one_diagnosis, volunteer_data.loved_one_diagnosis),
-                ("LO Date Diagnosis", str(participant_data.loved_one_date_of_diagnosis), str(volunteer_data.loved_one_date_of_diagnosis)),
+                (
+                    "LO Date Diagnosis",
+                    str(participant_data.loved_one_date_of_diagnosis),
+                    str(volunteer_data.loved_one_date_of_diagnosis),
+                ),
             ]
             fields.extend(loved_one_fields)
 
@@ -262,8 +271,14 @@ class MatchingService(IMatchingService):
             "loved_one_date_of_diagnosis": serialize_value(user_data.loved_one_date_of_diagnosis),
         }
 
-    def _score_preferences(self, preferences: List[Dict[str, Any]], participant_data: UserData, volunteer_data: UserData,
-                          participant_scope: str, volunteer_scope: str) -> float:
+    def _score_preferences(
+        self,
+        preferences: List[Dict[str, Any]],
+        participant_data: UserData,
+        volunteer_data: UserData,
+        participant_scope: str,
+        volunteer_scope: str,
+    ) -> float:
         """Score preferences with explicit participant and volunteer scopes."""
         if not preferences:
             return 0.0
@@ -273,7 +288,7 @@ class MatchingService(IMatchingService):
 
         for pref in preferences:
             # Calculate preference weight (higher rank = lower weight)
-            rank = pref['rank']
+            rank = pref["rank"]
             weight = 1.0 / rank  # Simple inverse ranking
 
             # Check if volunteer matches this preference using explicit scopes
@@ -292,24 +307,35 @@ class MatchingService(IMatchingService):
         # Return normalized score (0.0 to 1.0)
         return total_score / max_possible_score if max_possible_score > 0 else 0.0
 
-
-    def _check_preference_match(self, participant_data: UserData, volunteer_data: UserData,
-                               preference: Dict[str, Any], participant_scope: str, volunteer_scope: str) -> bool:
+    def _check_preference_match(
+        self,
+        participant_data: UserData,
+        volunteer_data: UserData,
+        preference: Dict[str, Any],
+        participant_scope: str,
+        volunteer_scope: str,
+    ) -> bool:
         """Check if volunteer matches a preference using explicit scopes for participant and volunteer."""
-        obj = preference['object']
-        kind = preference['kind']
+        obj = preference["object"]
+        kind = preference["kind"]
 
-        if kind == 'quality':
+        if kind == "quality":
             return self._check_quality_match(participant_data, volunteer_data, obj, participant_scope, volunteer_scope)
-        elif kind == 'treatment':
+        elif kind == "treatment":
             return self._check_treatment_match(volunteer_data, obj, volunteer_scope)
-        elif kind == 'experience':
+        elif kind == "experience":
             return self._check_experience_match(volunteer_data, obj, volunteer_scope)
 
         return False
 
-    def _check_quality_match(self, participant_data: UserData, volunteer_data: UserData,
-                            quality: Quality, participant_scope: str, volunteer_scope: str) -> bool:
+    def _check_quality_match(
+        self,
+        participant_data: UserData,
+        volunteer_data: UserData,
+        quality: Quality,
+        participant_scope: str,
+        volunteer_scope: str,
+    ) -> bool:
         """Check if volunteer matches a quality preference with explicit scopes."""
         quality_slug = quality.slug
 
@@ -381,31 +407,29 @@ class MatchingService(IMatchingService):
         else:
             return participant_value == volunteer_value
 
-    def _check_treatment_match(self, volunteer_data: UserData,
-                              treatment: Treatment, volunteer_scope: str) -> bool:
+    def _check_treatment_match(self, volunteer_data: UserData, treatment: Treatment, volunteer_scope: str) -> bool:
         """Check if volunteer has experience with the specific treatment."""
         treatment_name = treatment.name
 
         # Check if volunteer has experience with this treatment (based on their scope)
-        if volunteer_scope == 'self':
+        if volunteer_scope == "self":
             volunteer_treatments = {t.name for t in volunteer_data.treatments}
             return treatment_name in volunteer_treatments
-        elif volunteer_scope == 'loved_one':
+        elif volunteer_scope == "loved_one":
             volunteer_treatments = {t.name for t in volunteer_data.loved_one_treatments}
             return treatment_name in volunteer_treatments
 
         return False
 
-    def _check_experience_match(self, volunteer_data: UserData,
-                               experience: Experience, volunteer_scope: str) -> bool:
+    def _check_experience_match(self, volunteer_data: UserData, experience: Experience, volunteer_scope: str) -> bool:
         """Check if volunteer has experience with the specific experience."""
         experience_name = experience.name
 
         # Check if volunteer has experience with this (based on their scope)
-        if volunteer_scope == 'self':
+        if volunteer_scope == "self":
             volunteer_experiences = {e.name for e in volunteer_data.experiences}
             return experience_name in volunteer_experiences
-        elif volunteer_scope == 'loved_one':
+        elif volunteer_scope == "loved_one":
             volunteer_loved_experiences = {e.name for e in volunteer_data.loved_one_experiences}
             return experience_name in volunteer_loved_experiences
 

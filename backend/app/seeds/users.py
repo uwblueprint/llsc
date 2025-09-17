@@ -93,9 +93,12 @@ def seed_users(session: Session) -> None:
                 "loved_one_date_of_diagnosis": date(2023, 12, 15),
             },
             "treatments": [],  # Caregiver, no personal treatments
-            "experiences": [ExperienceId.COMPASSION_FATIGUE, ExperienceId.FEELING_OVERWHELMED, ExperienceId.SPEAKING_TO_FAMILY],
+            "experiences": [
+                ExperienceId.COMPASSION_FATIGUE,
+                ExperienceId.FEELING_OVERWHELMED,
+                ExperienceId.SPEAKING_TO_FAMILY,
+            ],
         },
-
         # Volunteers
         {
             "role": "volunteer",
@@ -119,8 +122,17 @@ def seed_users(session: Session) -> None:
                 "has_blood_cancer": "Yes",
                 "caring_for_someone": "No",
             },
-            "treatments": [TreatmentId.CHEMOTHERAPY, TreatmentId.RADIATION, TreatmentId.AUTOLOGOUS_STEM_CELL_TRANSPLANT],
-            "experiences": [ExperienceId.BRAIN_FOG, ExperienceId.FEELING_OVERWHELMED, ExperienceId.FATIGUE, ExperienceId.RETURNING_TO_WORK],
+            "treatments": [
+                TreatmentId.CHEMOTHERAPY,
+                TreatmentId.RADIATION,
+                TreatmentId.AUTOLOGOUS_STEM_CELL_TRANSPLANT,
+            ],
+            "experiences": [
+                ExperienceId.BRAIN_FOG,
+                ExperienceId.FEELING_OVERWHELMED,
+                ExperienceId.FATIGUE,
+                ExperienceId.RETURNING_TO_WORK,
+            ],
         },
         {
             "role": "volunteer",
@@ -172,7 +184,6 @@ def seed_users(session: Session) -> None:
             "treatments": [3, 6],  # Chemotherapy, Radiation
             "experiences": [11, 12, 8],  # Anxiety/Depression, PTSD, Returning to work
         },
-
         # High-matching volunteers for Sarah Johnson
         {
             "role": "volunteer",
@@ -249,7 +260,6 @@ def seed_users(session: Session) -> None:
             "treatments": [3, 6, 7],  # Chemotherapy, Radiation, Maintenance Chemo
             "experiences": [1, 4, 5],  # Brain Fog, Feeling Overwhelmed, Fatigue (same as Sarah!)
         },
-
         # Test Case 3: Participant who is a caregiver wanting caregiver volunteers
         {
             "role": "participant",
@@ -276,8 +286,12 @@ def seed_users(session: Session) -> None:
                 "loved_one_date_of_diagnosis": date(2023, 2, 20),
             },
             "treatments": [],  # Caregiver, no personal treatments
-            "experiences": [ExperienceId.COMPASSION_FATIGUE, ExperienceId.FEELING_OVERWHELMED, ExperienceId.ANXIETY_DEPRESSION],
-        }
+            "experiences": [
+                ExperienceId.COMPASSION_FATIGUE,
+                ExperienceId.FEELING_OVERWHELMED,
+                ExperienceId.ANXIETY_DEPRESSION,
+            ],
+        },
     ]
 
     created_users = []
@@ -301,7 +315,7 @@ def seed_users(session: Session) -> None:
             role_id=role_id,
             auth_id=user_info["user_data"]["auth_id"],
             approved=True,
-            active=True
+            active=True,
         )
         session.add(user)
         session.flush()  # Get user ID
@@ -309,8 +323,11 @@ def seed_users(session: Session) -> None:
         # Create user data
         user_data = UserData(
             user_id=user.id,
-            **{k: v for k, v in user_info["user_data"].items()
-               if k not in ["first_name", "last_name", "email", "auth_id"]}
+            **{
+                k: v
+                for k, v in user_info["user_data"].items()
+                if k not in ["first_name", "last_name", "email", "auth_id"]
+            },
         )
         session.add(user_data)
 
