@@ -15,8 +15,10 @@ from app.utilities.constants import LOGGER_NAME
 from .experiences import seed_experiences
 from .forms import seed_forms
 from .qualities import seed_qualities
+from .ranking_preferences import seed_ranking_preferences
 from .roles import seed_roles
 from .treatments import seed_treatments
+from .users import seed_users
 
 # Load environment variables
 load_dotenv()
@@ -55,6 +57,8 @@ def seed_database(verbose: bool = True) -> None:
             ("Experiences", seed_experiences),
             ("Qualities", seed_qualities),
             ("Forms", seed_forms),
+            ("Users", seed_users),
+            ("Ranking Preferences", seed_ranking_preferences),
         ]
 
         for name, seed_func in seed_functions:
