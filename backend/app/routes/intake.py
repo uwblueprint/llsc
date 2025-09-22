@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
 from app.middleware.auth import has_roles
-from app.models import Form, FormSubmission, User
+from app.models import Form, FormSubmission, User, Experience, Treatment
 from app.schemas.user import UserRole
 from app.services.implementations.intake_form_processor import IntakeFormProcessor
 from app.utilities.db_utils import get_db
@@ -47,6 +47,19 @@ class FormSubmissionListResponse(BaseModel):
 
     submissions: List[FormSubmissionResponse]
     total: int
+
+
+class ExperienceResponse(BaseModel):
+    id: int
+    name: str
+
+
+class ExperienceOptionsResponse(BaseModel):
+    experiences: List[ExperienceResponse]
+
+
+# class TreatmentOptionsResponse(BaseModel):
+#     treatments: List[Treatment]
 
 
 # ===== Custom Auth Dependencies =====
@@ -336,6 +349,27 @@ async def delete_form_submission(
         raise
     except Exception as e:
         db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/experiences", response_model=ExperienceOptionsResponse)
+async def get_ranking_options(
+    request: Request,
+    target: str = Query(..., pattern="^(patient|caregiver)$"),
+    db: Session = Depends(get_db),
+    authorized: bool = True,
+    # authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.ADMIN]),
+) -> ExperienceOptionsResponse:
+    try:
+        # Query DB Experience Table
+        experiences = db.query(Experience).filter(Experience.scope == target).all()
+        # service = RankingService(db)
+        # user_auth_id = request.state.user_id
+        # options = service.get_options(user_auth_id=user_auth_id, target=target)
+        return ExperienceOptionsResponse(experiences)
+    except HTTPException:
+        raise
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
