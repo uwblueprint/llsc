@@ -67,16 +67,16 @@ class UserCreateRequest(UserBase):
         if password:
             errors = []
             if len(password) < 8:
-                errors.append("be at least 8 characters long")
+                errors.append("Password must be at least 8 characters long")
             if not any(char.isupper() for char in password):
-                errors.append("contain at least one uppercase letter")
+                errors.append("Password must contain at least one uppercase letter")
             if not any(char.islower() for char in password):
-                errors.append("contain at least one lowercase letter")
+                errors.append("Password must contain at least one lowercase letter")
             if not any(char in "!@#$%^&*" for char in password):
-                errors.append("contain at least one special character (!, @, #, $, %, ^, &, or *)")
+                errors.append("Password must contain at least one special character (!, @, #, $, %, ^, &, or *)")
 
             if errors:
-                raise ValueError(f"Password must {', '.join(errors)}")
+                raise ValueError(errors)
 
         return password
 

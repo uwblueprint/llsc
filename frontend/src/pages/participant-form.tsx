@@ -104,120 +104,111 @@ export function ParticipantFormPage() {
             Let&apos;s start by creating an account.
           </Text>
           <form onSubmit={handleSubmit}>
-            <Box mb={4}>
-              <Field
-                label={
-                  <span
-                    style={{
-                      color: fieldGray,
-                      fontWeight: 600,
-                      fontSize: 14,
-                      fontFamily: 'Open Sans, sans-serif',
-                    }}
-                  >
-                    Email
-                  </span>
-                }
-              >
-                <InputGroup w="100%">
-                  <Input
-                    type="email"
-                    placeholder="john.doe@gmail.com"
-                    required
-                    autoComplete="email"
-                    w="100%"
-                    maxW="518px"
-                    fontFamily="'Open Sans', sans-serif"
-                    fontWeight={400}
-                    fontSize={14}
-                    color={fieldGray}
-                    bg="white"
-                    borderColor="#D5D7DA"
-                    _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </InputGroup>
-              </Field>
-            </Box>
-            <Box mb={4}>
-              <Field
-                label={
-                  <span
-                    style={{
-                      color: fieldGray,
-                      fontWeight: 600,
-                      fontSize: 14,
-                      fontFamily: 'Open Sans, sans-serif',
-                    }}
-                  >
-                    Password
-                  </span>
-                }
-              >
-                <InputGroup w="100%">
-                  <Input
-                    type="password"
-                    placeholder=""
-                    required
-                    autoComplete="new-password"
-                    w="100%"
-                    maxW="518px"
-                    fontFamily="'Open Sans', sans-serif"
-                    fontWeight={400}
-                    fontSize={14}
-                    color={fieldGray}
-                    bg="white"
-                    borderColor="#D5D7DA"
-                    _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      // Clear password validation errors when user starts typing
-                      if (passwordValidationErrors.length > 0) {
-                        setPasswordValidationErrors([]);
-                      }
-                    }}
-                  />
-                </InputGroup>
-              </Field>
-            </Box>
-            <Box mb={4}>
-              <Field
-                label={
-                  <span
-                    style={{
-                      color: fieldGray,
-                      fontWeight: 600,
-                      fontSize: 14,
-                      fontFamily: 'Open Sans, sans-serif',
-                    }}
-                  >
-                    Confirm Password
-                  </span>
-                }
-              >
-                <InputGroup w="100%">
-                  <Input
-                    type="password"
-                    placeholder=""
-                    required
-                    autoComplete="new-password"
-                    w="100%"
-                    maxW="518px"
-                    fontFamily="'Open Sans', sans-serif"
-                    fontWeight={400}
-                    fontSize={14}
-                    color={fieldGray}
-                    bg="white"
-                    borderColor="#D5D7DA"
-                    _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
-                </InputGroup>
-              </Field>
-            </Box>
+            <Field
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Email
+                </span>
+              }
+              mb={4}
+            >
+              <InputGroup w="100%">
+                <Input
+                  type="email"
+                  placeholder="john.doe@gmail.com"
+                  required
+                  autoComplete="email"
+                  w="100%"
+                  maxW="518px"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  fontSize={14}
+                  color={fieldGray}
+                  bg="white"
+                  borderColor="#D5D7DA"
+                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </InputGroup>
+            </Field>
+            <Field
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Password
+                </span>
+              }
+              mb={4}
+            >
+              <InputGroup w="100%">
+                <Input
+                  type="password"
+                  placeholder=""
+                  required
+                  autoComplete="new-password"
+                  w="100%"
+                  maxW="518px"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  fontSize={14}
+                  color={fieldGray}
+                  bg="white"
+                  borderColor="#D5D7DA"
+                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </InputGroup>
+            </Field>
+            <Field
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Confirm Password
+                </span>
+              }
+              mb={4}
+            >
+              <InputGroup w="100%">
+                <Input
+                  type="password"
+                  placeholder=""
+                  required
+                  autoComplete="new-password"
+                  w="100%"
+                  maxW="518px"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  fontSize={14}
+                  color={fieldGray}
+                  bg="white"
+                  borderColor="#D5D7DA"
+                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </InputGroup>
+            </Field>
 
             {/* Password Requirements - Only show when there are validation errors */}
             {passwordValidationErrors.length > 0 && (
