@@ -18,6 +18,7 @@ export function ParticipantFormPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [passwordValidationErrors, setPasswordValidationErrors] = useState<string[]>([]);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,34 +28,31 @@ export function ParticipantFormPage() {
       setError('Passwords do not match');
       return;
     }
-    try {
-      const userData = {
-        first_name: '',
-        last_name: '',
-        email,
-        password,
-        role: signupType === 'volunteer' ? UserRole.VOLUNTEER : UserRole.PARTICIPANT,
-        signupMethod: SignUpMethod.PASSWORD,
-      };
-      const result = await register(userData);
+    const userData = {
+      first_name: '',
+      last_name: '',
+      email,
+      password,
+      role: signupType === 'volunteer' ? UserRole.VOLUNTEER : UserRole.PARTICIPANT,
+      signupMethod: SignUpMethod.PASSWORD,
+    };
+
+    const result = await register(userData);
+    console.log('Registration result:', result);
+
+    if (result.success) {
       console.log('Registration success:', result);
+      setPasswordValidationErrors([]); // Clear validation errors on success
+      setError(''); // Clear any error messages
       router.push(`/verify?email=${encodeURIComponent(email)}&role=${signupType}`);
-    } catch (err: unknown) {
-      console.error('Registration error:', err);
-      if (
-        err &&
-        typeof err === 'object' &&
-        'response' in err &&
-        err.response &&
-        typeof err.response === 'object' &&
-        'data' in err.response &&
-        err.response.data &&
-        typeof err.response.data === 'object' &&
-        'detail' in err.response.data
-      ) {
-        setError((err.response.data as { detail: string }).detail || 'Registration failed');
+    } else {
+      // Handle registration failure
+      if (result.error === 'password_validation' && result.validationErrors) {
+        setError(''); // Clear any previous errors
+        setPasswordValidationErrors(result.validationErrors);
       } else {
-        setError('Registration failed');
+        setPasswordValidationErrors([]); // Clear validation errors
+        setError(result.error || 'Registration failed');
       }
     }
   };
@@ -106,111 +104,190 @@ export function ParticipantFormPage() {
             Let&apos;s start by creating an account.
           </Text>
           <form onSubmit={handleSubmit}>
-            <Field
-              label={
-                <span
-                  style={{
-                    color: fieldGray,
-                    fontWeight: 600,
-                    fontSize: 14,
-                    fontFamily: 'Open Sans, sans-serif',
-                  }}
-                >
-                  Email
-                </span>
-              }
-              mb={4}
-            >
-              <InputGroup w="100%">
-                <Input
-                  type="email"
-                  placeholder="john.doe@gmail.com"
-                  required
-                  autoComplete="email"
-                  w="100%"
-                  maxW="518px"
-                  fontFamily="'Open Sans', sans-serif"
-                  fontWeight={400}
-                  fontSize={14}
-                  color={fieldGray}
-                  bg="white"
-                  borderColor="#D5D7DA"
-                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </InputGroup>
-            </Field>
-            <Field
-              label={
-                <span
-                  style={{
-                    color: fieldGray,
-                    fontWeight: 600,
-                    fontSize: 14,
-                    fontFamily: 'Open Sans, sans-serif',
-                  }}
-                >
-                  Password
-                </span>
-              }
-              mb={4}
-            >
-              <InputGroup w="100%">
-                <Input
-                  type="password"
-                  placeholder=""
-                  required
-                  autoComplete="new-password"
-                  w="100%"
-                  maxW="518px"
-                  fontFamily="'Open Sans', sans-serif"
-                  fontWeight={400}
-                  fontSize={14}
-                  color={fieldGray}
-                  bg="white"
-                  borderColor="#D5D7DA"
-                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </InputGroup>
-            </Field>
-            <Field
-              label={
-                <span
-                  style={{
-                    color: fieldGray,
-                    fontWeight: 600,
-                    fontSize: 14,
-                    fontFamily: 'Open Sans, sans-serif',
-                  }}
-                >
-                  Confirm Password
-                </span>
-              }
-              mb={4}
-            >
-              <InputGroup w="100%">
-                <Input
-                  type="password"
-                  placeholder=""
-                  required
-                  autoComplete="new-password"
-                  w="100%"
-                  maxW="518px"
-                  fontFamily="'Open Sans', sans-serif"
-                  fontWeight={400}
-                  fontSize={14}
-                  color={fieldGray}
-                  bg="white"
-                  borderColor="#D5D7DA"
-                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-              </InputGroup>
-            </Field>
+            <Box mb={4}>
+              <Field
+                label={
+                  <span
+                    style={{
+                      color: fieldGray,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      fontFamily: 'Open Sans, sans-serif',
+                    }}
+                  >
+                    Email
+                  </span>
+                }
+              >
+                <InputGroup w="100%">
+                  <Input
+                    type="email"
+                    placeholder="john.doe@gmail.com"
+                    required
+                    autoComplete="email"
+                    w="100%"
+                    maxW="518px"
+                    fontFamily="'Open Sans', sans-serif"
+                    fontWeight={400}
+                    fontSize={14}
+                    color={fieldGray}
+                    bg="white"
+                    borderColor="#D5D7DA"
+                    _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </InputGroup>
+              </Field>
+            </Box>
+            <Box mb={4}>
+              <Field
+                label={
+                  <span
+                    style={{
+                      color: fieldGray,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      fontFamily: 'Open Sans, sans-serif',
+                    }}
+                  >
+                    Password
+                  </span>
+                }
+              >
+                <InputGroup w="100%">
+                  <Input
+                    type="password"
+                    placeholder=""
+                    required
+                    autoComplete="new-password"
+                    w="100%"
+                    maxW="518px"
+                    fontFamily="'Open Sans', sans-serif"
+                    fontWeight={400}
+                    fontSize={14}
+                    color={fieldGray}
+                    bg="white"
+                    borderColor="#D5D7DA"
+                    _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      // Clear password validation errors when user starts typing
+                      if (passwordValidationErrors.length > 0) {
+                        setPasswordValidationErrors([]);
+                      }
+                    }}
+                  />
+                </InputGroup>
+              </Field>
+            </Box>
+            <Box mb={4}>
+              <Field
+                label={
+                  <span
+                    style={{
+                      color: fieldGray,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      fontFamily: 'Open Sans, sans-serif',
+                    }}
+                  >
+                    Confirm Password
+                  </span>
+                }
+              >
+                <InputGroup w="100%">
+                  <Input
+                    type="password"
+                    placeholder=""
+                    required
+                    autoComplete="new-password"
+                    w="100%"
+                    maxW="518px"
+                    fontFamily="'Open Sans', sans-serif"
+                    fontWeight={400}
+                    fontSize={14}
+                    color={fieldGray}
+                    bg="white"
+                    borderColor="#D5D7DA"
+                    _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </InputGroup>
+              </Field>
+            </Box>
+
+            {/* Password Requirements - Only show when there are validation errors */}
+            {passwordValidationErrors.length > 0 && (
+              <Box mb={4}>
+                <Box display="flex" flexDirection="column" gap="6px">
+                  {[
+                    { text: 'At least 8 characters', key: 'long' },
+                    { text: 'At least 1 uppercase letter', key: 'uppercase' },
+                    { text: 'At least 1 lowercase letter', key: 'lowercase' },
+                    {
+                      text: 'At least 1 special character (!, @, #, $, %, ^, &, or *)',
+                      key: 'special',
+                    },
+                  ].map((requirement, index) => {
+                    const hasError = passwordValidationErrors.some((error) => {
+                      if (requirement.key === 'uppercase' && error.includes('uppercase'))
+                        return true;
+                      if (requirement.key === 'lowercase' && error.includes('lowercase'))
+                        return true;
+                      if (requirement.key === 'long' && error.includes('long')) return true;
+                      if (requirement.key === 'special' && error.includes('special')) return true;
+                      return false;
+                    });
+
+                    return (
+                      <Box key={index} display="flex" alignItems="center" gap="8px">
+                        <Box
+                          width="18px"
+                          height="18px"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          {hasError ? (
+                            <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                              <path
+                                d="M1 1L8 8M8 1L1 8"
+                                stroke="#C75B5C"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          ) : (
+                            <svg width="12" height="8.25" viewBox="0 0 12 8.25" fill="none">
+                              <path
+                                d="M1 4.125L4.5 7.625L11 1.125"
+                                stroke="#056067"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </Box>
+                        <Text
+                          fontFamily="'Open Sans', sans-serif"
+                          fontWeight={600}
+                          fontSize="14px"
+                          lineHeight="1.4285714285714286em"
+                          color="#414651"
+                        >
+                          {requirement.text}
+                        </Text>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </Box>
+            )}
+
             <Text
               mt={2}
               mb={2}
@@ -311,6 +388,7 @@ export function ParticipantFormPage() {
           </Text>
         </Box>
       </Flex>
+
       {/* Right: Image */}
       <Box flex="1" display={{ base: 'none', md: 'block' }} position="relative" minH="100vh">
         <Image
