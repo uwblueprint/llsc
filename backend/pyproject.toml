@@ -29,7 +29,7 @@ license = {text = "MIT"}
 distribution = false
 
 [tool.pdm.scripts]
-dev = "fastapi dev app/server.py"
+dev = "fastapi dev app/server.py --port 8080"
 precommit = "pre-commit run"
 precommit-install = "pre-commit install"
 dc-down = "docker-compose down -v"

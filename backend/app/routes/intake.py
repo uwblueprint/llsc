@@ -1,9 +1,10 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.middleware.auth import has_roles
@@ -11,6 +12,7 @@ from app.models import Form, FormSubmission, User, Experience, Treatment
 from app.schemas.user import UserRole
 from app.services.implementations.intake_form_processor import IntakeFormProcessor
 from app.utilities.db_utils import get_db
+
 
 # ===== Schemas =====
 
@@ -52,14 +54,19 @@ class FormSubmissionListResponse(BaseModel):
 class ExperienceResponse(BaseModel):
     id: int
     name: str
+    scope: Literal["patient", "caregiver", "both", "none"]
+    model_config = ConfigDict(from_attributes=True)
 
 
-class ExperienceOptionsResponse(BaseModel):
+class TreatmentResponse(BaseModel):
+    id: int
+    name: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OptionsResponse(BaseModel):
     experiences: List[ExperienceResponse]
-
-
-# class TreatmentOptionsResponse(BaseModel):
-#     treatments: List[Treatment]
+    treatments: List[TreatmentResponse]
 
 
 # ===== Custom Auth Dependencies =====
@@ -352,21 +359,21 @@ async def delete_form_submission(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/experiences", response_model=ExperienceOptionsResponse)
+@router.get(
+    "/options",
+    response_model=OptionsResponse,
+)
 async def get_ranking_options(
     request: Request,
     target: str = Query(..., pattern="^(patient|caregiver)$"),
     db: Session = Depends(get_db),
-    authorized: bool = True,
-    # authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.ADMIN]),
-) -> ExperienceOptionsResponse:
+    authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.ADMIN]),
+):
     try:
         # Query DB Experience Table
-        experiences = db.query(Experience).filter(Experience.scope == target).all()
-        # service = RankingService(db)
-        # user_auth_id = request.state.user_id
-        # options = service.get_options(user_auth_id=user_auth_id, target=target)
-        return ExperienceOptionsResponse(experiences)
+        experiences = db.query(Experience).filter(or_(Experience.scope == target, Experience.scope == "both")).all()
+        treatments = db.query(Treatment).all()
+        return OptionsResponse.model_validate({"experiences": experiences, "treatments": treatments})
     except HTTPException:
         raise
     except Exception as e:
