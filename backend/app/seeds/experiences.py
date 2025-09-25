@@ -18,8 +18,11 @@ def seed_experiences(session: Session) -> None:
         {"id": 7, "name": "Returning to work or school after/during treatment", "scope": "patient"},
         {"id": 8, "name": "Speaking to your family or friends about the diagnosis", "scope": "both"},
         {"id": 9, "name": "Relapse", "scope": "patient"},
-        {"id": 10, "name": "Anxiety / Depression", "scope": "both"},
+        {"id": 10, "name": "Anxiety", "scope": "both"},
         {"id": 11, "name": "PTSD", "scope": "both"},
+        {"id": 12, "name": "Caregiver Fatigue", "scope": "caregiver"},
+        {"id": 13, "name": "Managing practical challenges", "scope": "caregiver"},
+        {"id": 14, "name": "Depression", "scope": "both"},
     ]
 
     for experience_data in experiences_data:

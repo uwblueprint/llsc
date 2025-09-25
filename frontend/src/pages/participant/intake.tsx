@@ -227,7 +227,7 @@ export default function ParticipantIntakePage() {
           )}
 
           {currentStepType === 'loved-one' && (
-            <LovedOneForm formType="participant" onSubmit={handleLovedOneNext} />
+            <LovedOneForm formType="participant" onSubmit={handleLovedOneNext} hasBloodCancer={formData.hasBloodCancer} caringForSomeone={formData.caringForSomeone} />
           )}
 
           {currentStepType === 'demographics-basic' && (

@@ -363,19 +363,20 @@ async def delete_form_submission(
     "/options",
     response_model=OptionsResponse,
 )
-async def get_ranking_options(
+async def get_intake_options(
     request: Request,
     target: str = Query(..., pattern="^(patient|caregiver|both)$"),
     db: Session = Depends(get_db),
-    authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.ADMIN]),
+    authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.VOLUNTEER, UserRole.ADMIN]),
 ):
     try:
         # Query DB Experience Table
-        if target == "both":
-            experiences = db.query(Experience).all()
-        else:
-            experiences = db.query(Experience).filter(or_(Experience.scope == target, Experience.scope == "both")).all()
-        treatments = db.query(Treatment).all()
+        experiences_query = db.query(Experience)
+        if target != "both":
+            experiences_query = experiences_query.filter(or_(Experience.scope == target, Experience.scope == "both"))
+        experiences = experiences_query.order_by(Experience.id.asc()).all()
+
+        treatments = db.query(Treatment).order_by(Treatment.id.asc()).all()
         return OptionsResponse.model_validate({"experiences": experiences, "treatments": treatments})
     except HTTPException:
         raise
