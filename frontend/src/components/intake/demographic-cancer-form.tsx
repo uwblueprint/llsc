@@ -5,6 +5,8 @@ import { FormField } from '@/components/ui/form-field';
 import { InputGroup } from '@/components/ui/input-group';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
 import { COLORS, VALIDATION } from '@/constants/form';
+import baseAPIClient from '@/APIClients/baseAPIClient';
+import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
 
 // Reusable Select component to replace inline styling
 const StyledSelect: React.FC<{
@@ -65,38 +67,6 @@ const DEFAULT_VALUES: DemographicCancerFormData = {
   otherExperience: '',
 };
 
-const TREATMENT_OPTIONS = [
-  'Unknown',
-  'Watch and Wait / Active Surveillance',
-  'Chemotherapy',
-  'Immunotherapy',
-  'Oral Chemotherapy',
-  'Radiation',
-  'Maintenance Chemotherapy',
-  'Palliative Care',
-  'Transfusions',
-  'Autologous Stem Cell Transplant',
-  'Allogeneic Stem Cell Transplant',
-  'Haplo Stem Cell Transplant',
-  'CAR-T',
-  'BTK Inhibitors',
-];
-
-const EXPERIENCE_OPTIONS = [
-  'Brain Fog',
-  'Caregiver Fatigue',
-  'Communication Challenges',
-  'Feeling Overwhelmed',
-  'Fatigue',
-  'Fertility Issues',
-  'Graft vs Host',
-  'Returning to work or school after/during treatment',
-  'Speaking to your family or friends about the diagnosis',
-  'Relapse',
-  'Anxiety / Depression',
-  'PTSD',
-];
-
 const DIAGNOSIS_OPTIONS = [
   'Acute Myeloid Leukaemia',
   'Acute Lymphoblastic Leukaemia',
@@ -114,6 +84,8 @@ const DIAGNOSIS_OPTIONS = [
 interface DemographicCancerFormProps {
   formType?: 'participant' | 'volunteer';
   onNext: (data: DemographicCancerFormData) => void;
+  hasBloodCancer?: 'yes' | 'no' | '';
+  caringForSomeone?: 'yes' | 'no' | '';
 }
 
 // Updated options to match Figma design - moved Self-describe to bottom
@@ -296,21 +268,72 @@ const MultiSelectDropdown: React.FC<{
   );
 };
 
-export function DemographicCancerForm({ formType, onNext }: DemographicCancerFormProps) {
+
+export function DemographicCancerForm({ formType, onNext, hasBloodCancer, caringForSomeone }: DemographicCancerFormProps) {
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState,
     watch,
     setValue,
   } = useForm<DemographicCancerFormData>({
     defaultValues: DEFAULT_VALUES,
   });
+  const { errors, isSubmitting } = formState;
 
   // Local state for custom values
   const [genderIdentityCustom, setGenderIdentityCustom] = useState('');
   const [pronounsCustom, setPronounsCustom] = useState('');
   const [ethnicGroupCustom, setEthnicGroupCustom] = useState('');
+  const [treatmentOptions, setTreatmentOptions] = useState([]);
+  const [experienceOptions, setExperienceOptions] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      const hasBloodCancerBool = hasBloodCancer === 'yes';
+      const caringForSomeoneBool = caringForSomeone === 'yes';
+
+      let target = '';
+      if (hasBloodCancerBool && caringForSomeoneBool) {
+        target = 'both';
+      } else if (hasBloodCancerBool) {
+        target = 'patient';
+      } else if (caringForSomeoneBool) {
+        target = 'caregiver';
+      } else {
+        // This form should only render if at least one of these answers is "yes".
+        console.error(
+          'Invalid intake flow state: neither hasBloodCancer nor caringForSomeone is "yes". ' +
+          `Received hasBloodCancer="${hasBloodCancer}", caringForSomeone="${caringForSomeone}". ` +
+          'This Demographic Cancer form expects at least one to be "yes".'
+        );
+        alert(
+          'We hit an unexpected state.\n\n' +
+          'This step is only shown if you have blood cancer or are caring for someone with blood cancer. ' +
+          'Please go back to the previous step and select "Yes" for one of those questions, or navigate to the basic demographics form.'
+        );
+        return;
+      }
+
+      const options = await getOptions(target);
+      console.log(options);
+
+      setTreatmentOptions(
+        options.treatments.map((treatment: IntakeTreatment) => treatment.name)
+      );
+
+      setExperienceOptions(
+        options.experiences.map((experience: IntakeExperience) => experience.name)
+      );
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    }
+  }, [hasBloodCancer, caringForSomeone]);
 
   const otherTreatment = watch('otherTreatment') || '';
   const otherExperience = watch('otherExperience') || '';
@@ -318,6 +341,10 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
   const pronouns = watch('pronouns') || [];
   const ethnicGroup = watch('ethnicGroup') || [];
 
+  const getOptions = async (target: string) => {
+    const options = await baseAPIClient.get(`/intake/options?target=${target}`);
+    return options.data;
+  }
   const onSubmit = async (data: DemographicCancerFormData) => {
     try {
       // Merge custom values into the arrays
@@ -710,7 +737,7 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
                 }}
                 render={({ field }) => (
                   <CheckboxGroup
-                    options={TREATMENT_OPTIONS}
+                    options={treatmentOptions}
                     selectedValues={field.value || []}
                     onValueChange={field.onChange}
                     maxSelections={2}
@@ -760,7 +787,7 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
                 }}
                 render={({ field }) => (
                   <CheckboxGroup
-                    options={EXPERIENCE_OPTIONS}
+                    options={experienceOptions}
                     selectedValues={field.value || []}
                     onValueChange={field.onChange}
                     maxSelections={5}

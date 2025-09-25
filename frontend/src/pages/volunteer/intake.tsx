@@ -148,11 +148,11 @@ export default function VolunteerIntakePage() {
         }),
         ...(prev.hasBloodCancer === 'no' &&
           prev.caringForSomeone === 'yes' && {
-            caregiverExperience: {
-              experiences: data.experiences,
-              otherExperience: data.otherExperience,
-            },
-          }),
+          caregiverExperience: {
+            experiences: data.experiences,
+            otherExperience: data.otherExperience,
+          },
+        }),
       } as IntakeFormData;
 
       void advanceAfterUpdate(updated);
@@ -228,15 +228,15 @@ export default function VolunteerIntakePage() {
           )}
 
           {currentStepType === 'demographics-cancer' && (
-            <DemographicCancerForm formType="volunteer" onNext={handleDemographicsNext} />
+            <DemographicCancerForm formType="volunteer" onNext={handleDemographicsNext} hasBloodCancer={formData.hasBloodCancer} caringForSomeone={formData.caringForSomeone} />
           )}
 
           {currentStepType === 'demographics-caregiver' && (
-            <DemographicCancerForm formType="volunteer" onNext={handleDemographicsNext} />
+            <DemographicCancerForm formType="volunteer" onNext={handleDemographicsNext} hasBloodCancer={formData.hasBloodCancer} caringForSomeone={formData.caringForSomeone} />
           )}
 
           {currentStepType === 'loved-one' && (
-            <LovedOneForm formType="volunteer" onSubmit={handleLovedOneNext} />
+            <LovedOneForm formType="volunteer" onSubmit={handleLovedOneNext} hasBloodCancer={formData.hasBloodCancer} caringForSomeone={formData.caringForSomeone} />
           )}
 
           {currentStepType === 'demographics-basic' && (

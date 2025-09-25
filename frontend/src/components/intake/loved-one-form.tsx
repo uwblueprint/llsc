@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Heading, Button, VStack, HStack, Text, Input } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { FormField } from '@/components/ui/form-field';
 import { InputGroup } from '@/components/ui/input-group';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
 import { COLORS, VALIDATION } from '@/constants/form';
+import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
+import baseAPIClient from '@/APIClients/baseAPIClient';
 
 // Reusable Select component to replace inline styling
 const StyledSelect: React.FC<{
@@ -108,9 +110,11 @@ const DIAGNOSIS_OPTIONS = [
 interface LovedOneFormProps {
   formType?: 'participant' | 'volunteer';
   onSubmit: (data: LovedOneFormData) => void;
+  hasBloodCancer?: 'yes' | 'no' | '';
+  caringForSomeone?: 'yes' | 'no' | '';
 }
 
-export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFormProps) {
+export function LovedOneForm({ formType = 'participant', onSubmit, hasBloodCancer, caringForSomeone }: LovedOneFormProps) {
   const {
     control,
     handleSubmit,
@@ -123,10 +127,63 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
 
   // Local state for custom values
   const [genderIdentityCustom, setGenderIdentityCustom] = useState('');
+  const [treatmentOptions, setTreatmentOptions] = useState([]);
+  const [experienceOptions, setExperienceOptions] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      const hasBloodCancerBool = hasBloodCancer === 'yes';
+      const caringForSomeoneBool = caringForSomeone === 'yes';
+
+      let target = '';
+      if (hasBloodCancerBool && caringForSomeoneBool) {
+        target = 'both';
+      } else if (hasBloodCancerBool) {
+        target = 'patient';
+      } else if (caringForSomeoneBool) {
+        target = 'caregiver';
+      } else {
+        // This form should only render if at least one of these answers is "yes".
+        console.error(
+          'Invalid intake flow state: neither hasBloodCancer nor caringForSomeone is "yes". ' +
+          `Received hasBloodCancer="${hasBloodCancer}", caringForSomeone="${caringForSomeone}". ` +
+          'This Demographic Cancer form expects at least one to be "yes".'
+        );
+        alert(
+          'We hit an unexpected state.\n\n' +
+          'This step is only shown if you have blood cancer or are caring for someone with blood cancer. ' +
+          'Please go back to the previous step and select "Yes" for one of those questions, or navigate to the basic demographics form.'
+        );
+        return;
+      }
+
+      const options = await getOptions(target);
+
+      setTreatmentOptions(
+        options.treatments.map((treatment: IntakeTreatment) => treatment.name)
+      );
+
+      setExperienceOptions(
+        options.experiences.map((experience: IntakeExperience) => experience.name)
+      );
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    }
+  }, [hasBloodCancer, caringForSomeone]);
 
   const otherTreatment = watch('otherTreatment') || '';
   const otherExperience = watch('otherExperience') || '';
   const genderIdentity = watch('genderIdentity') || '';
+
+  const getOptions = async (target: string) => {
+    const options = await baseAPIClient.get(`/intake/options?target=${target}`);
+    return options.data;
+  }
 
   const onFormSubmit = async (data: LovedOneFormData) => {
     try {
@@ -393,7 +450,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                 }}
                 render={({ field }) => (
                   <CheckboxGroup
-                    options={TREATMENT_OPTIONS}
+                    options={treatmentOptions}
                     selectedValues={field.value || []}
                     onValueChange={field.onChange}
                     maxSelections={2}
@@ -443,7 +500,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                 }}
                 render={({ field }) => (
                   <CheckboxGroup
-                    options={EXPERIENCE_OPTIONS}
+                    options={experienceOptions}
                     selectedValues={field.value || []}
                     onValueChange={field.onChange}
                     maxSelections={5}

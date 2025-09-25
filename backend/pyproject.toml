@@ -19,6 +19,7 @@ dependencies = [
     "psycopg2>=2.9.9",
     "boto3>=1.35.71",
     "pytest-asyncio>=0.25.3",
+    "psycopg2-binary>=2.9.10",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"

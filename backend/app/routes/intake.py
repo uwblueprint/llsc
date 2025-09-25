@@ -365,13 +365,16 @@ async def delete_form_submission(
 )
 async def get_ranking_options(
     request: Request,
-    target: str = Query(..., pattern="^(patient|caregiver)$"),
+    target: str = Query(..., pattern="^(patient|caregiver|both)$"),
     db: Session = Depends(get_db),
     authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.ADMIN]),
 ):
     try:
         # Query DB Experience Table
-        experiences = db.query(Experience).filter(or_(Experience.scope == target, Experience.scope == "both")).all()
+        if target == "both":
+            experiences = db.query(Experience).all()
+        else:
+            experiences = db.query(Experience).filter(or_(Experience.scope == target, Experience.scope == "both")).all()
         treatments = db.query(Treatment).all()
         return OptionsResponse.model_validate({"experiences": experiences, "treatments": treatments})
     except HTTPException:
