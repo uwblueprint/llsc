@@ -9,35 +9,38 @@ import baseAPIClient from '@/APIClients/baseAPIClient';
 import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
 
 // Reusable Select component to replace inline styling
-const StyledSelect: React.FC<{
+type StyledSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
   children: React.ReactNode;
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   error?: boolean;
-}> = ({ children, value, onChange, error, ...props }) => (
-  <select
-    value={value}
-    onChange={onChange}
-    style={{
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-      fontSize: '14px',
-      color: COLORS.veniceBlue,
-      borderColor: error ? '#ef4444' : '#d1d5db',
-      borderRadius: '6px',
-      height: '40px',
-      width: '100%',
-      padding: '0 12px',
-      border: '1px solid',
-      outline: 'none',
-      backgroundColor: 'white',
-      textAlign: 'left',
-      direction: 'ltr',
-    }}
-    {...props}
-  >
-    {children}
-  </select>
+};
+
+const StyledSelect = React.forwardRef<HTMLSelectElement, StyledSelectProps>(
+  ({ children, error, style, ...props }, ref) => (
+    <select
+      ref={ref}
+      {...props}
+      style={{
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontSize: '14px',
+        color: COLORS.veniceBlue,
+        borderColor: error ? '#ef4444' : '#d1d5db',
+        borderRadius: '6px',
+        height: '40px',
+        width: '100%',
+        padding: '0 12px',
+        border: '1px solid',
+        outline: 'none',
+        backgroundColor: 'white',
+        textAlign: 'left',
+        direction: 'ltr',
+        ...(style || {}),
+      }}
+    >
+      {children}
+    </select>
+  )
 );
+StyledSelect.displayName = 'StyledSelect';
 
 interface DemographicCancerFormData {
   genderIdentity: string;
@@ -48,9 +51,7 @@ interface DemographicCancerFormData {
   diagnosis: string;
   dateOfDiagnosis: string;
   treatments: string[];
-  otherTreatment: string;
   experiences: string[];
-  otherExperience: string;
 }
 
 const DEFAULT_VALUES: DemographicCancerFormData = {
@@ -62,9 +63,7 @@ const DEFAULT_VALUES: DemographicCancerFormData = {
   diagnosis: '',
   dateOfDiagnosis: '',
   treatments: [],
-  otherTreatment: '',
   experiences: [],
-  otherExperience: '',
 };
 
 const DIAGNOSIS_OPTIONS = [
@@ -335,8 +334,6 @@ export function DemographicCancerForm({ formType, onNext, hasBloodCancer, caring
     }
   }, [hasBloodCancer, caringForSomeone]);
 
-  const otherTreatment = watch('otherTreatment') || '';
-  const otherExperience = watch('otherExperience') || '';
   const genderIdentity = watch('genderIdentity') || '';
   const pronouns = watch('pronouns') || [];
   const ethnicGroup = watch('ethnicGroup') || [];
@@ -727,23 +724,12 @@ export function DemographicCancerForm({ formType, onNext, hasBloodCancer, caring
               <Controller
                 name="treatments"
                 control={control}
-                rules={{
-                  validate: (value) => {
-                    if (value && value.includes('Other') && !otherTreatment.trim()) {
-                      return 'Please specify the other treatment';
-                    }
-                    return true;
-                  },
-                }}
                 render={({ field }) => (
                   <CheckboxGroup
                     options={treatmentOptions}
                     selectedValues={field.value || []}
                     onValueChange={field.onChange}
                     maxSelections={2}
-                    showOther
-                    otherValue={otherTreatment}
-                    onOtherChange={(value) => setValue('otherTreatment', value)}
                   />
                 )}
               />
@@ -777,23 +763,12 @@ export function DemographicCancerForm({ formType, onNext, hasBloodCancer, caring
               <Controller
                 name="experiences"
                 control={control}
-                rules={{
-                  validate: (value) => {
-                    if (value && value.includes('Other') && !otherExperience.trim()) {
-                      return 'Please specify the other experience';
-                    }
-                    return true;
-                  },
-                }}
                 render={({ field }) => (
                   <CheckboxGroup
                     options={experienceOptions}
                     selectedValues={field.value || []}
                     onValueChange={field.onChange}
                     maxSelections={5}
-                    showOther
-                    otherValue={otherExperience}
-                    onOtherChange={(value) => setValue('otherExperience', value)}
                   />
                 )}
               />

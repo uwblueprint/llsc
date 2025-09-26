@@ -9,35 +9,38 @@ import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 
 // Reusable Select component to replace inline styling
-const StyledSelect: React.FC<{
+type StyledSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
   children: React.ReactNode;
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   error?: boolean;
-}> = ({ children, value, onChange, error, ...props }) => (
-  <select
-    value={value}
-    onChange={onChange}
-    style={{
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-      fontSize: '14px',
-      color: COLORS.veniceBlue,
-      borderColor: error ? '#ef4444' : '#d1d5db',
-      borderRadius: '6px',
-      height: '40px',
-      width: '100%',
-      padding: '0 12px',
-      border: '1px solid',
-      outline: 'none',
-      backgroundColor: 'white',
-      textAlign: 'left',
-      direction: 'ltr',
-    }}
-    {...props}
-  >
-    {children}
-  </select>
+};
+
+const StyledSelect = React.forwardRef<HTMLSelectElement, StyledSelectProps>(
+  ({ children, error, style, ...props }, ref) => (
+    <select
+      ref={ref}
+      {...props}
+      style={{
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontSize: '14px',
+        color: COLORS.veniceBlue,
+        borderColor: error ? '#ef4444' : '#d1d5db',
+        borderRadius: '6px',
+        height: '40px',
+        width: '100%',
+        padding: '0 12px',
+        border: '1px solid',
+        outline: 'none',
+        backgroundColor: 'white',
+        textAlign: 'left',
+        direction: 'ltr',
+        ...(style || {}),
+      }}
+    >
+      {children}
+    </select>
+  )
 );
+StyledSelect.displayName = 'StyledSelect';
 
 interface LovedOneFormData {
   genderIdentity: string;
@@ -45,9 +48,7 @@ interface LovedOneFormData {
   diagnosis: string;
   dateOfDiagnosis: string;
   treatments: string[];
-  otherTreatment: string;
   experiences: string[];
-  otherExperience: string;
 }
 
 const DEFAULT_VALUES: LovedOneFormData = {
@@ -56,42 +57,8 @@ const DEFAULT_VALUES: LovedOneFormData = {
   diagnosis: '',
   dateOfDiagnosis: '',
   treatments: [],
-  otherTreatment: '',
   experiences: [],
-  otherExperience: '',
 };
-
-const TREATMENT_OPTIONS = [
-  'Unknown',
-  'Watch and Wait / Active Surveillance',
-  'Chemotherapy',
-  'Immunotherapy',
-  'Oral Chemotherapy',
-  'Radiation',
-  'Maintenance Chemotherapy',
-  'Palliative Care',
-  'Transfusions',
-  'Autologous Stem Cell Transplant',
-  'Allogeneic Stem Cell Transplant',
-  'Haplo Stem Cell Transplant',
-  'CAR-T',
-  'BTK Inhibitors',
-];
-
-const EXPERIENCE_OPTIONS = [
-  'Brain Fog',
-  'Caregiver Fatigue',
-  'Communication Challenges',
-  'Feeling Overwhelmed',
-  'Fatigue',
-  'Fertility Issues',
-  'Graft vs Host',
-  'Returning to work or school after/during treatment',
-  'Speaking to your family or friends about the diagnosis',
-  'Relapse',
-  'Anxiety / Depression',
-  'PTSD',
-];
 
 const DIAGNOSIS_OPTIONS = [
   'Acute Myeloid Leukaemia',
@@ -176,8 +143,6 @@ export function LovedOneForm({ formType = 'participant', onSubmit, hasBloodCance
     }
   }, [hasBloodCancer, caringForSomeone]);
 
-  const otherTreatment = watch('otherTreatment') || '';
-  const otherExperience = watch('otherExperience') || '';
   const genderIdentity = watch('genderIdentity') || '';
 
   const getOptions = async (target: string) => {
@@ -440,23 +405,12 @@ export function LovedOneForm({ formType = 'participant', onSubmit, hasBloodCance
               <Controller
                 name="treatments"
                 control={control}
-                rules={{
-                  validate: (value) => {
-                    if (value && value.includes('Other') && !otherTreatment.trim()) {
-                      return 'Please specify the other treatment';
-                    }
-                    return true;
-                  },
-                }}
                 render={({ field }) => (
                   <CheckboxGroup
                     options={treatmentOptions}
                     selectedValues={field.value || []}
                     onValueChange={field.onChange}
                     maxSelections={2}
-                    showOther
-                    otherValue={otherTreatment}
-                    onOtherChange={(value) => setValue('otherTreatment', value)}
                   />
                 )}
               />
@@ -490,23 +444,12 @@ export function LovedOneForm({ formType = 'participant', onSubmit, hasBloodCance
               <Controller
                 name="experiences"
                 control={control}
-                rules={{
-                  validate: (value) => {
-                    if (value && value.includes('Other') && !otherExperience.trim()) {
-                      return 'Please specify the other experience';
-                    }
-                    return true;
-                  },
-                }}
                 render={({ field }) => (
                   <CheckboxGroup
                     options={experienceOptions}
                     selectedValues={field.value || []}
                     onValueChange={field.onChange}
                     maxSelections={5}
-                    showOther
-                    otherValue={otherExperience}
-                    onOtherChange={(value) => setValue('otherExperience', value)}
                   />
                 )}
               />
