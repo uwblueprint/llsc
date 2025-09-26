@@ -65,8 +65,6 @@ class UserData(Base):
     date_of_diagnosis = Column(Date, nullable=True)
 
     # "Other" text fields for custom entries
-    other_treatment = Column(Text, nullable=True)
-    other_experience = Column(Text, nullable=True)
     other_ethnic_group = Column(Text, nullable=True)
     gender_identity_custom = Column(Text, nullable=True)
 
@@ -81,8 +79,6 @@ class UserData(Base):
     # Loved One Cancer Experience
     loved_one_diagnosis = Column(String(100), nullable=True)
     loved_one_date_of_diagnosis = Column(Date, nullable=True)
-    loved_one_other_treatment = Column(Text, nullable=True)
-    loved_one_other_experience = Column(Text, nullable=True)
 
     # Many-to-many relationships
     treatments = relationship("Treatment", secondary=user_treatments, back_populates="users")

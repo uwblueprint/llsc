@@ -175,8 +175,6 @@ class IntakeFormProcessor:
     def _process_cancer_experience(self, user_data: UserData, cancer_experience: Dict[str, Any]):
         """Process cancer experience information."""
         user_data.diagnosis = self._trim_text(cancer_experience.get("diagnosis"))
-        user_data.other_treatment = self._trim_text(cancer_experience.get("other_treatment"))
-        user_data.other_experience = self._trim_text(cancer_experience.get("other_experience"))
 
         # Parse diagnosis date with strict validation
         if "date_of_diagnosis" in cancer_experience:
@@ -326,10 +324,6 @@ class IntakeFormProcessor:
                 raise ValueError(
                     f"Invalid date format for loved one dateOfDiagnosis: {cancer_exp.get('date_of_diagnosis')}"
                 )
-
-        # Handle "Other" treatment and experience text for loved one with trimming
-        user_data.loved_one_other_treatment = self._trim_text(cancer_exp.get("other_treatment"))
-        user_data.loved_one_other_experience = self._trim_text(cancer_exp.get("other_experience"))
 
     def _process_loved_one_treatments(self, user_data: UserData, cancer_exp: Dict[str, Any]):
         """Process loved one treatments - map frontend names to database records."""
