@@ -21,6 +21,26 @@ export function ParticipantFormPage() {
   const [passwordValidationErrors, setPasswordValidationErrors] = useState<string[]>([]);
   const router = useRouter();
 
+  // Frontend password validation function that mirrors backend logic
+  const validatePasswordFrontend = (password: string): string[] => {
+    const errors: string[] = [];
+    if (password.length < 8) {
+      errors.push('Password must be at least 8 characters long');
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push('Password must contain at least one uppercase letter');
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push('Password must contain at least one lowercase letter');
+    }
+    if (!/[!@#$%^&*]/.test(password)) {
+      errors.push(
+        'Password must contain at least one special character (!, @, #, $, %, ^, &, or *)',
+      );
+    }
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -28,6 +48,12 @@ export function ParticipantFormPage() {
       setError('Passwords do not match');
       return;
     }
+
+    if (passwordValidationErrors.length > 0) {
+      setError('Please fix the password requirements above');
+      return;
+    }
+
     const userData = {
       first_name: '',
       last_name: '',
@@ -46,14 +72,7 @@ export function ParticipantFormPage() {
       setError(''); // Clear any error messages
       router.push(`/verify?email=${encodeURIComponent(email)}&role=${signupType}`);
     } else {
-      // Handle registration failure
-      if (result.error === 'password_validation' && result.validationErrors) {
-        setError(''); // Clear any previous errors
-        setPasswordValidationErrors(result.validationErrors);
-      } else {
-        setPasswordValidationErrors([]); // Clear validation errors
-        setError(result.error || 'Registration failed');
-      }
+      setError(result.error || 'Registration failed');
     }
   };
 
@@ -170,7 +189,13 @@ export function ParticipantFormPage() {
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    const newPassword = e.target.value;
+                    setPassword(newPassword);
+                    // Real-time validation as user types
+                    const errors = validatePasswordFrontend(newPassword);
+                    setPasswordValidationErrors(errors);
+                  }}
                 />
               </InputGroup>
             </Field>
@@ -210,8 +235,8 @@ export function ParticipantFormPage() {
               </InputGroup>
             </Field>
 
-            {/* Password Requirements - Only show when there are validation errors */}
-            {passwordValidationErrors.length > 0 && (
+            {/* Password Requirements - Show when user starts typing */}
+            {password.length > 0 && (
               <Box mb={4}>
                 <Box display="flex" flexDirection="column" gap="6px">
                   {[
