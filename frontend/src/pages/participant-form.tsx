@@ -18,7 +18,28 @@ export function ParticipantFormPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [passwordValidationErrors, setPasswordValidationErrors] = useState<string[]>([]);
   const router = useRouter();
+
+  // Frontend password validation function that mirrors backend logic
+  const validatePasswordFrontend = (password: string): string[] => {
+    const errors: string[] = [];
+    if (password.length < 8) {
+      errors.push('Password must be at least 8 characters long');
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push('Password must contain at least one uppercase letter');
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push('Password must contain at least one lowercase letter');
+    }
+    if (!/[!@#$%^&*]/.test(password)) {
+      errors.push(
+        'Password must contain at least one special character (!, @, #, $, %, ^, &, or *)',
+      );
+    }
+    return errors;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,35 +48,31 @@ export function ParticipantFormPage() {
       setError('Passwords do not match');
       return;
     }
-    try {
-      const userData = {
-        first_name: '',
-        last_name: '',
-        email,
-        password,
-        role: signupType === 'volunteer' ? UserRole.VOLUNTEER : UserRole.PARTICIPANT,
-        signupMethod: SignUpMethod.PASSWORD,
-      };
-      const result = await register(userData);
+
+    if (passwordValidationErrors.length > 0) {
+      setError('Please fix the password requirements above');
+      return;
+    }
+
+    const userData = {
+      first_name: '',
+      last_name: '',
+      email,
+      password,
+      role: signupType === 'volunteer' ? UserRole.VOLUNTEER : UserRole.PARTICIPANT,
+      signupMethod: SignUpMethod.PASSWORD,
+    };
+
+    const result = await register(userData);
+    console.log('Registration result:', result);
+
+    if (result.success) {
       console.log('Registration success:', result);
+      setPasswordValidationErrors([]); // Clear validation errors on success
+      setError(''); // Clear any error messages
       router.push(`/verify?email=${encodeURIComponent(email)}&role=${signupType}`);
-    } catch (err: unknown) {
-      console.error('Registration error:', err);
-      if (
-        err &&
-        typeof err === 'object' &&
-        'response' in err &&
-        err.response &&
-        typeof err.response === 'object' &&
-        'data' in err.response &&
-        err.response.data &&
-        typeof err.response.data === 'object' &&
-        'detail' in err.response.data
-      ) {
-        setError((err.response.data as { detail: string }).detail || 'Registration failed');
-      } else {
-        setError('Registration failed');
-      }
+    } else {
+      setError(result.error || 'Registration failed');
     }
   };
 
@@ -172,7 +189,13 @@ export function ParticipantFormPage() {
                   borderColor="#D5D7DA"
                   _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    const newPassword = e.target.value;
+                    setPassword(newPassword);
+                    // Real-time validation as user types
+                    const errors = validatePasswordFrontend(newPassword);
+                    setPasswordValidationErrors(errors);
+                  }}
                 />
               </InputGroup>
             </Field>
@@ -211,6 +234,76 @@ export function ParticipantFormPage() {
                 />
               </InputGroup>
             </Field>
+
+            {/* Password Requirements - Show when user starts typing */}
+            {password.length > 0 && (
+              <Box mb={4}>
+                <Box display="flex" flexDirection="column" gap="6px">
+                  {[
+                    { text: 'At least 8 characters', key: 'long' },
+                    { text: 'At least 1 uppercase letter', key: 'uppercase' },
+                    { text: 'At least 1 lowercase letter', key: 'lowercase' },
+                    {
+                      text: 'At least 1 special character (!, @, #, $, %, ^, &, or *)',
+                      key: 'special',
+                    },
+                  ].map((requirement, index) => {
+                    const hasError = passwordValidationErrors.some((error) => {
+                      if (requirement.key === 'uppercase' && error.includes('uppercase'))
+                        return true;
+                      if (requirement.key === 'lowercase' && error.includes('lowercase'))
+                        return true;
+                      if (requirement.key === 'long' && error.includes('long')) return true;
+                      if (requirement.key === 'special' && error.includes('special')) return true;
+                      return false;
+                    });
+
+                    return (
+                      <Box key={index} display="flex" alignItems="center" gap="8px">
+                        <Box
+                          width="18px"
+                          height="18px"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          {hasError ? (
+                            <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                              <path
+                                d="M1 1L8 8M8 1L1 8"
+                                stroke="#C75B5C"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          ) : (
+                            <svg width="12" height="8.25" viewBox="0 0 12 8.25" fill="none">
+                              <path
+                                d="M1 4.125L4.5 7.625L11 1.125"
+                                stroke="#056067"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </Box>
+                        <Text
+                          fontFamily="'Open Sans', sans-serif"
+                          fontWeight={600}
+                          fontSize="14px"
+                          lineHeight="1.4285714285714286em"
+                          color="#414651"
+                        >
+                          {requirement.text}
+                        </Text>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </Box>
+            )}
+
             <Text
               mt={2}
               mb={2}
@@ -311,6 +404,7 @@ export function ParticipantFormPage() {
           </Text>
         </Box>
       </Flex>
+
       {/* Right: Image */}
       <Box flex="1" display={{ base: 'none', md: 'block' }} position="relative" minH="100vh">
         <Image

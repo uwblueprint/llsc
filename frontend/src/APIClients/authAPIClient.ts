@@ -28,6 +28,7 @@ export interface AuthResult {
   user?: AuthenticatedUser;
   error?: string;
   errorCode?: string;
+  validationErrors?: string[];
 }
 
 const login = async (email: string, password: string): Promise<AuthResult> => {
@@ -223,9 +224,28 @@ export const register = async ({
       } else if (response?.status === 400) {
         const detail = response?.data?.detail || 'Invalid registration data';
         return { success: false, error: detail };
+      } else if (response?.status === 422) {
+        // Pydantic validation errors
+        const validationErrors = response?.data?.detail;
+        console.log('[REGISTER] Validation errors:', validationErrors);
+        if (Array.isArray(validationErrors)) {
+          // Extract password validation errors specifically
+          const passwordErrors = validationErrors
+            .filter((err) => err.loc && err.loc.includes('password'))
+            .map((err) => err.msg);
+
+          if (passwordErrors.length > 0) {
+            return {
+              success: false,
+              error: 'password_validation',
+              validationErrors: passwordErrors,
+            };
+          }
+        }
+        // Fallback for other validation errors
+        return { success: false, error: response?.data?.detail || 'Validation failed' };
       }
     }
-
     return { success: false, error: 'Registration failed. Please try again.' };
   }
 };

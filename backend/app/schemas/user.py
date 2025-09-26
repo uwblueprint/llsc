@@ -53,7 +53,7 @@ class UserCreateRequest(UserBase):
     Request schema for user creation with conditional password validation
     """
 
-    password: Optional[str] = Field(None, min_length=8)
+    password: Optional[str] = Field(None)
     auth_id: Optional[str] = Field(None)
     signup_method: SignUpMethod = Field(default=SignUpMethod.PASSWORD)
 
@@ -65,12 +65,18 @@ class UserCreateRequest(UserBase):
             raise ValueError("Password is required for password signup")
 
         if password:
-            if not any(char.isdigit() for char in password):
-                raise ValueError("Password must contain at least one digit")
+            errors = []
+            if len(password) < 8:
+                errors.append("Password must be at least 8 characters long")
             if not any(char.isupper() for char in password):
-                raise ValueError("Password must contain at least one uppercase letter")
+                errors.append("Password must contain at least one uppercase letter")
             if not any(char.islower() for char in password):
-                raise ValueError("Password must contain at least one lowercase letter")
+                errors.append("Password must contain at least one lowercase letter")
+            if not any(char in "!@#$%^&*" for char in password):
+                errors.append("Password must contain at least one special character (!, @, #, $, %, ^, &, or *)")
+
+            if errors:
+                raise ValueError(errors)
 
         return password
 
