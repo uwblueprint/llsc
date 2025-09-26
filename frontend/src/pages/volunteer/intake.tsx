@@ -28,9 +28,7 @@ interface DemographicCancerFormData {
   diagnosis: string;
   dateOfDiagnosis: string;
   treatments: string[];
-  otherTreatment: string;
   experiences: string[];
-  otherExperience: string;
 }
 
 interface LovedOneFormData {
@@ -40,9 +38,7 @@ interface LovedOneFormData {
   diagnosis: string;
   dateOfDiagnosis: string;
   treatments: string[];
-  otherTreatment: string;
   experiences: string[];
-  otherExperience: string;
 }
 
 interface BasicDemographicsFormData {
@@ -142,15 +138,12 @@ export default function VolunteerIntakePage() {
             dateOfDiagnosis: data.dateOfDiagnosis,
             treatments: data.treatments,
             experiences: data.experiences,
-            otherTreatment: data.otherTreatment,
-            otherExperience: data.otherExperience,
           },
         }),
         ...(prev.hasBloodCancer === 'no' &&
           prev.caringForSomeone === 'yes' && {
           caregiverExperience: {
             experiences: data.experiences,
-            otherExperience: data.otherExperience,
           },
         }),
       } as IntakeFormData;
@@ -175,8 +168,6 @@ export default function VolunteerIntakePage() {
             dateOfDiagnosis: data.dateOfDiagnosis,
             treatments: data.treatments,
             experiences: data.experiences,
-            otherTreatment: data.otherTreatment,
-            otherExperience: data.otherExperience,
           },
         },
       };
