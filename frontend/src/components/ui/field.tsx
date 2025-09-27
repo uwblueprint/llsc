@@ -1,15 +1,14 @@
 import React from 'react';
-import { Box } from '@chakra-ui/react';
+import { Box, BoxProps } from '@chakra-ui/react';
 
-interface FieldProps {
+interface FieldProps extends BoxProps {
   label: React.ReactNode;
   children: React.ReactNode;
-  flex?: string | number;
 }
 
-export const Field: React.FC<FieldProps> = ({ label, children, flex }) => {
+export const Field: React.FC<FieldProps> = ({ label, children, ...boxProps }) => {
   return (
-    <Box flex={flex}>
+    <Box {...boxProps}>
       {label}
       {children}
     </Box>
