@@ -62,18 +62,40 @@ def db_session():
 
         # Create test treatments (predefined)
         treatments = [
-            Treatment(id=1, name="Chemotherapy"),
-            Treatment(id=2, name="Surgery"),
-            Treatment(id=3, name="Radiation Therapy"),
+            Treatment(id=1, name="Unknown"),
+            Treatment(id=2, name="Watch and Wait / Active Surveillance"),
+            Treatment(id=3, name="Chemotherapy"),
+            Treatment(id=4, name="Immunotherapy"),
+            Treatment(id=5, name="Oral Chemotherapy"),
+            Treatment(id=6, name="Radiation"),
+            Treatment(id=7, name="Maintenance Chemotherapy"),
+            Treatment(id=8, name="Palliative Care"),
+            Treatment(id=9, name="Transfusions"),
+            Treatment(id=10, name="Autologous Stem Cell Transplant"),
+            Treatment(id=11, name="Allogeneic Stem Cell Transplant"),
+            Treatment(id=12, name="Haplo Stem Cell Transplant"),
+            Treatment(id=13, name="CAR-T"),
+            Treatment(id=14, name="BTK Inhibitors"),
         ]
         for treatment in treatments:
             session.add(treatment)
 
         # Create test experiences (predefined)
         experiences = [
-            Experience(id=1, name="Anxiety"),
-            Experience(id=2, name="Fatigue"),
-            Experience(id=3, name="Depression"),
+            Experience(id=1, name="Brain Fog", scope="both"),
+            Experience(id=2, name="Communication Challenges", scope="caregiver"),
+            Experience(id=3, name="Feeling Overwhelmed", scope="both"),
+            Experience(id=4, name="Fatigue", scope="both"),
+            Experience(id=5, name="Fertility Issues", scope="patient"),
+            Experience(id=6, name="Graft vs Host", scope="patient"),
+            Experience(id=7, name="Returning to work or school after/during treatment", scope="patient"),
+            Experience(id=8, name="Speaking to your family or friends about the diagnosis", scope="both"),
+            Experience(id=9, name="Relapse", scope="patient"),
+            Experience(id=10, name="Anxiety", scope="both"),
+            Experience(id=11, name="PTSD", scope="both"),
+            Experience(id=12, name="Caregiver Fatigue", scope="caregiver"),
+            Experience(id=13, name="Managing practical challenges", scope="caregiver"),
+            Experience(id=14, name="Depression", scope="both"),
         ]
         for experience in experiences:
             session.add(experience)
@@ -142,10 +164,8 @@ def test_participant_with_cancer_only(db_session, test_user):
             "cancer_experience": {
                 "diagnosis": "Leukemia",
                 "date_of_diagnosis": "01/01/2023",
-                "treatments": ["Chemotherapy", "Surgery"],
+                "treatments": ["Chemotherapy", "Transfusions"],
                 "experiences": ["Anxiety", "Fatigue"],
-                "other_treatment": "Some custom treatment details",
-                "other_experience": "Custom experience notes",
             },
         }
 
@@ -171,8 +191,6 @@ def test_participant_with_cancer_only(db_session, test_user):
         # Assert - Cancer Experience
         assert user_data.diagnosis == "Leukemia"
         assert user_data.date_of_diagnosis == date(2023, 1, 1)
-        assert user_data.other_treatment == "Some custom treatment details"
-        assert user_data.other_experience == "Custom experience notes"
 
         # Assert - Flow Control
         assert user_data.has_blood_cancer == "yes"
@@ -181,7 +199,7 @@ def test_participant_with_cancer_only(db_session, test_user):
         # Assert - Treatments (many-to-many)
         treatment_names = [t.name for t in user_data.treatments]
         assert "Chemotherapy" in treatment_names
-        assert "Surgery" in treatment_names
+        assert "Transfusions" in treatment_names
         assert len(user_data.treatments) == 2
 
         # Assert - Experiences (many-to-many)
@@ -195,80 +213,6 @@ def test_participant_with_cancer_only(db_session, test_user):
         assert user_data.loved_one_diagnosis is None
         assert len(user_data.loved_one_treatments) == 0
         assert len(user_data.loved_one_experiences) == 0
-
-        db_session.commit()
-
-    except Exception:
-        db_session.rollback()
-        raise
-
-
-def test_custom_treatments_and_experiences(db_session, test_user):
-    """Test that custom treatments and experiences are created in the database"""
-    try:
-        # Arrange
-        processor = IntakeFormProcessor(db_session)
-        form_data = {
-            "form_type": "participant",
-            "has_blood_cancer": "yes",
-            "caring_for_someone": "no",
-            "personal_info": {
-                "first_name": "Jane",
-                "last_name": "Smith",
-                "date_of_birth": "20/12/1990",
-                "phone_number": "555-987-6543",
-                "city": "Vancouver",
-                "province": "British Columbia",
-                "postal_code": "V6B 1A1",
-            },
-            "demographics": {
-                "gender_identity": "Female",
-                "pronouns": ["she", "her"],
-                "ethnic_group": ["Asian"],
-                "marital_status": "Single",
-                "has_kids": "no",
-            },
-            "cancer_experience": {
-                "diagnosis": "Lymphoma",
-                "date_of_diagnosis": "15/06/2022",
-                "treatments": ["Custom Treatment X", "Experimental Therapy Y"],  # New treatments
-                "experiences": ["Custom Symptom A", "Unique Experience B"],  # New experiences
-                "other_treatment": "Details about experimental treatment",
-                "other_experience": "Unique side effects experienced",
-            },
-        }
-
-        # Verify custom treatments/experiences don't exist yet
-        assert db_session.query(Treatment).filter(Treatment.name == "Custom Treatment X").first() is None
-        assert db_session.query(Experience).filter(Experience.name == "Custom Symptom A").first() is None
-
-        # Act
-        user_data = processor.process_form_submission(str(test_user.id), form_data)
-
-        # Assert - New treatments were created
-        custom_treatment_x = db_session.query(Treatment).filter(Treatment.name == "Custom Treatment X").first()
-        custom_treatment_y = db_session.query(Treatment).filter(Treatment.name == "Experimental Therapy Y").first()
-        assert custom_treatment_x is not None
-        assert custom_treatment_y is not None
-
-        # Assert - New experiences were created
-        custom_symptom_a = db_session.query(Experience).filter(Experience.name == "Custom Symptom A").first()
-        unique_experience_b = db_session.query(Experience).filter(Experience.name == "Unique Experience B").first()
-        assert custom_symptom_a is not None
-        assert unique_experience_b is not None
-
-        # Assert - User is linked to custom treatments and experiences
-        user_treatment_names = [t.name for t in user_data.treatments]
-        user_experience_names = [e.name for e in user_data.experiences]
-
-        assert "Custom Treatment X" in user_treatment_names
-        assert "Experimental Therapy Y" in user_treatment_names
-        assert "Custom Symptom A" in user_experience_names
-        assert "Unique Experience B" in user_experience_names
-
-        # Assert - Custom text fields are stored
-        assert user_data.other_treatment == "Details about experimental treatment"
-        assert user_data.other_experience == "Unique side effects experienced"
 
         db_session.commit()
 
@@ -303,18 +247,15 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
                 "has_kids": "yes",
             },
             "caregiver_experience": {
-                "experiences": ["Financial Stress", "Relationship Changes"],
-                "other_experience": "Dealing with healthcare system complexity",
+                "experiences": ["Anxiety", "Depression"],
             },
             "loved_one": {
                 "demographics": {"gender_identity": "Male", "age": "45-54"},
                 "cancer_experience": {
                     "diagnosis": "Brain Cancer",
                     "date_of_diagnosis": "10/05/2020",
-                    "treatments": ["Surgery", "Radiation Therapy"],
-                    "experiences": ["Depression", "Cognitive Changes"],
-                    "other_treatment": "Specialized brain surgery",
-                    "other_experience": "Memory issues post-surgery",
+                    "treatments": ["Transfusions", "Radiation"],
+                    "experiences": ["Depression", "Fatigue"],
                 },
             },
         }
@@ -338,9 +279,8 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
 
         # Assert - Caregiver Experience (mapped to user experiences)
         experience_names = [e.name for e in user_data.experiences]
-        assert "Financial Stress" in experience_names
-        assert "Relationship Changes" in experience_names
-        assert user_data.other_experience == "Dealing with healthcare system complexity"
+        assert "Anxiety" in experience_names
+        assert "Depression" in experience_names
 
         # Assert - No personal cancer experience
         assert user_data.diagnosis is None
@@ -357,10 +297,10 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
         loved_one_treatment_names = [t.name for t in user_data.loved_one_treatments]
         loved_one_experience_names = [e.name for e in user_data.loved_one_experiences]
 
-        assert "Surgery" in loved_one_treatment_names
-        assert "Radiation Therapy" in loved_one_treatment_names
+        assert "Transfusions" in loved_one_treatment_names
+        assert "Radiation" in loved_one_treatment_names
         assert "Depression" in loved_one_experience_names
-        assert "Cognitive Changes" in loved_one_experience_names
+        assert "Fatigue" in loved_one_experience_names
 
         db_session.commit()
 
@@ -399,20 +339,16 @@ def test_form_submission_json_structure(db_session, test_user):
             "cancer_experience": {
                 "diagnosis": "Ovarian Cancer",
                 "date_of_diagnosis": "03/07/2022",
-                "treatments": ["Chemotherapy", "Custom Treatment Protocol"],
-                "experiences": ["Anxiety", "Custom Side Effect"],
-                "other_treatment": "Experimental immunotherapy trial",
-                "other_experience": "Severe neuropathy affecting daily activities",
+                "treatments": ["Chemotherapy", "CAR-T"],
+                "experiences": ["Anxiety", "Fertility Issues"],
             },
             "loved_one": {
                 "demographics": {"gender_identity": "Female", "age": "65+"},
                 "cancer_experience": {
                     "diagnosis": "Lung Cancer",
                     "date_of_diagnosis": "15/01/2021",
-                    "treatments": ["Radiation Therapy", "Palliative Care"],
-                    "experiences": ["Sleep Problems", "Loss of Appetite"],
-                    "other_treatment": "Comfort care measures",
-                    "other_experience": "End-of-life care planning",
+                    "treatments": ["Radiation", "Palliative Care"],
+                    "experiences": ["Brain Fog", "Feeling Overwhelmed"],
                 },
             },
         }
@@ -427,32 +363,16 @@ def test_form_submission_json_structure(db_session, test_user):
         assert "Other" in user_data.ethnic_group and "Asian" in user_data.ethnic_group
         assert user_data.other_ethnic_group == "Mixed heritage - Filipino and Indigenous"
 
-        # Assert - Custom Treatments Created
-        custom_treatment = db_session.query(Treatment).filter(Treatment.name == "Custom Treatment Protocol").first()
-        assert custom_treatment is not None
-        assert custom_treatment in user_data.treatments
-
-        # Assert - Custom Experiences Created
-        custom_experience = db_session.query(Experience).filter(Experience.name == "Custom Side Effect").first()
-        assert custom_experience is not None
-        assert custom_experience in user_data.experiences
-
-        # Assert - "Other" Text Fields
-        assert user_data.other_treatment == "Experimental immunotherapy trial"
-        assert user_data.other_experience == "Severe neuropathy affecting daily activities"
-
         # Assert - Loved One Complex Data
         assert user_data.loved_one_gender_identity == "Female"
         assert user_data.loved_one_age == "65+"
         assert user_data.loved_one_diagnosis == "Lung Cancer"
-        assert user_data.loved_one_other_treatment == "Comfort care measures"
-        assert user_data.loved_one_other_experience == "End-of-life care planning"
 
         # Assert - Both User and Loved One Have Relationships
-        assert len(user_data.treatments) >= 2  # Chemo + Custom
-        assert len(user_data.experiences) >= 2  # Anxiety + Custom
+        assert len(user_data.treatments) >= 2  # Chemo + CAR-T
+        assert len(user_data.experiences) >= 2  # Anxiety + Fertility
         assert len(user_data.loved_one_treatments) >= 2  # Radiation + Palliative
-        assert len(user_data.loved_one_experiences) >= 2  # Sleep + Appetite
+        assert len(user_data.loved_one_experiences) >= 2  # Brain Fog + Feeling Overwhelmed
 
         db_session.commit()
 
@@ -506,7 +426,6 @@ def test_empty_and_minimal_data_handling(db_session, test_user):
 
         # Assert - Optional sections remain None/empty
         assert user_data.diagnosis is None
-        assert user_data.other_treatment is None
         assert len(user_data.treatments) == 0
         assert len(user_data.experiences) == 0
         assert user_data.loved_one_gender_identity is None
@@ -548,10 +467,8 @@ def test_participant_caregiver_without_cancer(db_session, test_user):
                 "cancer_experience": {
                     "diagnosis": "Prostate Cancer",
                     "date_of_diagnosis": "20/03/2021",
-                    "treatments": ["Surgery", "Hormone Therapy"],
-                    "experiences": ["Anxiety", "Relationship Changes"],
-                    "other_treatment": "Robotic surgery",
-                    "other_experience": "Intimacy concerns",
+                    "treatments": ["Transfusions", "Immunotherapy"],
+                    "experiences": ["Anxiety", "Communication Challenges"],
                 },
             },
         }
@@ -582,16 +499,14 @@ def test_participant_caregiver_without_cancer(db_session, test_user):
         assert user_data.loved_one_age == "55-64"
         assert user_data.loved_one_diagnosis == "Prostate Cancer"
         assert user_data.loved_one_date_of_diagnosis == date(2021, 3, 20)
-        assert user_data.loved_one_other_treatment == "Robotic surgery"
-        assert user_data.loved_one_other_experience == "Intimacy concerns"
 
         # Assert - Loved One Relationships
         loved_one_treatment_names = [t.name for t in user_data.loved_one_treatments]
         loved_one_experience_names = [e.name for e in user_data.loved_one_experiences]
-        assert "Surgery" in loved_one_treatment_names
-        assert "Hormone Therapy" in loved_one_treatment_names
+        assert "Transfusions" in loved_one_treatment_names
+        assert "Immunotherapy" in loved_one_treatment_names
         assert "Anxiety" in loved_one_experience_names
-        assert "Relationship Changes" in loved_one_experience_names
+        assert "Communication Challenges" in loved_one_experience_names
 
         db_session.commit()
 
@@ -629,20 +544,16 @@ def test_participant_cancer_patient_and_caregiver(db_session, test_user):
             "cancer_experience": {
                 "diagnosis": "Lymphoma",
                 "date_of_diagnosis": "15/08/2022",
-                "treatments": ["Chemotherapy", "Radiation Therapy"],
+                "treatments": ["Chemotherapy", "Radiation"],
                 "experiences": ["Fatigue", "Depression"],
-                "other_treatment": "Targeted therapy",
-                "other_experience": "Cognitive fog",
             },
             "loved_one": {
                 "demographics": {"gender_identity": "Female", "age": "35-44"},
                 "cancer_experience": {
                     "diagnosis": "Breast Cancer",
                     "date_of_diagnosis": "10/01/2023",
-                    "treatments": ["Surgery", "Chemotherapy"],
-                    "experiences": ["Hair Loss", "Body Image Issues"],
-                    "other_treatment": "Reconstruction surgery",
-                    "other_experience": "Fertility concerns",
+                    "treatments": ["Transfusions", "Chemotherapy"],
+                    "experiences": ["Graft vs Host", "Feeling Overwhelmed"],
                 },
             },
         }
@@ -657,28 +568,26 @@ def test_participant_cancer_patient_and_caregiver(db_session, test_user):
         # Assert - Own Cancer Experience
         assert user_data.diagnosis == "Lymphoma"
         assert user_data.date_of_diagnosis == date(2022, 8, 15)
-        assert user_data.other_treatment == "Targeted therapy"
-        assert user_data.other_experience == "Cognitive fog"
 
         # Assert - Own Treatments/Experiences
         treatment_names = [t.name for t in user_data.treatments]
         experience_names = [e.name for e in user_data.experiences]
         assert "Chemotherapy" in treatment_names
-        assert "Radiation Therapy" in treatment_names
+        assert "Radiation" in treatment_names
         assert "Fatigue" in experience_names
         assert "Depression" in experience_names
 
         # Assert - Loved One Data
         assert user_data.loved_one_diagnosis == "Breast Cancer"
         assert user_data.loved_one_date_of_diagnosis == date(2023, 1, 10)
-        assert user_data.loved_one_other_treatment == "Reconstruction surgery"
-        assert user_data.loved_one_other_experience == "Fertility concerns"
 
         # Assert - Loved One Relationships
         loved_one_treatment_names = [t.name for t in user_data.loved_one_treatments]
         loved_one_experience_names = [e.name for e in user_data.loved_one_experiences]
-        assert "Surgery" in loved_one_treatment_names
-        assert "Hair Loss" in loved_one_experience_names
+        assert "Transfusions" in loved_one_treatment_names
+        assert "Chemotherapy" in loved_one_treatment_names
+        assert "Graft vs Host" in loved_one_experience_names
+        assert "Feeling Overwhelmed" in loved_one_experience_names
 
         # Assert - Custom demographics
         assert "Other" in user_data.ethnic_group
@@ -742,8 +651,6 @@ def test_participant_no_cancer_experience(db_session, test_user):
         # Assert - No cancer-related data
         assert user_data.diagnosis is None
         assert user_data.date_of_diagnosis is None
-        assert user_data.other_treatment is None
-        assert user_data.other_experience is None
         assert len(user_data.treatments) == 0
         assert len(user_data.experiences) == 0
 
@@ -788,10 +695,8 @@ def test_volunteer_cancer_patient_only(db_session, test_user):
             "cancer_experience": {
                 "diagnosis": "Myeloma",
                 "date_of_diagnosis": "12/05/2019",
-                "treatments": ["Chemotherapy", "Stem Cell Transplant"],
-                "experiences": ["Depression", "Survivorship Concerns"],
-                "other_treatment": "Maintenance therapy",
-                "other_experience": "Long-term survivor guilt",
+                "treatments": ["Chemotherapy", "Autologous Stem Cell Transplant"],
+                "experiences": ["Depression", "Anxiety"],
             },
         }
 
@@ -809,16 +714,14 @@ def test_volunteer_cancer_patient_only(db_session, test_user):
         # Assert - Cancer Experience
         assert user_data.diagnosis == "Myeloma"
         assert user_data.date_of_diagnosis == date(2019, 5, 12)
-        assert user_data.other_treatment == "Maintenance therapy"
-        assert user_data.other_experience == "Long-term survivor guilt"
 
         # Assert - Treatments/Experiences
         treatment_names = [t.name for t in user_data.treatments]
         experience_names = [e.name for e in user_data.experiences]
         assert "Chemotherapy" in treatment_names
-        assert "Stem Cell Transplant" in treatment_names
+        assert "Autologous Stem Cell Transplant" in treatment_names
         assert "Depression" in experience_names
-        assert "Survivorship Concerns" in experience_names
+        assert "Anxiety" in experience_names
 
         # Assert - No loved one data (not a caregiver)
         assert user_data.loved_one_gender_identity is None
@@ -861,20 +764,16 @@ def test_volunteer_cancer_patient_and_caregiver(db_session, test_user):
             "cancer_experience": {
                 "diagnosis": "Breast Cancer",
                 "date_of_diagnosis": "08/11/2015",
-                "treatments": ["Surgery", "Chemotherapy", "Radiation Therapy"],
-                "experiences": ["Hair Loss", "Survivorship Concerns"],
-                "other_treatment": "Hormone blocking therapy",
-                "other_experience": "10-year survivor perspective",
+                "treatments": ["Transfusions", "Chemotherapy", "Radiation"],
+                "experiences": ["Graft vs Host", "Anxiety"],
             },
             "loved_one": {
                 "demographics": {"gender_identity": "Male", "age": "65+"},
                 "cancer_experience": {
                     "diagnosis": "Pancreatic Cancer",
                     "date_of_diagnosis": "25/09/2023",
-                    "treatments": ["Surgery", "Palliative Care"],
-                    "experiences": ["Loss of Appetite", "Fatigue"],
-                    "other_treatment": "Whipple procedure",
-                    "other_experience": "End-of-life discussions",
+                    "treatments": ["Transfusions", "Palliative Care"],
+                    "experiences": ["Brain Fog", "Fatigue"],
                 },
             },
         }
@@ -889,21 +788,17 @@ def test_volunteer_cancer_patient_and_caregiver(db_session, test_user):
         # Assert - Own Cancer Experience (10-year survivor)
         assert user_data.diagnosis == "Breast Cancer"
         assert user_data.date_of_diagnosis == date(2015, 11, 8)
-        assert user_data.other_treatment == "Hormone blocking therapy"
-        assert user_data.other_experience == "10-year survivor perspective"
 
         # Assert - Own Treatments (comprehensive)
         treatment_names = [t.name for t in user_data.treatments]
-        assert "Surgery" in treatment_names
+        assert "Transfusions" in treatment_names
         assert "Chemotherapy" in treatment_names
-        assert "Radiation Therapy" in treatment_names
+        assert "Radiation" in treatment_names
         assert len(user_data.treatments) == 3
 
         # Assert - Loved One Data (current patient)
         assert user_data.loved_one_diagnosis == "Pancreatic Cancer"
         assert user_data.loved_one_date_of_diagnosis == date(2023, 9, 25)
-        assert user_data.loved_one_other_treatment == "Whipple procedure"
-        assert user_data.loved_one_other_experience == "End-of-life discussions"
 
         # Assert - Both user and loved one have data
         assert len(user_data.treatments) >= 3
@@ -968,8 +863,6 @@ def test_volunteer_no_cancer_experience(db_session, test_user):
         # Assert - No cancer-related data
         assert user_data.diagnosis is None
         assert user_data.date_of_diagnosis is None
-        assert user_data.other_treatment is None
-        assert user_data.other_experience is None
         assert len(user_data.treatments) == 0
         assert len(user_data.experiences) == 0
 
@@ -1177,8 +1070,6 @@ def test_text_trimming_and_normalization(db_session, test_user):
                 "date_of_diagnosis": "01/01/2020",
                 "treatments": ["  Surgery  ", "  Chemotherapy  "],
                 "experiences": ["  Fatigue  "],
-                "other_treatment": "  Custom treatment  ",
-                "other_experience": "  Custom experience  ",
             },
         }
 
@@ -1194,8 +1085,6 @@ def test_text_trimming_and_normalization(db_session, test_user):
         assert user_data.gender_identity == "Male"
         assert user_data.marital_status == "Single"
         assert user_data.diagnosis == "Leukemia"
-        assert user_data.other_treatment == "Custom treatment"
-        assert user_data.other_experience == "Custom experience"
 
         db_session.commit()
 
@@ -1228,7 +1117,6 @@ def test_sql_injection_prevention(db_session, test_user):
                 "date_of_diagnosis": "01/01/2020",
                 "treatments": ["Surgery"],
                 "experiences": ["Fatigue"],
-                "other_treatment": "'; INSERT INTO admin_users VALUES (1); --",
             },
         }
 
@@ -1238,7 +1126,6 @@ def test_sql_injection_prevention(db_session, test_user):
         # Verify the malicious strings are stored as literal text, not executed
         assert user_data.first_name == "'; DROP TABLE users; --"
         assert "DELETE FROM user_data" in user_data.last_name
-        assert "INSERT INTO admin_users VALUES" in user_data.other_treatment
 
         # Verify no actual SQL injection occurred by checking database integrity
         user_count = db_session.query(User).count()
@@ -1279,8 +1166,6 @@ def test_unicode_and_special_characters(db_session, test_user):
                 "date_of_diagnosis": "01/01/2020",
                 "treatments": ["Chimiothérapie"],
                 "experiences": ["Fatigue"],
-                "other_treatment": "Traitement spécialisé avec émojis 💊🏥",
-                "other_experience": "Expérience émotionnelle complexe 😔➡️😊",
             },
         }
 
@@ -1294,8 +1179,6 @@ def test_unicode_and_special_characters(db_session, test_user):
         assert "中国人" in user_data.other_ethnic_group
         assert "हिन्दी" in user_data.other_ethnic_group
         assert "🌍" in user_data.other_ethnic_group
-        assert "💊🏥" in user_data.other_treatment
-        assert "😔➡️😊" in user_data.other_experience
 
         db_session.commit()
 

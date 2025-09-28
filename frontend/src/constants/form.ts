@@ -66,14 +66,11 @@ export interface IntakeFormData {
     dateOfDiagnosis: string;
     treatments: string[];
     experiences: string[];
-    otherTreatment?: string;
-    otherExperience?: string;
   };
 
   // User's Caregiver Experience (if applicable)
   caregiverExperience?: {
     experiences: string[];
-    otherExperience?: string;
   };
 
   // Loved One's Information (if applicable)
@@ -88,8 +85,6 @@ export interface IntakeFormData {
       dateOfDiagnosis: string;
       treatments: string[];
       experiences: string[];
-      otherTreatment?: string;
-      otherExperience?: string;
     };
   };
 }
@@ -123,13 +118,10 @@ export interface CancerExperienceData {
   dateOfDiagnosis: string;
   treatments: string[];
   experiences: string[];
-  otherTreatment?: string;
-  otherExperience?: string;
 }
 
 export interface CaregiverExperienceData {
   experiences: string[];
-  otherExperience?: string;
 }
 
 export interface LovedOneData {

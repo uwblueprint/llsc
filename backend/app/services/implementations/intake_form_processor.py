@@ -211,13 +211,6 @@ class IntakeFormProcessor:
 
             if treatment:
                 user_data.treatments.append(treatment)
-            else:
-                # Create new treatment for custom entry
-                logger.info(f"Creating new treatment: {treatment_name}")
-                new_treatment = Treatment(name=treatment_name)
-                self.db.add(new_treatment)
-                self.db.flush()  # Get the ID
-                user_data.treatments.append(new_treatment)
 
     def _process_experiences(self, user_data: UserData, cancer_exp: Dict[str, Any]):
         """
@@ -240,13 +233,6 @@ class IntakeFormProcessor:
 
             if experience:
                 user_data.experiences.append(experience)
-            else:
-                # Create new experience for custom entry
-                logger.info(f"Creating new experience: {experience_name}")
-                new_experience = Experience(name=experience_name)
-                self.db.add(new_experience)
-                self.db.flush()  # Get the ID
-                user_data.experiences.append(new_experience)
 
     def _process_caregiver_experience(self, user_data: UserData, caregiver_exp: Dict[str, Any]):
         """
@@ -255,9 +241,6 @@ class IntakeFormProcessor:
         """
         if not caregiver_exp:
             return
-
-        # Handle "Other" caregiver experience text
-        user_data.other_experience = caregiver_exp.get("other_experience")
 
         # Process caregiver experiences - map to same experiences table
         experience_names = caregiver_exp.get("experiences", [])
@@ -278,13 +261,6 @@ class IntakeFormProcessor:
                 # Only add if not already present
                 if experience not in user_data.experiences:
                     user_data.experiences.append(experience)
-            else:
-                # Create new experience for custom entry
-                logger.info(f"Creating new caregiver experience: {experience_name}")
-                new_experience = Experience(name=experience_name)
-                self.db.add(new_experience)
-                self.db.flush()  # Get the ID
-                user_data.experiences.append(new_experience)
 
     def _process_loved_one_data(self, user_data: UserData, loved_one_data: Dict[str, Any]):
         """Process loved one data including demographics and cancer experience."""
@@ -343,13 +319,6 @@ class IntakeFormProcessor:
 
             if treatment:
                 user_data.loved_one_treatments.append(treatment)
-            else:
-                # Create new treatment for custom entry
-                logger.info(f"Creating new loved one treatment: {treatment_name}")
-                new_treatment = Treatment(name=treatment_name)
-                self.db.add(new_treatment)
-                self.db.flush()  # Get the ID
-                user_data.loved_one_treatments.append(new_treatment)
 
     def _process_loved_one_experiences(self, user_data: UserData, cancer_exp: Dict[str, Any]):
         """Process loved one experiences - map frontend names to database records."""
@@ -369,13 +338,6 @@ class IntakeFormProcessor:
 
             if experience:
                 user_data.loved_one_experiences.append(experience)
-            else:
-                # Create new experience for custom entry
-                logger.info(f"Creating new loved one experience: {experience_name}")
-                new_experience = Experience(name=experience_name)
-                self.db.add(new_experience)
-                self.db.flush()  # Get the ID
-                user_data.loved_one_experiences.append(new_experience)
 
     def process_ranking_form(self, user_id: str, ranking_data: Dict[str, Any]):
         """
