@@ -2,86 +2,39 @@ import Link from 'next/link';
 import { Box, Flex, Heading, Text, Button } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { getCurrentUser, syncCurrentUser } from '@/APIClients/authAPIClient';
-import { AuthenticatedUser, FormStatus, UserRole } from '@/types/authTypes';
-import { roleIdToUserRole } from '@/utils/roleUtils';
-import { getRedirectRoute } from '@/constants/formStatusRoutes';
+import { getCurrentUser } from '@/APIClients/authAPIClient';
+import { AuthenticatedUser } from '@/types/authTypes';
 
 export default function WelcomePage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<AuthenticatedUser>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const evaluate = async () => {
-      const stored = getCurrentUser();
-      if (stored) {
-        setCurrentUser(stored);
-      }
-
-      try {
-        const synced = await syncCurrentUser();
-        if (synced) {
-          setCurrentUser(synced);
-          const role = roleIdToUserRole(synced.user?.roleId ?? null);
-          const status = synced.user?.formStatus as FormStatus | undefined;
-
-          if (role) {
-            if (role === UserRole.ADMIN) {
-              await router.replace('/admin');
-              return;
-            }
-
-            if (status && status !== FormStatus.INTAKE_TODO) {
-              const destination = getRedirectRoute(role, status);
-              if (destination !== router.asPath) {
-                await router.replace(destination);
-                return;
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Failed to sync user on welcome page:', error);
-      }
-
-      setLoading(false);
-    };
-
-    void evaluate();
-  }, [router]);
+    // Check if user is logged in when component mounts
+    const user = getCurrentUser();
+    setCurrentUser(user);
+  }, []);
 
   const handleContinueInEnglish = () => {
-    const role = roleIdToUserRole(currentUser?.user?.roleId ?? null);
-    const status = currentUser?.user?.formStatus as FormStatus | undefined;
+    // Cast to any to handle the nested user structure
+    const userData = currentUser as any;
 
-    if (!role || !status) {
-      router.push('/');
-      return;
-    }
-
-    if (role === UserRole.ADMIN) {
-      router.push('/admin');
-      return;
-    }
-
-    if (status !== FormStatus.INTAKE_TODO) {
-      router.push(getRedirectRoute(role, status));
-      return;
-    }
-
-    if (role === UserRole.PARTICIPANT) {
-      router.push('/participant/intake');
-    } else if (role === UserRole.VOLUNTEER) {
-      router.push('/volunteer/intake');
+    // Check if user exists and has a roleId
+    if (userData && userData.user && userData.user.roleId) {
+      // Check user role based on roleId - assuming 1=participant, 2=volunteer, 3=admin
+      if (userData.user.roleId === 1) {
+        router.push('/participant/intake');
+      } else if (userData.user.roleId === 2) {
+        router.push('/volunteer/intake');
+      } else {
+        router.push('/participant-form');
+      }
     } else {
+      console.log('No user logged in, routing to sign-in form');
+      // If no user is logged in, redirect to signup/login
       router.push('/');
     }
   };
-
-  if (loading) {
-    return null;
-  }
 
   return (
     <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>

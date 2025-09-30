@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Flex, Text } from '@chakra-ui/react';
-import { useRouter } from 'next/router';
-import { UserIcon, WelcomeScreen } from '@/components/ui';
+import { Box, Flex, Heading, Text, VStack } from '@chakra-ui/react';
+import { UserIcon, CheckMarkIcon, WelcomeScreen } from '@/components/ui';
 import {
   VolunteerMatchingForm,
   VolunteerRankingForm,
@@ -12,11 +11,9 @@ import {
 } from '@/components/ranking';
 import { COLORS } from '@/constants/form';
 import baseAPIClient from '@/APIClients/baseAPIClient';
-import { syncCurrentUser } from '@/APIClients/authAPIClient';
 import { auth } from '@/config/firebase';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
-import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
-import { FormStatus, UserRole } from '@/types/authTypes';
+import { UserRole } from '@/types/authTypes';
 
 const RANKING_STATEMENTS = [
   'I would prefer a volunteer with the same age as me',
@@ -66,7 +63,6 @@ export default function ParticipantRankingPage({
   participantType = 'caregiver',
   caregiverHasCancer = true,
 }: ParticipantRankingPageProps) {
-  const router = useRouter();
   const [derivedParticipantType, setDerivedParticipantType] = useState<
     'cancerPatient' | 'caregiver' | null
   >(null);
@@ -452,9 +448,6 @@ export default function ParticipantRankingPage({
       try {
         await baseAPIClient.put('/ranking/preferences', items, { params: { target } });
         setCurrentStep(nextStep);
-        await syncCurrentUser();
-        await router.replace('/participant/ranking/thank-you');
-        return;
       } catch (e) {
         console.error('Failed to save preferences', e);
       }
@@ -492,39 +485,102 @@ export default function ParticipantRankingPage({
     );
   };
 
+  const ThankYouScreen = () => (
+    <Box
+      minH="100vh"
+      bg={COLORS.lightGray}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      py={12}
+    >
+      <Box
+        w="full"
+        maxW="800px"
+        bg="white"
+        borderRadius="8px"
+        boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+        p={12}
+        textAlign="center"
+      >
+        <VStack gap={6}>
+          <CheckMarkIcon />
+
+          <Heading
+            as="h1"
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontWeight={600}
+            color={COLORS.veniceBlue}
+            fontSize="32px"
+            mb={2}
+          >
+            Thank you for sharing your experience and
+          </Heading>
+          <Heading
+            as="h1"
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontWeight={600}
+            color={COLORS.veniceBlue}
+            fontSize="32px"
+            mb={4}
+          >
+            preferences with us.
+          </Heading>
+
+          <Text
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontSize="16px"
+            color={COLORS.fieldGray}
+            lineHeight="1.6"
+            maxW="600px"
+            textAlign="center"
+          >
+            We are reviewing which volunteers would best fit those preferences. You will receive an
+            email from us in the next 1-2 business days with the next steps. If you would like to
+            connect with a LLSC staff before then, please reach out to{' '}
+            <Text as="span" color={COLORS.teal} fontWeight={500}>
+              FirstConnections@lls.org
+            </Text>
+            .
+          </Text>
+        </VStack>
+      </Box>
+    </Box>
+  );
+
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
-      <FormStatusGuard allowedStatuses={[FormStatus.RANKING_TODO]}>
-        {participantType === 'caregiver'
-          ? (() => {
-              switch (currentStep) {
-                case 1:
-                  return <WelcomeScreenStep />;
-                case 2:
-                  return <QualitiesScreen />;
-                case 3:
-                  return <CaregiverQualitiesScreen />;
-                case 4:
-                case 5:
-                  return <RankingScreen />;
-                default:
-                  return <WelcomeScreenStep />;
-              }
-            })()
-          : (() => {
-              switch (currentStep) {
-                case 1:
-                  return <WelcomeScreenStep />;
-                case 2:
-                  return <QualitiesScreen />;
-                case 3:
-                case 4:
-                  return <RankingScreen />;
-                default:
-                  return <WelcomeScreenStep />;
-              }
-            })()}
-      </FormStatusGuard>
+      {participantType === 'caregiver'
+        ? (() => {
+            switch (currentStep) {
+              case 1:
+                return <WelcomeScreenStep />;
+              case 2:
+                return <QualitiesScreen />;
+              case 3:
+                return <CaregiverQualitiesScreen />;
+              case 4:
+                return <RankingScreen />;
+              case 5:
+                return <ThankYouScreen />;
+              default:
+                return <WelcomeScreenStep />;
+            }
+          })()
+        : (() => {
+            switch (currentStep) {
+              case 1:
+                return <WelcomeScreenStep />;
+              case 2:
+                return <QualitiesScreen />;
+              case 3:
+                return <RankingScreen />;
+              case 4:
+                return <ThankYouScreen />;
+              default:
+                return <WelcomeScreenStep />;
+            }
+          })()}
     </ProtectedPage>
   );
 }

@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from app.models.Experience import Experience
 from app.models.Role import Role
 from app.models.Treatment import Treatment
-from app.models.User import FormStatus, User
+from app.models.User import User
 from app.models.UserData import UserData
 from app.schemas.user import UserRole
 from app.services.implementations.intake_form_processor import IntakeFormProcessor
@@ -214,9 +214,6 @@ def test_participant_with_cancer_only(db_session, test_user):
         assert len(user_data.loved_one_treatments) == 0
         assert len(user_data.loved_one_experiences) == 0
 
-        db_session.refresh(test_user)
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
-
         db_session.commit()
 
     except Exception:
@@ -305,9 +302,6 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
         assert "Depression" in loved_one_experience_names
         assert "Fatigue" in loved_one_experience_names
 
-        db_session.refresh(test_user)
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
-
         db_session.commit()
 
     except Exception:
@@ -380,9 +374,6 @@ def test_form_submission_json_structure(db_session, test_user):
         assert len(user_data.loved_one_treatments) >= 2  # Radiation + Palliative
         assert len(user_data.loved_one_experiences) >= 2  # Brain Fog + Feeling Overwhelmed
 
-        db_session.refresh(test_user)
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
-
         db_session.commit()
 
     except Exception:
@@ -438,9 +429,6 @@ def test_empty_and_minimal_data_handling(db_session, test_user):
         assert len(user_data.treatments) == 0
         assert len(user_data.experiences) == 0
         assert user_data.loved_one_gender_identity is None
-
-        db_session.refresh(test_user)
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
 
         db_session.commit()
 

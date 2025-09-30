@@ -11,16 +11,6 @@ export enum UserRole {
   ADMIN = 'admin',
 }
 
-export enum FormStatus {
-  INTAKE_TODO = 'intake-todo',
-  INTAKE_SUBMITTED = 'intake-submitted',
-  RANKING_TODO = 'ranking-todo',
-  RANKING_SUBMITTED = 'ranking-submitted',
-  SECONDARY_APPLICATION_TODO = 'secondary-application-todo',
-  SECONDARY_APPLICATION_SUBMITTED = 'secondary-application-submitted',
-  COMPLETED = 'completed',
-}
-
 export interface UserBase {
   firstName: string;
   lastName: string;
@@ -41,7 +31,6 @@ export interface UserCreateResponse {
   email: string;
   roleId: number;
   authId: string;
-  formStatus: FormStatus;
 }
 
 export interface LoginRequest {
@@ -63,4 +52,4 @@ export interface AuthResponse extends Token {
 }
 
 // Type for an authenticated user in the system
-export type AuthenticatedUser = (UserCreateResponse & Token & { user?: UserCreateResponse }) | null;
+export type AuthenticatedUser = (UserCreateResponse & Token) | null;

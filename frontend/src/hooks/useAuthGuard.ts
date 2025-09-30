@@ -4,7 +4,6 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/config/firebase';
 import { UserRole } from '@/types/authTypes';
 import baseAPIClient from '@/APIClients/baseAPIClient';
-import { roleIdToUserRole } from '@/utils/roleUtils';
 
 interface AxiosError {
   response?: {
@@ -19,6 +18,20 @@ interface AuthGuardState {
   loading: boolean;
   authorized: boolean;
 }
+
+// Map role IDs to UserRole enum
+const roleIdToUserRole = (roleId: number): UserRole | null => {
+  switch (roleId) {
+    case 1:
+      return UserRole.PARTICIPANT;
+    case 2:
+      return UserRole.VOLUNTEER;
+    case 3:
+      return UserRole.ADMIN;
+    default:
+      return null;
+  }
+};
 
 /**
  * Hook to protect pages with authentication and role-based access control

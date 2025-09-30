@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.interfaces.user_service import IUserService
-from app.models import FormStatus, Role, User
+from app.models import Role, User
 from app.schemas.user import (
     SignUpMethod,
     UserCreateRequest,
@@ -38,10 +38,6 @@ class UserService(IUserService):
 
             role_id = UserRole.to_role_id(user.role)
 
-            initial_status = FormStatus.INTAKE_TODO
-            if role_id == UserRole.to_role_id(UserRole.ADMIN):
-                initial_status = FormStatus.COMPLETED
-
             # Create user in database
             db_user = User(
                 first_name=user.first_name or "",
@@ -49,7 +45,6 @@ class UserService(IUserService):
                 email=user.email,
                 role_id=role_id,
                 auth_id=firebase_user.uid,
-                form_status=initial_status,
             )
 
             self.db.add(db_user)
@@ -207,12 +202,6 @@ class UserService(IUserService):
             # handle role conversion if role is being updated
             if "role" in update_data:
                 update_data["role_id"] = UserRole.to_role_id(update_data.pop("role"))
-
-            if "form_status" in update_data:
-                try:
-                    update_data["form_status"] = FormStatus(update_data["form_status"])
-                except ValueError:
-                    raise HTTPException(status_code=400, detail="Invalid form status")
 
             for field, value in update_data.items():
                 setattr(db_user, field, value)

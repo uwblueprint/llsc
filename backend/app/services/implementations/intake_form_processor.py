@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple
 
 from sqlalchemy.orm import Session
 
-from app.models import Experience, FormStatus, Treatment, User, UserData
+from app.models import Experience, Treatment, User, UserData
 
 logger = logging.getLogger(__name__)
 
@@ -71,14 +71,6 @@ class IntakeFormProcessor:
                 owning_user = self.db.query(User).filter(User.id == user_data.user_id).first()
                 if owning_user and owning_user.email:
                     user_data.email = owning_user.email
-
-            # Update form status for the owning user without regressing progress
-            owning_user = self.db.query(User).filter(User.id == user_data.user_id).first()
-            if owning_user and owning_user.form_status in {
-                FormStatus.INTAKE_TODO,
-                FormStatus.INTAKE_SUBMITTED,
-            }:
-                owning_user.form_status = FormStatus.INTAKE_SUBMITTED
 
             # Commit all changes
             self.db.commit()

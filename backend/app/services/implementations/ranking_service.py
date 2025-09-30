@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from sqlalchemy.orm import Session
 
-from app.models import FormStatus, Quality, User, UserData
+from app.models import Quality, User, UserData
 from app.models.RankingPreference import RankingPreference
 
 
@@ -205,11 +205,4 @@ class RankingService:
         )
         if normalized:
             self.db.bulk_save_objects(normalized)
-
-        if user.form_status in (
-            FormStatus.RANKING_TODO,
-            FormStatus.RANKING_SUBMITTED,
-        ):
-            user.form_status = FormStatus.RANKING_SUBMITTED
-
         self.db.commit()

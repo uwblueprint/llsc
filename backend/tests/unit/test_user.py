@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from app.models import Role
-from app.models.User import FormStatus, User
+from app.models.User import User
 from app.schemas.user import (
     SignUpMethod,
     UserCreateRequest,
@@ -140,14 +140,12 @@ async def test_create_user_service(mock_firebase_auth, db_session):
         assert created_user.email == "test@example.com"
         assert created_user.role_id == 1
         assert created_user.auth_id == "test_firebase_uid"
-        assert created_user.form_status == FormStatus.INTAKE_TODO
 
         # Assert database state
         db_user = db_session.query(User).filter_by(email="test@example.com").first()
         assert db_user is not None
         assert db_user.auth_id == "test_firebase_uid"
         assert db_user.role_id == 1
-        assert db_user.form_status == FormStatus.INTAKE_TODO
 
         db_session.commit()  # Commit successful test
     except Exception:
@@ -179,45 +177,16 @@ async def test_create_user_with_google(mock_firebase_auth, db_session):
         assert created_user.email == "google@example.com"
         assert created_user.role_id == 1
         assert created_user.auth_id == "test_firebase_uid"
-        assert created_user.form_status == FormStatus.INTAKE_TODO
 
         # Assert database state
         db_user = db_session.query(User).filter_by(email="google@example.com").first()
         assert db_user is not None
         assert db_user.auth_id == "test_firebase_uid"
         assert db_user.role_id == 1
-        assert db_user.form_status == FormStatus.INTAKE_TODO
 
         db_session.commit()  # Commit successful test
     except Exception:
         db_session.rollback()  # Rollback on error
-        raise
-
-
-@pytest.mark.asyncio
-async def test_create_admin_user_sets_completed_status(mock_firebase_auth, db_session):
-    try:
-        user_service = UserService(db_session)
-        user_data = UserCreateRequest(
-            first_name="Admin",
-            last_name="User",
-            email="admin@example.com",
-            password="StrongPass@123",
-            role=UserRole.ADMIN,
-            signup_method=SignUpMethod.PASSWORD,
-        )
-
-        created_user = await user_service.create_user(user_data)
-
-        assert created_user.form_status == FormStatus.COMPLETED
-
-        db_user = db_session.query(User).filter_by(email="admin@example.com").first()
-        assert db_user is not None
-        assert db_user.form_status == FormStatus.COMPLETED
-
-        db_session.commit()
-    except Exception:
-        db_session.rollback()
         raise
 
 
@@ -547,7 +516,6 @@ async def test_update_user_by_id(db_session):
                 first_name="Updated",
                 last_name="Name",
                 role=UserRole.ADMIN,  # Update to ADMIN role
-                form_status=FormStatus.RANKING_TODO,
             ),
         )
 
@@ -556,12 +524,10 @@ async def test_update_user_by_id(db_session):
         assert updated_user.last_name == "Name"
         assert updated_user.role.name == "admin"  # Compare role name string
         assert updated_user.email == "update@example.com"  # Unchanged
-        assert updated_user.form_status == FormStatus.RANKING_TODO
 
         # Verify database state
         db_user = db_session.query(User).filter_by(id=test_user.id).first()
         assert db_user.role_id == 3  # ADMIN role ID
-        assert db_user.form_status == FormStatus.RANKING_TODO
 
     except Exception:
         db_session.rollback()
