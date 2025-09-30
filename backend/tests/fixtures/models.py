@@ -21,23 +21,20 @@ def create_test_user(db, role_name="participant"):
         email="test@example.com",
         role_id=role.id,
         auth_id="test-user-id",
-        approved=True
+        approved=True,
     )
     db.add(user)
     db.flush()
     return user
 
+
 def create_test_form(db):
     """Create a test intake form"""
-    form = Form(
-        id=uuid.uuid4(),
-        name="Test Intake Form",
-        version=1,
-        type="intake"
-    )
+    form = Form(id=uuid.uuid4(), name="Test Intake Form", version=1, type="intake")
     db.add(form)
     db.flush()
     return form
+
 
 def create_test_submission(db, user=None, form=None):
     """Create a test form submission"""
@@ -51,10 +48,7 @@ def create_test_submission(db, user=None, form=None):
         form_id=form.id,
         user_id=user.id,
         submitted_at=datetime.utcnow(),
-        answers={
-            "test_field": "test value",
-            "another_field": 123
-        }
+        answers={"test_field": "test value", "another_field": 123},
     )
     db.add(submission)
     db.flush()

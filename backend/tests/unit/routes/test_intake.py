@@ -20,6 +20,7 @@ def test_list_forms(client, db_session, mock_auth_middleware):
     assert forms[0]["name"] == form.name
     assert forms[0]["type"] == "intake"
 
+
 def test_create_submission(client, db_session, mock_auth_middleware):
     """Test POST /intake/submissions endpoint"""
     # Create test user and form
@@ -27,13 +28,7 @@ def test_create_submission(client, db_session, mock_auth_middleware):
     db_session.commit()
 
     # Prepare submission data
-    submission_data = {
-        "form_id": str(form.id),
-        "answers": {
-            "test_question": "test answer",
-            "numeric_question": 42
-        }
-    }
+    submission_data = {"form_id": str(form.id), "answers": {"test_question": "test answer", "numeric_question": 42}}
 
     # Make request
     response = client.post("/intake/submissions", json=submission_data)
@@ -43,6 +38,7 @@ def test_create_submission(client, db_session, mock_auth_middleware):
     data = response.json()
     assert data["form_id"] == str(form.id)
     assert data["answers"] == submission_data["answers"]
+
 
 def test_get_own_submissions(client, db_session, mock_auth_middleware):
     """Test GET /intake/submissions endpoint - user can see their own submissions"""
@@ -61,6 +57,7 @@ def test_get_own_submissions(client, db_session, mock_auth_middleware):
     assert len(data["submissions"]) == 1
     assert data["submissions"][0]["id"] == str(submission.id)
 
+
 def test_update_submission(client, db_session, mock_auth_middleware):
     """Test PUT /intake/submissions/{submission_id} endpoint"""
     # Create test data
@@ -69,23 +66,16 @@ def test_update_submission(client, db_session, mock_auth_middleware):
     db_session.commit()
 
     # Prepare update data
-    update_data = {
-        "answers": {
-            "updated_field": "updated value",
-            "another_field": 456
-        }
-    }
+    update_data = {"answers": {"updated_field": "updated value", "another_field": 456}}
 
     # Make request
-    response = client.put(
-        f"/intake/submissions/{submission.id}",
-        json=update_data
-    )
+    response = client.put(f"/intake/submissions/{submission.id}", json=update_data)
 
     # Check response
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert data["answers"] == update_data["answers"]
+
 
 def test_delete_submission(client, db_session, mock_auth_middleware):
     """Test DELETE /intake/submissions/{submission_id} endpoint"""

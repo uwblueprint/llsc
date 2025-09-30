@@ -12,6 +12,7 @@ from app.utilities.db_utils import get_db
 # Use in-memory SQLite for tests
 SQLALCHEMY_DATABASE_URL = "sqlite://"
 
+
 @pytest.fixture(scope="session")
 def test_engine():
     """Create a test database engine"""
@@ -22,6 +23,7 @@ def test_engine():
     )
     Base.metadata.create_all(bind=engine)
     return engine
+
 
 @pytest.fixture(scope="function")
 def db_session(test_engine):
@@ -34,9 +36,11 @@ def db_session(test_engine):
         db.rollback()
         db.close()
 
+
 @pytest.fixture(scope="function")
 def client(db_session):
     """Create a test client with a test database"""
+
     def override_get_db():
         try:
             yield db_session
@@ -48,11 +52,13 @@ def client(db_session):
         yield test_client
     app.dependency_overrides.clear()
 
+
 @pytest.fixture(scope="function")
 def auth_headers():
     """Mock authentication headers for testing"""
     # This is a mock token - in real tests you might want to use a real Firebase token
     return {"Authorization": "Bearer test-token"}
+
 
 @pytest.fixture(scope="function")
 def mock_auth_middleware(monkeypatch):
