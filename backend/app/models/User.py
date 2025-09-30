@@ -1,7 +1,8 @@
 import uuid
 from enum import Enum as PyEnum
 
-from sqlalchemy import Boolean, Column, Enum as SQLEnum, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 

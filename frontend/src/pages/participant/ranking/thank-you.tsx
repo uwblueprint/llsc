@@ -52,8 +52,8 @@ export default function ParticipantRankingThankYouPage() {
                 textAlign="center"
               >
                 We are reviewing which volunteers would best fit those preferences. You will receive
-                an email from us in the next 1-2 business days with the next steps. If you would like
-                to connect with a LLSC staff before then, please reach out to{' '}
+                an email from us in the next 1-2 business days with the next steps. If you would
+                like to connect with a LLSC staff before then, please reach out to{' '}
                 <Text as="span" color={COLORS.teal} fontWeight={500}>
                   FirstConnections@lls.org
                 </Text>

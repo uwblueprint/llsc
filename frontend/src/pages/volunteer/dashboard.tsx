@@ -8,11 +8,19 @@ export default function VolunteerDashboardPage() {
     <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
         <Box minH="100vh" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-          <VStack spacing={4} bg="white" p={12} borderRadius="lg" boxShadow="md" maxW="lg" textAlign="center">
+          <VStack
+            gap={4}
+            bg="white"
+            p={12}
+            borderRadius="lg"
+            boxShadow="md"
+            maxW="lg"
+            textAlign="center"
+          >
             <Heading size="lg">Volunteer dashboard coming soon</Heading>
             <Text>
-              You&apos;ve finished the application flow. Once the dashboard is ready, we&apos;ll guide you
-              through next steps from here.
+              You&apos;ve finished the application flow. Once the dashboard is ready, we&apos;ll
+              guide you through next steps from here.
             </Text>
           </VStack>
         </Box>

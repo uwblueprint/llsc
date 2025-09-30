@@ -8,11 +8,19 @@ export default function ParticipantDashboardPage() {
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
         <Box minH="100vh" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-          <VStack spacing={4} bg="white" p={12} borderRadius="lg" boxShadow="md" maxW="lg" textAlign="center">
+          <VStack
+            gap={4}
+            bg="white"
+            p={12}
+            borderRadius="lg"
+            boxShadow="md"
+            maxW="lg"
+            textAlign="center"
+          >
             <Heading size="lg">Participant dashboard coming soon</Heading>
             <Text>
-              Thanks for completing your forms. We&apos;re building the dashboard experience—stay tuned
-              for upcoming program updates.
+              Thanks for completing your forms. We&apos;re building the dashboard experience—stay
+              tuned for upcoming program updates.
             </Text>
           </VStack>
         </Box>
