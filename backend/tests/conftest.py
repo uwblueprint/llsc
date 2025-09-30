@@ -3,6 +3,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from app.middleware.auth_middleware import AuthMiddleware
+
 
 from app.models import Base
 from app.server import app
@@ -56,7 +58,6 @@ def auth_headers():
 @pytest.fixture(scope="function")
 def mock_auth_middleware(monkeypatch):
     """Mock the auth middleware to bypass Firebase authentication"""
-    from app.middleware.auth_middleware import AuthMiddleware
 
     async def mock_dispatch(self, request, call_next):
         # Mock user data that would normally come from Firebase
