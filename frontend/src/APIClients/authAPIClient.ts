@@ -274,7 +274,9 @@ export const register = async ({
   }
 };
 
-export const resetPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
+export const resetPassword = async (
+  email: string,
+): Promise<{ success: boolean; error?: string }> => {
   try {
     if (!validateEmail(email)) {
       return { success: false, error: 'Please enter a valid email address' };
