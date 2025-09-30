@@ -5,33 +5,58 @@ import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
-import { login } from '@/APIClients/authAPIClient';
+import { register } from '@/APIClients/authAPIClient';
+import { UserRole, SignUpMethod } from '@/types/authTypes';
 
 const veniceBlue = '#1d3448';
 const fieldGray = '#414651';
 const teal = '#056067';
 
-export default function AdminLogin() {
+export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     try {
-      const result = await login(email, password);
-      if (result.success) {
-        console.log('Admin login success:', result);
-        router.push('/admin/dashboard');
-      } else {
-        setError('Invalid email or password. Please check your credentials and try again. If you recently signed up, make sure to verify your email first.');
-      }
+      const userData = {
+        first_name: '',
+        last_name: '',
+        email,
+        password,
+        role: UserRole.ADMIN,
+        signupMethod: SignUpMethod.PASSWORD,
+      };
+      const result = await register(userData);
+      console.log('Admin registration success:', result);
+      router.push(`/admin-verify?email=${encodeURIComponent(email)}&role=admin`);
     } catch (err: unknown) {
-      console.error('Admin login error:', err);
-      setError('Login failed. Please try again.');
+      console.error('Admin registration error:', err);
+      if (
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response &&
+        typeof err.response === 'object' &&
+        'data' in err.response &&
+        err.response.data &&
+        typeof err.response.data === 'object' &&
+        'detail' in err.response.data
+      ) {
+        setError((err.response.data as { detail: string }).detail || 'Registration failed');
+      } else {
+        setError('Registration failed');
+      }
     }
   };
 
@@ -70,7 +95,7 @@ export default function AdminLogin() {
             mb={6}
             mt={8}
           >
-            Welcome Back!
+            Welcome!
           </Heading>
           <Text
             mb={8}
@@ -79,7 +104,7 @@ export default function AdminLogin() {
             fontWeight={400}
             fontSize="lg"
           >
-            Sign in with your email and password.
+            Let&apos;s start by setting up your admin account.
           </Text>
           <form onSubmit={handleSubmit}>
             <Field
@@ -137,7 +162,7 @@ export default function AdminLogin() {
                   type="password"
                   placeholder=""
                   required
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   w="100%"
                   maxW="518px"
                   fontFamily="'Open Sans', sans-serif"
@@ -152,25 +177,44 @@ export default function AdminLogin() {
                 />
               </InputGroup>
             </Field>
-            <Box mt={1} mb={6} textAlign="right">
-              <span
-                style={{
-                  color: '#535862',
-                  fontWeight: 600,
-                  fontFamily: 'Open Sans, sans-serif',
-                  fontSize: 15,
-                  display: 'inline-block',
-                  marginTop: 6,
-                  cursor: 'pointer',
-                }}
-                onClick={() => router.push('/admin-reset-password')}
-              >
-                Forgot Password?
-              </span>
-            </Box>
+            <Field
+              label={
+                <span
+                  style={{
+                    color: fieldGray,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    fontFamily: 'Open Sans, sans-serif',
+                  }}
+                >
+                  Confirm Password
+                </span>
+              }
+              mb={6}
+            >
+              <InputGroup w="100%">
+                <Input
+                  type="password"
+                  placeholder=""
+                  required
+                  autoComplete="new-password"
+                  w="100%"
+                  maxW="518px"
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  fontSize={14}
+                  color={fieldGray}
+                  bg="white"
+                  borderColor="#D5D7DA"
+                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </InputGroup>
+            </Field>
             {error && (
               <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
-                {error}
+                {typeof error === 'string' ? error : JSON.stringify(error)}
               </Text>
             )}
             <Button
@@ -191,7 +235,7 @@ export default function AdminLogin() {
               px={8}
               py={3}
             >
-              Sign In <span style={{ display: 'inline-block', marginLeft: 8 }}>&#8594;</span>
+              Continue <span style={{ display: 'inline-block', marginLeft: 8 }}>&#8594;</span>
             </Button>
           </form>
           <Text
@@ -201,9 +245,9 @@ export default function AdminLogin() {
             fontWeight={400}
             fontFamily="'Open Sans', sans-serif"
           >
-            Don&apos;t have an account?{' '}
+            Already have an account?{' '}
             <Link
-              href="/admin-signup"
+              href="/admin"
               style={{
                 color: teal,
                 textDecoration: 'underline',
@@ -211,7 +255,7 @@ export default function AdminLogin() {
                 fontFamily: 'Open Sans, sans-serif',
               }}
             >
-              Click here to sign up.
+              Sign in.
             </Link>
           </Text>
         </Box>

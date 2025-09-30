@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { Box, Flex, Heading, Text, Link } from '@chakra-ui/react';
+import { Box, Flex, Heading, Text } from '@chakra-ui/react';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { UserRole } from '@/types/authTypes';
 
@@ -41,7 +41,7 @@ export default function AdminDashboard() {
               mb={6}
               mt={8}
             >
-              Welcome!
+              You've logged in!
             </Heading>
             <Text
               mb={8}
@@ -50,26 +50,7 @@ export default function AdminDashboard() {
               fontWeight={400}
               fontSize="lg"
             >
-              We sent a confirmation link to <b>john.doe@gmail.com</b>
-            </Text>
-            <Text
-              color={veniceBlue}
-              fontFamily="'Open Sans', sans-serif"
-              fontWeight={400}
-              fontSize="md"
-            >
-              Didn&apos;t get a link?{' '}
-              <Link
-                href="/admin-login"
-                style={{
-                  color: '#056067',
-                  textDecoration: 'underline',
-                  fontWeight: 600,
-                  fontFamily: 'Open Sans, sans-serif',
-                }}
-              >
-                Click here to resend.
-              </Link>
+              Welcome to the admin dashboard. You have successfully logged in to your administrator account.
             </Text>
           </Box>
         </Flex>
