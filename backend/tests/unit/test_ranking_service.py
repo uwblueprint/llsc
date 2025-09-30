@@ -280,6 +280,8 @@ def test_save_preferences_updates_status(db_session: Session):
         caring_for_someone="no",
         self_treatments=["Chemotherapy"],
     )
+    user.form_status = FormStatus.RANKING_TODO
+    db_session.commit()
     service = RankingService(db_session)
 
     items = [
