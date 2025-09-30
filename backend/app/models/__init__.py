@@ -19,6 +19,7 @@ from .Quality import Quality
 from .RankingPreference import RankingPreference
 from .Role import Role
 from .SuggestedTime import suggested_times
+from .Task import Task
 from .TimeBlock import TimeBlock
 from .Treatment import Treatment
 from .User import User
@@ -42,6 +43,7 @@ __all__ = [
     "RankingPreference",
     "Form",
     "FormSubmission",
+    "Task",
 ]
 
 log = logging.getLogger(LOGGER_NAME("models"))
