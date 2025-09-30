@@ -44,8 +44,6 @@ Create a new form submission and process it into structured data.
       "dateOfDiagnosis": "DD/MM/YYYY (optional)",
       "treatments": ["array of treatment names (optional)"],
       "experiences": ["array of experience names (optional)"],
-      "otherTreatment": "string (optional)",
-      "otherExperience": "string (optional)"
     },
     "lovedOne": {
       "demographics": {
@@ -57,8 +55,6 @@ Create a new form submission and process it into structured data.
         "dateOfDiagnosis": "DD/MM/YYYY (optional)",
         "treatments": ["array of treatment names (optional)"],
         "experiences": ["array of experience names (optional)"],
-        "otherTreatment": "string (optional)",
-        "otherExperience": "string (optional)"
       }
     }
   }

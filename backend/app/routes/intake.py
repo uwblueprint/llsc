@@ -1,13 +1,14 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.middleware.auth import has_roles
-from app.models import Form, FormSubmission, User
+from app.models import Experience, Form, FormSubmission, Treatment, User
 from app.schemas.user import UserRole
 from app.services.implementations.intake_form_processor import IntakeFormProcessor
 from app.utilities.db_utils import get_db
@@ -47,6 +48,24 @@ class FormSubmissionListResponse(BaseModel):
 
     submissions: List[FormSubmissionResponse]
     total: int
+
+
+class ExperienceResponse(BaseModel):
+    id: int
+    name: str
+    scope: Literal["patient", "caregiver", "both", "none"]
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TreatmentResponse(BaseModel):
+    id: int
+    name: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OptionsResponse(BaseModel):
+    experiences: List[ExperienceResponse]
+    treatments: List[TreatmentResponse]
 
 
 # ===== Custom Auth Dependencies =====
@@ -336,6 +355,31 @@ async def delete_form_submission(
         raise
     except Exception as e:
         db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/options",
+    response_model=OptionsResponse,
+)
+async def get_intake_options(
+    request: Request,
+    target: str = Query(..., pattern="^(patient|caregiver|both)$"),
+    db: Session = Depends(get_db),
+    authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.VOLUNTEER, UserRole.ADMIN]),
+):
+    try:
+        # Query DB Experience Table
+        experiences_query = db.query(Experience)
+        if target != "both":
+            experiences_query = experiences_query.filter(or_(Experience.scope == target, Experience.scope == "both"))
+        experiences = experiences_query.order_by(Experience.id.asc()).all()
+
+        treatments = db.query(Treatment).order_by(Treatment.id.asc()).all()
+        return OptionsResponse.model_validate({"experiences": experiences, "treatments": treatments})
+    except HTTPException:
+        raise
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -5,37 +5,42 @@ import { FormField } from '@/components/ui/form-field';
 import { InputGroup } from '@/components/ui/input-group';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
 import { COLORS, VALIDATION } from '@/constants/form';
+import baseAPIClient from '@/APIClients/baseAPIClient';
+import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
 
 // Reusable Select component to replace inline styling
-const StyledSelect: React.FC<{
+type StyledSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
   children: React.ReactNode;
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   error?: boolean;
-}> = ({ children, value, onChange, error, ...props }) => (
-  <select
-    value={value}
-    onChange={onChange}
-    style={{
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-      fontSize: '14px',
-      color: COLORS.veniceBlue,
-      borderColor: error ? '#ef4444' : '#d1d5db',
-      borderRadius: '6px',
-      height: '40px',
-      width: '100%',
-      padding: '0 12px',
-      border: '1px solid',
-      outline: 'none',
-      backgroundColor: 'white',
-      textAlign: 'left',
-      direction: 'ltr',
-    }}
-    {...props}
-  >
-    {children}
-  </select>
+};
+
+const StyledSelect = React.forwardRef<HTMLSelectElement, StyledSelectProps>(
+  ({ children, error, style, ...props }, ref) => (
+    <select
+      ref={ref}
+      {...props}
+      style={{
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontSize: '14px',
+        color: COLORS.veniceBlue,
+        borderColor: error ? '#ef4444' : '#d1d5db',
+        borderRadius: '6px',
+        height: '40px',
+        width: '100%',
+        padding: '0 12px',
+        border: '1px solid',
+        outline: 'none',
+        backgroundColor: 'white',
+        textAlign: 'left',
+        direction: 'ltr',
+        ...(style || {}),
+      }}
+    >
+      {children}
+    </select>
+  ),
 );
+StyledSelect.displayName = 'StyledSelect';
 
 interface DemographicCancerFormData {
   genderIdentity: string;
@@ -46,9 +51,7 @@ interface DemographicCancerFormData {
   diagnosis: string;
   dateOfDiagnosis: string;
   treatments: string[];
-  otherTreatment: string;
   experiences: string[];
-  otherExperience: string;
 }
 
 const DEFAULT_VALUES: DemographicCancerFormData = {
@@ -60,42 +63,8 @@ const DEFAULT_VALUES: DemographicCancerFormData = {
   diagnosis: '',
   dateOfDiagnosis: '',
   treatments: [],
-  otherTreatment: '',
   experiences: [],
-  otherExperience: '',
 };
-
-const TREATMENT_OPTIONS = [
-  'Unknown',
-  'Watch and Wait / Active Surveillance',
-  'Chemotherapy',
-  'Immunotherapy',
-  'Oral Chemotherapy',
-  'Radiation',
-  'Maintenance Chemotherapy',
-  'Palliative Care',
-  'Transfusions',
-  'Autologous Stem Cell Transplant',
-  'Allogeneic Stem Cell Transplant',
-  'Haplo Stem Cell Transplant',
-  'CAR-T',
-  'BTK Inhibitors',
-];
-
-const EXPERIENCE_OPTIONS = [
-  'Brain Fog',
-  'Caregiver Fatigue',
-  'Communication Challenges',
-  'Feeling Overwhelmed',
-  'Fatigue',
-  'Fertility Issues',
-  'Graft vs Host',
-  'Returning to work or school after/during treatment',
-  'Speaking to your family or friends about the diagnosis',
-  'Relapse',
-  'Anxiety / Depression',
-  'PTSD',
-];
 
 const DIAGNOSIS_OPTIONS = [
   'Acute Myeloid Leukaemia',
@@ -114,6 +83,8 @@ const DIAGNOSIS_OPTIONS = [
 interface DemographicCancerFormProps {
   formType?: 'participant' | 'volunteer';
   onNext: (data: DemographicCancerFormData) => void;
+  hasBloodCancer?: 'yes' | 'no' | '';
+  caringForSomeone?: 'yes' | 'no' | '';
 }
 
 // Updated options to match Figma design - moved Self-describe to bottom
@@ -296,28 +267,72 @@ const MultiSelectDropdown: React.FC<{
   );
 };
 
-export function DemographicCancerForm({ formType, onNext }: DemographicCancerFormProps) {
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    watch,
-    setValue,
-  } = useForm<DemographicCancerFormData>({
+export function DemographicCancerForm({
+  formType,
+  onNext,
+  hasBloodCancer,
+  caringForSomeone,
+}: DemographicCancerFormProps) {
+  const { control, handleSubmit, formState, watch } = useForm<DemographicCancerFormData>({
     defaultValues: DEFAULT_VALUES,
   });
+  const { errors, isSubmitting } = formState;
 
   // Local state for custom values
   const [genderIdentityCustom, setGenderIdentityCustom] = useState('');
   const [pronounsCustom, setPronounsCustom] = useState('');
   const [ethnicGroupCustom, setEthnicGroupCustom] = useState('');
+  const [treatmentOptions, setTreatmentOptions] = useState([]);
+  const [experienceOptions, setExperienceOptions] = useState([]);
 
-  const otherTreatment = watch('otherTreatment') || '';
-  const otherExperience = watch('otherExperience') || '';
+  useEffect(() => {
+    const run = async () => {
+      const hasBloodCancerBool = hasBloodCancer === 'yes';
+      const caringForSomeoneBool = caringForSomeone === 'yes';
+
+      let target = '';
+      if (hasBloodCancerBool && caringForSomeoneBool) {
+        target = 'both';
+      } else if (hasBloodCancerBool) {
+        target = 'patient';
+      } else if (caringForSomeoneBool) {
+        target = 'caregiver';
+      } else {
+        // This form should only render if at least one of these answers is "yes".
+        console.error(
+          'Invalid intake flow state: neither hasBloodCancer nor caringForSomeone is "yes". ' +
+            `Received hasBloodCancer="${hasBloodCancer}", caringForSomeone="${caringForSomeone}". ` +
+            'This Demographic Cancer form expects at least one to be "yes".',
+        );
+        alert(
+          'We hit an unexpected state.\n\n' +
+            'This step is only shown if you have blood cancer or are caring for someone with blood cancer. ' +
+            'Please go back to the previous step and select "Yes" for one of those questions, or navigate to the basic demographics form.',
+        );
+        return;
+      }
+
+      const options = await getOptions(target);
+      console.log(options);
+
+      setTreatmentOptions(options.treatments.map((treatment: IntakeTreatment) => treatment.name));
+
+      setExperienceOptions(
+        options.experiences.map((experience: IntakeExperience) => experience.name),
+      );
+    };
+
+    run();
+  }, [hasBloodCancer, caringForSomeone]);
+
   const genderIdentity = watch('genderIdentity') || '';
   const pronouns = watch('pronouns') || [];
   const ethnicGroup = watch('ethnicGroup') || [];
 
+  const getOptions = async (target: string) => {
+    const options = await baseAPIClient.get(`/intake/options?target=${target}`);
+    return options.data;
+  };
   const onSubmit = async (data: DemographicCancerFormData) => {
     try {
       // Merge custom values into the arrays
@@ -700,23 +715,12 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
               <Controller
                 name="treatments"
                 control={control}
-                rules={{
-                  validate: (value) => {
-                    if (value && value.includes('Other') && !otherTreatment.trim()) {
-                      return 'Please specify the other treatment';
-                    }
-                    return true;
-                  },
-                }}
                 render={({ field }) => (
                   <CheckboxGroup
-                    options={TREATMENT_OPTIONS}
+                    options={treatmentOptions}
                     selectedValues={field.value || []}
                     onValueChange={field.onChange}
                     maxSelections={2}
-                    showOther
-                    otherValue={otherTreatment}
-                    onOtherChange={(value) => setValue('otherTreatment', value)}
                   />
                 )}
               />
@@ -750,23 +754,12 @@ export function DemographicCancerForm({ formType, onNext }: DemographicCancerFor
               <Controller
                 name="experiences"
                 control={control}
-                rules={{
-                  validate: (value) => {
-                    if (value && value.includes('Other') && !otherExperience.trim()) {
-                      return 'Please specify the other experience';
-                    }
-                    return true;
-                  },
-                }}
                 render={({ field }) => (
                   <CheckboxGroup
-                    options={EXPERIENCE_OPTIONS}
+                    options={experienceOptions}
                     selectedValues={field.value || []}
                     onValueChange={field.onChange}
                     maxSelections={5}
-                    showOther
-                    otherValue={otherExperience}
-                    onOtherChange={(value) => setValue('otherExperience', value)}
                   />
                 )}
               />

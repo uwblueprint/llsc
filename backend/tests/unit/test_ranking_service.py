@@ -180,7 +180,7 @@ async def test_options_caregiver_without_cancer(db_session: Session):
         self_experiences=["Caregiver Fatigue"],
         loved_one_diagnosis="CLL",
         loved_treatments=["Immunotherapy"],
-        loved_experiences=["Anxiety"],
+        loved_experiences=["Anxiety / Depression"],
     )
 
     service = RankingService(db_session)

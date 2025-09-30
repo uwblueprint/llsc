@@ -19,6 +19,7 @@ dependencies = [
     "psycopg2>=2.9.9",
     "boto3>=1.35.71",
     "pytest-asyncio>=0.25.3",
+    "psycopg2-binary>=2.9.10",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
@@ -29,7 +30,7 @@ license = {text = "MIT"}
 distribution = false
 
 [tool.pdm.scripts]
-dev = "fastapi dev app/server.py"
+dev = "fastapi dev app/server.py --port 8080"
 precommit = "pre-commit run"
 precommit-install = "pre-commit install"
 dc-down = "docker-compose down -v"
