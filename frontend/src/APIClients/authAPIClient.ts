@@ -11,8 +11,12 @@ import {
 
 import AUTHENTICATED_USER_KEY from '../constants/AuthConstants';
 import baseAPIClient from './baseAPIClient';
-import { getLocalStorageObjProperty, setLocalStorageObjProperty } from '../utils/LocalStorageUtils';
-import { signInWithEmailAndPassword, applyActionCode } from 'firebase/auth';
+import {
+  getLocalStorageObj,
+  getLocalStorageObjProperty,
+  setLocalStorageObjProperty,
+} from '../utils/LocalStorageUtils';
+import { signInWithEmailAndPassword, applyActionCode, checkActionCode } from 'firebase/auth';
 import { auth } from '@/config/firebase';
 import { sendEmailVerificationToUser } from '@/services/firebaseAuthService';
 
@@ -31,7 +35,7 @@ export interface AuthResult {
   validationErrors?: string[];
 }
 
-const login = async (email: string, password: string): Promise<AuthResult> => {
+export const login = async (email: string, password: string): Promise<AuthResult> => {
   try {
     // Validate inputs
     if (!validateEmail(email)) {
@@ -63,7 +67,7 @@ const login = async (email: string, password: string): Promise<AuthResult> => {
         withCredentials: true,
       });
       localStorage.setItem(AUTHENTICATED_USER_KEY, JSON.stringify(data));
-      return { success: true, user: { ...data.user, ...data } };
+      return { success: true, user: { ...data.user, ...data } as AuthenticatedUser };
     } catch {
       // Backend login failure is not critical since Firebase auth succeeded
       return {
@@ -118,7 +122,7 @@ const login = async (email: string, password: string): Promise<AuthResult> => {
   }
 };
 
-const logout = async (): Promise<boolean> => {
+export const logout = async (): Promise<boolean> => {
   const bearerToken = `Bearer ${getLocalStorageObjProperty(AUTHENTICATED_USER_KEY, 'accessToken')}`;
 
   try {
@@ -132,16 +136,36 @@ const logout = async (): Promise<boolean> => {
 };
 
 // Get current authenticated user from localStorage
-const getCurrentUser = (): AuthenticatedUser | null => {
+export const getCurrentUser = (): AuthenticatedUser => {
   try {
     const userDataString = localStorage.getItem(AUTHENTICATED_USER_KEY);
     if (!userDataString) return null;
 
     const userData = JSON.parse(userDataString);
-    return userData;
+    if (userData?.user) {
+      return { ...userData.user, ...userData } as AuthenticatedUser;
+    }
+    return userData as AuthenticatedUser;
   } catch (error) {
     console.error('Error retrieving current user:', error);
     return null;
+  }
+};
+
+export const syncCurrentUser = async (): Promise<AuthenticatedUser> => {
+  try {
+    const { data } = await baseAPIClient.get<UserCreateResponse>('/auth/me');
+    const stored = getLocalStorageObj<Record<string, unknown>>(AUTHENTICATED_USER_KEY) || {};
+    const merged = {
+      ...stored,
+      user: data,
+      formStatus: data.formStatus,
+    };
+    localStorage.setItem(AUTHENTICATED_USER_KEY, JSON.stringify(merged));
+    return { ...(data as unknown as Record<string, unknown>), ...merged } as AuthenticatedUser;
+  } catch (error) {
+    console.error('Failed to sync current user:', error);
+    return getCurrentUser();
   }
 };
 
@@ -288,6 +312,14 @@ const verifyEmailWithCode = async (
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     // Verify with Firebase
+    // Optional: validate action code before applying
+    try {
+      await checkActionCode(auth, oobCode);
+    } catch (codeError) {
+      console.error('[VERIFY_EMAIL] checkActionCode failed:', codeError);
+      throw codeError;
+    }
+
     await applyActionCode(auth, oobCode);
 
     // Get the current user to get their email
@@ -305,6 +337,7 @@ const verifyEmailWithCode = async (
 
     return { success: true };
   } catch (error) {
+    console.error('[VERIFY_EMAIL] Verification failed', error);
     if (error && typeof error === 'object' && 'code' in error) {
       const errorCode = (error as { code?: string }).code;
       if (errorCode === 'auth/invalid-action-code') {
@@ -317,9 +350,20 @@ const verifyEmailWithCode = async (
           success: false,
           error: 'Verification link has expired. Please request a new one.',
         };
+      } else {
+        return {
+          success: false,
+          error: `Verification failed (${errorCode}). Please request a new link.`,
+        };
       }
     }
-    return { success: false, error: 'Verification failed. Please try again.' };
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? `Verification failed: ${error.message}`
+          : 'Verification failed. Please try again.',
+    };
   }
 };
 
@@ -340,5 +384,3 @@ const refresh = async (): Promise<boolean> => {
     return false;
   }
 };
-
-export { login, logout, getCurrentUser, resetPassword, verifyEmail, verifyEmailWithCode, refresh };

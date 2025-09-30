@@ -35,6 +35,16 @@ class UserRole(str, Enum):
         return role_map[role]
 
 
+class FormStatus(str, Enum):
+    INTAKE_TODO = "intake-todo"
+    INTAKE_SUBMITTED = "intake-submitted"
+    RANKING_TODO = "ranking-todo"
+    RANKING_SUBMITTED = "ranking-submitted"
+    SECONDARY_APPLICATION_TODO = "secondary-application-todo"
+    SECONDARY_APPLICATION_SUBMITTED = "secondary-application-submitted"
+    COMPLETED = "completed"
+
+
 class UserBase(BaseModel):
     """
     Base schema for user model with common attributes shared across schemas.
@@ -91,6 +101,7 @@ class UserUpdateRequest(BaseModel):
     email: Optional[EmailStr] = None
     role: Optional[UserRole] = None
     approved: Optional[bool] = None
+    form_status: Optional[FormStatus] = None
 
 
 class UserCreateResponse(BaseModel):
@@ -105,6 +116,7 @@ class UserCreateResponse(BaseModel):
     role_id: int
     auth_id: str
     approved: bool
+    form_status: FormStatus
 
     # from_attributes enables automatic mapping from SQLAlchemy model to Pydantic model
     model_config = ConfigDict(from_attributes=True)
@@ -123,6 +135,7 @@ class UserResponse(BaseModel):
     auth_id: str
     approved: bool
     role: "RoleResponse"
+    form_status: FormStatus
 
     model_config = ConfigDict(from_attributes=True)
 

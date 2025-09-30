@@ -21,7 +21,7 @@ from .Role import Role
 from .SuggestedTime import suggested_times
 from .TimeBlock import TimeBlock
 from .Treatment import Treatment
-from .User import User
+from .User import FormStatus, User
 from .UserData import UserData
 
 # Used to avoid import errors for the models
@@ -42,6 +42,7 @@ __all__ = [
     "RankingPreference",
     "Form",
     "FormSubmission",
+    "FormStatus",
 ]
 
 log = logging.getLogger(LOGGER_NAME("models"))
