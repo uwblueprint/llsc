@@ -1,7 +1,7 @@
 """seed intake forms
 
 Revision ID: seed_intake_forms
-Revises: 905b6788b114
+Revises: f11846c50673
 Create Date: 2025-06-29 15:30:00.000000
 
 """
@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = 'seed_intake_forms'
-down_revision: Union[str, None] = '905b6788b114'
+down_revision: Union[str, None] = 'f11846c50673'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
