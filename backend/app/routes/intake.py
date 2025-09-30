@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, Literal
+from typing import List, Literal, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -8,11 +8,10 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.middleware.auth import has_roles
-from app.models import Form, FormSubmission, User, Experience, Treatment
+from app.models import Experience, Form, FormSubmission, Treatment, User
 from app.schemas.user import UserRole
 from app.services.implementations.intake_form_processor import IntakeFormProcessor
 from app.utilities.db_utils import get_db
-
 
 # ===== Schemas =====
 
