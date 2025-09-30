@@ -1,11 +1,22 @@
 import uuid
+from enum import Enum as PyEnum
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Enum as SQLEnum, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .Base import Base
 from .Match import Match
+
+
+class FormStatus(str, PyEnum):
+    INTAKE_TODO = "intake-todo"
+    INTAKE_SUBMITTED = "intake-submitted"
+    RANKING_TODO = "ranking-todo"
+    RANKING_SUBMITTED = "ranking-submitted"
+    SECONDARY_APPLICATION_TODO = "secondary-application-todo"
+    SECONDARY_APPLICATION_SUBMITTED = "secondary-application-submitted"
+    COMPLETED = "completed"
 
 
 class User(Base):
@@ -18,6 +29,16 @@ class User(Base):
     auth_id = Column(String, nullable=False)
     approved = Column(Boolean, default=False)
     active = Column(Boolean, nullable=False, default=True)
+    form_status = Column(
+        SQLEnum(
+            FormStatus,
+            name="form_status_enum",
+            create_type=False,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
+        default=FormStatus.INTAKE_TODO,
+    )
 
     role = relationship("Role")
 

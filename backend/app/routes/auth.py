@@ -127,6 +127,7 @@ async def get_current_user(
             role_id=user.role_id,
             auth_id=user.auth_id,
             approved=user.approved,
+            form_status=user.form_status,
         )
     except HTTPException:
         raise

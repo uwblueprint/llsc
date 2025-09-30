@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Flex } from '@chakra-ui/react';
+import { useRouter } from 'next/router';
 import baseAPIClient from '@/APIClients/baseAPIClient';
+import { syncCurrentUser } from '@/APIClients/authAPIClient';
 import { PersonalInfoForm } from '@/components/intake/personal-info-form';
 import {
   DemographicCancerForm,
   BasicDemographicsForm,
 } from '@/components/intake/demographic-cancer-form';
 import { LovedOneForm } from '@/components/intake/loved-one-form';
-import { ThankYouScreen } from '@/components/intake/thank-you-screen';
 import {
   COLORS,
   IntakeFormData,
@@ -16,7 +17,8 @@ import {
   PersonalData,
 } from '@/constants/form';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
-import { UserRole } from '@/types/authTypes';
+import { FormStatus, UserRole } from '@/types/authTypes';
+import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 
 // Import the component data types
 interface DemographicCancerFormData {
@@ -50,6 +52,7 @@ interface BasicDemographicsFormData {
 }
 
 export default function ParticipantIntakePage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<IntakeFormData>({
     ...INITIAL_INTAKE_FORM_DATA,
@@ -92,6 +95,9 @@ export default function ParticipantIntakePage() {
           answers: updated,
         });
         await baseAPIClient.post('/intake/submissions', { answers: updated });
+        await syncCurrentUser();
+        await router.replace('/participant/intake/thank-you');
+        return;
       } finally {
         setSubmitting(false);
       }
@@ -185,57 +191,50 @@ export default function ParticipantIntakePage() {
     });
   };
 
-  // If we're on thank you step, show the screen with form data
-  if (currentStepType === 'thank-you') {
-    return (
-      <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
-        <ThankYouScreen />
-      </ProtectedPage>
-    );
-  }
-
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
-      <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
-        <Box
-          w="full"
-          maxW="1200px"
-          bg="white"
-          borderRadius="8px"
-          boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-          p={10}
-        >
-          {currentStepType === 'experience-personal' && (
-            <PersonalInfoForm formType="participant" onSubmit={handleExperiencePersonalSubmit} />
-          )}
+      <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_TODO]}>
+        <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
+          <Box
+            w="full"
+            maxW="1200px"
+            bg="white"
+            borderRadius="8px"
+            boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+            p={10}
+          >
+            {currentStepType === 'experience-personal' && (
+              <PersonalInfoForm formType="participant" onSubmit={handleExperiencePersonalSubmit} />
+            )}
 
-          {currentStepType === 'demographics-cancer' && (
-            <DemographicCancerForm
-              formType="participant"
-              onNext={handleDemographicsNext}
-              hasBloodCancer={formData.hasBloodCancer}
-              caringForSomeone={formData.caringForSomeone}
-            />
-          )}
+            {currentStepType === 'demographics-cancer' && (
+              <DemographicCancerForm
+                formType="participant"
+                onNext={handleDemographicsNext}
+                hasBloodCancer={formData.hasBloodCancer}
+                caringForSomeone={formData.caringForSomeone}
+              />
+            )}
 
-          {currentStepType === 'demographics-caregiver' && (
-            <DemographicCancerForm
-              formType="participant"
-              onNext={handleDemographicsNext}
-              hasBloodCancer={formData.hasBloodCancer}
-              caringForSomeone={formData.caringForSomeone}
-            />
-          )}
+            {currentStepType === 'demographics-caregiver' && (
+              <DemographicCancerForm
+                formType="participant"
+                onNext={handleDemographicsNext}
+                hasBloodCancer={formData.hasBloodCancer}
+                caringForSomeone={formData.caringForSomeone}
+              />
+            )}
 
-          {currentStepType === 'loved-one' && (
-            <LovedOneForm formType="participant" onSubmit={handleLovedOneNext} />
-          )}
+            {currentStepType === 'loved-one' && (
+              <LovedOneForm formType="participant" onSubmit={handleLovedOneNext} />
+            )}
 
-          {currentStepType === 'demographics-basic' && (
-            <BasicDemographicsForm formType="participant" onNext={handleBasicDemographicsNext} />
-          )}
-        </Box>
-      </Flex>
+            {currentStepType === 'demographics-basic' && (
+              <BasicDemographicsForm formType="participant" onNext={handleBasicDemographicsNext} />
+            )}
+          </Box>
+        </Flex>
+      </FormStatusGuard>
     </ProtectedPage>
   );
 }
