@@ -274,7 +274,7 @@ export const register = async ({
   }
 };
 
-const resetPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
+export const resetPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
   try {
     if (!validateEmail(email)) {
       return { success: false, error: 'Please enter a valid email address' };
@@ -287,7 +287,7 @@ const resetPassword = async (email: string): Promise<{ success: boolean; error?:
   }
 };
 
-const verifyEmail = async (email: string): Promise<boolean> => {
+export const verifyEmail = async (email: string): Promise<boolean> => {
   try {
     await baseAPIClient.post(`/auth/verify/${email}`, {}, { withCredentials: true });
     return true;
@@ -307,7 +307,7 @@ const verifyEmail = async (email: string): Promise<boolean> => {
   }
 };
 
-const verifyEmailWithCode = async (
+export const verifyEmailWithCode = async (
   oobCode: string,
 ): Promise<{ success: boolean; error?: string }> => {
   try {
@@ -367,7 +367,7 @@ const verifyEmailWithCode = async (
   }
 };
 
-const refresh = async (): Promise<boolean> => {
+export const refresh = async (): Promise<boolean> => {
   try {
     const refreshToken = getLocalStorageObjProperty(AUTHENTICATED_USER_KEY, 'refreshToken');
 
