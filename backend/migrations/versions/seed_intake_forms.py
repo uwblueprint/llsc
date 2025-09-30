@@ -5,8 +5,9 @@ Revises: f11846c50673
 Create Date: 2025-06-29 15:30:00.000000
 
 """
-from typing import Sequence, Union
 import uuid
+from typing import Sequence, Union
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -46,4 +47,4 @@ def upgrade() -> None:
     )
 
 def downgrade() -> None:
-    op.execute(f"DELETE FROM forms WHERE id IN ('{PARTICIPANT_FORM_ID}', '{VOLUNTEER_FORM_ID}')") 
+    op.execute(f"DELETE FROM forms WHERE id IN ('{PARTICIPANT_FORM_ID}', '{VOLUNTEER_FORM_ID}')")
