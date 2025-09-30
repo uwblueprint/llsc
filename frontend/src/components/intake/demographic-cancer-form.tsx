@@ -38,7 +38,7 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, StyledSelectProps>(
     >
       {children}
     </select>
-  )
+  ),
 );
 StyledSelect.displayName = 'StyledSelect';
 
@@ -267,15 +267,13 @@ const MultiSelectDropdown: React.FC<{
   );
 };
 
-
-export function DemographicCancerForm({ formType, onNext, hasBloodCancer, caringForSomeone }: DemographicCancerFormProps) {
-  const {
-    control,
-    handleSubmit,
-    formState,
-    watch,
-    setValue,
-  } = useForm<DemographicCancerFormData>({
+export function DemographicCancerForm({
+  formType,
+  onNext,
+  hasBloodCancer,
+  caringForSomeone,
+}: DemographicCancerFormProps) {
+  const { control, handleSubmit, formState, watch } = useForm<DemographicCancerFormData>({
     defaultValues: DEFAULT_VALUES,
   });
   const { errors, isSubmitting } = formState;
@@ -288,8 +286,6 @@ export function DemographicCancerForm({ formType, onNext, hasBloodCancer, caring
   const [experienceOptions, setExperienceOptions] = useState([]);
 
   useEffect(() => {
-    let cancelled = false;
-
     const run = async () => {
       const hasBloodCancerBool = hasBloodCancer === 'yes';
       const caringForSomeoneBool = caringForSomeone === 'yes';
@@ -305,13 +301,13 @@ export function DemographicCancerForm({ formType, onNext, hasBloodCancer, caring
         // This form should only render if at least one of these answers is "yes".
         console.error(
           'Invalid intake flow state: neither hasBloodCancer nor caringForSomeone is "yes". ' +
-          `Received hasBloodCancer="${hasBloodCancer}", caringForSomeone="${caringForSomeone}". ` +
-          'This Demographic Cancer form expects at least one to be "yes".'
+            `Received hasBloodCancer="${hasBloodCancer}", caringForSomeone="${caringForSomeone}". ` +
+            'This Demographic Cancer form expects at least one to be "yes".',
         );
         alert(
           'We hit an unexpected state.\n\n' +
-          'This step is only shown if you have blood cancer or are caring for someone with blood cancer. ' +
-          'Please go back to the previous step and select "Yes" for one of those questions, or navigate to the basic demographics form.'
+            'This step is only shown if you have blood cancer or are caring for someone with blood cancer. ' +
+            'Please go back to the previous step and select "Yes" for one of those questions, or navigate to the basic demographics form.',
         );
         return;
       }
@@ -319,19 +315,14 @@ export function DemographicCancerForm({ formType, onNext, hasBloodCancer, caring
       const options = await getOptions(target);
       console.log(options);
 
-      setTreatmentOptions(
-        options.treatments.map((treatment: IntakeTreatment) => treatment.name)
-      );
+      setTreatmentOptions(options.treatments.map((treatment: IntakeTreatment) => treatment.name));
 
       setExperienceOptions(
-        options.experiences.map((experience: IntakeExperience) => experience.name)
+        options.experiences.map((experience: IntakeExperience) => experience.name),
       );
-    }
+    };
 
     run();
-    return () => {
-      cancelled = true;
-    }
   }, [hasBloodCancer, caringForSomeone]);
 
   const genderIdentity = watch('genderIdentity') || '';
@@ -341,7 +332,7 @@ export function DemographicCancerForm({ formType, onNext, hasBloodCancer, caring
   const getOptions = async (target: string) => {
     const options = await baseAPIClient.get(`/intake/options?target=${target}`);
     return options.data;
-  }
+  };
   const onSubmit = async (data: DemographicCancerFormData) => {
     try {
       // Merge custom values into the arrays

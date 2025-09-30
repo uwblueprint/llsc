@@ -133,10 +133,10 @@ export default function ParticipantIntakePage() {
         }),
         ...(prev.hasBloodCancer === 'no' &&
           prev.caringForSomeone === 'yes' && {
-          caregiverExperience: {
-            experiences: data.experiences,
-          },
-        }),
+            caregiverExperience: {
+              experiences: data.experiences,
+            },
+          }),
       } as IntakeFormData;
 
       void advanceAfterUpdate(updated);
@@ -210,15 +210,25 @@ export default function ParticipantIntakePage() {
           )}
 
           {currentStepType === 'demographics-cancer' && (
-            <DemographicCancerForm formType="participant" onNext={handleDemographicsNext} hasBloodCancer={formData.hasBloodCancer} caringForSomeone={formData.caringForSomeone} />
+            <DemographicCancerForm
+              formType="participant"
+              onNext={handleDemographicsNext}
+              hasBloodCancer={formData.hasBloodCancer}
+              caringForSomeone={formData.caringForSomeone}
+            />
           )}
 
           {currentStepType === 'demographics-caregiver' && (
-            <DemographicCancerForm formType="participant" onNext={handleDemographicsNext} hasBloodCancer={formData.hasBloodCancer} caringForSomeone={formData.caringForSomeone} />
+            <DemographicCancerForm
+              formType="participant"
+              onNext={handleDemographicsNext}
+              hasBloodCancer={formData.hasBloodCancer}
+              caringForSomeone={formData.caringForSomeone}
+            />
           )}
 
           {currentStepType === 'loved-one' && (
-            <LovedOneForm formType="participant" onSubmit={handleLovedOneNext} hasBloodCancer={formData.hasBloodCancer} caringForSomeone={formData.caringForSomeone} />
+            <LovedOneForm formType="participant" onSubmit={handleLovedOneNext} />
           )}
 
           {currentStepType === 'demographics-basic' && (
