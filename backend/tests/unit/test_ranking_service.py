@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.models import Experience, Quality, Role, Treatment, User, UserData
+from app.models import Experience, FormStatus, Quality, Role, Treatment, User, UserData
 from app.schemas.user import UserRole
 from app.services.implementations.ranking_service import RankingService
 
@@ -270,3 +270,26 @@ def test_save_preferences_validation(db_session: Session):
     ]
     with pytest.raises(ValueError):
         service.save_preferences(user_auth_id=user.auth_id, target="patient", items=dup_items)
+
+
+def test_save_preferences_updates_status(db_session: Session):
+    user = _add_user_data(
+        db_session,
+        auth_id="auth_submit",
+        has_blood_cancer="no",
+        caring_for_someone="no",
+        self_treatments=["Chemotherapy"],
+    )
+    user.form_status = FormStatus.RANKING_TODO
+    db_session.commit()
+    service = RankingService(db_session)
+
+    items = [
+        {"kind": "quality", "id": 1, "scope": "self", "rank": 1},
+        {"kind": "quality", "id": 2, "scope": "self", "rank": 2},
+    ]
+
+    service.save_preferences(user_auth_id=user.auth_id, target="patient", items=items)
+
+    refreshed_user = db_session.query(User).filter(User.id == user.id).first()
+    assert refreshed_user.form_status == FormStatus.RANKING_SUBMITTED

@@ -4,21 +4,30 @@ import { verifyEmailWithCode } from '@/APIClients/authAPIClient';
 
 export default function ActionPage() {
   const router = useRouter();
-  const { mode, oobCode } = router.query;
   const [isProcessing, setIsProcessing] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!router.isReady) {
+      return;
+    }
+
     const handleAction = async () => {
-      if (!mode || !oobCode) {
+      const queryMode = router.query.mode;
+      const queryCode = router.query.oobCode;
+
+      const normalizedMode = Array.isArray(queryMode) ? queryMode[0] : queryMode;
+      const normalizedCode = Array.isArray(queryCode) ? queryCode[0] : queryCode;
+
+      if (!normalizedMode || !normalizedCode) {
         setError('Invalid verification link');
         setIsProcessing(false);
         return;
       }
 
-      if (mode === 'verifyEmail') {
+      if (normalizedMode === 'verifyEmail') {
         try {
-          const result = await verifyEmailWithCode(oobCode as string);
+          const result = await verifyEmailWithCode(normalizedCode);
 
           if (result.success) {
             router.replace(`/?verified=true&mode=verifyEmail`);
@@ -30,8 +39,8 @@ export default function ActionPage() {
           setError('An error occurred during verification');
           setIsProcessing(false);
         }
-      } else if (mode === 'resetPassword') {
-        const targetUrl = `/set-new-password?oobCode=${oobCode}`;
+      } else if (normalizedMode === 'resetPassword') {
+        const targetUrl = `/set-new-password?oobCode=${normalizedCode}`;
         if (router.asPath !== targetUrl) {
           router.replace(targetUrl);
         }
@@ -41,10 +50,8 @@ export default function ActionPage() {
       }
     };
 
-    if (mode && oobCode) {
-      handleAction();
-    }
-  }, [mode, oobCode, router]);
+    handleAction();
+  }, [router.isReady, router.query.mode, router.query.oobCode, router.asPath, router]);
 
   if (error) {
     return (
