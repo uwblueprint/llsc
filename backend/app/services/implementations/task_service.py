@@ -135,9 +135,7 @@ class TaskService(ITaskService):
 
             # Validate assignee is admin if being updated
             if "assignee_id" in update_data and update_data["assignee_id"]:
-                assignee = (
-                    self.db.query(User).filter(User.id == update_data["assignee_id"], User.role_id == 3).first()
-                )
+                assignee = self.db.query(User).filter(User.id == update_data["assignee_id"], User.role_id == 3).first()
                 if not assignee:
                     raise HTTPException(status_code=404, detail="Assignee must be an admin user")
 
