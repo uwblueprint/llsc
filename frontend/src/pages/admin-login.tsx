@@ -27,7 +27,9 @@ export default function AdminLogin() {
         console.log('Admin login success:', result);
         router.push('/admin/dashboard');
       } else {
-        setError('Invalid email or password. Please check your credentials and try again. If you recently signed up, make sure to verify your email first.');
+        setError(
+          'Invalid email or password. Please check your credentials and try again. If you recently signed up, make sure to verify your email first.',
+        );
       }
     } catch (err: unknown) {
       console.error('Admin login error:', err);
