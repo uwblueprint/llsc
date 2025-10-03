@@ -157,8 +157,6 @@ import logging
 log = logging.getLogger(LOGGER_NAME("my_service"))
 ```
 
-New logger names must be added to `alembic.ini` under the logger section.
-
 ## Testing
 
 - Backend tests: `pdm run tests` (runs pytest in `backend/tests/`)
