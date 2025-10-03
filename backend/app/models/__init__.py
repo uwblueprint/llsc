@@ -19,6 +19,7 @@ from .Quality import Quality
 from .RankingPreference import RankingPreference
 from .Role import Role
 from .SuggestedTime import suggested_times
+from .Task import Task, TaskPriority, TaskStatus, TaskType
 from .TimeBlock import TimeBlock
 from .Treatment import Treatment
 from .User import FormStatus, User
@@ -43,6 +44,10 @@ __all__ = [
     "Form",
     "FormSubmission",
     "FormStatus",
+    "Task",
+    "TaskType",
+    "TaskPriority",
+    "TaskStatus",
 ]
 
 log = logging.getLogger(LOGGER_NAME("models"))
