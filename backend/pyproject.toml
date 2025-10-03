@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Default template for PDM package"
 authors = [
     {name = "uwblueprint", email = "matthewwang@uwblueprint.org"},
+    {name = "yut-code", email = "yut3335@gmail.com"},
 ]
 dependencies = [
     "fastapi[standard]>=0.115.0",
