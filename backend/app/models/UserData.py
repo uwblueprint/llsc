@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import JSON, Column, Date, ForeignKey, Integer, String, Table, Text
+from sqlalchemy import JSON, Column, Date, ForeignKey, Integer, Table, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -44,24 +44,24 @@ class UserData(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
 
     # Personal Information
-    first_name = Column(String(80), nullable=True)
-    last_name = Column(String(80), nullable=True)
+    first_name = Column(Text, nullable=True)
+    last_name = Column(Text, nullable=True)
     date_of_birth = Column(Date, nullable=True)
-    email = Column(String(120), nullable=True)
-    phone = Column(String(20), nullable=True)
-    city = Column(String(100), nullable=True)
-    province = Column(String(50), nullable=True)
-    postal_code = Column(String(10), nullable=True)
+    email = Column(Text, nullable=True)
+    phone = Column(Text, nullable=True)
+    city = Column(Text, nullable=True)
+    province = Column(Text, nullable=True)
+    postal_code = Column(Text, nullable=True)
 
     # Demographics
-    gender_identity = Column(String(50), nullable=True)
+    gender_identity = Column(Text, nullable=True)
     pronouns = Column(JSON, nullable=True)  # Array of strings
     ethnic_group = Column(JSON, nullable=True)  # Array of strings
-    marital_status = Column(String(50), nullable=True)
-    has_kids = Column(String(10), nullable=True)
+    marital_status = Column(Text, nullable=True)
+    has_kids = Column(Text, nullable=True)
 
     # Cancer Experience
-    diagnosis = Column(String(100), nullable=True)
+    diagnosis = Column(Text, nullable=True)
     date_of_diagnosis = Column(Date, nullable=True)
 
     # "Other" text fields for custom entries
@@ -69,15 +69,15 @@ class UserData(Base):
     gender_identity_custom = Column(Text, nullable=True)
 
     # Flow control fields
-    has_blood_cancer = Column(String(10), nullable=True)
-    caring_for_someone = Column(String(10), nullable=True)
+    has_blood_cancer = Column(Text, nullable=True)
+    caring_for_someone = Column(Text, nullable=True)
 
     # Loved One Demographics
-    loved_one_gender_identity = Column(String(50), nullable=True)
-    loved_one_age = Column(String(10), nullable=True)
+    loved_one_gender_identity = Column(Text, nullable=True)
+    loved_one_age = Column(Text, nullable=True)
 
     # Loved One Cancer Experience
-    loved_one_diagnosis = Column(String(100), nullable=True)
+    loved_one_diagnosis = Column(Text, nullable=True)
     loved_one_date_of_diagnosis = Column(Date, nullable=True)
 
     # Many-to-many relationships

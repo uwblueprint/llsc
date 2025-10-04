@@ -1,7 +1,7 @@
 import uuid
 from enum import Enum as PyEnum
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -23,11 +23,11 @@ class FormStatus(str, PyEnum):
 class User(Base):
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    first_name = Column(String(80), nullable=True)
-    last_name = Column(String(80), nullable=True)
-    email = Column(String(120), unique=True, nullable=False)
+    first_name = Column(Text, nullable=True)
+    last_name = Column(Text, nullable=True)
+    email = Column(Text, unique=True, nullable=False)
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
-    auth_id = Column(String, nullable=False)
+    auth_id = Column(Text, nullable=False)
     approved = Column(Boolean, default=False)
     active = Column(Boolean, nullable=False, default=True)
     form_status = Column(

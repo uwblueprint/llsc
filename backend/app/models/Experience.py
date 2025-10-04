@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Enum, Integer, String
+from sqlalchemy import Column, Enum, Integer, Text
 from sqlalchemy.orm import relationship
 
 from .Base import Base
@@ -7,7 +7,7 @@ from .Base import Base
 class Experience(Base):
     __tablename__ = "experiences"
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True, nullable=False)  # 'PTSD', 'Relapse', etc.
+    name = Column(Text, unique=True, nullable=False)  # 'PTSD', 'Relapse', etc.
     scope = Column(Enum("patient", "caregiver", "both", "none", name="scope"), nullable=False)
 
     # Back reference for many-to-many relationship
