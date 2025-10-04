@@ -386,3 +386,36 @@ export const refresh = async (): Promise<boolean> => {
     return false;
   }
 };
+
+// User types for admin and user management
+export interface UserResponse {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  roleId: number;
+  authId: string;
+  approved: boolean;
+  formStatus: string;
+}
+
+export interface UserListResponse {
+  users: UserResponse[];
+  total: number;
+}
+
+/**
+ * Get all admin users
+ */
+export const getAdmins = async (): Promise<UserListResponse> => {
+  const response = await baseAPIClient.get<UserListResponse>('/users?admin=true');
+  return response.data;
+};
+
+/**
+ * Get user by ID
+ */
+export const getUserById = async (userId: string): Promise<UserResponse> => {
+  const response = await baseAPIClient.get<UserResponse>(`/users/${userId}`);
+  return response.data;
+};
