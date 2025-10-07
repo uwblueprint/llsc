@@ -35,7 +35,11 @@ export interface AuthResult {
   validationErrors?: string[];
 }
 
-export const login = async (email: string, password: string, isAdminPortal: boolean = false): Promise<AuthResult> => {
+export const login = async (
+  email: string,
+  password: string,
+  isAdminPortal: boolean = false,
+): Promise<AuthResult> => {
   try {
     // Validate inputs
     if (!validateEmail(email)) {
