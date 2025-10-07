@@ -37,6 +37,8 @@ export default function LoginPage() {
 
       if (result.success) {
         router.push('/welcome');
+      } else if (result.errorCode === 'auth/email-not-verified') {
+        router.push(`/verify?email=${encodeURIComponent(email)}`);
       } else {
         setError(result.error || 'Login failed. Please try again.');
       }

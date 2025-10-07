@@ -24,12 +24,11 @@ export default function AdminLogin() {
     try {
       const result = await login(email, password);
       if (result.success) {
-        console.log('Admin login success:', result);
         router.push('/admin/dashboard');
+      } else if (result.errorCode === 'auth/email-not-verified') {
+        router.push(`/admin-verify?email=${encodeURIComponent(email)}&role=admin`);
       } else {
-        setError(
-          'Invalid email or password. Please check your credentials and try again. If you recently signed up, make sure to verify your email first.',
-        );
+        setError('Invalid email or password. Please check your credentials and try again.');
       }
     } catch (err: unknown) {
       console.error('Admin login error:', err);
