@@ -163,7 +163,7 @@ export default function AdminLogin() {
                   marginTop: 6,
                   cursor: 'pointer',
                 }}
-                onClick={() => router.push('/admin-reset-password')}
+                onClick={() => router.push('/reset-password')}
               >
                 Forgot Password?
               </span>
