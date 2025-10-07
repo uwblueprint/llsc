@@ -38,13 +38,15 @@ export default function AdminLoginPage() {
         signupMethod: SignUpMethod.PASSWORD,
       };
       const result = await register(userData);
-      console.log("?", result)
+      console.log('?', result);
       // Check if it's an admin privilege error
       if (!result.success && result.error && result.error.includes('Admin privileges required')) {
-        setError('Access denied. Admin registration is restricted. Please contact an administrator.');
+        setError(
+          'Access denied. Admin registration is restricted. Please contact an administrator.',
+        );
         return;
       }
-      
+
       // If successful (even if success is false, check if we got a user)
       if (result.user || result.success) {
         console.log('Admin registration success:', result);

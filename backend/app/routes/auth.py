@@ -21,7 +21,7 @@ async def register_user(user: UserCreateRequest, user_service: UserService = Dep
     if user.role == UserRole.ADMIN:
         if user.email not in allowed_Admins:
             raise HTTPException(status_code=403, detail="Access denied. Admin privileges required for admin portal")
-    
+
     try:
         return await user_service.create_user(user)
     except HTTPException as http_ex:

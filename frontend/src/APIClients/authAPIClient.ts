@@ -64,28 +64,30 @@ export const login = async (email: string, password: string, isAdminPortal: bool
     try {
       const loginRequest: LoginRequest = { email, password };
       const headers: any = { withCredentials: true };
-      
+
       // Add admin portal header if this is an admin login
       if (isAdminPortal) {
         headers.headers = { 'X-Admin-Portal': 'true' };
       }
-      
+
       const { data } = await baseAPIClient.post<AuthResponse>('/auth/login', loginRequest, headers);
       localStorage.setItem(AUTHENTICATED_USER_KEY, JSON.stringify(data));
       return { success: true, user: { ...data.user, ...data } };
     } catch (error) {
       // Handle admin privilege errors specifically
       if (error && typeof error === 'object' && 'response' in error) {
-        const response = (error as { response?: { status?: number; data?: { detail?: string } } }).response;
+        const response = (error as { response?: { status?: number; data?: { detail?: string } } })
+          .response;
         if (response?.status === 403 && isAdminPortal) {
           return {
             success: false,
-            error: 'Access denied. You do not have admin privileges. Please contact an administrator.',
+            error:
+              'Access denied. You do not have admin privileges. Please contact an administrator.',
             errorCode: 'auth/insufficient-privileges',
           };
         }
       }
-      
+
       // Backend login failure is not critical since Firebase auth succeeded
       return {
         success: true,

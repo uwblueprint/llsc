@@ -50,7 +50,8 @@ export default function AdminDashboard() {
               fontWeight={400}
               fontSize="lg"
             >
-              Welcome to the admin dashboard. You have successfully logged in to your administrator account.
+              Welcome to the admin dashboard. You have successfully logged in to your administrator
+              account.
             </Text>
           </Box>
         </Flex>
