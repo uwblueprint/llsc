@@ -55,7 +55,7 @@ class VolunteerDataResponse(BaseModel):
     """
 
     id: UUID
-    user_id: UUID
+    user_id: Optional[UUID]
     experience: Optional[str]
     references_json: Optional[str]
     additional_comments: Optional[str]

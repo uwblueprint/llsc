@@ -24,17 +24,17 @@ class VolunteerDataService(IVolunteerDataService):
         self, volunteer_data: VolunteerDataCreateRequest
     ) -> VolunteerDataResponse:
         try:
-            # Check if volunteer data already exists for this user
-            existing_data = (
-                self.db.query(VolunteerData)
-                .filter(VolunteerData.user_id == volunteer_data.user_id)
-                .first()
-            )
-            if existing_data:
-                raise HTTPException(
-                    status_code=409,
-                    detail="Volunteer data already exists for this user"
+            if volunteer_data.user_id is not None:
+                existing_data = (
+                    self.db.query(VolunteerData)
+                    .filter(VolunteerData.user_id == volunteer_data.user_id)
+                    .first()
                 )
+                if existing_data:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="Volunteer data already exists for this user"
+                    )
 
             # Create new volunteer data entry
             db_volunteer_data = VolunteerData(

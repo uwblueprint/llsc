@@ -6,6 +6,7 @@ Create Date: 2025-06-22 01:09:44.851319
 
 """
 from typing import Sequence, Union
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = 'e71f29bbfe31'
@@ -15,8 +16,16 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    pass
+    # Make user_id nullable to allow public submissions without user accounts
+    op.alter_column('volunteer_data', 'user_id', nullable=True)
+    
+    # Drop the unique constraint since we'll have multiple NULL values
+    op.drop_constraint('uq_volunteer_data_user_id', 'volunteer_data', type_='unique')
 
 
 def downgrade() -> None:
-    pass
+    # Recreate the unique constraint
+    op.create_unique_constraint('uq_volunteer_data_user_id', 'volunteer_data', ['user_id'])
+    
+    # Make user_id non-nullable again
+    op.alter_column('volunteer_data', 'user_id', nullable=False)
