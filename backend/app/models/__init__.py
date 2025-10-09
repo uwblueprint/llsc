@@ -24,6 +24,7 @@ from .TimeBlock import TimeBlock
 from .Treatment import Treatment
 from .User import FormStatus, User
 from .UserData import UserData
+from .VolunteerData import VolunteerData
 
 # Used to avoid import errors for the models
 __all__ = [
@@ -48,6 +49,7 @@ __all__ = [
     "TaskType",
     "TaskPriority",
     "TaskStatus",
+    "VolunteerData",
 ]
 
 log = logging.getLogger(LOGGER_NAME("models"))
