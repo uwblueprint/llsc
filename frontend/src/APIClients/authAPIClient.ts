@@ -35,7 +35,11 @@ export interface AuthResult {
   validationErrors?: string[];
 }
 
-export const login = async (email: string, password: string): Promise<AuthResult> => {
+export const login = async (
+  email: string,
+  password: string,
+  isAdminPortal: boolean = false,
+): Promise<AuthResult> => {
   try {
     // Validate inputs
     if (!validateEmail(email)) {
@@ -63,12 +67,31 @@ export const login = async (email: string, password: string): Promise<AuthResult
     // Attempt backend login
     try {
       const loginRequest: LoginRequest = { email, password };
-      const { data } = await baseAPIClient.post<AuthResponse>('/auth/login', loginRequest, {
-        withCredentials: true,
-      });
+      const headers: any = { withCredentials: true };
+
+      // Add admin portal header if this is an admin login
+      if (isAdminPortal) {
+        headers.headers = { 'X-Admin-Portal': 'true' };
+      }
+
+      const { data } = await baseAPIClient.post<AuthResponse>('/auth/login', loginRequest, headers);
       localStorage.setItem(AUTHENTICATED_USER_KEY, JSON.stringify(data));
-      return { success: true, user: { ...data.user, ...data } as AuthenticatedUser };
-    } catch {
+      return { success: true, user: { ...data.user, ...data } };
+    } catch (error) {
+      // Handle admin privilege errors specifically
+      if (error && typeof error === 'object' && 'response' in error) {
+        const response = (error as { response?: { status?: number; data?: { detail?: string } } })
+          .response;
+        if (response?.status === 403 && isAdminPortal) {
+          return {
+            success: false,
+            error:
+              'Access denied. You do not have admin privileges. Please contact an administrator.',
+            errorCode: 'auth/insufficient-privileges',
+          };
+        }
+      }
+
       // Backend login failure is not critical since Firebase auth succeeded
       return {
         success: true,
@@ -217,22 +240,19 @@ export const register = async ({
       } else {
         console.warn('[REGISTER] Failed to send email verification after registration');
       }
+
+      // Return success with user info - don't try to login since email isn't verified yet
+      return {
+        success: true,
+        user: { email: user.email, uid: user.uid } as unknown as AuthenticatedUser,
+      };
     } catch (firebaseError) {
       console.error('[REGISTER] Firebase sign-in failed:', firebaseError);
       // Continue with registration even if Firebase sign-in fails
       // The user can still verify their email later
-    }
-
-    // Try backend login but don't fail if it doesn't work
-    try {
-      const loginResult = await login(email, password);
-      return loginResult;
-    } catch (loginError) {
-      console.warn('[REGISTER] Backend login failed, but registration was successful:', loginError);
-      // Return success even if backend login fails, since Firebase user was created
       return {
         success: true,
-        user: { email, uid: auth.currentUser?.uid || 'unknown' } as unknown as AuthenticatedUser,
+        user: { email, uid: 'unknown' } as unknown as AuthenticatedUser,
       };
     }
   } catch (error) {

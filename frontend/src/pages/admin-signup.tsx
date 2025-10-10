@@ -38,25 +38,25 @@ export default function AdminLoginPage() {
         signupMethod: SignUpMethod.PASSWORD,
       };
       const result = await register(userData);
-      console.log('Admin registration success:', result);
-      router.push(`/verify?email=${encodeURIComponent(email)}&role=admin`);
+      console.log('?', result);
+      // Check if it's an admin privilege error
+      if (!result.success && result.error && result.error.includes('Admin privileges required')) {
+        setError(
+          'Access denied. Admin registration is restricted. Please contact an administrator.',
+        );
+        return;
+      }
+
+      // If successful (even if success is false, check if we got a user)
+      if (result.user || result.success) {
+        console.log('Admin registration success:', result);
+        router.push(`/admin-verify?email=${encodeURIComponent(email)}&role=admin`);
+      } else {
+        setError(result.error || 'Registration failed');
+      }
     } catch (err: unknown) {
       console.error('Admin registration error:', err);
-      if (
-        err &&
-        typeof err === 'object' &&
-        'response' in err &&
-        err.response &&
-        typeof err.response === 'object' &&
-        'data' in err.response &&
-        err.response.data &&
-        typeof err.response.data === 'object' &&
-        'detail' in err.response.data
-      ) {
-        setError((err.response.data as { detail: string }).detail || 'Registration failed');
-      } else {
-        setError('Registration failed');
-      }
+      setError('Registration failed');
     }
   };
 
@@ -247,7 +247,7 @@ export default function AdminLoginPage() {
           >
             Already have an account?{' '}
             <Link
-              href="/admin"
+              href="/admin-login"
               style={{
                 color: teal,
                 textDecoration: 'underline',
