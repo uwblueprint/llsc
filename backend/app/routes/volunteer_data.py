@@ -62,9 +62,7 @@ async def get_all_volunteer_data(
 ):
     try:
         volunteer_data_list = await volunteer_data_service.get_all_volunteer_data()
-        return VolunteerDataListResponse(
-            volunteer_data=volunteer_data_list, total=len(volunteer_data_list)
-        )
+        return VolunteerDataListResponse(volunteer_data=volunteer_data_list, total=len(volunteer_data_list))
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:
@@ -110,9 +108,7 @@ async def update_volunteer_data(
     authorized: bool = has_roles([UserRole.ADMIN]),
 ):
     try:
-        return await volunteer_data_service.update_volunteer_data_by_id(
-            volunteer_data_id, volunteer_data_update
-        )
+        return await volunteer_data_service.update_volunteer_data_by_id(volunteer_data_id, volunteer_data_update)
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:

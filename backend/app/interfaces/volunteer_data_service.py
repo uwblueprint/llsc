@@ -19,9 +19,7 @@ class IVolunteerDataService(ABC):
     """
 
     @abstractmethod
-    async def create_volunteer_data(
-        self, volunteer_data: VolunteerDataCreateRequest
-    ) -> VolunteerDataResponse:
+    async def create_volunteer_data(self, volunteer_data: VolunteerDataCreateRequest) -> VolunteerDataResponse:
         """Create new volunteer data entry"""
         pass
 

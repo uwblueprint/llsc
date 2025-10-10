@@ -8,7 +8,20 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import models
 from .middleware.auth_middleware import AuthMiddleware
-from .routes import auth, availability, intake, match, matching, ranking, send_email, suggested_times, task, test, user, volunteer_data
+from .routes import (
+    auth,
+    availability,
+    intake,
+    match,
+    matching,
+    ranking,
+    send_email,
+    suggested_times,
+    task,
+    test,
+    user,
+    volunteer_data,
+)
 from .utilities.constants import LOGGER_NAME
 from .utilities.firebase_init import initialize_firebase
 from .utilities.ses.ses_init import ensure_ses_templates

@@ -20,21 +20,14 @@ class VolunteerDataService(IVolunteerDataService):
         self.db = db
         self.logger = logging.getLogger(LOGGER_NAME("volunteer_data_service"))
 
-    async def create_volunteer_data(
-        self, volunteer_data: VolunteerDataCreateRequest
-    ) -> VolunteerDataResponse:
+    async def create_volunteer_data(self, volunteer_data: VolunteerDataCreateRequest) -> VolunteerDataResponse:
         try:
             if volunteer_data.user_id is not None:
                 existing_data = (
-                    self.db.query(VolunteerData)
-                    .filter(VolunteerData.user_id == volunteer_data.user_id)
-                    .first()
+                    self.db.query(VolunteerData).filter(VolunteerData.user_id == volunteer_data.user_id).first()
                 )
                 if existing_data:
-                    raise HTTPException(
-                        status_code=409,
-                        detail="Volunteer data already exists for this user"
-                    )
+                    raise HTTPException(status_code=409, detail="Volunteer data already exists for this user")
 
             # Create new volunteer data entry
             db_volunteer_data = VolunteerData(
@@ -59,11 +52,7 @@ class VolunteerDataService(IVolunteerDataService):
 
     async def get_volunteer_data_by_id(self, volunteer_data_id: str) -> VolunteerDataResponse:
         try:
-            volunteer_data = (
-                self.db.query(VolunteerData)
-                .filter(VolunteerData.id == UUID(volunteer_data_id))
-                .first()
-            )
+            volunteer_data = self.db.query(VolunteerData).filter(VolunteerData.id == UUID(volunteer_data_id)).first()
             if not volunteer_data:
                 raise HTTPException(status_code=404, detail="Volunteer data not found")
 
@@ -78,11 +67,7 @@ class VolunteerDataService(IVolunteerDataService):
 
     async def get_volunteer_data_by_user_id(self, user_id: str) -> VolunteerDataResponse:
         try:
-            volunteer_data = (
-                self.db.query(VolunteerData)
-                .filter(VolunteerData.user_id == UUID(user_id))
-                .first()
-            )
+            volunteer_data = self.db.query(VolunteerData).filter(VolunteerData.user_id == UUID(user_id)).first()
             if not volunteer_data:
                 raise HTTPException(status_code=404, detail="Volunteer data not found for this user")
 
@@ -107,11 +92,7 @@ class VolunteerDataService(IVolunteerDataService):
         self, volunteer_data_id: str, volunteer_data_update: VolunteerDataUpdateRequest
     ) -> VolunteerDataResponse:
         try:
-            db_volunteer_data = (
-                self.db.query(VolunteerData)
-                .filter(VolunteerData.id == UUID(volunteer_data_id))
-                .first()
-            )
+            db_volunteer_data = self.db.query(VolunteerData).filter(VolunteerData.id == UUID(volunteer_data_id)).first()
             if not db_volunteer_data:
                 raise HTTPException(status_code=404, detail="Volunteer data not found")
 
@@ -136,11 +117,7 @@ class VolunteerDataService(IVolunteerDataService):
 
     async def delete_volunteer_data_by_id(self, volunteer_data_id: str) -> None:
         try:
-            db_volunteer_data = (
-                self.db.query(VolunteerData)
-                .filter(VolunteerData.id == UUID(volunteer_data_id))
-                .first()
-            )
+            db_volunteer_data = self.db.query(VolunteerData).filter(VolunteerData.id == UUID(volunteer_data_id)).first()
             if not db_volunteer_data:
                 raise HTTPException(status_code=404, detail="Volunteer data not found")
 

@@ -26,8 +26,7 @@ class VolunteerDataCreateRequest(VolunteerDataBase):
     """
 
     user_id: Optional[UUID] = Field(
-        None,
-        description="User ID this volunteer data belongs to (optional for public submissions)"
+        None, description="User ID this volunteer data belongs to (optional for public submissions)"
     )
 
 
