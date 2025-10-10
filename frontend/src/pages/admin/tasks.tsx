@@ -332,6 +332,25 @@ export default function AdminTasks() {
     if (!taskToUpdate) return;
 
     try {
+      // Handle completed field separately using the dedicated endpoints
+      if (field === 'completed') {
+        if (value === true) {
+          // Mark as completed
+          await taskAPIClient.completeTask(taskId);
+        } else {
+          // Update to pending
+          await taskAPIClient.updateTask(taskId, { status: 'pending' });
+        }
+
+        // Update local state
+        const updatedTask = { ...taskToUpdate, completed: value as boolean };
+        if (selectedTask?.id === taskId) {
+          setSelectedTask(updatedTask);
+        }
+        setTasks(tasks.map((task) => (task.id === taskId ? updatedTask : task)));
+        return;
+      }
+
       const updates: Record<string, string | null> = {};
 
       if (field === 'priority') {
@@ -629,8 +648,8 @@ export default function AdminTasks() {
                             overId === tab.name
                               ? lightGray
                               : activeTab === tab.name
-                                ? borderActive
-                                : lightBg
+                              ? borderActive
+                              : lightBg
                           }
                           borderRadius="8px"
                           fontFamily="'Open Sans', sans-serif"

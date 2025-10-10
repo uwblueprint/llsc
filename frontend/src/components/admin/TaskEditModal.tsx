@@ -99,10 +99,10 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
   };
 
   const formatDateString = (date: Date): string => {
-    const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${month}/${day}/${year}`;
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2); // Get last 2 digits of year
+    return `${day}/${month}/${year}`;
   };
 
   const handleStartDateChange = (date: Date | null) => {
@@ -743,8 +743,8 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
                             index === 0
                               ? '8px 8px 0 0'
                               : index === admins.length - 1
-                                ? '0 0 8px 8px'
-                                : '0'
+                              ? '0 0 8px 8px'
+                              : '0'
                           }
                         >
                           <Flex align="center" gap="12px">
