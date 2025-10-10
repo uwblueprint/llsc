@@ -12,13 +12,19 @@ export default function VolunteerSecondary() {
   const [experience, setExperience] = useState('');
   const [references, setReferences] = useState<Reference[]>([
     { name: '', email: '', phone: '' },
-    { name: '', email: '', phone: '' }
+    { name: '', email: '', phone: '' },
   ]);
   const [additionalComments, setAdditionalComments] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const wordCount = experience.trim() === '' ? 0 : experience.trim().split(/\s+/).filter(word => word.length > 0).length;
+  const wordCount =
+    experience.trim() === ''
+      ? 0
+      : experience
+          .trim()
+          .split(/\s+/)
+          .filter((word) => word.length > 0).length;
   const MAX_WORDS = 300;
 
   const handleReferenceChange = (index: number, field: keyof Reference, value: string) => {
@@ -40,7 +46,7 @@ export default function VolunteerSecondary() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       const volunteerData = {
         experience,
@@ -80,28 +86,36 @@ export default function VolunteerSecondary() {
           <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6 relative">
             <UserIcon className="w-8 h-8" style={{ color: '#056067' }} />
             {/* Checkmark overlay */}
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#056067' }}>
+            <div
+              className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: '#056067' }}
+            >
               <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
             </div>
           </div>
-          
+
           <h1 className="text-xl font-semibold text-gray-800 mb-4 leading-tight">
             Let's setup your public volunteer profile
           </h1>
-          
+
           <p className="text-sm text-gray-600 mb-8 leading-relaxed">
-            Your experience provided in this form will<br />
+            Your experience provided in this form will
+            <br />
             be shared with potential matches.
           </p>
-          
+
           <button
             onClick={() => setCurrentStep(1)}
             className="inline-flex items-center gap-2 text-white text-sm font-medium py-2.5 px-5 rounded-lg transition-colors"
             style={{ backgroundColor: '#056067' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#044950'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#056067'}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#044950')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#056067')}
           >
             Continue
             <ChevronRightIcon className="w-4 h-4" />
@@ -116,10 +130,8 @@ export default function VolunteerSecondary() {
     return (
       <div className="min-h-screen bg-white py-12 px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-8">
-            Volunteer Profile Form
-          </h1>
-          
+          <h1 className="text-2xl font-semibold text-gray-900 mb-8">Volunteer Profile Form</h1>
+
           {/* Progress Bar */}
           <div className="mb-12">
             <div className="flex gap-2">
@@ -130,9 +142,7 @@ export default function VolunteerSecondary() {
 
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                Your Experience
-              </h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Experience</h2>
               <p className="text-gray-600 mb-8">
                 This information will serve as your biography to be shared with potential matches.
               </p>
@@ -146,13 +156,22 @@ export default function VolunteerSecondary() {
                 value={experience}
                 onChange={(e) => {
                   const newText = e.target.value;
-                  const newWordCount = newText.trim() === '' ? 0 : newText.trim().split(/\s+/).filter(word => word.length > 0).length;
-                  
+                  const newWordCount =
+                    newText.trim() === ''
+                      ? 0
+                      : newText
+                          .trim()
+                          .split(/\s+/)
+                          .filter((word) => word.length > 0).length;
+
                   if (newWordCount <= MAX_WORDS) {
                     setExperience(newText);
                   } else {
                     // If exceeding word limit, trim to exactly MAX_WORDS
-                    const words = newText.trim().split(/\s+/).filter(word => word.length > 0);
+                    const words = newText
+                      .trim()
+                      .split(/\s+/)
+                      .filter((word) => word.length > 0);
                     const trimmedText = words.slice(0, MAX_WORDS).join(' ');
                     setExperience(trimmedText);
                   }
@@ -164,7 +183,9 @@ export default function VolunteerSecondary() {
                 style={{ fontSize: '16px' }}
               />
               <div className="mt-3 w-3/5 flex justify-end">
-                <span className={`text-sm ${wordCount >= MAX_WORDS ? 'text-red-500' : 'text-gray-500'}`}>
+                <span
+                  className={`text-sm ${wordCount >= MAX_WORDS ? 'text-red-500' : 'text-gray-500'}`}
+                >
                   {wordCount}/{MAX_WORDS} words
                 </span>
               </div>
@@ -175,8 +196,8 @@ export default function VolunteerSecondary() {
                 onClick={() => setCurrentStep(2)}
                 className="inline-flex items-center gap-2 text-white text-sm font-medium py-3 px-6 rounded-lg transition-colors"
                 style={{ backgroundColor: '#056067' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#044950'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#056067'}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#044950')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#056067')}
               >
                 Next Section
                 <ChevronRightIcon className="w-4 h-4" />
@@ -193,10 +214,8 @@ export default function VolunteerSecondary() {
     return (
       <div className="min-h-screen bg-white py-12 px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-8">
-            Volunteer Profile Form
-          </h1>
-          
+          <h1 className="text-2xl font-semibold text-gray-900 mb-8">Volunteer Profile Form</h1>
+
           {/* Progress Bar */}
           <div className="mb-12">
             <div className="flex gap-2">
@@ -213,9 +232,7 @@ export default function VolunteerSecondary() {
 
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                References
-              </h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">References</h2>
               <p className="text-gray-600 mb-8">
                 These references will be used to confirm your alignment with the program.
               </p>
@@ -223,14 +240,10 @@ export default function VolunteerSecondary() {
 
             {/* Reference 1 */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Reference 1:
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Reference 1:</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                   <input
                     type="text"
                     value={references[0]?.name || ''}
@@ -242,9 +255,7 @@ export default function VolunteerSecondary() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                   <input
                     type="email"
                     value={references[0]?.email || ''}
@@ -274,14 +285,10 @@ export default function VolunteerSecondary() {
 
             {/* Reference 2 */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Reference 2:
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Reference 2:</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                   <input
                     type="text"
                     value={references[1]?.name || ''}
@@ -293,9 +300,7 @@ export default function VolunteerSecondary() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                   <input
                     type="email"
                     value={references[1]?.email || ''}
@@ -344,8 +349,12 @@ export default function VolunteerSecondary() {
                 disabled={isSubmitting}
                 className="text-white py-3 px-6 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: '#056067' }}
-                onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#044950')}
-                onMouseLeave={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#056067')}
+                onMouseEnter={(e) =>
+                  !isSubmitting && (e.currentTarget.style.backgroundColor = '#044950')
+                }
+                onMouseLeave={(e) =>
+                  !isSubmitting && (e.currentTarget.style.backgroundColor = '#056067')
+                }
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Volunteer Profile Form'}
                 <ChevronRightIcon className="w-4 h-4" />
@@ -366,18 +375,16 @@ export default function VolunteerSecondary() {
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
               <CheckCircleIcon className="w-8 h-8" style={{ color: '#056067' }} />
             </div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-              Success!
-            </h1>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-4">Success!</h1>
             <p className="text-gray-600 mb-6">
               Thank you for sharing your references and experiences with us.
             </p>
             <div className="text-gray-600 space-y-2">
               <p>
-                We will reach out in the next 5-7 business days with the next steps. 
-                For immediate help, please reach us at{' '}
-                <a 
-                  href="mailto:FirstConnection@lls.org" 
+                We will reach out in the next 5-7 business days with the next steps. For immediate
+                help, please reach us at{' '}
+                <a
+                  href="mailto:FirstConnection@lls.org"
                   className="hover:opacity-80"
                   style={{ color: '#056067' }}
                 >
@@ -393,4 +400,4 @@ export default function VolunteerSecondary() {
   }
 
   return <div>Loading...</div>;
-} 
+}

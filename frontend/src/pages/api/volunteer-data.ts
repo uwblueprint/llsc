@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         'Content-Type': 'application/json',
         // Forward authorization header if present
         ...(req.headers.authorization && {
-          'Authorization': req.headers.authorization,
+          Authorization: req.headers.authorization,
         }),
       },
     };
@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Create volunteer data
         fetchOptions.body = JSON.stringify(req.body);
         break;
-        
+
       case 'GET':
         // Get volunteer data - handle query parameters
         if (req.query.id) {
@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         // If no specific query, it will get all volunteer data
         break;
-        
+
       case 'PUT':
         // Update volunteer data
         if (req.query.id) {
@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(400).json({ error: 'ID required for PUT request' });
         }
         break;
-        
+
       case 'DELETE':
         // Delete volunteer data
         if (req.query.id) {
@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(400).json({ error: 'ID required for DELETE request' });
         }
         break;
-        
+
       default:
         return res.status(405).json({ error: `Method ${method} not allowed` });
     }
@@ -64,12 +64,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Forward the response status and data
     res.status(response.status).json(data);
-    
   } catch (error) {
     console.error('API proxy error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
-} 
+}
