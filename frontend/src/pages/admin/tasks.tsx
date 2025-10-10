@@ -648,8 +648,8 @@ export default function AdminTasks() {
                             overId === tab.name
                               ? lightGray
                               : activeTab === tab.name
-                              ? borderActive
-                              : lightBg
+                                ? borderActive
+                                : lightBg
                           }
                           borderRadius="8px"
                           fontFamily="'Open Sans', sans-serif"

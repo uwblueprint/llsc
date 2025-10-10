@@ -743,8 +743,8 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
                             index === 0
                               ? '8px 8px 0 0'
                               : index === admins.length - 1
-                              ? '0 0 8px 8px'
-                              : '0'
+                                ? '0 0 8px 8px'
+                                : '0'
                           }
                         >
                           <Flex align="center" gap="12px">
