@@ -20,6 +20,8 @@ interface VolunteerReferencesFormData {
 interface VolunteerReferencesFormProps {
   onNext: (data: VolunteerReferencesFormData) => void;
   onBack?: () => void;
+  isSubmitting?: boolean;
+  submitError?: string | null;
 }
 
 const DEFAULT_VALUES: VolunteerReferencesFormData = {
@@ -36,7 +38,12 @@ const DEFAULT_VALUES: VolunteerReferencesFormData = {
   additionalInfo: '',
 };
 
-export function VolunteerReferencesForm({ onNext, onBack }: VolunteerReferencesFormProps) {
+export function VolunteerReferencesForm({
+  onNext,
+  onBack,
+  isSubmitting = false,
+  submitError,
+}: VolunteerReferencesFormProps) {
   const {
     control,
     handleSubmit,
@@ -439,6 +446,12 @@ export function VolunteerReferencesForm({ onNext, onBack }: VolunteerReferencesF
         </VStack>
       </Box>
 
+      {submitError ? (
+        <Text color="red.500" fontSize="14px" mb={4}>
+          {submitError}
+        </Text>
+      ) : null}
+
       {/* Navigation Buttons */}
       <HStack justify="space-between" mt={8}>
         {onBack ? (
@@ -468,7 +481,8 @@ export function VolunteerReferencesForm({ onNext, onBack }: VolunteerReferencesF
           color="white"
           _hover={{ bg: COLORS.teal }}
           _active={{ bg: COLORS.teal }}
-          disabled={!isValid}
+          disabled={!isValid || isSubmitting}
+          loading={isSubmitting}
           w="auto"
           h="40px"
           fontSize="14px"
