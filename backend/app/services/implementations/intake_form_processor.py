@@ -42,8 +42,11 @@ class IntakeFormProcessor:
             # Validate required fields first
             self._validate_required_fields(form_data)
 
-            # Get or create UserData
+            # Get or create UserData and owning User record
             user_data, is_new = self._get_or_create_user_data(user_id)
+            owning_user = self.db.query(User).filter(User.id == user_data.user_id).first()
+            if not owning_user:
+                raise ValueError(f"User with id {user_id} not found")
 
             # Add to session early to avoid relationship warnings
             if is_new:
@@ -52,6 +55,7 @@ class IntakeFormProcessor:
 
             # Process different sections of the form
             self._process_personal_info(user_data, form_data.get("personal_info", {}))
+            self._sync_user_profile_from_personal_info(owning_user, user_data)
             self._process_demographics(user_data, form_data.get("demographics", {}))
             self._process_cancer_experience(user_data, form_data.get("cancer_experience", {}))
             self._process_flow_control(user_data, form_data)
@@ -70,14 +74,11 @@ class IntakeFormProcessor:
                 self._process_loved_one_data(user_data, form_data.get("loved_one", {}))
 
             # Fallback: ensure email is set from the authenticated User if not provided in form
-            if not user_data.email:
-                owning_user = self.db.query(User).filter(User.id == user_data.user_id).first()
-                if owning_user and owning_user.email:
-                    user_data.email = owning_user.email
+            if not user_data.email and owning_user.email:
+                user_data.email = owning_user.email
 
             # Update form status for the owning user without regressing progress
-            owning_user = self.db.query(User).filter(User.id == user_data.user_id).first()
-            if owning_user and owning_user.form_status in {
+            if owning_user.form_status in {
                 FormStatus.INTAKE_TODO,
                 FormStatus.INTAKE_SUBMITTED,
             }:
@@ -175,6 +176,13 @@ class IntakeFormProcessor:
                 user_data.date_of_birth = self._parse_date(personal_info.get("date_of_birth"))
             except ValueError:
                 raise ValueError(f"Invalid date format for dateOfBirth: {personal_info.get('date_of_birth')}")
+
+    def _sync_user_profile_from_personal_info(self, owning_user: User, user_data: UserData) -> None:
+        """Update the core user record with personal info captured on the intake form."""
+        if user_data.first_name:
+            owning_user.first_name = user_data.first_name
+        if user_data.last_name:
+            owning_user.last_name = user_data.last_name
 
     def _process_demographics(self, user_data: UserData, demographics: Dict[str, Any]):
         """Process demographic information."""
