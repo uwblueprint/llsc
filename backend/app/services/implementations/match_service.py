@@ -25,10 +25,15 @@ class MatchService:
             if block.confirmed_match and block.confirmed_match.id != match.id:
                 raise HTTPException(400, "TimeBlock already confirmed for another match")
 
-            # confirm timeblock in match
+            # confirm time block in match and update status to confirmed
             match.chosen_time_block_id = block.id
             match.confirmed_time = block
-            match.match_status = self.db.get(MatchStatus, 6)
+
+            confirmed_status = self.db.query(MatchStatus).filter_by(name="confirmed").first()
+            if not confirmed_status:
+                raise HTTPException(500, "Match status 'confirmed' not configured")
+
+            match.match_status = confirmed_status
 
             self.db.flush()
 
