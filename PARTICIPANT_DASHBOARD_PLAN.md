@@ -35,17 +35,14 @@
 - `no_show` – reserved for future support.
 
 ## Step-by-Step Backend Plan
-1. **Standardize match statuses**
-   - Update seed data and status constants to the list above.
-   - Adjust `MatchService.submit_time` (and related flows) to set `confirmed` instead of `rescheduled`.
+1. **Standardize match statuses** ✅
+   - Updated seed data to include the new lifecycle statuses and confirmed that `MatchService.submit_time` sets `confirmed`.
 
-2. **Admin match management API**
-   - Add routes/services for admins to create/update match records (assign volunteer IDs, set initial status `pending`).
-   - Enforce single active match per participant when writing matches.
+2. **Admin match management API** ✅
+   - Added create/update routes and service logic so admins can assign volunteers and adjust statuses.
 
-3. **Participant match read API**
-   - Implement `GET /matches/me` (participant) returning active match data: volunteer snapshot, status, chosen time, suggested blocks.
-   - Include suggested blocks inline or allow participant access to `/suggested-times` for their match.
+3. **Participant match read API** ✅
+   - Implemented participant (`GET /matches/me`) and admin (`GET /matches/participant/{id}`) endpoints returning volunteer snapshots, chosen slot, and suggested blocks.
 
 4. **Scheduling & reschedule endpoints**
    - Participant `POST /matches/{id}/schedule` to choose a suggested time (may reuse confirm-time).
@@ -56,7 +53,7 @@
    - Admin/volunteer `POST /matches/{id}/cancel-volunteer` -> status `cancelled_by_volunteer`.
 
 6. **Request new volunteers endpoint**
-   - Participant action (e.g., `POST /matches/{id}/request-new-volunteers`) to flip status to `requesting_new_volunteers` without deleting the match; admins will replace it manually.
+   - Participant action (e.g., `POST /matches/{id}/request-new-volunteers`) should clear all existing matches for that participant (hard delete is acceptable for now) and set the status for any remaining workflow to `requesting_new_volunteers`.
 
 7. **Time block consistency**
    - Decide on granularity (hourly vs 30/15 combinations) and update both the `TimeRange` validator and `SuggestedTimesService` generator accordingly.
@@ -72,4 +69,4 @@
 
 ## Next Actions
 - Start with Step 1 (status cleanup) and proceed sequentially through the backend tasks before moving to the frontend work.
-
+- Defer end-to-end testing until after Steps 3–6 land; at that point, plan to seed the DB, hit the new admin endpoints (create/update/request-new-volunteers), and verify participant scheduling flows via the confirm-time endpoint.
