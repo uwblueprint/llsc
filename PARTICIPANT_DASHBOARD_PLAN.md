@@ -55,8 +55,8 @@
 6. **Request new volunteers endpoint** ✅
    - Participant (or admin on their behalf) can call `POST /matches/request-new-volunteers` (with optional message). Existing matches are deleted and, if provided, a matching task is created with the participant’s note.
 
-7. **Time block consistency**
-   - Decide on granularity (hourly vs 30/15 combinations) and update both the `TimeRange` validator and `SuggestedTimesService` generator accordingly.
+7. **Time block consistency** ✅
+   - `TimeRange` now accepts half-hour boundaries, and all suggested-time generators use 30-minute increments on the hour or half-hour.
 
 8. **Frontend implementation**
    - Replace placeholder dashboard with data-driven layout aligned to the Figma frame (`6244:128292`).
@@ -67,6 +67,4 @@
 - Cancellation does not need a reason field for now.
 - Requesting new volunteers should flag the match but leaves cleanup to admins (no auto removal yet).
 
-## Next Actions
-- Start with Step 1 (status cleanup) and proceed sequentially through the backend tasks before moving to the frontend work.
-- Defer end-to-end testing until after Steps 3–6 land; at that point, plan to seed the DB, hit the new admin endpoints (create/update/request-new-volunteers), and verify participant scheduling flows via the confirm-time endpoint.
+- Add backend unit tests for match scheduling/reschedule/cancellation flows once API contract stabilizes.
