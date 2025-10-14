@@ -74,3 +74,12 @@ class MatchDetailResponse(BaseModel):
 
 class MatchListResponse(BaseModel):
     matches: List[MatchDetailResponse]
+
+
+class MatchRequestNewVolunteersResponse(BaseModel):
+    deleted_matches: int
+
+
+class MatchRequestNewVolunteersRequest(BaseModel):
+    participant_id: Optional[UUID] = None
+    message: Optional[str] = None
