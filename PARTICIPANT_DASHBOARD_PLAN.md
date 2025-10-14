@@ -39,14 +39,14 @@
    - Updated seed data to include the new lifecycle statuses and confirmed that `MatchService.submit_time` sets `confirmed`.
 
 2. **Admin match management API** ✅
-   - Added create/update routes and service logic so admins can assign volunteers and adjust statuses.
+   - Added create/update routes and service logic so admins can assign volunteers, preload suggested time blocks from volunteer availability, and adjust statuses.
 
 3. **Participant match read API** ✅
    - Implemented participant (`GET /matches/me`) and admin (`GET /matches/participant/{id}`) endpoints returning volunteer snapshots, chosen slot, and suggested blocks.
 
-4. **Scheduling & reschedule endpoints**
-   - Participant `POST /matches/{id}/schedule` to choose a suggested time (may reuse confirm-time).
-   - Participant `POST /matches/{id}/request-new-times` to clear existing selection, update status to `requesting_new_times`, and notify admins later.
+4. **Scheduling & reschedule endpoints** ✅
+   - Participant `POST /matches/{id}/schedule` to choose a suggested time and automatically drop other matches.
+   - Participant `POST /matches/{id}/request-new-times` clears existing suggestions, stores new time blocks, and marks the match as `requesting_new_times`.
 
 5. **Cancellation endpoints**
    - Participant `POST /matches/{id}/cancel` -> status `cancelled_by_participant`.

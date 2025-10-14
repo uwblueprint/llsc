@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -7,8 +8,11 @@ from app.middleware.auth import has_roles
 from app.schemas.match import (
     MatchCreateRequest,
     MatchCreateResponse,
+    MatchDetailResponse,
     MatchListResponse,
+    MatchRequestNewTimesRequest,
     MatchResponse,
+    MatchScheduleRequest,
     MatchUpdateRequest,
     SubmitMatchRequest,
     SubmitMatchResponse,
@@ -90,6 +94,42 @@ async def get_matches_for_participant(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/{match_id}/schedule", response_model=MatchDetailResponse)
+async def schedule_match(
+    match_id: int,
+    payload: MatchScheduleRequest,
+    request: Request,
+    match_service: MatchService = Depends(get_match_service),
+    user_service: UserService = Depends(get_user_service),
+    _authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.ADMIN]),
+):
+    try:
+        acting_participant_id = await _resolve_acting_participant_id(request, user_service)
+        return await match_service.schedule_match(match_id, payload.time_block_id, acting_participant_id)
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{match_id}/request-new-times", response_model=MatchDetailResponse)
+async def request_new_times(
+    match_id: int,
+    payload: MatchRequestNewTimesRequest,
+    request: Request,
+    match_service: MatchService = Depends(get_match_service),
+    user_service: UserService = Depends(get_user_service),
+    _authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.ADMIN]),
+):
+    try:
+        acting_participant_id = await _resolve_acting_participant_id(request, user_service)
+        return await match_service.request_new_times(match_id, payload.suggested_new_times, acting_participant_id)
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/confirm-time", response_model=SubmitMatchResponse)
 async def confirm_time(
     payload: SubmitMatchRequest,
@@ -103,3 +143,20 @@ async def confirm_time(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _resolve_acting_participant_id(request: Request, user_service: UserService) -> Optional[UUID]:
+    auth_id = getattr(request.state, "user_id", None)
+    if not auth_id:
+        return None
+
+    try:
+        role_name = user_service.get_user_role_by_auth_id(auth_id)
+    except ValueError:
+        return None
+
+    if role_name != UserRole.PARTICIPANT.value:
+        return None
+
+    participant_id_str = await user_service.get_user_id_by_auth_id(auth_id)
+    return UUID(participant_id_str)

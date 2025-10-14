@@ -1,5 +1,6 @@
 import logging
-from typing import List
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -17,7 +18,7 @@ from app.schemas.match import (
     SubmitMatchRequest,
     SubmitMatchResponse,
 )
-from app.schemas.time_block import TimeBlockEntity
+from app.schemas.time_block import TimeBlockEntity, TimeRange
 from app.schemas.user import UserRole
 
 
@@ -42,7 +43,12 @@ class MatchService:
             created_matches: List[Match] = []
 
             for volunteer_id in req.volunteer_ids:
-                volunteer: User | None = self.db.get(User, volunteer_id)
+                volunteer: User | None = (
+                    self.db.query(User)
+                    .options(joinedload(User.availability))
+                    .filter(User.id == volunteer_id)
+                    .first()
+                )
                 if not volunteer:
                     raise HTTPException(404, f"Volunteer {volunteer_id} not found")
                 if volunteer.role is None or volunteer.role.name != UserRole.VOLUNTEER:
@@ -54,6 +60,8 @@ class MatchService:
                     match_status=status,
                 )
                 self.db.add(match)
+
+                self._attach_initial_suggested_times(match, volunteer)
                 created_matches.append(match)
 
             self.db.flush()
@@ -116,6 +124,123 @@ class MatchService:
             self.db.rollback()
             self.logger.error(f"Error updating match {match_id}: {exc}")
             raise HTTPException(status_code=500, detail="Failed to update match")
+
+    async def schedule_match(
+        self,
+        match_id: int,
+        time_block_id: int,
+        acting_participant_id: Optional[UUID] = None,
+    ) -> MatchDetailResponse:
+        try:
+            match: Match | None = (
+                self.db.query(Match)
+                .options(joinedload(Match.participant))
+                .filter(Match.id == match_id)
+                .first()
+            )
+            if not match:
+                raise HTTPException(404, f"Match {match_id} not found")
+
+            if acting_participant_id and match.participant_id != acting_participant_id:
+                raise HTTPException(status_code=403, detail="Cannot modify another participant's match")
+
+            block = self.db.get(TimeBlock, time_block_id)
+            if not block:
+                raise HTTPException(404, f"TimeBlock {time_block_id} not found")
+
+            match.chosen_time_block_id = block.id
+            match.confirmed_time = block
+
+            confirmed_status = self.db.query(MatchStatus).filter_by(name="confirmed").first()
+            if not confirmed_status:
+                raise HTTPException(500, "Match status 'confirmed' not configured")
+            match.match_status = confirmed_status
+
+            participant_id = match.participant_id
+
+            other_matches: List[Match] = (
+                self.db.query(Match)
+                .filter(Match.participant_id == participant_id, Match.id != match.id)
+                .all()
+            )
+
+            for other in other_matches:
+                self._delete_match(other)
+
+            self.db.flush()
+            self.db.commit()
+            self.db.refresh(match)
+
+            return self._build_match_detail(match)
+
+        except HTTPException:
+            self.db.rollback()
+            raise
+        except Exception as exc:
+            self.db.rollback()
+            self.logger.error(f"Error scheduling match {match_id}: {exc}")
+            raise HTTPException(status_code=500, detail="Failed to schedule match")
+
+    async def request_new_times(
+        self,
+        match_id: int,
+        time_ranges: List[TimeRange],
+        acting_participant_id: Optional[UUID] = None,
+    ) -> MatchDetailResponse:
+        try:
+            match: Match | None = (
+                self.db.query(Match)
+                .options(joinedload(Match.suggested_time_blocks))
+                .filter(Match.id == match_id)
+                .first()
+            )
+            if not match:
+                raise HTTPException(404, f"Match {match_id} not found")
+
+            if acting_participant_id and match.participant_id != acting_participant_id:
+                raise HTTPException(status_code=403, detail="Cannot modify another participant's match")
+
+            if match.chosen_time_block_id is not None:
+                raise HTTPException(400, "Cannot request new times after a call is scheduled")
+
+            for existing in list(match.suggested_time_blocks):
+                match.suggested_time_blocks.remove(existing)
+                self.db.delete(existing)
+
+            added = 0
+            for time_range in time_ranges:
+                current_start = time_range.start_time
+                end_time = time_range.end_time
+                while current_start + timedelta(minutes=30) <= end_time:
+                    time_block = TimeBlock(start_time=current_start)
+                    match.suggested_time_blocks.append(time_block)
+                    added += 1
+                    current_start += timedelta(minutes=15)
+
+            if added == 0:
+                raise HTTPException(400, "No suggested time blocks generated from provided ranges")
+
+            requesting_status = (
+                self.db.query(MatchStatus).filter_by(name="requesting_new_times").first()
+            )
+            if not requesting_status:
+                raise HTTPException(500, "Match status 'requesting_new_times' not configured")
+
+            match.match_status = requesting_status
+
+            self.db.flush()
+            self.db.commit()
+            self.db.refresh(match)
+
+            return self._build_match_detail(match)
+
+        except HTTPException:
+            self.db.rollback()
+            raise
+        except Exception as exc:
+            self.db.rollback()
+            self.logger.error(f"Error requesting new times for match {match_id}: {exc}")
+            raise HTTPException(status_code=500, detail="Failed to request new times")
 
     async def get_matches_for_participant(self, participant_id: UUID) -> MatchListResponse:
         try:
@@ -231,3 +356,36 @@ class MatchService:
             created_at=match.created_at,
             updated_at=match.updated_at,
         )
+
+    def _delete_match(self, match: Match) -> None:
+        confirmed_block = match.confirmed_time
+        for block in list(match.suggested_time_blocks):
+            match.suggested_time_blocks.remove(block)
+            self.db.delete(block)
+
+        match.confirmed_time = None
+        match.chosen_time_block_id = None
+
+        if confirmed_block and confirmed_block not in self.db.deleted:
+            self.db.delete(confirmed_block)
+
+        self.db.delete(match)
+
+    def _attach_initial_suggested_times(self, match: Match, volunteer: User) -> None:
+        if not volunteer.availability:
+            return
+
+        now = datetime.now(timezone.utc)
+        sorted_blocks = sorted(
+            volunteer.availability,
+            key=lambda tb: tb.start_time or now,
+        )
+
+        for block in sorted_blocks:
+            if block.start_time is None:
+                continue
+            if block.start_time < now:
+                continue
+
+            new_block = TimeBlock(start_time=block.start_time)
+            match.suggested_time_blocks.append(new_block)
