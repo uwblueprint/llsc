@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.time_block import TimeBlockEntity
+from app.schemas.time_block import TimeBlockEntity, TimeRange
 
 
 class SubmitMatchRequest(BaseModel):
@@ -42,6 +42,14 @@ class MatchUpdateRequest(BaseModel):
     match_status: Optional[str] = None
     chosen_time_block_id: Optional[int] = None
     clear_chosen_time: bool = False
+
+
+class MatchScheduleRequest(BaseModel):
+    time_block_id: int
+
+
+class MatchRequestNewTimesRequest(BaseModel):
+    suggested_new_times: List[TimeRange] = Field(..., min_length=1)
 
 
 class MatchVolunteerSummary(BaseModel):
