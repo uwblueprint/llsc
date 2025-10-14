@@ -216,7 +216,7 @@ class MatchService:
                     time_block = TimeBlock(start_time=current_start)
                     match.suggested_time_blocks.append(time_block)
                     added += 1
-                    current_start += timedelta(minutes=15)
+                    current_start += timedelta(minutes=30)
 
             if added == 0:
                 raise HTTPException(400, "No suggested time blocks generated from provided ranges")
@@ -512,6 +512,8 @@ class MatchService:
             if block.start_time is None:
                 continue
             if block.start_time < now:
+                continue
+            if block.start_time.minute not in {0, 30}:
                 continue
 
             new_block = TimeBlock(start_time=block.start_time)
