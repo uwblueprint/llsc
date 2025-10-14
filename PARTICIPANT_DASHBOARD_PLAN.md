@@ -48,12 +48,12 @@
    - Participant `POST /matches/{id}/schedule` to choose a suggested time and automatically drop other matches.
    - Participant `POST /matches/{id}/request-new-times` clears existing suggestions, stores new time blocks, and marks the match as `requesting_new_times`.
 
-5. **Cancellation endpoints**
-   - Participant `POST /matches/{id}/cancel` -> status `cancelled_by_participant`.
-   - Admin/volunteer `POST /matches/{id}/cancel-volunteer` -> status `cancelled_by_volunteer`.
+5. **Cancellation endpoints** ✅
+   - Participant `POST /matches/{id}/cancel` updates status to `cancelled_by_participant`.
+   - Admin/volunteer `POST /matches/{id}/cancel-volunteer` updates status to `cancelled_by_volunteer`.
 
-6. **Request new volunteers endpoint**
-   - Participant action (e.g., `POST /matches/{id}/request-new-volunteers`) should clear all existing matches for that participant (hard delete is acceptable for now) and set the status for any remaining workflow to `requesting_new_volunteers`.
+6. **Request new volunteers endpoint** ✅
+   - Participant (or admin on their behalf) can call `POST /matches/request-new-volunteers` (with optional message). Existing matches are deleted and, if provided, a matching task is created with the participant’s note.
 
 7. **Time block consistency**
    - Decide on granularity (hourly vs 30/15 combinations) and update both the `TimeRange` validator and `SuggestedTimesService` generator accordingly.

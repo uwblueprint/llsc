@@ -12,6 +12,7 @@ from app.schemas.match import (
     MatchCreateResponse,
     MatchDetailResponse,
     MatchListResponse,
+    MatchRequestNewVolunteersResponse,
     MatchResponse,
     MatchUpdateRequest,
     MatchVolunteerSummary,
@@ -242,6 +243,76 @@ class MatchService:
             self.logger.error(f"Error requesting new times for match {match_id}: {exc}")
             raise HTTPException(status_code=500, detail="Failed to request new times")
 
+    async def cancel_match_by_participant(
+        self,
+        match_id: int,
+        acting_participant_id: Optional[UUID] = None,
+    ) -> MatchDetailResponse:
+        try:
+            match: Match | None = (
+                self.db.query(Match)
+                .options(joinedload(Match.volunteer))
+                .filter(Match.id == match_id)
+                .first()
+            )
+            if not match:
+                raise HTTPException(404, f"Match {match_id} not found")
+
+            if acting_participant_id and match.participant_id != acting_participant_id:
+                raise HTTPException(status_code=403, detail="Cannot modify another participant's match")
+
+            self._clear_confirmed_time(match)
+            self._set_match_status(match, "cancelled_by_participant")
+
+            self.db.flush()
+            self.db.commit()
+            self.db.refresh(match)
+
+            return self._build_match_detail(match)
+
+        except HTTPException:
+            self.db.rollback()
+            raise
+        except Exception as exc:
+            self.db.rollback()
+            self.logger.error(f"Error cancelling match {match_id} as participant: {exc}")
+            raise HTTPException(status_code=500, detail="Failed to cancel match")
+
+    async def cancel_match_by_volunteer(
+        self,
+        match_id: int,
+        acting_volunteer_id: Optional[UUID] = None,
+    ) -> MatchDetailResponse:
+        try:
+            match: Match | None = (
+                self.db.query(Match)
+                .options(joinedload(Match.volunteer))
+                .filter(Match.id == match_id)
+                .first()
+            )
+            if not match:
+                raise HTTPException(404, f"Match {match_id} not found")
+
+            if acting_volunteer_id and match.volunteer_id != acting_volunteer_id:
+                raise HTTPException(status_code=403, detail="Cannot modify another volunteer's match")
+
+            self._clear_confirmed_time(match)
+            self._set_match_status(match, "cancelled_by_volunteer")
+
+            self.db.flush()
+            self.db.commit()
+            self.db.refresh(match)
+
+            return self._build_match_detail(match)
+
+        except HTTPException:
+            self.db.rollback()
+            raise
+        except Exception as exc:
+            self.db.rollback()
+            self.logger.error(f"Error cancelling match {match_id} as volunteer: {exc}")
+            raise HTTPException(status_code=500, detail="Failed to cancel match")
+
     async def get_matches_for_participant(self, participant_id: UUID) -> MatchListResponse:
         try:
             matches: List[Match] = (
@@ -264,6 +335,42 @@ class MatchService:
         except Exception as exc:
             self.logger.error(f"Error fetching matches for participant {participant_id}: {exc}")
             raise HTTPException(status_code=500, detail="Failed to fetch matches")
+
+    async def request_new_volunteers(
+        self,
+        participant_id: UUID,
+        acting_participant_id: Optional[UUID] = None,
+    ) -> MatchRequestNewVolunteersResponse:
+        try:
+            if acting_participant_id and participant_id != acting_participant_id:
+                raise HTTPException(status_code=403, detail="Cannot modify another participant's matches")
+
+            matches: List[Match] = (
+                self.db.query(Match)
+                .filter(Match.participant_id == participant_id)
+                .options(joinedload(Match.suggested_time_blocks), joinedload(Match.confirmed_time))
+                .all()
+            )
+
+            deleted_count = 0
+            for match in matches:
+                self._delete_match(match)
+                deleted_count += 1
+
+            self.db.flush()
+            self.db.commit()
+
+            return MatchRequestNewVolunteersResponse(deleted_matches=deleted_count)
+
+        except HTTPException:
+            self.db.rollback()
+            raise
+        except Exception as exc:
+            self.db.rollback()
+            self.logger.error(
+                f"Error requesting new volunteers for participant {participant_id}: {exc}"
+            )
+            raise HTTPException(status_code=500, detail="Failed to request new volunteers")
 
     async def submit_time(self, req: SubmitMatchRequest) -> SubmitMatchResponse:
         try:
@@ -370,6 +477,26 @@ class MatchService:
             self.db.delete(confirmed_block)
 
         self.db.delete(match)
+
+    def _set_match_status(self, match: Match, status_name: str) -> None:
+        status = self.db.query(MatchStatus).filter_by(name=status_name).first()
+        if not status:
+            raise HTTPException(500, f"Match status '{status_name}' not configured")
+        match.match_status = status
+
+    def _clear_confirmed_time(self, match: Match) -> None:
+        if not match.confirmed_time:
+            return
+
+        confirmed_block = match.confirmed_time
+        match.confirmed_time = None
+        match.chosen_time_block_id = None
+
+        if confirmed_block in match.suggested_time_blocks:
+            match.suggested_time_blocks.remove(confirmed_block)
+
+        if confirmed_block not in self.db.deleted:
+            self.db.delete(confirmed_block)
 
     def _attach_initial_suggested_times(self, match: Match, volunteer: User) -> None:
         if not volunteer.availability:
