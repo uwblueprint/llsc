@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
@@ -14,6 +14,12 @@ class TimeRange(BaseModel):
             raise ValueError("end_time must be after start_time")
         if not self._is_half_hour(self.start_time) or not self._is_half_hour(self.end_time):
             raise ValueError("Times must start on the hour or half hour")
+
+        # Validate minimum duration of 30 minutes
+        duration = self.end_time - self.start_time
+        if duration < timedelta(minutes=30):
+            raise ValueError("Time range must be at least 30 minutes")
+
         return self
 
     @staticmethod

@@ -16,8 +16,6 @@ from app.schemas.match import (
     MatchResponse,
     MatchScheduleRequest,
     MatchUpdateRequest,
-    SubmitMatchRequest,
-    SubmitMatchResponse,
 )
 from app.schemas.task import TaskCreateRequest, TaskType
 from app.schemas.user import UserRole
@@ -134,19 +132,6 @@ async def request_new_times(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/confirm-time", response_model=SubmitMatchResponse)
-async def confirm_time(
-    payload: SubmitMatchRequest,
-    match_service: MatchService = Depends(get_match_service),
-):
-    try:
-        confirmed_match = await match_service.submit_time(payload)
-        return confirmed_match
-    except HTTPException as http_ex:
-        raise http_ex
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/{match_id}/cancel", response_model=MatchDetailResponse)

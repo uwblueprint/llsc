@@ -14,12 +14,12 @@ from app.utilities.constants import LOGGER_NAME
 # Import all seed functions
 from .experiences import seed_experiences
 from .forms import seed_forms
+from .match_status import seed_match_status
 from .qualities import seed_qualities
 from .ranking_preferences import seed_ranking_preferences
 from .roles import seed_roles
 from .treatments import seed_treatments
 from .users import seed_users
-from .match_status import seed_match_status
 
 # Load environment variables
 load_dotenv()
