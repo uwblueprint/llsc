@@ -91,19 +91,31 @@ class MatchService:
             if not match or match.deleted_at is not None:
                 raise HTTPException(404, f"Match {match_id} not found")
 
-            if req.volunteer_id is not None:
-                volunteer: User | None = self.db.get(User, req.volunteer_id)
+            volunteer_changed = False
+            if req.volunteer_id is not None and req.volunteer_id != match.volunteer_id:
+                volunteer: User | None = (
+                    self.db.query(User)
+                    .options(joinedload(User.availability))
+                    .filter(User.id == req.volunteer_id)
+                    .first()
+                )
                 if not volunteer:
                     raise HTTPException(404, f"Volunteer {req.volunteer_id} not found")
                 if volunteer.role is None or volunteer.role.name != UserRole.VOLUNTEER:
                     raise HTTPException(400, "Match volunteers must have volunteer role")
-                match.volunteer_id = volunteer.id
+                self._reassign_volunteer(match, volunteer)
+                volunteer_changed = True
 
             if req.match_status is not None:
                 status = self.db.query(MatchStatus).filter_by(name=req.match_status).first()
                 if not status:
                     raise HTTPException(400, f"Invalid match status: {req.match_status}")
                 match.match_status = status
+            elif volunteer_changed:
+                pending_status = self.db.query(MatchStatus).filter_by(name="pending").first()
+                if not pending_status:
+                    raise HTTPException(500, "Match status 'pending' not configured")
+                match.match_status = pending_status
 
             if req.chosen_time_block_id is not None:
                 block = self.db.get(TimeBlock, req.chosen_time_block_id)
@@ -521,3 +533,16 @@ class MatchService:
 
             new_block = TimeBlock(start_time=block.start_time)
             match.suggested_time_blocks.append(new_block)
+
+    def _reassign_volunteer(self, match: Match, volunteer: User) -> None:
+        match.volunteer_id = volunteer.id
+
+        # Clear confirmed selection
+        self._clear_confirmed_time(match)
+
+        # Remove existing suggested blocks
+        for block in list(match.suggested_time_blocks):
+            match.suggested_time_blocks.remove(block)
+            self.db.delete(block)
+
+        self._attach_initial_suggested_times(match, volunteer)
