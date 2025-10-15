@@ -203,32 +203,45 @@ async def request_new_volunteers(
 async def _resolve_acting_participant_id(request: Request, user_service: UserService) -> Optional[UUID]:
     auth_id = getattr(request.state, "user_id", None)
     if not auth_id:
-        return None
+        raise HTTPException(status_code=401, detail="Authentication required")
 
     try:
         role_name = user_service.get_user_role_by_auth_id(auth_id)
-    except ValueError:
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail="User not found") from exc
+
+    if role_name == UserRole.PARTICIPANT.value:
+        try:
+            participant_id_str = await user_service.get_user_id_by_auth_id(auth_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail="Participant not found") from exc
+        return UUID(participant_id_str)
+
+    if role_name == UserRole.ADMIN.value:
+        # Admin callers bypass ownership checks
         return None
 
-    if role_name != UserRole.PARTICIPANT.value:
-        return None
-
-    participant_id_str = await user_service.get_user_id_by_auth_id(auth_id)
-    return UUID(participant_id_str)
+    raise HTTPException(status_code=403, detail="Insufficient role for participant operation")
 
 
 async def _resolve_acting_volunteer_id(request: Request, user_service: UserService) -> Optional[UUID]:
     auth_id = getattr(request.state, "user_id", None)
     if not auth_id:
-        return None
+        raise HTTPException(status_code=401, detail="Authentication required")
 
     try:
         role_name = user_service.get_user_role_by_auth_id(auth_id)
-    except ValueError:
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail="User not found") from exc
+
+    if role_name == UserRole.VOLUNTEER.value:
+        try:
+            volunteer_id_str = await user_service.get_user_id_by_auth_id(auth_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail="Volunteer not found") from exc
+        return UUID(volunteer_id_str)
+
+    if role_name == UserRole.ADMIN.value:
         return None
 
-    if role_name != UserRole.VOLUNTEER.value:
-        return None
-
-    volunteer_id_str = await user_service.get_user_id_by_auth_id(auth_id)
-    return UUID(volunteer_id_str)
+    raise HTTPException(status_code=403, detail="Insufficient role for volunteer operation")
