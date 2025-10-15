@@ -21,6 +21,15 @@ from app.schemas.time_block import TimeBlockEntity, TimeRange
 from app.schemas.user import UserRole
 
 
+SCHEDULE_CLEANUP_STATUSES = {"pending", "requesting_new_times", "requesting_new_volunteers"}
+ACTIVE_MATCH_STATUSES = {
+    "pending",
+    "requesting_new_times",
+    "requesting_new_volunteers",
+    "confirmed",
+}
+
+
 class MatchService:
     def __init__(self, db: Session):
         self.db = db
@@ -80,7 +89,7 @@ class MatchService:
     async def update_match(self, match_id: int, req: MatchUpdateRequest) -> MatchResponse:
         try:
             match: Match | None = self.db.get(Match, match_id)
-            if not match:
+            if not match or match.deleted_at is not None:
                 raise HTTPException(404, f"Match {match_id} not found")
 
             if req.volunteer_id is not None:
@@ -129,7 +138,14 @@ class MatchService:
     ) -> MatchDetailResponse:
         try:
             match: Match | None = (
-                self.db.query(Match).options(joinedload(Match.participant)).filter(Match.id == match_id).first()
+                self.db.query(Match)
+                .options(
+                    joinedload(Match.participant),
+                    joinedload(Match.suggested_time_blocks),
+                    joinedload(Match.match_status),
+                )
+                .filter(Match.id == match_id, Match.deleted_at.is_(None))
+                .first()
             )
             if not match:
                 raise HTTPException(404, f"Match {match_id} not found")
@@ -140,6 +156,33 @@ class MatchService:
             block = self.db.get(TimeBlock, time_block_id)
             if not block:
                 raise HTTPException(404, f"TimeBlock {time_block_id} not found")
+
+            # Validate that the time block belongs to this match's suggested times
+            if block not in match.suggested_time_blocks:
+                raise HTTPException(
+                    400, "Selected time is not available for this match. Please choose from suggested times."
+                )
+
+            # Check if volunteer is already confirmed at this exact time (prevent double-booking)
+            conflicting_match = (
+                self.db.query(Match)
+                .join(TimeBlock, Match.chosen_time_block_id == TimeBlock.id)
+                .filter(
+                    Match.volunteer_id == match.volunteer_id,
+                    TimeBlock.start_time == block.start_time,
+                    Match.id != match.id,
+                    Match.deleted_at.is_(None),
+                    Match.match_status.has(MatchStatus.name == "confirmed"),
+                )
+                .first()
+            )
+
+            if conflicting_match:
+                raise HTTPException(
+                    409,
+                    "This volunteer has already confirmed another appointment at this time. "
+                    "Please choose a different time slot.",
+                )
 
             match.chosen_time_block_id = block.id
             match.confirmed_time = block
@@ -152,11 +195,24 @@ class MatchService:
             participant_id = match.participant_id
 
             other_matches: List[Match] = (
-                self.db.query(Match).filter(Match.participant_id == participant_id, Match.id != match.id).all()
+                self.db.query(Match)
+                .options(
+                    joinedload(Match.match_status),
+                    joinedload(Match.suggested_time_blocks),
+                    joinedload(Match.confirmed_time),
+                )
+                .filter(
+                    Match.participant_id == participant_id,
+                    Match.id != match.id,
+                    Match.deleted_at.is_(None),
+                )
+                .all()
             )
 
             for other in other_matches:
-                self._delete_match(other)
+                status_name = other.match_status.name if other.match_status else None
+                if status_name in SCHEDULE_CLEANUP_STATUSES:
+                    self._delete_match(other)
 
             self.db.flush()
             self.db.commit()
@@ -181,8 +237,8 @@ class MatchService:
         try:
             match: Match | None = (
                 self.db.query(Match)
-                .options(joinedload(Match.suggested_time_blocks))
-                .filter(Match.id == match_id)
+                .options(joinedload(Match.suggested_time_blocks), joinedload(Match.match_status))
+                .filter(Match.id == match_id, Match.deleted_at.is_(None))
                 .first()
             )
             if not match:
@@ -238,7 +294,10 @@ class MatchService:
     ) -> MatchDetailResponse:
         try:
             match: Match | None = (
-                self.db.query(Match).options(joinedload(Match.volunteer)).filter(Match.id == match_id).first()
+                self.db.query(Match)
+                .options(joinedload(Match.volunteer), joinedload(Match.match_status))
+                .filter(Match.id == match_id, Match.deleted_at.is_(None))
+                .first()
             )
             if not match:
                 raise HTTPException(404, f"Match {match_id} not found")
@@ -270,7 +329,10 @@ class MatchService:
     ) -> MatchDetailResponse:
         try:
             match: Match | None = (
-                self.db.query(Match).options(joinedload(Match.volunteer)).filter(Match.id == match_id).first()
+                self.db.query(Match)
+                .options(joinedload(Match.volunteer), joinedload(Match.match_status))
+                .filter(Match.id == match_id, Match.deleted_at.is_(None))
+                .first()
             )
             if not match:
                 raise HTTPException(404, f"Match {match_id} not found")
@@ -305,7 +367,7 @@ class MatchService:
                     joinedload(Match.suggested_time_blocks),
                     joinedload(Match.confirmed_time),
                 )
-                .filter(Match.participant_id == participant_id)
+                .filter(Match.participant_id == participant_id, Match.deleted_at.is_(None))
                 .order_by(Match.created_at.desc())
                 .all()
             )
@@ -329,15 +391,21 @@ class MatchService:
 
             matches: List[Match] = (
                 self.db.query(Match)
-                .filter(Match.participant_id == participant_id)
-                .options(joinedload(Match.suggested_time_blocks), joinedload(Match.confirmed_time))
+                .options(
+                    joinedload(Match.suggested_time_blocks),
+                    joinedload(Match.confirmed_time),
+                    joinedload(Match.match_status),
+                )
+                .filter(Match.participant_id == participant_id, Match.deleted_at.is_(None))
                 .all()
             )
 
             deleted_count = 0
             for match in matches:
-                self._delete_match(match)
-                deleted_count += 1
+                status_name = match.match_status.name if match.match_status else None
+                if status_name in ACTIVE_MATCH_STATUSES:
+                    self._delete_match(match)
+                    deleted_count += 1
 
             self.db.flush()
             self.db.commit()
@@ -409,11 +477,10 @@ class MatchService:
 
         match.confirmed_time = None
         match.chosen_time_block_id = None
+        match.deleted_at = datetime.now(timezone.utc)
 
         if confirmed_block and confirmed_block not in self.db.deleted:
             self.db.delete(confirmed_block)
-
-        self.db.delete(match)
 
     def _set_match_status(self, match: Match, status_name: str) -> None:
         status = self.db.query(MatchStatus).filter_by(name=status_name).first()

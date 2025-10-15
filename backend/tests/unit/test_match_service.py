@@ -55,7 +55,10 @@ def db_session():
     try:
         # Clean up match-related data (be careful with FK constraints)
         session.execute(
-            text("TRUNCATE TABLE suggested_times,  available_times, matches, time_blocks RESTART IDENTITY CASCADE")
+            text(
+                "TRUNCATE TABLE suggested_times, available_times, matches, time_blocks, tasks "
+                "RESTART IDENTITY CASCADE"
+            )
         )
         session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
         session.commit()
@@ -600,7 +603,7 @@ class TestScheduleMatch:
     async def test_schedule_match_deletes_other_matches(
         self, db_session, participant_user, volunteer_user, another_volunteer
     ):
-        """Scheduling one match deletes all other participant matches"""
+        """Scheduling one match soft-deletes other active matches"""
         try:
             match_service = MatchService(db_session)
 
@@ -636,12 +639,17 @@ class TestScheduleMatch:
             assert match1 is not None
             assert match1.match_status.name == "confirmed"
 
-            # Verify match2 is deleted
+            # Verify match2 is soft-deleted, not removed
             match2 = db_session.get(Match, match2_id)
-            assert match2 is None
+            assert match2 is not None
+            assert match2.deleted_at is not None
 
-            # Verify only 1 match exists for participant
-            participant_matches = db_session.query(Match).filter(Match.participant_id == participant_user.id).all()
+            # Verify only 1 active match remains for participant
+            participant_matches = (
+                db_session.query(Match)
+                .filter(Match.participant_id == participant_user.id, Match.deleted_at.is_(None))
+                .all()
+            )
             assert len(participant_matches) == 1
 
             db_session.commit()
@@ -649,6 +657,58 @@ class TestScheduleMatch:
             db_session.rollback()
             raise
 
+    @pytest.mark.asyncio
+    async def test_schedule_match_retains_historical_matches(
+        self, db_session, participant_user, volunteer_user, another_volunteer
+    ):
+        """Historical matches (e.g., completed) remain after scheduling a new match"""
+        try:
+            match_service = MatchService(db_session)
+
+            # Create pending match with volunteer 1
+            await match_service.create_matches(
+                MatchCreateRequest(participant_id=participant_user.id, volunteer_ids=[volunteer_user.id])
+            )
+            pending_match = (
+                db_session.query(Match)
+                .filter(Match.participant_id == participant_user.id, Match.deleted_at.is_(None))
+                .order_by(Match.id)
+                .first()
+            )
+
+            if not pending_match.suggested_time_blocks:
+                kickoff = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0) + timedelta(days=1)
+                pending_match.suggested_time_blocks.append(TimeBlock(start_time=kickoff))
+                db_session.commit()
+                db_session.refresh(pending_match)
+
+            # Create second match and mark as completed
+            await match_service.create_matches(
+                MatchCreateRequest(participant_id=participant_user.id, volunteer_ids=[another_volunteer.id])
+            )
+            completed_match = (
+                db_session.query(Match)
+                .filter(Match.participant_id == participant_user.id, Match.id != pending_match.id)
+                .first()
+            )
+            completed_status = db_session.query(MatchStatus).filter_by(name="completed").one()
+            completed_match.match_status = completed_status
+            db_session.commit()
+
+            # Schedule the pending match
+            time_block_id = pending_match.suggested_time_blocks[0].id
+            await match_service.schedule_match(
+                pending_match.id, time_block_id, acting_participant_id=participant_user.id
+            )
+
+            db_session.refresh(completed_match)
+            assert completed_match.deleted_at is None
+            assert completed_match.match_status.name == "completed"
+
+            db_session.commit()
+        except Exception:
+            db_session.rollback()
+            raise
     @pytest.mark.asyncio
     async def test_schedule_match_participant_ownership_check(self, db_session, sample_match, another_participant):
         """403 when different participant tries to schedule"""
@@ -701,6 +761,92 @@ class TestScheduleMatch:
 
         assert exc_info.value.status_code == 404
         assert "Match" in exc_info.value.detail
+
+    @pytest.mark.asyncio
+    async def test_schedule_match_rejects_block_not_in_suggested_times(self, db_session, sample_match, participant_user):
+        """400 when trying to book a time block not in match's suggested times"""
+        try:
+            match_service = MatchService(db_session)
+
+            # Create a different time block not in sample_match's suggested times
+            now = datetime.now(timezone.utc)
+            tomorrow = now + timedelta(days=1)
+            other_block = TimeBlock(start_time=tomorrow.replace(hour=18, minute=0, second=0, microsecond=0))
+            db_session.add(other_block)
+            db_session.commit()
+            db_session.refresh(other_block)
+
+            # Try to schedule with this unauthorized block
+            with pytest.raises(HTTPException) as exc_info:
+                await match_service.schedule_match(
+                    sample_match.id, other_block.id, acting_participant_id=participant_user.id
+                )
+
+            assert exc_info.value.status_code == 400
+            assert "not available for this match" in exc_info.value.detail.lower()
+
+        except HTTPException:
+            raise
+        except Exception:
+            db_session.rollback()
+            raise
+
+    @pytest.mark.asyncio
+    async def test_schedule_match_prevents_double_booking_volunteer(
+        self, db_session, participant_user, another_participant, volunteer_user
+    ):
+        """409 when trying to book a volunteer at a time they're already confirmed"""
+        try:
+            match_service = MatchService(db_session)
+
+            # Create two matches with same volunteer, different participants
+            now = datetime.now(timezone.utc)
+            tomorrow = now + timedelta(days=1)
+            same_time = tomorrow.replace(hour=14, minute=0, second=0, microsecond=0)
+
+            # Match 1: Participant 1 + Volunteer
+            match1 = Match(
+                participant_id=participant_user.id,
+                volunteer_id=volunteer_user.id,
+                match_status_id=1,  # pending
+            )
+            db_session.add(match1)
+            db_session.flush()
+
+            block1 = TimeBlock(start_time=same_time)
+            match1.suggested_time_blocks.append(block1)
+
+            # Match 2: Participant 2 + Same Volunteer
+            match2 = Match(
+                participant_id=another_participant.id,
+                volunteer_id=volunteer_user.id,
+                match_status_id=1,  # pending
+            )
+            db_session.add(match2)
+            db_session.flush()
+
+            block2 = TimeBlock(start_time=same_time)  # Same time, different block instance!
+            match2.suggested_time_blocks.append(block2)
+
+            db_session.commit()
+            db_session.refresh(match1)
+            db_session.refresh(match2)
+
+            # Participant 1 schedules first
+            await match_service.schedule_match(match1.id, block1.id, acting_participant_id=participant_user.id)
+
+            # Participant 2 tries to schedule same volunteer at same time
+            with pytest.raises(HTTPException) as exc_info:
+                await match_service.schedule_match(match2.id, block2.id, acting_participant_id=another_participant.id)
+
+            assert exc_info.value.status_code == 409
+            assert "already confirmed another appointment" in exc_info.value.detail.lower()
+
+        except HTTPException:
+            raise
+        except Exception:
+            db_session.rollback()
+            raise
 
 
 # ========== REQUEST NEW TIMES TESTS ==========
@@ -1074,9 +1220,20 @@ class TestRequestNewVolunteers:
             # Request new volunteers
             await match_service.request_new_volunteers(participant_user.id, acting_participant_id=participant_user.id)
 
-            # Verify all deleted
-            matches = db_session.query(Match).filter(Match.participant_id == participant_user.id).all()
-            assert len(matches) == 0
+            # Verify all active matches removed, but records remain soft-deleted
+            active_matches = (
+                db_session.query(Match)
+                .filter(Match.participant_id == participant_user.id, Match.deleted_at.is_(None))
+                .all()
+            )
+            assert len(active_matches) == 0
+
+            soft_deleted = (
+                db_session.query(Match)
+                .filter(Match.participant_id == participant_user.id, Match.deleted_at.isnot(None))
+                .all()
+            )
+            assert len(soft_deleted) == 2
 
             db_session.commit()
         except Exception:
@@ -1105,6 +1262,47 @@ class TestRequestNewVolunteers:
 
             assert isinstance(response, MatchRequestNewVolunteersResponse)
             assert response.deleted_matches == 2
+
+            db_session.commit()
+        except Exception:
+            db_session.rollback()
+            raise
+
+    @pytest.mark.asyncio
+    async def test_request_new_volunteers_preserves_completed_matches(
+        self, db_session, participant_user, volunteer_user
+    ):
+        """Matches with final statuses should remain after requesting new volunteers"""
+        try:
+            match_service = MatchService(db_session)
+
+            # Active match to be deleted
+            await match_service.create_matches(
+                MatchCreateRequest(participant_id=participant_user.id, volunteer_ids=[volunteer_user.id])
+            )
+
+            # Historical completed match
+            completed_status = db_session.query(MatchStatus).filter_by(name="completed").one()
+            historical = Match(
+                participant_id=participant_user.id,
+                volunteer_id=volunteer_user.id,
+                match_status=completed_status,
+            )
+            db_session.add(historical)
+            db_session.commit()
+
+            await match_service.request_new_volunteers(participant_user.id, acting_participant_id=participant_user.id)
+
+            db_session.refresh(historical)
+            assert historical.deleted_at is None
+            assert historical.match_status.name == "completed"
+
+            active_matches = (
+                db_session.query(Match)
+                .filter(Match.participant_id == participant_user.id, Match.deleted_at.is_(None))
+                .all()
+            )
+            assert all(m.match_status.name == "completed" for m in active_matches)
 
             db_session.commit()
         except Exception:
