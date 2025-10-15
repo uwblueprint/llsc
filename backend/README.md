@@ -152,6 +152,18 @@ To apply the migration, run the following command:
 pdm run alembic upgrade head
 ```
 
+## Testing
+
+### First Time Setup
+```bash
+pdm run test-setup  # Creates test database, runs migrations, seeds data
+```
+
+### Run Tests
+```bash
+pdm run tests
+```
+
 ### Logging
 
 To add a logger to a new service or file, use the `LOGGER_NAME` function in `app/utilities/constants.py`

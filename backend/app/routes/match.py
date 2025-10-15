@@ -132,8 +132,6 @@ async def request_new_times(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
-
 @router.post("/{match_id}/cancel", response_model=MatchDetailResponse)
 async def cancel_match_as_participant(
     match_id: int,
