@@ -56,8 +56,7 @@ def db_session():
         # Clean up match-related data (be careful with FK constraints)
         session.execute(
             text(
-                "TRUNCATE TABLE suggested_times, available_times, matches, time_blocks, tasks "
-                "RESTART IDENTITY CASCADE"
+                "TRUNCATE TABLE suggested_times, available_times, matches, time_blocks, tasks RESTART IDENTITY CASCADE"
             )
         )
         session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
@@ -709,6 +708,7 @@ class TestScheduleMatch:
         except Exception:
             db_session.rollback()
             raise
+
     @pytest.mark.asyncio
     async def test_schedule_match_participant_ownership_check(self, db_session, sample_match, another_participant):
         """403 when different participant tries to schedule"""
@@ -763,7 +763,9 @@ class TestScheduleMatch:
         assert "Match" in exc_info.value.detail
 
     @pytest.mark.asyncio
-    async def test_schedule_match_rejects_block_not_in_suggested_times(self, db_session, sample_match, participant_user):
+    async def test_schedule_match_rejects_block_not_in_suggested_times(
+        self, db_session, sample_match, participant_user
+    ):
         """400 when trying to book a time block not in match's suggested times"""
         try:
             match_service = MatchService(db_session)
