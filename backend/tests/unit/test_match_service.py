@@ -218,6 +218,34 @@ def volunteer_with_mixed_availability(db_session, another_volunteer):
 
 
 @pytest.fixture
+def volunteer_with_alt_availability(db_session):
+    """Create a different volunteer with distinct availability."""
+    now = datetime.now(timezone.utc)
+    tomorrow = now + timedelta(days=2)
+
+    volunteer = User(
+        first_name="Alt",
+        last_name="Volunteer",
+        email="volunteer_alt@example.com",
+        role_id=2,
+        auth_id="volunteer_alt_auth_id",
+    )
+    db_session.add(volunteer)
+    db_session.flush()
+
+    slots = [
+        tomorrow.replace(hour=9, minute=0, second=0, microsecond=0),
+        tomorrow.replace(hour=9, minute=30, second=0, microsecond=0),
+    ]
+    for slot in slots:
+        volunteer.availability.append(TimeBlock(start_time=slot))
+
+    db_session.commit()
+    db_session.refresh(volunteer)
+    return volunteer
+
+
+@pytest.fixture
 def sample_match(db_session, participant_user, volunteer_user):
     """Create a pending match with suggested times."""
     match = Match(
@@ -1444,3 +1472,49 @@ class TestUpdateMatch:
 
         assert exc_info.value.status_code == 404
         assert "Match" in exc_info.value.detail
+
+    @pytest.mark.asyncio
+    async def test_update_match_reassigns_volunteer_resets_suggested_times(
+        self,
+        db_session,
+        participant_user,
+        volunteer_with_availability,
+        volunteer_with_alt_availability,
+    ):
+        """Changing the volunteer regenerates suggested times and clears chosen slot"""
+        try:
+            match_service = MatchService(db_session)
+
+            # Create match with first volunteer and schedule it
+            create_request = MatchCreateRequest(
+                participant_id=participant_user.id,
+                volunteer_ids=[volunteer_with_availability.id],
+            )
+            response = await match_service.create_matches(create_request)
+            match_id = response.matches[0].id
+
+            match = db_session.get(Match, match_id)
+            time_block_id = match.suggested_time_blocks[0].id
+            await match_service.schedule_match(match_id, time_block_id, acting_participant_id=participant_user.id)
+
+            db_session.refresh(match)
+            assert match.match_status.name == "confirmed"
+            assert match.chosen_time_block_id is not None
+
+            # Reassign to alternate volunteer
+            update_request = MatchUpdateRequest(volunteer_id=volunteer_with_alt_availability.id)
+            await match_service.update_match(match_id, update_request)
+
+            db_session.refresh(match)
+            assert match.volunteer_id == volunteer_with_alt_availability.id
+            assert match.chosen_time_block_id is None
+            assert match.match_status.name == "pending"
+
+            starts = sorted(block.start_time for block in match.suggested_time_blocks)
+            expected = [slot.start_time for slot in volunteer_with_alt_availability.availability]
+            assert starts == expected
+
+            db_session.commit()
+        except Exception:
+            db_session.rollback()
+            raise
