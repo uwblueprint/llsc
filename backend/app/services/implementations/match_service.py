@@ -16,8 +16,6 @@ from app.schemas.match import (
     MatchResponse,
     MatchUpdateRequest,
     MatchVolunteerSummary,
-    SubmitMatchRequest,
-    SubmitMatchResponse,
 )
 from app.schemas.time_block import TimeBlockEntity, TimeRange
 from app.schemas.user import UserRole
@@ -45,10 +43,7 @@ class MatchService:
 
             for volunteer_id in req.volunteer_ids:
                 volunteer: User | None = (
-                    self.db.query(User)
-                    .options(joinedload(User.availability))
-                    .filter(User.id == volunteer_id)
-                    .first()
+                    self.db.query(User).options(joinedload(User.availability)).filter(User.id == volunteer_id).first()
                 )
                 if not volunteer:
                     raise HTTPException(404, f"Volunteer {volunteer_id} not found")
@@ -134,10 +129,7 @@ class MatchService:
     ) -> MatchDetailResponse:
         try:
             match: Match | None = (
-                self.db.query(Match)
-                .options(joinedload(Match.participant))
-                .filter(Match.id == match_id)
-                .first()
+                self.db.query(Match).options(joinedload(Match.participant)).filter(Match.id == match_id).first()
             )
             if not match:
                 raise HTTPException(404, f"Match {match_id} not found")
@@ -160,9 +152,7 @@ class MatchService:
             participant_id = match.participant_id
 
             other_matches: List[Match] = (
-                self.db.query(Match)
-                .filter(Match.participant_id == participant_id, Match.id != match.id)
-                .all()
+                self.db.query(Match).filter(Match.participant_id == participant_id, Match.id != match.id).all()
             )
 
             for other in other_matches:
@@ -221,9 +211,7 @@ class MatchService:
             if added == 0:
                 raise HTTPException(400, "No suggested time blocks generated from provided ranges")
 
-            requesting_status = (
-                self.db.query(MatchStatus).filter_by(name="requesting_new_times").first()
-            )
+            requesting_status = self.db.query(MatchStatus).filter_by(name="requesting_new_times").first()
             if not requesting_status:
                 raise HTTPException(500, "Match status 'requesting_new_times' not configured")
 
@@ -250,10 +238,7 @@ class MatchService:
     ) -> MatchDetailResponse:
         try:
             match: Match | None = (
-                self.db.query(Match)
-                .options(joinedload(Match.volunteer))
-                .filter(Match.id == match_id)
-                .first()
+                self.db.query(Match).options(joinedload(Match.volunteer)).filter(Match.id == match_id).first()
             )
             if not match:
                 raise HTTPException(404, f"Match {match_id} not found")
@@ -285,10 +270,7 @@ class MatchService:
     ) -> MatchDetailResponse:
         try:
             match: Match | None = (
-                self.db.query(Match)
-                .options(joinedload(Match.volunteer))
-                .filter(Match.id == match_id)
-                .first()
+                self.db.query(Match).options(joinedload(Match.volunteer)).filter(Match.id == match_id).first()
             )
             if not match:
                 raise HTTPException(404, f"Match {match_id} not found")
@@ -367,53 +349,8 @@ class MatchService:
             raise
         except Exception as exc:
             self.db.rollback()
-            self.logger.error(
-                f"Error requesting new volunteers for participant {participant_id}: {exc}"
-            )
+            self.logger.error(f"Error requesting new volunteers for participant {participant_id}: {exc}")
             raise HTTPException(status_code=500, detail="Failed to request new volunteers")
-
-    async def submit_time(self, req: SubmitMatchRequest) -> SubmitMatchResponse:
-        try:
-            match = self.db.get(Match, req.match_id)
-            if not match:
-                raise HTTPException(404, f"Match {req.match_id} not found")
-
-            block = self.db.get(TimeBlock, req.time_block_id)
-            if not block:
-                raise HTTPException(404, f"TimeBlock {req.time_block_id} not found")
-
-            if block.confirmed_match and block.confirmed_match.id != match.id:
-                raise HTTPException(400, "TimeBlock already confirmed for another match")
-
-            # confirm time block in match and update status to confirmed
-            match.chosen_time_block_id = block.id
-            match.confirmed_time = block
-
-            confirmed_status = self.db.query(MatchStatus).filter_by(name="confirmed").first()
-            if not confirmed_status:
-                raise HTTPException(500, "Match status 'confirmed' not configured")
-
-            match.match_status = confirmed_status
-
-            self.db.flush()
-
-            response = SubmitMatchResponse.model_validate(
-                {
-                    "match_id": match.id,
-                    "time_block": block,
-                }
-            )
-
-            self.db.commit()
-            return response
-
-        except HTTPException:
-            self.db.rollback()
-            raise
-        except Exception as exc:
-            self.db.rollback()
-            self.logger.error(f"Error confirming time for match {req.match_id}: {exc}")
-            raise HTTPException(status_code=500, detail="Failed to confirm time")
 
     def _build_match_response(self, match: Match) -> MatchResponse:
         match_status_name = match.match_status.name if match.match_status else ""

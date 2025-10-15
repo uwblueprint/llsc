@@ -7,16 +7,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.schemas.time_block import TimeBlockEntity, TimeRange
 
 
-class SubmitMatchRequest(BaseModel):
-    match_id: int
-    time_block_id: int
-
-
-class SubmitMatchResponse(BaseModel):
-    match_id: int
-    time_block: TimeBlockEntity
-
-
 class MatchResponse(BaseModel):
     id: int
     participant_id: UUID
