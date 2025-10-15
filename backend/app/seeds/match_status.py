@@ -11,10 +11,13 @@ def seed_match_status(session: Session) -> None:
     match_status_data = [
         {"id": 1, "name": "pending"},
         {"id": 2, "name": "confirmed"},
-        {"id": 3, "name": "cancelled"},
+        {"id": 3, "name": "cancelled_by_participant"},
         {"id": 4, "name": "completed"},
         {"id": 5, "name": "no_show"},
         {"id": 6, "name": "rescheduled"},
+        {"id": 7, "name": "cancelled_by_volunteer"},
+        {"id": 8, "name": "requesting_new_times"},
+        {"id": 9, "name": "requesting_new_volunteers"},
     ]
 
     for status_data in match_status_data:
@@ -25,6 +28,14 @@ def seed_match_status(session: Session) -> None:
             session.add(status)
             print(f"Added match status: {status_data['name']}")
         else:
-            print(f"Match status already exists: {status_data['name']}")
+            if existing_status.name != status_data["name"]:
+                existing_status.name = status_data["name"]
+                print(
+                    "Updated match status id {status_id} name to {name}".format(
+                        status_id=status_data["id"], name=status_data["name"]
+                    )
+                )
+            else:
+                print(f"Match status already exists: {status_data['name']}")
 
     session.commit()

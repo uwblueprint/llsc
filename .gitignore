@@ -10,3 +10,6 @@
 **/*.egg-info
 **/test.db
 .cursor/
+.claude/
+.codex/
+.mcp.json

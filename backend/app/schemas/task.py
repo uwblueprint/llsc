@@ -70,6 +70,7 @@ class TaskCreateRequest(BaseModel):
     assignee_id: Optional[UUID] = None
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
+    description: Optional[str] = None
 
 
 class TaskUpdateRequest(BaseModel):
@@ -84,6 +85,7 @@ class TaskUpdateRequest(BaseModel):
     assignee_id: Optional[UUID] = None
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
+    description: Optional[str] = None
 
 
 class TaskAssignRequest(BaseModel):
@@ -109,6 +111,7 @@ class TaskResponse(BaseModel):
     end_date: Optional[datetime]
     created_at: datetime
     updated_at: datetime
+    description: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
 
