@@ -1,28 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Text,
   VStack
 } from '@chakra-ui/react';
-import type { TimeSlot } from './types';
-
-interface TimeSchedulerProps {
-  selectedTimeSlots: TimeSlot[];
-  onTimeSlotToggle: (day: string, hour: number) => void;
-  showAvailability?: boolean;
-}
+import type { TimeSlot, TimeSchedulerProps } from './types';
+import { useAvailability } from '@/hooks/useAvailability';
+import type { TimeBlockEntity } from '@/types/AvailabilityTypes';
 
 const days = ['Mon', 'Tues', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const daysFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const hours = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
 
-const TimeScheduler: React.FC<TimeSchedulerProps> = ({ 
-  selectedTimeSlots, 
-  onTimeSlotToggle,
-  showAvailability = false
+const TimeScheduler: React.FC<TimeSchedulerProps> = ({
+  showAvailability = false,
+  onTimeSlotsChange,
+  prepopulateFromAPI = false
 }) => {
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [dragValue, setDragValue] = useState<boolean | null>(null);
+  const { getAvailability, loading } = useAvailability();
+
+  // Convert TimeBlockEntity from API to TimeSlot format
+  const convertTimeBlocksToTimeSlots = (timeBlocks: TimeBlockEntity[]): TimeSlot[] => {
+    const timeSlots: TimeSlot[] = [];
+
+    timeBlocks.forEach(block => {
+      const date = new Date(block.start_time);
+      const dayIndex = date.getDay();
+      const hour = date.getHours();
+
+      // Map day index to full day name
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const day = dayNames[dayIndex];
+
+      const timeStr = `${hour}:00 - ${hour + 1}:00`;
+
+      timeSlots.push({
+        day,
+        time: timeStr,
+        selected: true
+      });
+    });
+
+    return timeSlots;
+  };
+
+  // Load availability from API on mount if prepopulateFromAPI is true
+  useEffect(() => {
+    const loadAvailability = async () => {
+      if (prepopulateFromAPI) {
+        const availability = await getAvailability();
+        if (availability && availability.available_times) {
+          const timeSlots = convertTimeBlocksToTimeSlots(availability.available_times);
+          setSelectedTimeSlots(timeSlots);
+          if (onTimeSlotsChange) {
+            onTimeSlotsChange(timeSlots);
+          }
+        }
+      }
+    };
+
+    loadAvailability();
+  }, [prepopulateFromAPI]);
+
+  // Notify parent when selectedTimeSlots change
+  useEffect(() => {
+    if (onTimeSlotsChange) {
+      onTimeSlotsChange(selectedTimeSlots);
+    }
+  }, [selectedTimeSlots, onTimeSlotsChange]);
+
+  const handleTimeSlotToggle = (day: string, hour: number) => {
+    const timeStr = `${hour}:00 - ${hour + 1}:00`;
+    const existingSlotIndex = selectedTimeSlots.findIndex(
+      slot => slot.day === day && slot.time === timeStr
+    );
+
+    if (existingSlotIndex >= 0) {
+      setSelectedTimeSlots(prev => prev.filter((_, index) => index !== existingSlotIndex));
+    } else {
+      setSelectedTimeSlots(prev => [...prev, { day, time: timeStr, selected: true }]);
+    }
+  };
 
   const isTimeSlotSelected = (day: string, hour: number) => {
     const timeStr = `${hour}:00 - ${hour + 1}:00`;
@@ -103,14 +164,14 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
     const isSelected = isTimeSlotSelected(day, hour);
     setIsDragging(true);
     setDragValue(!isSelected);
-    onTimeSlotToggle(day, hour);
+    handleTimeSlotToggle(day, hour);
   };
 
   const handleMouseEnter = (day: string, hour: number) => {
     if (isDragging && dragValue !== null) {
       const isSelected = isTimeSlotSelected(day, hour);
       if (isSelected !== dragValue) {
-        onTimeSlotToggle(day, hour);
+        handleTimeSlotToggle(day, hour);
       }
     }
   };
@@ -142,16 +203,16 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
   const renderScheduleGrid = () => (
     <Box h="100%" w="100%" display="flex" flexDirection="column" overflow="hidden">
       {/* Header Row */}
-      <Box display="flex" h="10%">
-        <Box 
+      <Box display="flex" h="10%" maxW="100%">
+        <Box
           w={["16", "20", "24"]}
-          maxW="160px"
-          color="gray.500" 
-          fontWeight="normal" 
-          fontSize={["xs", "sm"]} 
-          fontFamily="'Open Sans', sans-serif" 
-          display="flex" 
-          alignItems="center" 
+          minW={["16", "20", "24"]}
+          color="gray.500"
+          fontWeight="normal"
+          fontSize={["xs", "sm"]}
+          fontFamily="'Open Sans', sans-serif"
+          display="flex"
+          alignItems="center"
           opacity={0.4}
         >
           EST
@@ -160,7 +221,6 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
           <Box
             key={day}
             flex="1"
-            maxW="160px"
             display="flex"
             alignItems="center"
             justifyContent="center"
@@ -178,15 +238,15 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
       </Box>
 
       {/* Time Grid with Availability List */}
-      <Box flex="1" display="flex" flexDirection="row">
+      <Box flex="1" display="flex" flexDirection="row" maxW="100%">
         {/* Time Grid */}
-        <Box flex="1" display="flex" flexDirection="column">
+        <Box flex="1" display="flex" flexDirection="column" maxW="100%">
                      {hours.map(hour => (
-             <Box key={hour} display="flex" h="6.92%">
+             <Box key={hour} display="flex" h="6.92%" maxW="100%">
               {/* Time Label */}
               <Box
                 w={["16", "20", "24"]}
-                maxW="160px"
+                minW={["16", "20", "24"]}
                 color="gray.600"
                 fontWeight="normal"
                 fontSize={["xs", "sm"]}
@@ -197,13 +257,12 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
               >
                 {formatTime(hour)}
               </Box>
-              
+
               {/* Day Cells */}
               {daysFull.map((dayFull, dayIndex) => (
                 <Box
                   key={`${dayFull}-${hour}`}
                   flex="1"
-                  maxW="160px"
                   cursor="pointer"
                   bg={isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" : "white"}
                   transition="background 0.2s"
@@ -213,7 +272,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
                   borderRight="0.91px solid"
                   borderColor="#e3e3e3"
                   _hover={{
-                    bg: isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" :"rgba(255, 187, 138, 0.1)" 
+                    bg: isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" :"rgba(255, 187, 138, 0.1)"
                   }}
                   onMouseDown={() => handleMouseDown(dayFull, hour)}
                   onMouseEnter={() => handleMouseEnter(dayFull, hour)}

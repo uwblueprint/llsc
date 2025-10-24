@@ -5,9 +5,9 @@ export interface TimeSlot {
 }
 
 export interface TimeSchedulerProps {
-  selectedTimeSlots: TimeSlot[];
-  onTimeSlotToggle: (day: string, hour: number) => void;
-  onConfirm?: () => void;
+  showAvailability?: boolean;
+  onTimeSlotsChange?: (timeSlots: TimeSlot[]) => void;
+  prepopulateFromAPI?: boolean;
 }
 
 export interface AvailabilitySidebarProps {

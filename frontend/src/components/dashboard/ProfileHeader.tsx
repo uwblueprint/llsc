@@ -16,7 +16,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ children }) => {
       letterSpacing="0%"
       color="#1D3448"
       fontFamily="'Open Sans', sans-serif"
-      mb="38px"
+      mb="16px"
     >
       {children}
     </Heading>
