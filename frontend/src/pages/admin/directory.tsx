@@ -307,7 +307,7 @@ export default function Directory() {
                                 </Flex>
 
                                 {/* Table */}
-                                <Box bg="white" borderRadius="md" overflow="hidden" position="relative">
+                                <Box bg="white" borderRadius="md" position="relative">
                                     {/* Icon Group - positioned at top right of table header */}
                                     <MenuRoot>
                                         <Flex
@@ -318,13 +318,6 @@ export default function Directory() {
                                             alignItems="center"
                                             zIndex={10}
                                         >
-                                            <IconButton
-                                                variant="ghost"
-                                                aria-label="Search"
-                                                size="sm"
-                                            >
-                                                <FiSearch size={20} color={DIRECTORY_COLORS.iconGray} />
-                                            </IconButton>
                                             <IconButton
                                                 variant="ghost"
                                                 aria-label="Mail"
@@ -347,9 +340,25 @@ export default function Directory() {
                                                     <FiMenu size={20} color={DIRECTORY_COLORS.iconGray} />
                                                 </Box>
                                             </MenuTrigger>
+                                            <IconButton
+                                                variant="ghost"
+                                                aria-label="Search"
+                                                size="sm"
+                                            >
+                                                <FiSearch size={20} color={DIRECTORY_COLORS.iconGray} />
+                                            </IconButton>
                                         </Flex>
 
-                                        <MenuContent p={4} minW="240px" borderRadius="8px" boxShadow="0px 8px 8px -4px rgba(10, 13, 18, 0.03), 0px 20px 24px -4px rgba(10, 13, 18, 0.08)">
+                                        <MenuContent
+                                            p={4}
+                                            w="240px"
+                                            borderRadius="8px"
+                                            boxShadow="0px 8px 8px -4px rgba(10, 13, 18, 0.03), 0px 20px 24px -4px rgba(10, 13, 18, 0.08)"
+                                            position="absolute"
+                                            top="50px"
+                                            right="12px"
+                                            zIndex={20}
+                                        >
                                             <VStack align="stretch" gap={4}>
                                                 {/* User Type Section */}
                                                 <Box>
@@ -446,14 +455,15 @@ export default function Directory() {
                                         </MenuContent>
                                     </MenuRoot>
 
-                                    <Table.Root
-                                        variant="line"
-                                        css={{
-                                            '& tbody tr': {
-                                                borderBottomColor: DIRECTORY_COLORS.tableBorder,
-                                            }
-                                        }}
-                                    >
+                                    <Box overflow="hidden" borderRadius="md">
+                                        <Table.Root
+                                            variant="line"
+                                            css={{
+                                                '& tbody tr': {
+                                                    borderBottomColor: DIRECTORY_COLORS.tableBorder,
+                                                }
+                                            }}
+                                        >
                                         <Table.Header bg="white">
                                             <Table.Row bg="white" color="#535862" fontWeight="600" fontSize="16px">
                                                 <Table.ColumnHeader width="40px">
@@ -544,6 +554,7 @@ export default function Directory() {
                                             })}
                                         </Table.Body>
                                     </Table.Root>
+                                    </Box>
                                 </Box>
                             </Box>
                         </LightMode>
