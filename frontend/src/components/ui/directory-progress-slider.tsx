@@ -11,7 +11,7 @@ export const DirectoryProgressSlider: React.FC<DirectoryProgressSliderProps> = (
 
   return (
     <Flex align="center" gap={3} w="full">
-      <Box position="relative" flex="1" h="24px">
+      <Box position="relative" flex="1" h="24px" display={{ base: 'none', lg: 'block' }}>
         {/* Track */}
         <Box
           position="absolute"
@@ -37,10 +37,20 @@ export const DirectoryProgressSlider: React.FC<DirectoryProgressSliderProps> = (
         />
 
         {/* Milestone Markers */}
-        <Flex position="absolute" top="50%" left="0" right="0" transform="translateY(-50%)" justify="space-between" align="center" zIndex={1}>
+        <Flex
+          position="absolute"
+          top="50%"
+          left="0"
+          right="0"
+          transform="translateY(-50%)"
+          justify="space-between"
+          align="center"
+          zIndex={1}
+        >
           {milestones.map((milestone) => {
             const isCompleted = value >= milestone;
-            const isCurrent = value < milestone && value >= (milestones[milestones.indexOf(milestone) - 1] || 0);
+            const isCurrent =
+              value < milestone && value >= (milestones[milestones.indexOf(milestone) - 1] || 0);
 
             return (
               <Flex
@@ -54,9 +64,7 @@ export const DirectoryProgressSlider: React.FC<DirectoryProgressSliderProps> = (
                 border="3px solid white"
                 boxShadow="sm"
               >
-                {isCompleted && (
-                  <FiCheck size={14} color="white" strokeWidth={3} />
-                )}
+                {isCompleted && <FiCheck size={14} color="white" strokeWidth={3} />}
               </Flex>
             );
           })}
@@ -64,7 +72,14 @@ export const DirectoryProgressSlider: React.FC<DirectoryProgressSliderProps> = (
       </Box>
 
       {/* Percentage Display */}
-      <Text fontSize="lg" fontWeight={600} color="gray.700" minW="60px">
+      <Text
+        fontFamily="'Open Sans', sans-serif"
+        fontSize="14px"
+        fontWeight={600}
+        lineHeight="1.429em"
+        color="#495D6C"
+        minW="60px"
+      >
         {value}%
       </Text>
     </Flex>
