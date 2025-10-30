@@ -197,9 +197,26 @@ export default function Directory() {
                         return matchesSearch && matchesUserType && matchesStatus;
                     });
 
+                    // Sort the filtered users
+                    const sortedUsers = [...filteredUsers].sort((a: DirectoryUser, b: DirectoryUser) => {
+                        if (sortBy === 'nameAsc' || sortBy === 'nameDsc') {
+                            // Sort by name
+                            const nameA = `${a.firstName || ''} ${a.lastName || ''}`.trim().toLowerCase();
+                            const nameB = `${b.firstName || ''} ${b.lastName || ''}`.trim().toLowerCase();
+                            const comparison = nameA.localeCompare(nameB);
+                            return sortBy === 'nameAsc' ? comparison : -comparison;
+                        } else {
+                            // Sort by status (using progress values)
+                            const progressA = formStatusMap[a.formStatus]?.progress ?? 0;
+                            const progressB = formStatusMap[b.formStatus]?.progress ?? 0;
+                            const comparison = progressA - progressB;
+                            return sortBy === 'statusAsc' ? comparison : -comparison;
+                        }
+                    });
+
                     const handleSelectAll = (e: any) => {
                         if (e.checked) {
-                            setSelectedUsers(new Set(filteredUsers.map((u: any) => u.id)));
+                            setSelectedUsers(new Set(sortedUsers.map((u: any) => u.id)));
                         } else {
                             setSelectedUsers(new Set());
                         }
@@ -468,7 +485,7 @@ export default function Directory() {
                                             <Table.Row bg="white" color="#535862" fontWeight="600" fontSize="16px">
                                                 <Table.ColumnHeader width="40px">
                                                     <Checkbox
-                                                        checked={filteredUsers.length > 0 && selectedUsers.size === filteredUsers.length}
+                                                        checked={sortedUsers.length > 0 && selectedUsers.size === sortedUsers.length}
                                                         onCheckedChange={handleSelectAll}
                                                     />
                                                 </Table.ColumnHeader>
@@ -478,7 +495,7 @@ export default function Directory() {
                                                     } else {
                                                         setSortBy('nameDsc')
                                                     }
-                                                }}>Name {sortBy == 'nameAsc' ? '↑' : '↓'}</Table.ColumnHeader>
+                                                }}>Name {sortBy == 'nameAsc' ? '↑' : sortBy == 'nameDsc' ? '↓' : ''}</Table.ColumnHeader>
                                                 <Table.ColumnHeader width="10%">Language</Table.ColumnHeader>
                                                 <Table.ColumnHeader width="15%">Assigned</Table.ColumnHeader>
                                                 <Table.ColumnHeader onClick={() => {
@@ -487,13 +504,13 @@ export default function Directory() {
                                                     } else {
                                                         setSortBy('statusDsc')
                                                     }
-                                                }}>Status {sortBy == 'statusAsc' ? '↑' : '↓'}</Table.ColumnHeader>
+                                                }}>Status {sortBy == 'statusAsc' ? '↑' : sortBy == 'statusDsc' ? '↓' : ''}</Table.ColumnHeader>
                                                 <Table.ColumnHeader width="200px"></Table.ColumnHeader>
                                                 <Table.ColumnHeader></Table.ColumnHeader>
                                             </Table.Row>
                                         </Table.Header>
                                         <Table.Body>
-                                            {filteredUsers.map((user: DirectoryUser) => {
+                                            {sortedUsers.map((user: DirectoryUser) => {
                                                 const displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
                                                 const roleName = (user.roleId === 2 ? 'Volunteer' : 'Participant');
 
