@@ -79,24 +79,6 @@ interface DirectoryUser {
   roleId: number;
   formStatus: FormStatus;
 }
-// Mock data - replace with API call
-// const mockUsers = [
-//     { id: '1', name: 'Randy Philips', language: 'English', assigned: 'Volunteer', status: '0%', progress: 0, currentStep: 'Intake form' },
-//     { id: '2', name: 'Ann Vaccaro', language: 'English', assigned: 'Volunteer', status: '0%', progress: 0, currentStep: 'Intake form' },
-//     { id: '3', name: 'Kaylynn Dias', language: 'French', assigned: 'Participant', status: '0%', progress: 0, currentStep: 'Intake form' },
-//     { id: '4', name: 'Kierra Calzoni', language: 'English', assigned: 'Volunteer', status: '25%', progress: 25, currentStep: 'Screen calling' },
-//     { id: '5', name: 'Terry Baptista', language: 'French', assigned: 'Participant', status: '50%', progress: 50, currentStep: 'Screen calling' },
-//     { id: '6', name: 'Kaylynn Curtis', language: 'English', assigned: 'Volunteer', status: '25%', progress: 25, currentStep: 'Intake form' },
-//     { id: '7', name: 'Livia Siphron', language: 'French', assigned: 'Participant', status: '25%', progress: 25, currentStep: 'Screen calling' },
-//     { id: '8', name: 'James Levin', language: 'French', assigned: 'Participant', status: '100%', progress: 100, currentStep: 'Ranking' },
-//     { id: '9', name: 'Desirae Dias', language: 'French', assigned: 'Participant', status: '100%', progress: 100, currentStep: 'Ranking' },
-//     { id: '10', name: 'Desirae Franci', language: 'English', assigned: 'Volunteer', status: '100%', progress: 100, currentStep: 'Secondary application' },
-//     { id: '11', name: 'Lincoln Rosser', language: 'English', assigned: 'Volunteer', status: '100%', progress: 100, currentStep: 'Secondary application' },
-//     { id: '12', name: 'Gretchen Carder', language: 'French', assigned: 'Participant', status: '0%', progress: 0, currentStep: 'Matched' },
-//     { id: '13', name: 'Miracle Kenter', language: 'English', assigned: 'Volunteer', status: '0%', progress: 0, currentStep: 'Training' },
-//     { id: '14', name: 'Aspen Vaccaro', language: 'French', assigned: 'Participant', status: '0%', progress: 0, currentStep: 'Rejected' },
-//     { id: '15', name: 'Kierra Boscch', language: 'English', assigned: 'Volunteer', status: '0%', progress: 0, currentStep: 'Rejected' },
-// ];
 
 const formStatusMap: Record<FormStatus, { status: string; label: string; progress: number }> = {
   'intake-todo': {
@@ -121,7 +103,7 @@ const formStatusMap: Record<FormStatus, { status: string; label: string; progres
   },
   'secondary-application-todo': {
     status: 'In-progress',
-    label: 'Secondary Application',
+    label: 'Secondary application',
     progress: 50,
   },
   'secondary-application-submitted': {
@@ -137,7 +119,7 @@ const formStatusMap: Record<FormStatus, { status: string; label: string; progres
   rejected: {
     status: 'Rejected',
     label: 'Rejected',
-    progress: 0,
+    progress: 100,
   },
 };
 

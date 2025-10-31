@@ -18,6 +18,7 @@ class FormStatus(str, PyEnum):
     SECONDARY_APPLICATION_TODO = "secondary-application-todo"
     SECONDARY_APPLICATION_SUBMITTED = "secondary-application-submitted"
     COMPLETED = "completed"
+    REJECTED = "rejected"
 
 
 class User(Base):
