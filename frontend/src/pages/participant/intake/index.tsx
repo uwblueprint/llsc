@@ -27,6 +27,7 @@ interface DemographicCancerFormData {
   ethnicGroup: string[];
   maritalStatus: string;
   hasKids: string;
+  timezone: string;
   diagnosis: string;
   dateOfDiagnosis: string;
   treatments: string[];
@@ -49,6 +50,7 @@ interface BasicDemographicsFormData {
   ethnicGroup: string[];
   maritalStatus: string;
   hasKids: string;
+  timezone: string;
 }
 
 export default function ParticipantIntakePage() {
@@ -128,6 +130,7 @@ export default function ParticipantIntakePage() {
           ethnicGroup: data.ethnicGroup,
           maritalStatus: data.maritalStatus,
           hasKids: data.hasKids,
+          timezone: data.timezone,
         },
         ...(prev.hasBloodCancer === 'yes' && {
           cancerExperience: {
@@ -184,6 +187,7 @@ export default function ParticipantIntakePage() {
           ethnicGroup: data.ethnicGroup,
           maritalStatus: data.maritalStatus,
           hasKids: data.hasKids,
+          timezone: data.timezone,
         },
       };
       void advanceAfterUpdate(updated);

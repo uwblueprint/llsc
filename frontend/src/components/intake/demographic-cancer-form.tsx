@@ -7,6 +7,7 @@ import { CheckboxGroup } from '@/components/ui/checkbox-group';
 import { COLORS, VALIDATION } from '@/constants/form';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
+import { detectCanadianTimezone } from '@/utils/timezoneUtils';
 
 // Reusable Select component to replace inline styling
 type StyledSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
@@ -48,23 +49,25 @@ interface DemographicCancerFormData {
   ethnicGroup: string[];
   maritalStatus: string;
   hasKids: string;
+  timezone: string;
   diagnosis: string;
   dateOfDiagnosis: string;
   treatments: string[];
   experiences: string[];
 }
 
-const DEFAULT_VALUES: DemographicCancerFormData = {
+const getDefaultValues = (): DemographicCancerFormData => ({
   genderIdentity: '',
   pronouns: [],
   ethnicGroup: [],
   maritalStatus: '',
   hasKids: '',
+  timezone: detectCanadianTimezone(),
   diagnosis: '',
   dateOfDiagnosis: '',
   treatments: [],
   experiences: [],
-};
+});
 
 const DIAGNOSIS_OPTIONS = [
   'Acute Myeloid Leukaemia',
@@ -105,6 +108,8 @@ const PRONOUNS_OPTIONS = [
   'Prefer not to answer',
   'Self-describe',
 ];
+
+const TIMEZONE_OPTIONS = ['NST', 'AST', 'EST', 'CST', 'MST', 'PST'];
 
 const ETHNIC_OPTIONS = [
   'Indigenous',
@@ -274,7 +279,7 @@ export function DemographicCancerForm({
   caringForSomeone,
 }: DemographicCancerFormProps) {
   const { control, handleSubmit, formState, watch } = useForm<DemographicCancerFormData>({
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: getDefaultValues(),
   });
   const { errors, isSubmitting } = formState;
 
@@ -514,6 +519,29 @@ export function DemographicCancerForm({
                 </FormField>
               </Box>
             )}
+          </HStack>
+
+          {/* Time Zone - Left aligned */}
+          <HStack gap={4} w="full" align="start">
+            <Box w="50%">
+              <FormField label="Time Zone" error={errors.timezone?.message}>
+                <Controller
+                  name="timezone"
+                  control={control}
+                  rules={{ required: 'Time zone is required' }}
+                  render={({ field }) => (
+                    <StyledSelect {...field} error={!!errors.timezone}>
+                      <option value="">Time Zone</option>
+                      {TIMEZONE_OPTIONS.map((tz) => (
+                        <option key={tz} value={tz}>
+                          {tz}
+                        </option>
+                      ))}
+                    </StyledSelect>
+                  )}
+                />
+              </FormField>
+            </Box>
           </HStack>
 
           {/* Ethnic or Cultural Group - Left aligned */}
@@ -803,15 +831,17 @@ interface BasicDemographicsFormData {
   ethnicGroup: string[];
   maritalStatus: string;
   hasKids: string;
+  timezone: string;
 }
 
-const BASIC_DEFAULT_VALUES: BasicDemographicsFormData = {
+const getBasicDefaultValues = (): BasicDemographicsFormData => ({
   genderIdentity: '',
   pronouns: [],
   ethnicGroup: [],
   maritalStatus: '',
   hasKids: '',
-};
+  timezone: detectCanadianTimezone(),
+});
 
 interface BasicDemographicsFormProps {
   formType?: 'participant' | 'volunteer';
@@ -825,7 +855,7 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
     formState: { errors, isSubmitting },
     watch,
   } = useForm<BasicDemographicsFormData>({
-    defaultValues: BASIC_DEFAULT_VALUES,
+    defaultValues: getBasicDefaultValues(),
   });
 
   // Local state for custom values
@@ -1018,6 +1048,29 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                 </FormField>
               </Box>
             )}
+          </HStack>
+
+          {/* Time Zone - Left aligned */}
+          <HStack gap={4} w="full" align="start">
+            <Box w="50%">
+              <FormField label="Time Zone" error={errors.timezone?.message}>
+                <Controller
+                  name="timezone"
+                  control={control}
+                  rules={{ required: 'Time zone is required' }}
+                  render={({ field }) => (
+                    <StyledSelect {...field} error={!!errors.timezone}>
+                      <option value="">Time Zone</option>
+                      {TIMEZONE_OPTIONS.map((tz) => (
+                        <option key={tz} value={tz}>
+                          {tz}
+                        </option>
+                      ))}
+                    </StyledSelect>
+                  )}
+                />
+              </FormField>
+            </Box>
           </HStack>
 
           {/* Ethnic or Cultural Group */}
