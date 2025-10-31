@@ -180,15 +180,13 @@ class IntakeFormProcessor:
         user_data.ethnic_group = demographics.get("ethnic_group", [])
         user_data.marital_status = self._trim_text(demographics.get("marital_status"))
         user_data.has_kids = demographics.get("has_kids")
-        
+
         # Validate and set timezone
         timezone = self._trim_text(demographics.get("timezone"))
         if timezone and timezone not in VALID_TIMEZONES:
-            raise ValueError(
-                f"Invalid timezone: {timezone}. Must be one of {sorted(VALID_TIMEZONES)}"
-            )
+            raise ValueError(f"Invalid timezone: {timezone}. Must be one of {sorted(VALID_TIMEZONES)}")
         user_data.timezone = timezone
-        
+
         user_data.other_ethnic_group = self._trim_text(demographics.get("ethnic_group_custom"))
         user_data.gender_identity_custom = self._trim_text(demographics.get("gender_identity_custom"))
 
