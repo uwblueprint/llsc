@@ -255,46 +255,32 @@ export default function Directory() {
                   Directory
                 </Heading>
 
-                {/* Search Bar */}
-                <Flex mb={6} gap={4} align="center">
-                  <Box position="relative" maxW="400px">
-                    <Box
-                      position="absolute"
-                      left="12px"
-                      top="50%"
-                      transform="translateY(-50%)"
-                      zIndex={1}
-                    >
-                      <FiSearch color="gray" />
-                    </Box>
-                    <Input
-                      placeholder="Search by name..."
-                      bg="white"
-                      pl="40px"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </Box>
-                </Flex>
-
                 {/* Table */}
                 <Box bg="white" borderRadius="md" position="relative">
                   {/* Icon Group - positioned at top right of table header */}
-                  <MenuRoot>
-                    <Flex
-                      position="absolute"
-                      top="12px"
-                      right="12px"
-                      gap={3}
-                      alignItems="center"
-                      zIndex={10}
+                  <Flex
+                    position="absolute"
+                    top="12px"
+                    right="12px"
+                    gap={3}
+                    alignItems="center"
+                    zIndex={10}
+                  >
+                    <IconButton
+                      variant="ghost"
+                      aria-label="Mail"
+                      size="sm"
+                      _hover={{ bg: DIRECTORY_COLORS.menuButtonBg }}
+                      _focus={{ outline: 'none', boxShadow: 'none' }}
+                      _focusVisible={{ outline: 'none', boxShadow: 'none' }}
                     >
-                      <IconButton variant="ghost" aria-label="Mail" size="sm">
-                        <FiMail size={20} color={DIRECTORY_COLORS.iconGray} />
-                      </IconButton>
+                      <FiMail size={20} color={DIRECTORY_COLORS.iconGray} />
+                    </IconButton>
+
+                    {/* Filter Menu */}
+                    <MenuRoot>
                       <MenuTrigger asChild>
                         <Box
-                          bg={DIRECTORY_COLORS.menuButtonBg}
                           borderRadius="md"
                           width="40px"
                           height="34px"
@@ -302,131 +288,192 @@ export default function Directory() {
                           alignItems="center"
                           justifyContent="center"
                           cursor="pointer"
-                          _hover={{ bg: '#d8d8d4' }}
+                          _hover={{ bg: DIRECTORY_COLORS.menuButtonBg }}
                         >
                           <FiMenu size={20} color={DIRECTORY_COLORS.iconGray} />
                         </Box>
                       </MenuTrigger>
-                      <IconButton variant="ghost" aria-label="Search" size="sm">
-                        <FiSearch size={20} color={DIRECTORY_COLORS.iconGray} />
-                      </IconButton>
-                    </Flex>
+                      <MenuContent
+                        p={4}
+                        w="240px"
+                        borderRadius="8px"
+                        boxShadow="0px 8px 8px -4px rgba(10, 13, 18, 0.03), 0px 16px 24px -4px rgba(10, 13, 18, 0.08)"
+                        position="absolute"
+                        top="50px"
+                        right="12px"
+                        zIndex={20}
+                      >
+                        <VStack align="stretch" gap={4}>
+                          {/* User Type Section */}
+                          <Box>
+                            <Text
+                              fontSize="14px"
+                              fontWeight="600"
+                              color={DIRECTORY_COLORS.navbarGray}
+                              mb={3}
+                            >
+                              User type
+                            </Text>
+                            <VStack align="stretch" gap={2}>
+                              <Checkbox
+                                checked={userTypeFilters.participant}
+                                onCheckedChange={(e) =>
+                                  setUserTypeFilters({
+                                    ...userTypeFilters,
+                                    participant: !!e.checked,
+                                  })
+                                }
+                              >
+                                <Text fontSize="sm">Participant</Text>
+                              </Checkbox>
+                              <Checkbox
+                                checked={userTypeFilters.volunteer}
+                                onCheckedChange={(e) =>
+                                  setUserTypeFilters({ ...userTypeFilters, volunteer: !!e.checked })
+                                }
+                              >
+                                <Text fontSize="sm">Volunteer</Text>
+                              </Checkbox>
+                            </VStack>
+                          </Box>
 
-                    <MenuContent
-                      p={4}
-                      w="240px"
-                      borderRadius="8px"
-                      boxShadow="0px 8px 8px -4px rgba(10, 13, 18, 0.03), 0px 16px 24px -4px rgba(10, 13, 18, 0.08)"
-                      position="absolute"
-                      top="50px"
-                      right="12px"
-                      zIndex={20}
-                    >
-                      <VStack align="stretch" gap={4}>
-                        {/* User Type Section */}
-                        <Box>
-                          <Text
-                            fontSize="14px"
-                            fontWeight="600"
-                            color={DIRECTORY_COLORS.navbarGray}
-                            mb={3}
-                          >
-                            User type
-                          </Text>
-                          <VStack align="stretch" gap={2}>
-                            <Checkbox
-                              checked={userTypeFilters.participant}
-                              onCheckedChange={(e) =>
-                                setUserTypeFilters({ ...userTypeFilters, participant: !!e.checked })
-                              }
+                          {/* Status Section */}
+                          <Box>
+                            <Text
+                              fontSize="14px"
+                              fontWeight="600"
+                              color={DIRECTORY_COLORS.navbarGray}
+                              mb={3}
                             >
-                              <Text fontSize="sm">Participant</Text>
-                            </Checkbox>
-                            <Checkbox
-                              checked={userTypeFilters.volunteer}
-                              onCheckedChange={(e) =>
-                                setUserTypeFilters({ ...userTypeFilters, volunteer: !!e.checked })
-                              }
+                              Status
+                            </Text>
+                            <VStack align="stretch" gap={2}>
+                              <Checkbox
+                                checked={statusFilters.notStarted}
+                                onCheckedChange={(e) =>
+                                  setStatusFilters({ ...statusFilters, notStarted: !!e.checked })
+                                }
+                              >
+                                <Text fontSize="sm">Not Started</Text>
+                              </Checkbox>
+                              <Checkbox
+                                checked={statusFilters.inProgress}
+                                onCheckedChange={(e) =>
+                                  setStatusFilters({ ...statusFilters, inProgress: !!e.checked })
+                                }
+                              >
+                                <Text fontSize="sm">In-progress</Text>
+                              </Checkbox>
+                              <Checkbox
+                                checked={statusFilters.completed}
+                                onCheckedChange={(e) =>
+                                  setStatusFilters({ ...statusFilters, completed: !!e.checked })
+                                }
+                              >
+                                <Text fontSize="sm">Completed</Text>
+                              </Checkbox>
+                              <Checkbox
+                                checked={statusFilters.rejected}
+                                onCheckedChange={(e) =>
+                                  setStatusFilters({ ...statusFilters, rejected: !!e.checked })
+                                }
+                              >
+                                <Text fontSize="sm">Rejected</Text>
+                              </Checkbox>
+                            </VStack>
+                          </Box>
+
+                          {/* Action Buttons */}
+                          <VStack gap={2} mt={2}>
+                            <Button
+                              width="100%"
+                              bg={DIRECTORY_COLORS.applyButtonBg}
+                              color="white"
+                              borderRadius="12px"
+                              fontWeight="600"
+                              fontSize="14px"
+                              _hover={{ bg: '#044d52' }}
+                              onClick={handleApplyFilters}
                             >
-                              <Text fontSize="sm">Volunteer</Text>
-                            </Checkbox>
+                              Apply
+                            </Button>
+                            <Button
+                              width="100%"
+                              variant="ghost"
+                              fontWeight="600"
+                              fontSize="14px"
+                              color={DIRECTORY_COLORS.navbarGray}
+                              onClick={handleClearFilters}
+                            >
+                              Clear all
+                            </Button>
                           </VStack>
-                        </Box>
-
-                        {/* Status Section */}
-                        <Box>
-                          <Text
-                            fontSize="14px"
-                            fontWeight="600"
-                            color={DIRECTORY_COLORS.navbarGray}
-                            mb={3}
-                          >
-                            Status
-                          </Text>
-                          <VStack align="stretch" gap={2}>
-                            <Checkbox
-                              checked={statusFilters.notStarted}
-                              onCheckedChange={(e) =>
-                                setStatusFilters({ ...statusFilters, notStarted: !!e.checked })
-                              }
-                            >
-                              <Text fontSize="sm">Not Started</Text>
-                            </Checkbox>
-                            <Checkbox
-                              checked={statusFilters.inProgress}
-                              onCheckedChange={(e) =>
-                                setStatusFilters({ ...statusFilters, inProgress: !!e.checked })
-                              }
-                            >
-                              <Text fontSize="sm">In-progress</Text>
-                            </Checkbox>
-                            <Checkbox
-                              checked={statusFilters.completed}
-                              onCheckedChange={(e) =>
-                                setStatusFilters({ ...statusFilters, completed: !!e.checked })
-                              }
-                            >
-                              <Text fontSize="sm">Completed</Text>
-                            </Checkbox>
-                            <Checkbox
-                              checked={statusFilters.rejected}
-                              onCheckedChange={(e) =>
-                                setStatusFilters({ ...statusFilters, rejected: !!e.checked })
-                              }
-                            >
-                              <Text fontSize="sm">Rejected</Text>
-                            </Checkbox>
-                          </VStack>
-                        </Box>
-
-                        {/* Action Buttons */}
-                        <VStack gap={2} mt={2}>
-                          <Button
-                            width="100%"
-                            bg={DIRECTORY_COLORS.applyButtonBg}
-                            color="white"
-                            borderRadius="12px"
-                            fontWeight="600"
-                            fontSize="14px"
-                            _hover={{ bg: '#044d52' }}
-                            onClick={handleApplyFilters}
-                          >
-                            Apply
-                          </Button>
-                          <Button
-                            width="100%"
-                            variant="ghost"
-                            fontWeight="600"
-                            fontSize="14px"
-                            color={DIRECTORY_COLORS.navbarGray}
-                            onClick={handleClearFilters}
-                          >
-                            Clear all
-                          </Button>
                         </VStack>
-                      </VStack>
-                    </MenuContent>
-                  </MenuRoot>
+                      </MenuContent>
+                    </MenuRoot>
+
+                    {/* Search Menu */}
+                    <MenuRoot>
+                      <MenuTrigger asChild>
+                        <IconButton
+                          variant="ghost"
+                          aria-label="Search"
+                          size="sm"
+                          _hover={{ bg: DIRECTORY_COLORS.menuButtonBg }}
+                          _focus={{ outline: 'none', boxShadow: 'none' }}
+                          _focusVisible={{ outline: 'none', boxShadow: 'none' }}
+                        >
+                          <FiSearch size={20} color={DIRECTORY_COLORS.iconGray} />
+                        </IconButton>
+                      </MenuTrigger>
+                      <MenuContent
+                        p={4}
+                        w="300px"
+                        borderRadius="8px"
+                        boxShadow="0px 8px 8px -4px rgba(10, 13, 18, 0.03), 0px 16px 24px -4px rgba(10, 13, 18, 0.08)"
+                        position="absolute"
+                        top="50px"
+                        right="12px"
+                        zIndex={20}
+                      >
+                        <VStack align="stretch" gap={3}>
+                          <Text
+                            fontSize="14px"
+                            fontWeight="600"
+                            color={DIRECTORY_COLORS.navbarGray}
+                          >
+                            Search users
+                          </Text>
+                          <Input
+                            placeholder="Search by name or email..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            size="md"
+                            borderRadius="8px"
+                            bg="white"
+                            borderColor="#D5D7DA"
+                            paddingX="0.75em"
+                            _focus={{
+                              borderColor: DIRECTORY_COLORS.applyButtonBg,
+                              boxShadow: `0 0 0 1px ${DIRECTORY_COLORS.applyButtonBg}`,
+                            }}
+                          />
+                          {searchQuery && (
+                            <Button
+                              width="100%"
+                              variant="ghost"
+                              fontWeight="600"
+                              fontSize="14px"
+                              color={DIRECTORY_COLORS.navbarGray}
+                              onClick={() => setSearchQuery('')}
+                            >
+                              Clear search
+                            </Button>
+                          )}
+                        </VStack>
+                      </MenuContent>
+                    </MenuRoot>
+                  </Flex>
 
                   <Box overflow="hidden" borderRadius="md">
                     <Table.Root
