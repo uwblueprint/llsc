@@ -12,6 +12,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { FiSearch, FiMenu, FiMail, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { TbSelector } from 'react-icons/tb';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { UserRole } from '@/types/authTypes';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -516,6 +517,9 @@ export default function Directory() {
                               Name
                               {sortBy == 'nameAsc' && <FiChevronUp size={16} />}
                               {sortBy == 'nameDsc' && <FiChevronDown size={16} />}
+                              {sortBy !== 'nameAsc' && sortBy !== 'nameDsc' && (
+                                <TbSelector size={16} color="#A0A0A0" />
+                              )}
                             </Flex>
                           </Table.ColumnHeader>
                           <Table.ColumnHeader width="10%">Language</Table.ColumnHeader>
@@ -534,6 +538,9 @@ export default function Directory() {
                               Status
                               {sortBy == 'statusAsc' && <FiChevronUp size={16} />}
                               {sortBy == 'statusDsc' && <FiChevronDown size={16} />}
+                              {sortBy !== 'statusAsc' && sortBy !== 'statusDsc' && (
+                                <TbSelector size={16} color="#A0A0A0" />
+                              )}
                             </Flex>
                           </Table.ColumnHeader>
                           <Table.ColumnHeader width="100px"></Table.ColumnHeader>
