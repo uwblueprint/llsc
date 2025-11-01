@@ -11,15 +11,7 @@ import {
   Button,
   VStack,
 } from '@chakra-ui/react';
-import {
-  FiSearch,
-  FiMenu,
-  FiMail,
-  FiFolder,
-  FiLoader,
-  FiChevronDown,
-  FiChevronUp,
-} from 'react-icons/fi';
+import { FiSearch, FiMenu, FiMail, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { UserRole } from '@/types/authTypes';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -28,6 +20,7 @@ import { DirectoryDataProvider } from '@/components/admin/DirectoryDataProvider'
 import { MenuContent, MenuRoot, MenuTrigger } from '@chakra-ui/react';
 import { LightMode } from '@/components/ui/color-mode';
 import { COLORS } from '@/constants/form';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
 // Directory-specific colors from Figma design system
 const DIRECTORY_COLORS = {
@@ -247,75 +240,10 @@ export default function Directory() {
 
           return (
             <LightMode>
-              {/* Navbar */}
-              <Box
-                position="fixed"
-                top={0}
-                left={0}
-                right={0}
-                height="64px"
-                bg="white"
-                boxShadow="0px 2px 3.9px 0px rgba(128, 128, 128, 0.25)"
-                zIndex={1000}
-                px={6}
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                {/* Logo */}
-                <Box width="106px" height="48px">
-                  {/* Placeholder for logo - replace with actual logo */}
-                  <Box
-                    width="100%"
-                    height="100%"
-                    bg="#1d3448"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    color="white"
-                    fontWeight="bold"
-                    fontSize="sm"
-                  >
-                    LLSC
-                  </Box>
-                </Box>
-
-                {/* Navigation Items */}
-                <Flex gap={8} alignItems="center">
-                  <Flex alignItems="center" gap={2}>
-                    <FiFolder size={16} color={DIRECTORY_COLORS.navbarGray} />
-                    <Text
-                      fontFamily="'Open Sans', sans-serif"
-                      fontWeight={600}
-                      fontSize="14px"
-                      color={DIRECTORY_COLORS.navbarGray}
-                    >
-                      Task List
-                    </Text>
-                  </Flex>
-                  <Flex alignItems="center" gap={2}>
-                    <FiLoader size={16} color={DIRECTORY_COLORS.navbarGray} />
-                    <Text
-                      fontFamily="'Open Sans', sans-serif"
-                      fontWeight={600}
-                      fontSize="14px"
-                      color={DIRECTORY_COLORS.navbarGray}
-                    >
-                      Directory
-                    </Text>
-                  </Flex>
-                </Flex>
-              </Box>
+              <AdminHeader />
 
               {/* Main Content */}
-              <Box
-                p={8}
-                bg="white"
-                minH="100vh"
-                marginLeft={157}
-                marginRight={130}
-                paddingTop="124px"
-              >
+              <Box p={8} bg="white" minH="100vh" marginLeft={157} marginRight={130}>
                 <Heading
                   as="h1"
                   fontFamily="'Open Sans', sans-serif"
