@@ -234,7 +234,13 @@ export default function Directory() {
               <AdminHeader />
 
               {/* Main Content */}
-              <Box p={8} bg="white" minH="100vh" marginLeft={157} marginRight={130}>
+              <Box
+                p={8}
+                bg="white"
+                minH="100vh"
+                marginLeft={{ base: 4, md: 8, lg: 157 }}
+                marginRight={{ base: 4, md: 8, lg: 130 }}
+              >
                 <Heading
                   as="h1"
                   fontFamily="'Open Sans', sans-serif"
@@ -251,7 +257,7 @@ export default function Directory() {
                   {/* Icon Group - positioned at top right of table header */}
                   <Flex
                     position="absolute"
-                    top="12px"
+                    top={{ base: '-24px', md: '12px' }}
                     right="12px"
                     gap={3}
                     alignItems="center"
@@ -466,7 +472,7 @@ export default function Directory() {
                     </MenuRoot>
                   </Flex>
 
-                  <Box overflow="hidden" borderRadius="md">
+                  <Box overflowX="auto" borderRadius="md">
                     <Table.Root
                       variant="line"
                       css={{

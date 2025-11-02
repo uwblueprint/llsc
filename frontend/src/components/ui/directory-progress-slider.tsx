@@ -11,7 +11,7 @@ export const DirectoryProgressSlider: React.FC<DirectoryProgressSliderProps> = (
 
   return (
     <Flex align="center" gap={3} w="full">
-      <Box position="relative" flex="1" h="24px" display={{ base: 'none', lg: 'block' }}>
+      <Box position="relative" flex="1" h="24px" display={{ base: 'none', md: 'block' }}>
         {/* Track */}
         <Box
           position="absolute"
