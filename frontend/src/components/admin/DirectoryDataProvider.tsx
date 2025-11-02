@@ -1,30 +1,32 @@
 import baseAPIClient from '@/APIClients/baseAPIClient';
-import { useEffect, useState, ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import type { UserResponse } from '@/APIClients/authAPIClient';
 
 interface DirectoryDataProviderProps {
-    children: (users: any[], loading: boolean, error: Error | null) => ReactNode;
+  children: (users: UserResponse[], loading: boolean, error: Error | null) => ReactNode;
 }
 
 export function DirectoryDataProvider({ children }: DirectoryDataProviderProps) {
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+  const [users, setUsers] = useState<UserResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const response = await baseAPIClient.get('/users');
-                setUsers(response.data.users || response.data);
-            } catch (err) {
-                setError(err as Error);
-                console.error('Failed to fetch users:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await baseAPIClient.get('/users');
+        setUsers(response.data.users || response.data);
+      } catch (err) {
+        setError(err as Error);
+        console.error('Failed to fetch users:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        fetchUsers();
-    }, []);
+    fetchUsers();
+  }, []);
 
-    return <>{children(users, loading, error)}</>;
+  return <>{children(users, loading, error)}</>;
 }

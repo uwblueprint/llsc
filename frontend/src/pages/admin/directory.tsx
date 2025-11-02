@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
 import {
+  Badge,
   Box,
+  Button,
   Flex,
   Heading,
-  Text,
-  Table,
   IconButton,
   Input,
-  Badge,
-  Button,
+  Table,
+  Text,
   VStack,
 } from '@chakra-ui/react';
+import { useState } from 'react';
 import { FiSearch, FiMenu, FiMail, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { TbSelector } from 'react-icons/tb';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
@@ -22,6 +22,7 @@ import { MenuContent, MenuRoot, MenuTrigger } from '@chakra-ui/react';
 import { LightMode } from '@/components/ui/color-mode';
 import { COLORS } from '@/constants/form';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import type { UserResponse } from '@/APIClients/authAPIClient';
 
 // Directory-specific colors from Figma design system
 const DIRECTORY_COLORS = {
@@ -64,15 +65,6 @@ type FormStatus =
   | 'secondary-application-submitted'
   | 'completed'
   | 'rejected';
-
-interface DirectoryUser {
-  id: number;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  roleId: number;
-  formStatus: FormStatus;
-}
 
 const formStatusMap: Record<FormStatus, { status: string; label: string; progress: number }> = {
   'intake-todo': {
@@ -169,11 +161,9 @@ export default function Directory() {
   return (
     <ProtectedPage allowedRoles={[UserRole.ADMIN, UserRole.VOLUNTEER]}>
       <DirectoryDataProvider>
-        {(users, loading, error) => {
-          const filteredUsers = users.filter((user: any) => {
-            const fullName = `${user.first_name || ''} ${user.last_name || ''}`
-              .trim()
-              .toLowerCase();
+        {(users) => {
+          const filteredUsers = users.filter((user: UserResponse) => {
+            const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim().toLowerCase();
             const matchesSearch =
               fullName.includes(searchQuery.toLowerCase()) ||
               user.email?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -205,7 +195,7 @@ export default function Directory() {
           });
 
           // Sort the filtered users
-          const sortedUsers = [...filteredUsers].sort((a: DirectoryUser, b: DirectoryUser) => {
+          const sortedUsers = [...filteredUsers].sort((a: UserResponse, b: UserResponse) => {
             if (sortBy === 'nameAsc' || sortBy === 'nameDsc') {
               // Sort by name
               const nameA = `${a.firstName || ''} ${a.lastName || ''}`.trim().toLowerCase();
@@ -214,16 +204,16 @@ export default function Directory() {
               return sortBy === 'nameAsc' ? comparison : -comparison;
             } else {
               // Sort by status (using progress values)
-              const progressA = formStatusMap[a.formStatus]?.progress ?? 0;
-              const progressB = formStatusMap[b.formStatus]?.progress ?? 0;
+              const progressA = formStatusMap[a.formStatus as FormStatus]?.progress ?? 0;
+              const progressB = formStatusMap[b.formStatus as FormStatus]?.progress ?? 0;
               const comparison = progressA - progressB;
               return sortBy === 'statusAsc' ? comparison : -comparison;
             }
           });
 
-          const handleSelectAll = (e: any) => {
+          const handleSelectAll = (e: { checked: boolean | 'indeterminate' }) => {
             if (e.checked) {
-              setSelectedUsers(new Set(sortedUsers.map((u: any) => u.id)));
+              setSelectedUsers(new Set(sortedUsers.map((u) => u.id)));
             } else {
               setSelectedUsers(new Set());
             }
@@ -505,7 +495,7 @@ export default function Directory() {
                           <Table.ColumnHeader
                             width="12%"
                             onClick={() => {
-                              if (sortBy == 'nameDsc') {
+                              if (sortBy === 'nameDsc') {
                                 setSortBy('nameAsc');
                               } else {
                                 setSortBy('nameDsc');
@@ -515,8 +505,8 @@ export default function Directory() {
                           >
                             <Flex alignItems="center" gap={1.5}>
                               Name
-                              {sortBy == 'nameAsc' && <FiChevronUp size={16} />}
-                              {sortBy == 'nameDsc' && <FiChevronDown size={16} />}
+                              {sortBy === 'nameAsc' && <FiChevronUp size={16} />}
+                              {sortBy === 'nameDsc' && <FiChevronDown size={16} />}
                               {sortBy !== 'nameAsc' && sortBy !== 'nameDsc' && (
                                 <TbSelector size={16} color="#A0A0A0" />
                               )}
@@ -526,7 +516,7 @@ export default function Directory() {
                           <Table.ColumnHeader width="15%">Assigned</Table.ColumnHeader>
                           <Table.ColumnHeader
                             onClick={() => {
-                              if (sortBy == 'statusDsc') {
+                              if (sortBy === 'statusDsc') {
                                 setSortBy('statusAsc');
                               } else {
                                 setSortBy('statusDsc');
@@ -536,8 +526,8 @@ export default function Directory() {
                           >
                             <Flex alignItems="center" gap={1.5}>
                               Status
-                              {sortBy == 'statusAsc' && <FiChevronUp size={16} />}
-                              {sortBy == 'statusDsc' && <FiChevronDown size={16} />}
+                              {sortBy === 'statusAsc' && <FiChevronUp size={16} />}
+                              {sortBy === 'statusDsc' && <FiChevronDown size={16} />}
                               {sortBy !== 'statusAsc' && sortBy !== 'statusDsc' && (
                                 <TbSelector size={16} color="#A0A0A0" />
                               )}
@@ -548,7 +538,7 @@ export default function Directory() {
                         </Table.Row>
                       </Table.Header>
                       <Table.Body>
-                        {sortedUsers.map((user: DirectoryUser) => {
+                        {sortedUsers.map((user: UserResponse) => {
                           const displayName =
                             `${user.firstName || ''} ${user.lastName || ''}`.trim();
                           const roleName = user.roleId === 2 ? 'Volunteer' : 'Participant';
@@ -622,14 +612,16 @@ export default function Directory() {
                               </Table.Cell>
                               <Table.Cell py={1.5} verticalAlign="middle">
                                 <DirectoryProgressSlider
-                                  value={formStatusMap[user.formStatus].progress}
+                                  value={formStatusMap[user.formStatus as FormStatus].progress}
                                 />
                               </Table.Cell>
                               <Table.Cell py={1.5} verticalAlign="middle">
                                 {(() => {
                                   const statusLabel =
-                                    formStatusMap[user.formStatus]?.label || 'intake-submitted';
-                                  const statusLevel = formStatusMap[user.formStatus].status;
+                                    formStatusMap[user.formStatus as FormStatus]?.label ||
+                                    'intake-submitted';
+                                  const statusLevel =
+                                    formStatusMap[user.formStatus as FormStatus].status;
                                   const statusColors = getStatusColor(statusLevel);
                                   return (
                                     <Badge
