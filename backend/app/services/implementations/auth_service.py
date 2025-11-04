@@ -1,11 +1,10 @@
 import logging
-import os
 
 import firebase_admin.auth
-import requests
 from fastapi import HTTPException
 
 from app.utilities.constants import LOGGER_NAME
+from app.utilities.ses_email_service import SESEmailService
 
 from ...interfaces.auth_service import IAuthService
 from ...schemas.auth import AuthResponse, Token
@@ -17,6 +16,7 @@ class AuthService(IAuthService):
         self.logger = logging.getLogger(LOGGER_NAME("auth_service"))
         self.user_service = user_service
         self.firebase_client = FirebaseRestClient(logger)
+        self.ses_email_service = SESEmailService()
 
     def generate_token(self, email: str, password: str) -> AuthResponse:
         try:
@@ -48,24 +48,26 @@ class AuthService(IAuthService):
 
     def reset_password(self, email: str) -> None:
         try:
-            # Use Firebase REST API to send password reset email
-            url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={os.getenv('FIREBASE_WEB_API_KEY')}"
-            data = {
-                "requestType": "PASSWORD_RESET",
-                "email": email,
-                "continueUrl": "http://localhost:3000/set-new-password",  # Custom action URL
-            }
+            # Use Firebase Admin SDK to generate password reset link
+            action_code_settings = firebase_admin.auth.ActionCodeSettings(
+                url="http://localhost:3000/set-new-password",
+                handle_code_in_app=True,
+            )
 
-            response = requests.post(url, json=data)
-            response_json = response.json()
+            reset_link = firebase_admin.auth.generate_password_reset_link(
+                email, action_code_settings
+            )
 
-            if response.status_code != 200:
-                error_message = response_json.get("error", {}).get("message", "Unknown error")
-                self.logger.error(f"Failed to send password reset email: {error_message}")
-                # Don't raise exception for security reasons - don't reveal if email exists
-                return
+            # Send via SES
+            email_sent = self.ses_email_service.send_password_reset_email(email, reset_link)
 
-            self.logger.info(f"Password reset email sent successfully to {email}")
+            if email_sent:
+                self.logger.info(f"Password reset email sent successfully to {email}")
+            else:
+                self.logger.warning(
+                    f"Failed to send password reset email to {email}, but link was generated: {reset_link}"
+                )
+                # Do not raise, avoid revealing if email exists
 
         except Exception as e:
             self.logger.error(f"Failed to reset password: {str(e)}")
@@ -74,10 +76,32 @@ class AuthService(IAuthService):
 
     def send_email_verification_link(self, email: str) -> None:
         try:
-            firebase_admin.auth.generate_email_verification_link(email)
+            # Use Firebase Admin SDK to generate email verification link
+            action_code_settings = firebase_admin.auth.ActionCodeSettings(
+                url="http://localhost:3000/action",  # URL to redirect after verification
+                handle_code_in_app=True,
+            )
+
+            # Generate the verification link
+            verification_link = firebase_admin.auth.generate_email_verification_link(
+                email, action_code_settings
+            )
+
+            # Send the verification email via SES (works with any email address)
+            email_sent = self.ses_email_service.send_verification_email(email, verification_link)
+
+            if email_sent:
+                self.logger.info(f"Email verification sent successfully to {email}")
+            else:
+                # If SES fails, we can still provide the link for manual verification
+                self.logger.warning(f"Failed to send verification email to {email}, but link was generated: {verification_link}")
+                # For development/testing, you could log the link or store it temporarily
+                # In production, you might want to implement a fallback mechanism
+
         except Exception as e:
             self.logger.error(f"Failed to send verification email: {str(e)}")
-            raise
+            # Don't raise exception for security reasons - don't reveal if email exists
+            return
 
     def is_authorized_by_role(self, access_token: str, roles: set[str]) -> bool:
         try:
