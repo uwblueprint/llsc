@@ -73,10 +73,22 @@ export default function VolunteerIntakePage() {
       return ['experience-personal', 'demographics-cancer', 'additional-info', 'thank-you'];
     } else if (hasBloodCancer === 'no' && caringForSomeone === 'yes') {
       // Flow 4: Volunteer - Caregiver Without Cancer
-      return ['experience-personal', 'demographics-caregiver', 'loved-one', 'additional-info', 'thank-you'];
+      return [
+        'experience-personal',
+        'demographics-caregiver',
+        'loved-one',
+        'additional-info',
+        'thank-you',
+      ];
     } else if (hasBloodCancer === 'yes' && caringForSomeone === 'yes') {
       // Flow 3: Volunteer - Caregiver with Cancer
-      return ['experience-personal', 'demographics-cancer', 'loved-one', 'additional-info', 'thank-you'];
+      return [
+        'experience-personal',
+        'demographics-cancer',
+        'loved-one',
+        'additional-info',
+        'thank-you',
+      ];
     } else if (hasBloodCancer === 'no' && caringForSomeone === 'no') {
       // Flow 8: Volunteer - No Cancer Experience
       return ['experience-personal', 'demographics-basic', 'additional-info', 'thank-you'];
