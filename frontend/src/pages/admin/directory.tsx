@@ -159,7 +159,7 @@ export default function Directory() {
   };
 
   return (
-    <ProtectedPage allowedRoles={[UserRole.ADMIN, UserRole.VOLUNTEER]}>
+    <ProtectedPage allowedRoles={[UserRole.ADMIN]}>
       <DirectoryDataProvider>
         {(users) => {
           const filteredUsers = users.filter((user: UserResponse) => {
