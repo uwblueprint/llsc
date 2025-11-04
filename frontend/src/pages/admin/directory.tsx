@@ -238,8 +238,8 @@ export default function Directory() {
                 p={8}
                 bg="white"
                 minH="100vh"
-                marginLeft={{ base: 4, md: 8, lg: 157 }}
-                marginRight={{ base: 4, md: 8, lg: 130 }}
+                marginLeft={{ base: 4, lg: 8, xl: 157 }}
+                marginRight={{ base: 4, lg: 8, xl: 130 }}
               >
                 <Heading
                   as="h1"

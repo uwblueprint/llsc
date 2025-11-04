@@ -11,7 +11,7 @@ export const DirectoryProgressSlider: React.FC<DirectoryProgressSliderProps> = (
 
   return (
     <Flex align="center" gap={3} w="full">
-      <Box position="relative" flex="1" h="24px" display={{ base: 'none', md: 'block' }}>
+      <Box position="relative" flex="1" h="24px" display={{ base: 'none', lg: 'block' }}>
         {/* Track */}
         <Box
           position="absolute"
@@ -19,7 +19,7 @@ export const DirectoryProgressSlider: React.FC<DirectoryProgressSliderProps> = (
           left="0"
           right="0"
           h="2px"
-          bg="gray.300"
+          bg="#EAEAE6"
           transform="translateY(-50%)"
           zIndex={0}
         />
@@ -30,7 +30,7 @@ export const DirectoryProgressSlider: React.FC<DirectoryProgressSliderProps> = (
           top="50%"
           left="0"
           h="2px"
-          bg="teal.500"
+          bg="#027847"
           transform="translateY(-50%)"
           width={`${value}%`}
           zIndex={0}
@@ -55,14 +55,14 @@ export const DirectoryProgressSlider: React.FC<DirectoryProgressSliderProps> = (
                 key={milestone}
                 align="center"
                 justify="center"
-                w="16px"
-                h="16px"
+                w="20px"
+                h="20px"
                 borderRadius="full"
-                bg={isCompleted ? 'teal.500' : 'gray.300'}
-                border="3px solid white"
+                bg={isCompleted ? '#E7F8EE' : '#EAEAE6'}
+                border={isCompleted ? '2px solid #027847' : 'none'}
                 boxShadow="sm"
               >
-                {isCompleted && <FiCheck size={14} color="white" strokeWidth={3} />}
+                {isCompleted && <FiCheck size={14} color="#027847" strokeWidth={4} />}
               </Flex>
             );
           })}
