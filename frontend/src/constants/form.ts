@@ -87,6 +87,9 @@ export interface IntakeFormData {
       experiences: string[];
     };
   };
+
+  // Additional Information
+  additionalInfo?: string;
 }
 
 // Type definitions for form submissions

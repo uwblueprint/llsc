@@ -167,6 +167,7 @@ def test_participant_with_cancer_only(db_session, test_user):
                 "treatments": ["Chemotherapy", "Transfusions"],
                 "experiences": ["Anxiety", "Fatigue"],
             },
+            "additional_info": "I have specific dietary restrictions and prefer morning appointments.",
         }
 
         # Act
@@ -195,6 +196,9 @@ def test_participant_with_cancer_only(db_session, test_user):
         # Assert - Flow Control
         assert user_data.has_blood_cancer == "yes"
         assert user_data.caring_for_someone == "no"
+
+        # Assert - Additional Info
+        assert user_data.additional_info == "   I have specific dietary restrictions and prefer morning appointments."
 
         # Assert - Treatments (many-to-many)
         treatment_names = [t.name for t in user_data.treatments]
@@ -252,6 +256,7 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
             "caregiver_experience": {
                 "experiences": ["Anxiety", "Depression"],
             },
+            "additional_info": "I have experience with elderly care and can provide emotional support.",
             "loved_one": {
                 "demographics": {"gender_identity": "Male", "age": "45-54"},
                 "cancer_experience": {
@@ -284,6 +289,9 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
         experience_names = [e.name for e in user_data.experiences]
         assert "Anxiety" in experience_names
         assert "Depression" in experience_names
+
+        # Assert - Additional Info
+        assert user_data.additional_info == "I have experience with elderly care and can provide emotional support."
 
         # Assert - No personal cancer experience
         assert user_data.diagnosis is None
@@ -1237,3 +1245,116 @@ def test_boundary_date_values(db_session, test_user):
     except Exception:
         db_session.rollback()
         raise
+
+
+# def test_additional_info_field_processing(db_session, test_user):
+#     """Test processing of additional_info field with various scenarios"""
+#     try:
+#         processor = IntakeFormProcessor(db_session)
+
+#         # Test 1: Normal additional info
+#         form_data_with_info = {
+#             "form_type": "participant",
+#             "has_blood_cancer": "yes",
+#             "caring_for_someone": "no",
+#             "personal_info": {
+#                 "first_name": "Test",
+#                 "last_name": "User",
+#                 "date_of_birth": "01/01/1990",
+#                 "phone_number": "555-1234",
+#                 "city": "Toronto",
+#                 "province": "Ontario",
+#                 "postal_code": "M5V 3A1",
+#             },
+#             "additional_info": "I have specific dietary needs and prefer afternoon appointments.",
+#         }
+
+#         user_data = processor.process_form_submission(str(test_user.id), form_data_with_info)
+#         assert user_data.additional_info == "I have specific dietary needs and prefer afternoon appointments."
+
+#         # Test 2: Empty additional info
+#         form_data_empty = {
+#             "form_type": "participant",
+#             "has_blood_cancer": "no",
+#             "caring_for_someone": "no",
+#             "personal_info": {
+#                 "first_name": "Test",
+#                 "last_name": "User2",
+#                 "date_of_birth": "01/01/1990",
+#                 "phone_number": "555-1234",
+#                 "city": "Toronto",
+#                 "province": "Ontario",
+#                 "postal_code": "M5V 3A1",
+#             },
+#             "additional_info": "",
+#         }
+
+#         user_data_empty = processor.process_form_submission(str(test_user.id), form_data_empty)
+#         assert user_data_empty.additional_info == ""
+
+#         # Test 3: Additional info with whitespace (should be trimmed)
+#         form_data_whitespace = {
+#             "form_type": "participant",
+#             "has_blood_cancer": "no",
+#             "caring_for_someone": "no",
+#             "personal_info": {
+#                 "first_name": "Test",
+#                 "last_name": "User3",
+#                 "date_of_birth": "01/01/1990",
+#                 "phone_number": "555-1234",
+#                 "city": "Toronto",
+#                 "province": "Ontario",
+#                 "postal_code": "M5V 3A1",
+#             },
+#             "additional_info": "  I have special requirements  \n\t",
+#         }
+
+#         user_data_whitespace = processor.process_form_submission(str(test_user.id), form_data_whitespace)
+#         assert user_data_whitespace.additional_info == "I have special requirements"
+
+#         # Test 4: No additional_info field (should be None)
+#         form_data_no_field = {
+#             "form_type": "participant",
+#             "has_blood_cancer": "no",
+#             "caring_for_someone": "no",
+#             "personal_info": {
+#                 "first_name": "Test",
+#                 "last_name": "User4",
+#                 "date_of_birth": "01/01/1990",
+#                 "phone_number": "555-1234",
+#                 "city": "Toronto",
+#                 "province": "Ontario",
+#                 "postal_code": "M5V 3A1",
+#             },
+#             # No additional_info field
+#         }
+
+#         user_data_no_field = processor.process_form_submission(str(test_user.id), form_data_no_field)
+#         assert user_data_no_field.additional_info is None
+
+#         # Test 5: Long additional info with special characters
+#         long_text = "This is a very long additional information field that contains special characters: émojis 🎉, unicode 中文, and various symbols @#$%^&*(). It should be stored correctly without any issues."
+#         form_data_long = {
+#             "form_type": "participant",
+#             "has_blood_cancer": "no",
+#             "caring_for_someone": "no",
+#             "personal_info": {
+#                 "first_name": "Test",
+#                 "last_name": "User5",
+#                 "date_of_birth": "01/01/1990",
+#                 "phone_number": "555-1234",
+#                 "city": "Toronto",
+#                 "province": "Ontario",
+#                 "postal_code": "M5V 3A1",
+#             },
+#             "additional_info": long_text,
+#         }
+
+#         user_data_long = processor.process_form_submission(str(test_user.id), form_data_long)
+#         assert user_data_long.additional_info == long_text
+
+#         db_session.commit()
+
+#     except Exception:
+#         db_session.rollback()
+#         raise
