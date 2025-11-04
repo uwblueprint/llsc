@@ -1,49 +1,24 @@
 import { useState } from 'react';
-import {
-  sendEmailVerificationToUser,
-  sendSignInLinkToUserEmail,
-} from '@/services/firebaseAuthService';
+import baseAPIClient from '@/APIClients/baseAPIClient';
 
 export const useEmailVerification = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const sendVerificationEmail = async () => {
+  const sendVerificationEmail = async (email: string) => {
     setIsLoading(true);
     setError(null);
     setSuccess(false);
 
     try {
-      const result = await sendEmailVerificationToUser();
-      if (result) {
-        setSuccess(true);
-      } else {
-        setError('Failed to send verification email');
-      }
+      await baseAPIClient.post(`/auth/send-email-verification/${encodeURIComponent(email)}`, {}, {
+        withCredentials: true,
+      });
+      setSuccess(true);
     } catch (err) {
       setError('An error occurred while sending verification email');
       console.error('Email verification error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const sendSignInLink = async (email: string) => {
-    setIsLoading(true);
-    setError(null);
-    setSuccess(false);
-
-    try {
-      const result = await sendSignInLinkToUserEmail(email);
-      if (result) {
-        setSuccess(true);
-      } else {
-        setError('Failed to send sign-in link');
-      }
-    } catch (err) {
-      setError('An error occurred while sending sign-in link');
-      console.error('Sign-in link error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +31,6 @@ export const useEmailVerification = () => {
 
   return {
     sendVerificationEmail,
-    sendSignInLink,
     isLoading,
     error,
     success,
