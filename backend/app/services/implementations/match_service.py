@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import List, Optional
 from uuid import UUID
 
@@ -7,11 +7,15 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 
 from app.models import Match, MatchStatus, TimeBlock, User
+from app.models.UserData import UserData
 from app.schemas.match import (
     MatchCreateRequest,
     MatchCreateResponse,
+    MatchDetailForVolunteerResponse,
     MatchDetailResponse,
+    MatchListForVolunteerResponse,
     MatchListResponse,
+    MatchParticipantSummary,
     MatchRequestNewVolunteersResponse,
     MatchResponse,
     MatchUpdateRequest,
@@ -20,12 +24,13 @@ from app.schemas.match import (
 from app.schemas.time_block import TimeBlockEntity, TimeRange
 from app.schemas.user import UserRole
 
-SCHEDULE_CLEANUP_STATUSES = {"pending", "requesting_new_times", "requesting_new_volunteers"}
+SCHEDULE_CLEANUP_STATUSES = {"pending", "requesting_new_times", "requesting_new_volunteers", "awaiting_volunteer_acceptance"}
 ACTIVE_MATCH_STATUSES = {
     "pending",
     "requesting_new_times",
     "requesting_new_volunteers",
     "confirmed",
+    "awaiting_volunteer_acceptance",
 }
 
 
@@ -42,12 +47,14 @@ class MatchService:
             if participant.role is None or participant.role.name != UserRole.PARTICIPANT:
                 raise HTTPException(400, "Selected user is not a participant")
 
-            status_name = req.match_status or "pending"
+            # Default to awaiting_volunteer_acceptance (volunteers must accept before participants see matches)
+            status_name = req.match_status or "awaiting_volunteer_acceptance"
             status = self.db.query(MatchStatus).filter_by(name=status_name).first()
             if not status:
                 raise HTTPException(400, f"Invalid match status: {status_name}")
 
             created_matches: List[Match] = []
+            created_visible_match = False
 
             for volunteer_id in req.volunteer_ids:
                 volunteer: User | None = (
@@ -65,8 +72,15 @@ class MatchService:
                 )
                 self.db.add(match)
 
-                self._attach_initial_suggested_times(match, volunteer)
+                if status_name != "awaiting_volunteer_acceptance":
+                    self._attach_initial_suggested_times(match, volunteer)
+                    created_visible_match = True
+
                 created_matches.append(match)
+
+            # Clear pending volunteer request flag if at least one match is visible to the participant
+            if created_visible_match:
+                participant.pending_volunteer_request = False
 
             self.db.flush()
             self.db.commit()
@@ -112,10 +126,10 @@ class MatchService:
                     raise HTTPException(400, f"Invalid match status: {req.match_status}")
                 match.match_status = status
             elif volunteer_changed:
-                pending_status = self.db.query(MatchStatus).filter_by(name="pending").first()
-                if not pending_status:
-                    raise HTTPException(500, "Match status 'pending' not configured")
-                match.match_status = pending_status
+                awaiting_status = self.db.query(MatchStatus).filter_by(name="awaiting_volunteer_acceptance").first()
+                if not awaiting_status:
+                    raise HTTPException(500, "Match status 'awaiting_volunteer_acceptance' not configured")
+                match.match_status = awaiting_status
 
             if req.chosen_time_block_id is not None:
                 block = self.db.get(TimeBlock, req.chosen_time_block_id)
@@ -126,6 +140,17 @@ class MatchService:
             elif req.clear_chosen_time:
                 match.chosen_time_block_id = None
                 match.confirmed_time = None
+
+            final_status_name = match.match_status.name if match.match_status else None
+            if final_status_name != "awaiting_volunteer_acceptance" and not match.suggested_time_blocks:
+                volunteer_with_availability: User | None = (
+                    self.db.query(User)
+                    .options(joinedload(User.availability))
+                    .filter(User.id == match.volunteer_id)
+                    .first()
+                )
+                if volunteer_with_availability:
+                    self._attach_initial_suggested_times(match, volunteer_with_availability)
 
             self.db.flush()
             self.db.commit()
@@ -370,26 +395,192 @@ class MatchService:
 
     async def get_matches_for_participant(self, participant_id: UUID) -> MatchListResponse:
         try:
+            # Get participant to check pending request flag
+            participant: User | None = self.db.get(User, participant_id)
+            if not participant:
+                raise HTTPException(404, f"Participant {participant_id} not found")
+
+            # Get matches excluding those awaiting volunteer acceptance (participants shouldn't see these yet)
             matches: List[Match] = (
                 self.db.query(Match)
                 .options(
-                    joinedload(Match.volunteer),
+                    joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.treatments),
+                    joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.experiences),
                     joinedload(Match.match_status),
                     joinedload(Match.suggested_time_blocks),
                     joinedload(Match.confirmed_time),
                 )
-                .filter(Match.participant_id == participant_id, Match.deleted_at.is_(None))
+                .filter(
+                    Match.participant_id == participant_id,
+                    Match.deleted_at.is_(None),
+                    ~Match.match_status.has(MatchStatus.name == "awaiting_volunteer_acceptance"),
+                )
                 .order_by(Match.created_at.desc())
                 .all()
             )
 
             responses = [self._build_match_detail(match) for match in matches]
-            return MatchListResponse(matches=responses)
+            return MatchListResponse(
+                matches=responses,
+                has_pending_request=participant.pending_volunteer_request or False,
+            )
         except HTTPException:
             raise
         except Exception as exc:
             self.logger.error(f"Error fetching matches for participant {participant_id}: {exc}")
             raise HTTPException(status_code=500, detail="Failed to fetch matches")
+
+    async def get_matches_for_volunteer(self, volunteer_id: UUID) -> MatchListForVolunteerResponse:
+        """Get all matches for a volunteer, including those awaiting acceptance."""
+        try:
+            volunteer: User | None = self.db.get(User, volunteer_id)
+            if not volunteer:
+                raise HTTPException(404, f"Volunteer {volunteer_id} not found")
+            if volunteer.role is None or volunteer.role.name != UserRole.VOLUNTEER:
+                raise HTTPException(400, "Selected user is not a volunteer")
+
+            matches: List[Match] = (
+                self.db.query(Match)
+                .options(
+                    joinedload(Match.participant).joinedload(User.user_data).joinedload(UserData.treatments),
+                    joinedload(Match.participant).joinedload(User.user_data).joinedload(UserData.experiences),
+                    joinedload(Match.match_status),
+                )
+                .filter(Match.volunteer_id == volunteer_id, Match.deleted_at.is_(None))
+                .order_by(Match.created_at.desc())
+                .all()
+            )
+
+            responses = [self._build_match_detail_for_volunteer(match) for match in matches]
+            return MatchListForVolunteerResponse(matches=responses)
+        except HTTPException:
+            raise
+        except Exception as exc:
+            self.logger.error(f"Error fetching matches for volunteer {volunteer_id}: {exc}")
+            raise HTTPException(status_code=500, detail="Failed to fetch matches")
+
+    async def volunteer_accept_match(
+        self,
+        match_id: int,
+        acting_volunteer_id: Optional[UUID] = None,
+    ) -> MatchDetailResponse:
+        """Volunteer accepts a match and sends their general availability to participant."""
+        try:
+            match: Match | None = (
+                self.db.query(Match)
+                .options(
+                    joinedload(Match.volunteer).joinedload(User.availability),
+                    joinedload(Match.match_status),
+                )
+                .filter(Match.id == match_id, Match.deleted_at.is_(None))
+                .first()
+            )
+            if not match:
+                raise HTTPException(404, f"Match {match_id} not found")
+
+            # Verify volunteer ownership
+            if acting_volunteer_id and match.volunteer_id != acting_volunteer_id:
+                raise HTTPException(status_code=403, detail="Cannot modify another volunteer's match")
+
+            # Check current status
+            if not match.match_status or match.match_status.name != "awaiting_volunteer_acceptance":
+                raise HTTPException(
+                    400,
+                    f"Match is not awaiting volunteer acceptance. Current status: {match.match_status.name if match.match_status else 'unknown'}",
+                )
+
+            volunteer = match.volunteer
+            if not volunteer:
+                raise HTTPException(404, f"Volunteer {match.volunteer_id} not found")
+
+            # Validate that volunteer has availability before accepting
+            if not self._has_valid_availability(volunteer):
+                raise HTTPException(
+                    400,
+                    "Cannot accept match: volunteer must have availability set before accepting matches. "
+                    "Please add your availability times first.",
+                )
+
+            # Clear any existing suggested time blocks (shouldn't exist, but be safe)
+            for block in list(match.suggested_time_blocks):
+                match.suggested_time_blocks.remove(block)
+                self.db.delete(block)
+
+            # Attach volunteer's general availability as suggested times
+            self._attach_initial_suggested_times(match, volunteer)
+
+            # Transition status to "pending" so participant can see it
+            self._set_match_status(match, "pending")
+
+            self.db.flush()
+            self.db.commit()
+            self.db.refresh(match)
+
+            # Return match detail for participant view (includes suggested times)
+            return self._build_match_detail(match)
+        except HTTPException:
+            self.db.rollback()
+            raise
+        except Exception as exc:
+            self.db.rollback()
+            self.logger.error(f"Error accepting match {match_id} for volunteer: {exc}")
+            raise HTTPException(status_code=500, detail="Failed to accept match")
+
+    def _build_match_detail_for_volunteer(self, match: Match) -> MatchDetailForVolunteerResponse:
+        """Build match detail response for volunteer view (includes participant info)."""
+        participant = match.participant
+        if not participant:
+            raise HTTPException(500, "Match is missing participant data")
+
+        participant_data = participant.user_data
+
+        pronouns = None
+        diagnosis = None
+        age: Optional[int] = None
+        treatments: List[str] = []
+        experiences: List[str] = []
+        timezone: Optional[str] = None
+
+        if participant_data:
+            if participant_data.pronouns:
+                pronouns = participant_data.pronouns
+            diagnosis = participant_data.diagnosis
+
+            if participant_data.date_of_birth:
+                age = self._calculate_age(participant_data.date_of_birth)
+
+            if participant_data.treatments:
+                treatments = [t.name for t in participant_data.treatments if t and t.name]
+
+            if participant_data.experiences:
+                experiences = [e.name for e in participant_data.experiences if e and e.name]
+
+            timezone = participant_data.timezone
+
+        participant_summary = MatchParticipantSummary(
+            id=participant.id,
+            first_name=participant.first_name,
+            last_name=participant.last_name,
+            email=participant.email,
+            pronouns=pronouns,
+            diagnosis=diagnosis,
+            age=age,
+            treatments=treatments,
+            experiences=experiences,
+            timezone=timezone,
+        )
+
+        match_status_name = match.match_status.name if match.match_status else ""
+
+        return MatchDetailForVolunteerResponse(
+            id=match.id,
+            participant_id=match.participant_id,
+            volunteer_id=match.volunteer_id,
+            participant=participant_summary,
+            match_status=match_status_name,
+            created_at=match.created_at,
+            updated_at=match.updated_at,
+        )
 
     async def request_new_volunteers(
         self,
@@ -399,6 +590,11 @@ class MatchService:
         try:
             if acting_participant_id and participant_id != acting_participant_id:
                 raise HTTPException(status_code=403, detail="Cannot modify another participant's matches")
+
+            # Get participant and set pending flag
+            participant: User | None = self.db.get(User, participant_id)
+            if not participant:
+                raise HTTPException(404, f"Participant {participant_id} not found")
 
             matches: List[Match] = (
                 self.db.query(Match)
@@ -417,6 +613,9 @@ class MatchService:
                 if status_name in ACTIVE_MATCH_STATUSES:
                     self._delete_match(match)
                     deleted_count += 1
+
+            # Set pending volunteer request flag
+            participant.pending_volunteer_request = True
 
             self.db.flush()
             self.db.commit()
@@ -448,11 +647,38 @@ class MatchService:
         if not volunteer:
             raise HTTPException(500, "Match is missing volunteer data")
 
+        volunteer_data = volunteer.user_data
+
+        pronouns = None
+        diagnosis = None
+        age: Optional[int] = None
+        treatments: List[str] = []
+        experiences: List[str] = []
+
+        if volunteer_data:
+            if volunteer_data.pronouns:
+                pronouns = volunteer_data.pronouns
+            diagnosis = volunteer_data.diagnosis
+
+            if volunteer_data.date_of_birth:
+                age = self._calculate_age(volunteer_data.date_of_birth)
+
+            if volunteer_data.treatments:
+                treatments = [t.name for t in volunteer_data.treatments if t and t.name]
+
+            if volunteer_data.experiences:
+                experiences = [e.name for e in volunteer_data.experiences if e and e.name]
+
         volunteer_summary = MatchVolunteerSummary(
             id=volunteer.id,
             first_name=volunteer.first_name,
             last_name=volunteer.last_name,
             email=volunteer.email,
+            pronouns=pronouns,
+            diagnosis=diagnosis,
+            age=age,
+            treatments=treatments,
+            experiences=experiences,
         )
 
         suggested_blocks = [
@@ -513,6 +739,36 @@ class MatchService:
         if confirmed_block not in self.db.deleted:
             self.db.delete(confirmed_block)
 
+    @staticmethod
+    def _calculate_age(birth_date: date) -> Optional[int]:
+        today = date.today()
+        if birth_date is None:
+            return None
+        if birth_date > today:
+            return None
+
+        years = today.year - birth_date.year
+        has_had_birthday = (today.month, today.day) >= (birth_date.month, birth_date.day)
+        return years if has_had_birthday else years - 1
+
+    def _has_valid_availability(self, volunteer: User) -> bool:
+        """Check if volunteer has any valid future availability blocks."""
+        if not volunteer.availability:
+            return False
+
+        now = datetime.now(timezone.utc)
+        for block in volunteer.availability:
+            if block.start_time is None:
+                continue
+            if block.start_time < now:
+                continue
+            if block.start_time.minute not in {0, 30}:
+                continue
+            # Found at least one valid future availability block
+            return True
+
+        return False
+
     def _attach_initial_suggested_times(self, match: Match, volunteer: User) -> None:
         if not volunteer.availability:
             return
@@ -545,4 +801,4 @@ class MatchService:
             match.suggested_time_blocks.remove(block)
             self.db.delete(block)
 
-        self._attach_initial_suggested_times(match, volunteer)
+        # Suggested times are attached once the volunteer accepts the match

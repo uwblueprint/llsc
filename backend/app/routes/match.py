@@ -9,6 +9,7 @@ from app.schemas.match import (
     MatchCreateRequest,
     MatchCreateResponse,
     MatchDetailResponse,
+    MatchListForVolunteerResponse,
     MatchListResponse,
     MatchRequestNewTimesRequest,
     MatchRequestNewVolunteersRequest,
@@ -143,6 +144,46 @@ async def cancel_match_as_participant(
     try:
         acting_participant_id = await _resolve_acting_participant_id(request, user_service)
         return await match_service.cancel_match_by_participant(match_id, acting_participant_id)
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/volunteer/me", response_model=MatchListForVolunteerResponse)
+async def get_my_matches_as_volunteer(
+    request: Request,
+    match_service: MatchService = Depends(get_match_service),
+    user_service: UserService = Depends(get_user_service),
+    _authorized: bool = has_roles([UserRole.VOLUNTEER, UserRole.ADMIN]),
+):
+    """Get all matches for the current volunteer, including those awaiting acceptance."""
+    try:
+        auth_id = getattr(request.state, "user_id", None)
+        if not auth_id:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+        volunteer_id_str = await user_service.get_user_id_by_auth_id(auth_id)
+        volunteer_id = UUID(volunteer_id_str)
+        return await match_service.get_matches_for_volunteer(volunteer_id)
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{match_id}/accept-volunteer", response_model=MatchDetailResponse)
+async def accept_match_as_volunteer(
+    match_id: int,
+    request: Request,
+    match_service: MatchService = Depends(get_match_service),
+    user_service: UserService = Depends(get_user_service),
+    _authorized: bool = has_roles([UserRole.VOLUNTEER, UserRole.ADMIN]),
+):
+    """Volunteer accepts a match and sends their general availability to participant."""
+    try:
+        acting_volunteer_id = await _resolve_acting_volunteer_id(request, user_service)
+        return await match_service.volunteer_accept_match(match_id, acting_volunteer_id)
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:

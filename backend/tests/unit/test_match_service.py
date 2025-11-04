@@ -89,6 +89,7 @@ def db_session():
             MatchStatus(id=7, name="cancelled_by_volunteer"),
             MatchStatus(id=8, name="requesting_new_times"),
             MatchStatus(id=9, name="requesting_new_volunteers"),
+            MatchStatus(id=10, name="awaiting_volunteer_acceptance"),
         ]
         for status in seed_statuses:
             if status.id not in existing_statuses:
@@ -295,7 +296,12 @@ class TestCreateMatches:
             assert len(response.matches) == 1
             assert response.matches[0].participant_id == participant_user.id
             assert response.matches[0].volunteer_id == volunteer_user.id
-            assert response.matches[0].match_status == "pending"
+            assert response.matches[0].match_status == "awaiting_volunteer_acceptance"
+
+            match = db_session.get(Match, response.matches[0].id)
+            assert match is not None
+            assert match.match_status.name == "awaiting_volunteer_acceptance"
+            assert len(match.suggested_time_blocks) == 0
 
             db_session.commit()
         except Exception:
@@ -317,14 +323,19 @@ class TestCreateMatches:
             response = await match_service.create_matches(request)
             match_id = response.matches[0].id
 
-            # Verify match was created
             match = db_session.get(Match, match_id)
             assert match is not None
+            assert match.match_status.name == "awaiting_volunteer_acceptance"
+            assert len(match.suggested_time_blocks) == 0
 
-            # Verify suggested times were copied (should have 4 times)
+            detail = await match_service.volunteer_accept_match(match_id, volunteer_with_availability.id)
+            assert detail.match_status == "pending"
+            assert len(detail.suggested_time_blocks) == 4
+
+            db_session.refresh(match)
+            assert match.match_status.name == "pending"
             assert len(match.suggested_time_blocks) == 4
 
-            # Verify times are on half-hour boundaries
             for block in match.suggested_time_blocks:
                 assert block.start_time.minute in {0, 30}
 
@@ -349,9 +360,15 @@ class TestCreateMatches:
             match_id = response.matches[0].id
 
             match = db_session.get(Match, match_id)
+            assert match is not None
+            assert len(match.suggested_time_blocks) == 0
+
+            detail = await match_service.volunteer_accept_match(match_id, volunteer_with_mixed_availability.id)
+            assert len(detail.suggested_time_blocks) == 2
 
             # Should only have 2 valid future times (14:00, 14:30)
             # Past time and :15 time should be filtered out
+            db_session.refresh(match)
             assert len(match.suggested_time_blocks) == 2
 
             # Verify all are at :00 or :30
@@ -399,6 +416,35 @@ class TestCreateMatches:
             response = await match_service.create_matches(request)
 
             assert response.matches[0].match_status == "confirmed"
+
+            db_session.commit()
+        except Exception:
+            db_session.rollback()
+            raise
+
+    @pytest.mark.asyncio
+    async def test_create_match_with_pending_status_copies_availability(
+        self, db_session, participant_user, volunteer_with_availability
+    ):
+        """Explicit pending status copies volunteer availability immediately."""
+        try:
+            match_service = MatchService(db_session)
+            request = MatchCreateRequest(
+                participant_id=participant_user.id,
+                volunteer_ids=[volunteer_with_availability.id],
+                match_status="pending",
+            )
+
+            response = await match_service.create_matches(request)
+            match_id = response.matches[0].id
+
+            match = db_session.get(Match, match_id)
+            assert match is not None
+            assert match.match_status.name == "pending"
+            assert len(match.suggested_time_blocks) == 4
+
+            for block in match.suggested_time_blocks:
+                assert block.start_time.minute in {0, 30}
 
             db_session.commit()
         except Exception:
@@ -534,16 +580,18 @@ class TestGetMatches:
         try:
             match_service = MatchService(db_session)
 
-            # Create two matches with slight delay
+            # Create two matches with slight delay (explicitly set to pending so participants can see them)
             request1 = MatchCreateRequest(
                 participant_id=participant_user.id,
                 volunteer_ids=[volunteer_user.id],
+                match_status="pending",
             )
             await match_service.create_matches(request1)
 
             request2 = MatchCreateRequest(
                 participant_id=participant_user.id,
                 volunteer_ids=[another_volunteer.id],
+                match_status="pending",
             )
             await match_service.create_matches(request2)
 
@@ -874,6 +922,84 @@ class TestScheduleMatch:
 
         except HTTPException:
             raise
+        except Exception:
+            db_session.rollback()
+            raise
+
+
+class TestVolunteerMatchFlow:
+    """Test volunteer-specific match flows."""
+
+    @pytest.mark.asyncio
+    async def test_get_matches_for_volunteer_includes_awaiting(self, db_session, participant_user, volunteer_user):
+        try:
+            match_service = MatchService(db_session)
+            request = MatchCreateRequest(
+                participant_id=participant_user.id,
+                volunteer_ids=[volunteer_user.id],
+            )
+            await match_service.create_matches(request)
+
+            response = await match_service.get_matches_for_volunteer(volunteer_user.id)
+            assert len(response.matches) == 1
+            match_summary = response.matches[0]
+            assert match_summary.match_status == "awaiting_volunteer_acceptance"
+            assert match_summary.participant.id == participant_user.id
+
+            db_session.commit()
+        except Exception:
+            db_session.rollback()
+            raise
+
+    @pytest.mark.asyncio
+    async def test_volunteer_accept_match_requires_ownership(
+        self,
+        db_session,
+        participant_user,
+        volunteer_with_availability,
+        another_volunteer,
+    ):
+        try:
+            match_service = MatchService(db_session)
+            request = MatchCreateRequest(
+                participant_id=participant_user.id,
+                volunteer_ids=[volunteer_with_availability.id],
+            )
+            response = await match_service.create_matches(request)
+            match_id = response.matches[0].id
+
+            with pytest.raises(HTTPException) as exc_info:
+                await match_service.volunteer_accept_match(match_id, another_volunteer.id)
+
+            assert exc_info.value.status_code == 403
+
+            detail = await match_service.volunteer_accept_match(match_id, volunteer_with_availability.id)
+            assert detail.match_status == "pending"
+
+            db_session.commit()
+        except Exception:
+            db_session.rollback()
+            raise
+
+    @pytest.mark.asyncio
+    async def test_volunteer_accept_match_requires_availability(self, db_session, participant_user, volunteer_user):
+        """Volunteer cannot accept match without availability."""
+        try:
+            match_service = MatchService(db_session)
+            request = MatchCreateRequest(
+                participant_id=participant_user.id,
+                volunteer_ids=[volunteer_user.id],
+            )
+            response = await match_service.create_matches(request)
+            match_id = response.matches[0].id
+
+            with pytest.raises(HTTPException) as exc_info:
+                await match_service.volunteer_accept_match(match_id, volunteer_user.id)
+
+            assert exc_info.value.status_code == 400
+            assert "availability" in exc_info.value.detail.lower()
+
+            db_session.commit()
         except Exception:
             db_session.rollback()
             raise
@@ -1494,6 +1620,10 @@ class TestUpdateMatch:
             match_id = response.matches[0].id
 
             match = db_session.get(Match, match_id)
+            await match_service.volunteer_accept_match(match_id, volunteer_with_availability.id)
+            db_session.refresh(match)
+            assert len(match.suggested_time_blocks) > 0
+
             time_block_id = match.suggested_time_blocks[0].id
             await match_service.schedule_match(match_id, time_block_id, acting_participant_id=participant_user.id)
 
@@ -1508,10 +1638,15 @@ class TestUpdateMatch:
             db_session.refresh(match)
             assert match.volunteer_id == volunteer_with_alt_availability.id
             assert match.chosen_time_block_id is None
+            assert match.match_status.name == "awaiting_volunteer_acceptance"
+            assert len(match.suggested_time_blocks) == 0
+
+            await match_service.volunteer_accept_match(match_id, volunteer_with_alt_availability.id)
+            db_session.refresh(match)
             assert match.match_status.name == "pending"
 
             starts = sorted(block.start_time for block in match.suggested_time_blocks)
-            expected = [slot.start_time for slot in volunteer_with_alt_availability.availability]
+            expected = sorted([slot.start_time for slot in volunteer_with_alt_availability.availability])
             assert starts == expected
 
             db_session.commit()
