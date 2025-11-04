@@ -24,7 +24,12 @@ from app.schemas.match import (
 from app.schemas.time_block import TimeBlockEntity, TimeRange
 from app.schemas.user import UserRole
 
-SCHEDULE_CLEANUP_STATUSES = {"pending", "requesting_new_times", "requesting_new_volunteers", "awaiting_volunteer_acceptance"}
+SCHEDULE_CLEANUP_STATUSES = {
+    "pending",
+    "requesting_new_times",
+    "requesting_new_volunteers",
+    "awaiting_volunteer_acceptance",
+}
 ACTIVE_MATCH_STATUSES = {
     "pending",
     "requesting_new_times",
