@@ -23,11 +23,12 @@ export default function AdminLogin() {
 
     try {
       const result = await login(email, password);
-      if (result) {
-        console.log('Admin login success:', result);
+      if (result.success) {
         router.push('/admin/dashboard');
+      } else if (result.errorCode === 'auth/email-not-verified') {
+        router.push(`/admin-verify?email=${encodeURIComponent(email)}&role=admin`);
       } else {
-        setError('Invalid email or password');
+        setError('Invalid email or password. Please check your credentials and try again.');
       }
     } catch (err: unknown) {
       console.error('Admin login error:', err);
@@ -203,7 +204,7 @@ export default function AdminLogin() {
           >
             Don&apos;t have an account?{' '}
             <Link
-              href="/participant-form"
+              href="/admin-signup"
               style={{
                 color: teal,
                 textDecoration: 'underline',
