@@ -47,6 +47,26 @@ class MatchVolunteerSummary(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: str
+    pronouns: Optional[List[str]] = None
+    diagnosis: Optional[str] = None
+    age: Optional[int] = None
+    treatments: List[str] = Field(default_factory=list)
+    experiences: List[str] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MatchParticipantSummary(BaseModel):
+    id: UUID
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: str
+    pronouns: Optional[List[str]] = None
+    diagnosis: Optional[str] = None
+    age: Optional[int] = None
+    treatments: List[str] = Field(default_factory=list)
+    experiences: List[str] = Field(default_factory=list)
+    timezone: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -64,6 +84,21 @@ class MatchDetailResponse(BaseModel):
 
 class MatchListResponse(BaseModel):
     matches: List[MatchDetailResponse]
+    has_pending_request: bool
+
+
+class MatchDetailForVolunteerResponse(BaseModel):
+    id: int
+    participant_id: UUID
+    volunteer_id: UUID
+    participant: MatchParticipantSummary
+    match_status: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+
+class MatchListForVolunteerResponse(BaseModel):
+    matches: List[MatchDetailForVolunteerResponse]
 
 
 class MatchRequestNewVolunteersResponse(BaseModel):

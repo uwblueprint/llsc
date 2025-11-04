@@ -18,6 +18,7 @@ def seed_match_status(session: Session) -> None:
         {"id": 7, "name": "cancelled_by_volunteer"},
         {"id": 8, "name": "requesting_new_times"},
         {"id": 9, "name": "requesting_new_volunteers"},
+        {"id": 10, "name": "awaiting_volunteer_acceptance"},
     ]
 
     for status_data in match_status_data:
