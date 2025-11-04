@@ -1,7 +1,7 @@
-import os
 import json
 import logging
-from typing import Dict, Any
+import os
+from typing import Any, Dict
 
 import boto3
 from botocore.exceptions import ClientError
@@ -16,7 +16,7 @@ class SESEmailService:
         self.aws_access_key = os.getenv("AWS_ACCESS_KEY")
         self.aws_secret_key = os.getenv("AWS_SECRET_KEY")
         self.source_email = os.getenv("SES_SOURCE_EMAIL")
-        
+
         if not all([self.aws_region, self.aws_access_key, self.aws_secret_key, self.source_email]):
             self.logger.warning("SES credentials not fully configured. Email sending will be disabled.")
             self.ses_client = None
@@ -39,7 +39,7 @@ class SESEmailService:
         """
         if not self.ses_client:
             return False
-            
+
         try:
             self.ses_client.verify_email_identity(EmailAddress=email)
             self.logger.info(f"Email verification request sent to {email}")
@@ -68,7 +68,7 @@ class SESEmailService:
         if not self.ses_client:
             self.logger.error("SES client not available. Cannot send email.")
             return False
-            
+
         try:
             response = self.ses_client.send_templated_email(
                 Source=self.source_email,
@@ -76,14 +76,14 @@ class SESEmailService:
                 Template=template_name,
                 TemplateData=json.dumps(template_data)
             )
-            
+
             self.logger.info(f"Email sent successfully to {to_email}. MessageId: {response['MessageId']}")
             return True
-            
+
         except ClientError as e:
             error_code = e.response['Error']['Code']
             error_message = e.response['Error']['Message']
-            
+
             if error_code == 'MessageRejected' and 'not verified' in error_message:
                 # Try to verify the email address automatically
                 self.logger.info(f"Email {to_email} not verified. Attempting to verify...")
@@ -113,7 +113,7 @@ class SESEmailService:
         template_data = {
             "verification_link": verification_link
         }
-        
+
         return self.send_templated_email(to_email, "EmailVerification", template_data)
 
     def send_password_reset_email(self, to_email: str, reset_link: str) -> bool:
@@ -130,5 +130,5 @@ class SESEmailService:
         template_data = {
             "reset_link": reset_link
         }
-        
+
         return self.send_templated_email(to_email, "PasswordReset", template_data)
