@@ -18,7 +18,6 @@ import {
 } from '../utils/LocalStorageUtils';
 import { signInWithEmailAndPassword, applyActionCode, checkActionCode } from 'firebase/auth';
 import { auth } from '@/config/firebase';
-import { sendEmailVerificationToUser } from '@/services/firebaseAuthService';
 
 // Validation helper
 const validateEmail = (email: string): boolean => {
@@ -230,16 +229,8 @@ export const register = async ({
       const user = userCredential.user;
       console.log('[REGISTER] Firebase sign-in successful, user:', user.email);
 
-      // Wait a moment to ensure Firebase auth state is fully updated
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Now send the verification email
-      const emailSent = await sendEmailVerificationToUser();
-      if (emailSent) {
-        console.log('[REGISTER] Email verification sent successfully after registration');
-      } else {
-        console.warn('[REGISTER] Failed to send email verification after registration');
-      }
+      // Note: Email verification will be handled on the verification page
+      // This avoids timing issues with Firebase auth state during registration
 
       // Return success with user info - don't try to login since email isn't verified yet
       return {

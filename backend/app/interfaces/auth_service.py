@@ -78,9 +78,9 @@ class IAuthService(ABC):
     def send_email_verification_link(self, email):
         """
         Generates an email verification link for the user with the given email
-        and sends the reset link to that email address
+        and sends the verification link to that email address
 
-        :param email: email of user requesting password reset
+        :param email: email of user requesting email verification
         :type email: str
         :raises Exception: if unable to generate link or send email
         """

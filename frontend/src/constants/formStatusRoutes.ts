@@ -23,13 +23,13 @@ export const VOLUNTEER_STATUS_ROUTES: StatusRouteMap = {
 };
 
 export const ADMIN_STATUS_ROUTES: StatusRouteMap = {
-  [FormStatus.INTAKE_TODO]: '/admin',
-  [FormStatus.INTAKE_SUBMITTED]: '/admin',
-  [FormStatus.RANKING_TODO]: '/admin',
-  [FormStatus.RANKING_SUBMITTED]: '/admin',
-  [FormStatus.SECONDARY_APPLICATION_TODO]: '/admin',
-  [FormStatus.SECONDARY_APPLICATION_SUBMITTED]: '/admin',
-  [FormStatus.COMPLETED]: '/admin',
+  [FormStatus.INTAKE_TODO]: '/admin/dashboard',
+  [FormStatus.INTAKE_SUBMITTED]: '/admin/dashboard',
+  [FormStatus.RANKING_TODO]: '/admin/dashboard',
+  [FormStatus.RANKING_SUBMITTED]: '/admin/dashboard',
+  [FormStatus.SECONDARY_APPLICATION_TODO]: '/admin/dashboard',
+  [FormStatus.SECONDARY_APPLICATION_SUBMITTED]: '/admin/dashboard',
+  [FormStatus.COMPLETED]: '/admin/dashboard',
 };
 
 export const ROLE_STATUS_ROUTES: Record<UserRole, StatusRouteMap> = {
