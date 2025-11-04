@@ -21,8 +21,7 @@ export default function AdminVerifyPage() {
     text: '',
   });
 
-  const { sendVerificationEmail, isLoading, error, success } =
-    useEmailVerification();
+  const { sendVerificationEmail, isLoading, error, success } = useEmailVerification();
   const [autoSent, setAutoSent] = useState<boolean>(false);
 
   useEffect(() => {

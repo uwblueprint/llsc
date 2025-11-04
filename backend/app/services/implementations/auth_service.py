@@ -54,9 +54,7 @@ class AuthService(IAuthService):
                 handle_code_in_app=True,
             )
 
-            reset_link = firebase_admin.auth.generate_password_reset_link(
-                email, action_code_settings
-            )
+            reset_link = firebase_admin.auth.generate_password_reset_link(email, action_code_settings)
 
             # Send via SES
             email_sent = self.ses_email_service.send_password_reset_email(email, reset_link)
@@ -83,9 +81,7 @@ class AuthService(IAuthService):
             )
 
             # Generate the verification link
-            verification_link = firebase_admin.auth.generate_email_verification_link(
-                email, action_code_settings
-            )
+            verification_link = firebase_admin.auth.generate_email_verification_link(email, action_code_settings)
 
             # Send the verification email via SES (works with any email address)
             email_sent = self.ses_email_service.send_verification_email(email, verification_link)
@@ -94,7 +90,9 @@ class AuthService(IAuthService):
                 self.logger.info(f"Email verification sent successfully to {email}")
             else:
                 # If SES fails, we can still provide the link for manual verification
-                self.logger.warning(f"Failed to send verification email to {email}, but link was generated: {verification_link}")
+                self.logger.warning(
+                    f"Failed to send verification email to {email}, but link was generated: {verification_link}"
+                )
                 # For development/testing, you could log the link or store it temporarily
                 # In production, you might want to implement a fallback mechanism
 
