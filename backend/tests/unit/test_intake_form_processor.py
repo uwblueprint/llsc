@@ -291,7 +291,10 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
         assert "Depression" in experience_names
 
         # Assert - Additional Info
-        assert user_data.additional_info == "I have experience with elderly care and can provide emotional support. I have special requirements"
+        assert (
+            user_data.additional_info
+            == "I have experience with elderly care and can provide emotional support. I have special requirements"
+        )
 
         # Assert - No personal cancer experience
         assert user_data.diagnosis is None
@@ -621,7 +624,7 @@ def test_participant_cancer_patient_and_caregiver(db_session, test_user):
         # Assert - Custom demographics
         assert "Other" in user_data.ethnic_group
         assert user_data.other_ethnic_group == "Mixed European heritage"
-        
+
         assert user_data.additional_info is None
 
         db_session.commit()
