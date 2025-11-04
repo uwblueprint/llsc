@@ -4,5 +4,17 @@
     "SubjectPart": "Testing Email SES Template",
     "TemplateName": "Test",
     "TextPart": "app/utilities/ses/template_files/test.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/email_verification.html",
+    "SubjectPart": "Verify Your Email Address",
+    "TemplateName": "EmailVerification",
+    "TextPart": "app/utilities/ses/template_files/email_verification.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/password_reset.html",
+    "SubjectPart": "Reset Your Password",
+    "TemplateName": "PasswordReset",
+    "TextPart": "app/utilities/ses/template_files/password_reset.txt"
   }
 ]
