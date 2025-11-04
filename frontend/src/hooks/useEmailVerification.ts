@@ -12,9 +12,13 @@ export const useEmailVerification = () => {
     setSuccess(false);
 
     try {
-      await baseAPIClient.post(`/auth/send-email-verification/${encodeURIComponent(email)}`, {}, {
-        withCredentials: true,
-      });
+      await baseAPIClient.post(
+        `/auth/send-email-verification/${encodeURIComponent(email)}`,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
       setSuccess(true);
     } catch (err) {
       setError('An error occurred while sending verification email');
