@@ -15,6 +15,7 @@ import { FiSearch, FiMenu, FiMail, FiChevronDown, FiChevronUp } from 'react-icon
 import { TbSelector } from 'react-icons/tb';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { UserRole } from '@/types/authTypes';
+import type { FormStatus } from '@/types/authTypes';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DirectoryProgressSlider } from '@/components/ui/directory-progress-slider';
 import { DirectoryDataProvider } from '@/components/admin/DirectoryDataProvider';
@@ -56,50 +57,51 @@ const DIRECTORY_COLORS = {
   applyButtonBg: '#056067', // Teal from Figma
 } as const;
 
-type FormStatus =
-  | 'intake-todo'
-  | 'intake-submitted'
-  | 'ranking-todo'
-  | 'ranking-submitted'
-  | 'secondary-application-todo'
-  | 'secondary-application-submitted'
-  | 'completed'
-  | 'rejected';
-
 const formStatusMap: Record<FormStatus, { status: string; label: string; progress: number }> = {
   'intake-todo': {
+    // when participant/volunteer has made an account and is in progress of completing intake form
     status: 'Not started',
     label: 'Intake form',
     progress: 0,
   },
   'intake-submitted': {
+    // when participant/volunteer has submitted the intake form before admin sends them the ranking/secondaryapp form
     status: 'In-progress',
     label: 'Screen calling',
     progress: 25,
   },
   'ranking-todo': {
+    // PARTICIPANT ONLY
+    // when participant is in progress of doing ranking form
     status: 'In-progress',
-    label: 'Ranking',
+    label: 'Ranking form',
     progress: 50,
   },
   'ranking-submitted': {
+    // PARTICIPANT ONLY
+    // after all onboarding has been completed OR participant rematches
     status: 'In-progress',
-    label: 'Matched',
+    label: 'Matching',
     progress: 75,
   },
   'secondary-application-todo': {
+    // VOLUNTEER ONLY
+    // when volunteer is in progress of doing secondary app form
     status: 'In-progress',
-    label: 'Secondary application',
+    label: 'Secondary app. form',
     progress: 50,
   },
   'secondary-application-submitted': {
+    // VOLUNTEER ONLY
+    // when the volunteer does not have any scheduled calls
     status: 'In-progress',
-    label: 'Training',
+    label: 'Matching',
     progress: 75,
   },
   completed: {
+    // when participant/volunteer has a match
     status: 'Completed',
-    label: 'Completed',
+    label: 'Matched',
     progress: 100,
   },
   rejected: {
