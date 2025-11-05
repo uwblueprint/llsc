@@ -131,9 +131,12 @@ export default function Directory() {
     volunteer: false,
   });
   const [statusFilters, setStatusFilters] = useState({
-    notStarted: false,
-    inProgress: false,
-    completed: false,
+    intakeForm: false,
+    screenCalling: false,
+    rankingForm: false,
+    secondaryAppForm: false,
+    matching: false,
+    matched: false,
     rejected: false,
   });
 
@@ -149,9 +152,12 @@ export default function Directory() {
   const handleClearFilters = () => {
     const clearedUserTypes = { participant: false, volunteer: false };
     const clearedStatuses = {
-      notStarted: false,
-      inProgress: false,
-      completed: false,
+      intakeForm: false,
+      screenCalling: false,
+      rankingForm: false,
+      secondaryAppForm: false,
+      matching: false,
+      matched: false,
       rejected: false,
     };
     setUserTypeFilters(clearedUserTypes);
@@ -180,18 +186,25 @@ export default function Directory() {
 
             // Status filtering
             const hasStatusFilter =
-              appliedStatusFilters.notStarted ||
-              appliedStatusFilters.inProgress ||
-              appliedStatusFilters.completed ||
+              appliedStatusFilters.intakeForm ||
+              appliedStatusFilters.screenCalling ||
+              appliedStatusFilters.rankingForm ||
+              appliedStatusFilters.secondaryAppForm ||
+              appliedStatusFilters.matching ||
+              appliedStatusFilters.matched ||
               appliedStatusFilters.rejected;
-            const userStatus =
-              user.formStatus && formStatusMap[user.formStatus as FormStatus]?.status;
+            const userStatusLabel =
+              user.formStatus && formStatusMap[user.formStatus as FormStatus]?.label;
             const matchesStatus =
               !hasStatusFilter ||
-              (appliedStatusFilters.notStarted && userStatus === 'Not started') ||
-              (appliedStatusFilters.inProgress && userStatus === 'In-progress') ||
-              (appliedStatusFilters.completed && userStatus === 'Completed') ||
-              (appliedStatusFilters.rejected && userStatus === 'Rejected');
+              (appliedStatusFilters.intakeForm && userStatusLabel === 'Intake form') ||
+              (appliedStatusFilters.screenCalling && userStatusLabel === 'Screen calling') ||
+              (appliedStatusFilters.rankingForm && userStatusLabel === 'Ranking form') ||
+              (appliedStatusFilters.secondaryAppForm &&
+                userStatusLabel === 'Secondary app. form') ||
+              (appliedStatusFilters.matching && userStatusLabel === 'Matching') ||
+              (appliedStatusFilters.matched && userStatusLabel === 'Matched') ||
+              (appliedStatusFilters.rejected && userStatusLabel === 'Rejected');
 
             return matchesSearch && matchesUserType && matchesStatus;
           });
@@ -348,28 +361,55 @@ export default function Directory() {
                             </Text>
                             <VStack align="stretch" gap={2}>
                               <Checkbox
-                                checked={statusFilters.notStarted}
+                                checked={statusFilters.intakeForm}
                                 onCheckedChange={(e) =>
-                                  setStatusFilters({ ...statusFilters, notStarted: !!e.checked })
+                                  setStatusFilters({ ...statusFilters, intakeForm: !!e.checked })
                                 }
                               >
-                                <Text fontSize="sm">Not Started</Text>
+                                <Text fontSize="sm">Intake form</Text>
                               </Checkbox>
                               <Checkbox
-                                checked={statusFilters.inProgress}
+                                checked={statusFilters.screenCalling}
                                 onCheckedChange={(e) =>
-                                  setStatusFilters({ ...statusFilters, inProgress: !!e.checked })
+                                  setStatusFilters({ ...statusFilters, screenCalling: !!e.checked })
                                 }
                               >
-                                <Text fontSize="sm">In-progress</Text>
+                                <Text fontSize="sm">Screen calling</Text>
                               </Checkbox>
                               <Checkbox
-                                checked={statusFilters.completed}
+                                checked={statusFilters.rankingForm}
                                 onCheckedChange={(e) =>
-                                  setStatusFilters({ ...statusFilters, completed: !!e.checked })
+                                  setStatusFilters({ ...statusFilters, rankingForm: !!e.checked })
                                 }
                               >
-                                <Text fontSize="sm">Completed</Text>
+                                <Text fontSize="sm">Ranking form</Text>
+                              </Checkbox>
+                              <Checkbox
+                                checked={statusFilters.secondaryAppForm}
+                                onCheckedChange={(e) =>
+                                  setStatusFilters({
+                                    ...statusFilters,
+                                    secondaryAppForm: !!e.checked,
+                                  })
+                                }
+                              >
+                                <Text fontSize="sm">Secondary app. form</Text>
+                              </Checkbox>
+                              <Checkbox
+                                checked={statusFilters.matching}
+                                onCheckedChange={(e) =>
+                                  setStatusFilters({ ...statusFilters, matching: !!e.checked })
+                                }
+                              >
+                                <Text fontSize="sm">Matching</Text>
+                              </Checkbox>
+                              <Checkbox
+                                checked={statusFilters.matched}
+                                onCheckedChange={(e) =>
+                                  setStatusFilters({ ...statusFilters, matched: !!e.checked })
+                                }
+                              >
+                                <Text fontSize="sm">Matched</Text>
                               </Checkbox>
                               <Checkbox
                                 checked={statusFilters.rejected}
