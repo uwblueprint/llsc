@@ -2,10 +2,15 @@ import {
   Badge,
   Box,
   Button,
+  Center,
   Flex,
   Heading,
   IconButton,
   Input,
+  MenuContent,
+  MenuRoot,
+  MenuTrigger,
+  Spinner,
   Table,
   Text,
   VStack,
@@ -14,16 +19,15 @@ import { useState } from 'react';
 import { FiSearch, FiMenu, FiMail, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { TbSelector } from 'react-icons/tb';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
-import { UserRole } from '@/types/authTypes';
-import type { FormStatus } from '@/types/authTypes';
+import { UserRole, FormStatus } from '@/types/authTypes';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DirectoryProgressSlider } from '@/components/ui/directory-progress-slider';
 import { DirectoryDataProvider } from '@/components/admin/DirectoryDataProvider';
-import { MenuContent, MenuRoot, MenuTrigger } from '@chakra-ui/react';
 import { LightMode } from '@/components/ui/color-mode';
 import { COLORS } from '@/constants/form';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import type { UserResponse } from '@/APIClients/authAPIClient';
+import { roleIdToUserRole } from '@/utils/roleUtils';
 
 // Directory-specific colors from Figma design system
 const DIRECTORY_COLORS = {
@@ -169,20 +173,21 @@ export default function Directory() {
   return (
     <ProtectedPage allowedRoles={[UserRole.ADMIN]}>
       <DirectoryDataProvider>
-        {(users) => {
+        {(users, loading, error) => {
           const filteredUsers = users.filter((user: UserResponse) => {
             const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim().toLowerCase();
             const matchesSearch =
               fullName.includes(searchQuery.toLowerCase()) ||
               user.email?.toLowerCase().includes(searchQuery.toLowerCase());
+            const userRole = roleIdToUserRole(user.roleId);
 
             // User type filtering
             const hasUserTypeFilter =
               appliedUserTypeFilters.participant || appliedUserTypeFilters.volunteer;
             const matchesUserType =
               !hasUserTypeFilter ||
-              (appliedUserTypeFilters.participant && user.roleId === 1) ||
-              (appliedUserTypeFilters.volunteer && user.roleId === 2);
+              (appliedUserTypeFilters.participant && userRole === UserRole.PARTICIPANT) ||
+              (appliedUserTypeFilters.volunteer && userRole === UserRole.VOLUNTEER);
 
             // Status filtering
             const hasStatusFilter =
@@ -193,18 +198,20 @@ export default function Directory() {
               appliedStatusFilters.matching ||
               appliedStatusFilters.matched ||
               appliedStatusFilters.rejected;
-            const userStatusLabel =
-              user.formStatus && formStatusMap[user.formStatus as FormStatus]?.label;
+            const userFormStatus = user.formStatus as FormStatus | undefined;
             const matchesStatus =
               !hasStatusFilter ||
-              (appliedStatusFilters.intakeForm && userStatusLabel === 'Intake form') ||
-              (appliedStatusFilters.screenCalling && userStatusLabel === 'Screen calling') ||
-              (appliedStatusFilters.rankingForm && userStatusLabel === 'Ranking form') ||
+              (appliedStatusFilters.intakeForm && userFormStatus === FormStatus.INTAKE_TODO) ||
+              (appliedStatusFilters.screenCalling &&
+                userFormStatus === FormStatus.INTAKE_SUBMITTED) ||
+              (appliedStatusFilters.rankingForm && userFormStatus === FormStatus.RANKING_TODO) ||
               (appliedStatusFilters.secondaryAppForm &&
-                userStatusLabel === 'Secondary app. form') ||
-              (appliedStatusFilters.matching && userStatusLabel === 'Matching') ||
-              (appliedStatusFilters.matched && userStatusLabel === 'Matched') ||
-              (appliedStatusFilters.rejected && userStatusLabel === 'Rejected');
+                userFormStatus === FormStatus.SECONDARY_APPLICATION_TODO) ||
+              (appliedStatusFilters.matching &&
+                (userFormStatus === FormStatus.RANKING_SUBMITTED ||
+                  userFormStatus === FormStatus.SECONDARY_APPLICATION_SUBMITTED)) ||
+              (appliedStatusFilters.matched && userFormStatus === FormStatus.COMPLETED) ||
+              (appliedStatusFilters.rejected && userFormStatus === FormStatus.REJECTED);
 
             return matchesSearch && matchesUserType && matchesStatus;
           });
@@ -243,6 +250,267 @@ export default function Directory() {
             }
             setSelectedUsers(newSelected);
           };
+
+          const tableContent = (() => {
+            if (loading) {
+              return (
+                <Center py={16}>
+                  <VStack gap={4}>
+                    <Spinner size="xl" color={COLORS.veniceBlue} />
+                    <Text fontSize="sm" color="#495D6C">
+                      Loading users...
+                    </Text>
+                  </VStack>
+                </Center>
+              );
+            }
+
+            if (error) {
+              const errorMessage =
+                error instanceof Error
+                  ? error.message
+                  : typeof error === 'string'
+                    ? error
+                    : 'Please refresh and try again.';
+              return (
+                <Center py={16}>
+                  <VStack gap={3} maxW="400px" textAlign="center">
+                    <Box
+                      bg="red.50"
+                      border="1px solid"
+                      borderColor="red.200"
+                      borderRadius="md"
+                      p={4}
+                      w="full"
+                    >
+                      <Text fontWeight="600" color="red.700" mb={1}>
+                        Unable to load the directory
+                      </Text>
+                      <Text fontSize="sm" color="red.600">
+                        {errorMessage}
+                      </Text>
+                    </Box>
+                    <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
+                      Retry
+                    </Button>
+                  </VStack>
+                </Center>
+              );
+            }
+
+            if (sortedUsers.length === 0) {
+              const hasActiveFilters =
+                searchQuery ||
+                appliedUserTypeFilters.participant ||
+                appliedUserTypeFilters.volunteer ||
+                appliedStatusFilters.intakeForm ||
+                appliedStatusFilters.screenCalling ||
+                appliedStatusFilters.rankingForm ||
+                appliedStatusFilters.secondaryAppForm ||
+                appliedStatusFilters.matching ||
+                appliedStatusFilters.matched ||
+                appliedStatusFilters.rejected;
+
+              return (
+                <Center py={16}>
+                  <VStack gap={2}>
+                    <Text fontSize="lg" fontWeight={600} color={DIRECTORY_COLORS.navbarGray}>
+                      {hasActiveFilters ? 'No users match your filters' : 'No users found'}
+                    </Text>
+                    <Text fontSize="sm" color="#495D6C">
+                      {hasActiveFilters
+                        ? 'Try adjusting your search or filters to see more results.'
+                        : 'There are no users in the directory yet.'}
+                    </Text>
+                  </VStack>
+                </Center>
+              );
+            }
+
+            return (
+              <Table.Root
+                variant="line"
+                css={{
+                  '& tbody tr': {
+                    borderBottomColor: DIRECTORY_COLORS.tableBorder,
+                  },
+                }}
+              >
+                <Table.Header bg="white">
+                  <Table.Row
+                    bg="white"
+                    color="#535862"
+                    fontWeight="600"
+                    fontSize="16px"
+                    fontFamily="'Open Sans', sans-serif"
+                    lineHeight="1.362em"
+                  >
+                    <Table.ColumnHeader width="40px">
+                      <Checkbox
+                        checked={
+                          sortedUsers.length > 0 && selectedUsers.size === sortedUsers.length
+                        }
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      width="12%"
+                      onClick={() => {
+                        if (sortBy === 'nameDsc') {
+                          setSortBy('nameAsc');
+                        } else {
+                          setSortBy('nameDsc');
+                        }
+                      }}
+                      cursor="pointer"
+                    >
+                      <Flex alignItems="center" gap={1.5}>
+                        Name
+                        {sortBy === 'nameAsc' && <FiChevronUp size={16} />}
+                        {sortBy === 'nameDsc' && <FiChevronDown size={16} />}
+                        {sortBy !== 'nameAsc' && sortBy !== 'nameDsc' && (
+                          <TbSelector size={16} color="#A0A0A0" />
+                        )}
+                      </Flex>
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader width="10%">Language</Table.ColumnHeader>
+                    <Table.ColumnHeader width="15%">Assigned</Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      onClick={() => {
+                        if (sortBy === 'statusDsc') {
+                          setSortBy('statusAsc');
+                        } else {
+                          setSortBy('statusDsc');
+                        }
+                      }}
+                      cursor="pointer"
+                    >
+                      <Flex alignItems="center" gap={1.5}>
+                        Status
+                        {sortBy === 'statusAsc' && <FiChevronUp size={16} />}
+                        {sortBy === 'statusDsc' && <FiChevronDown size={16} />}
+                        {sortBy !== 'statusAsc' && sortBy !== 'statusDsc' && (
+                          <TbSelector size={16} color="#A0A0A0" />
+                        )}
+                      </Flex>
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader width="100px"></Table.ColumnHeader>
+                    <Table.ColumnHeader></Table.ColumnHeader>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {sortedUsers.map((user: UserResponse) => {
+                    const displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+                    const userRole = roleIdToUserRole(user.roleId);
+                    const roleName =
+                      userRole === UserRole.VOLUNTEER
+                        ? 'Volunteer'
+                        : userRole === UserRole.PARTICIPANT
+                          ? 'Participant'
+                          : 'Unknown';
+
+                    return (
+                      <Table.Row
+                        key={user.id}
+                        bg={'white'}
+                        _hover={{ bg: 'gray.50' }}
+                        borderBottom="1px solid"
+                        borderBottomColor={DIRECTORY_COLORS.tableBorder}
+                        h="64px"
+                        minH="64px"
+                      >
+                        <Table.Cell py={1.5} verticalAlign="middle">
+                          <Checkbox
+                            checked={selectedUsers.has(user.id.toString())}
+                            onCheckedChange={(e) =>
+                              handleSelectUser(user.id.toString(), !!e.checked)
+                            }
+                          />
+                        </Table.Cell>
+                        <Table.Cell
+                          py={1.5}
+                          verticalAlign="middle"
+                          fontFamily="'Open Sans', sans-serif"
+                          fontWeight={400}
+                          fontSize="16px"
+                          lineHeight="1.362em"
+                          color="#495D6C"
+                        >
+                          {displayName}
+                        </Table.Cell>
+                        <Table.Cell py={1.5} verticalAlign="middle">
+                          <Badge
+                            bg={DIRECTORY_COLORS.languageEnglishBg}
+                            color={DIRECTORY_COLORS.languageEnglishText}
+                            borderRadius="full"
+                            px={3.5}
+                            py={1.5}
+                            fontFamily="'Open Sans', sans-serif"
+                            fontWeight={400}
+                            fontSize="13px"
+                            lineHeight="1.25em"
+                          >
+                            English
+                          </Badge>
+                        </Table.Cell>
+                        <Table.Cell py={1.5} verticalAlign="middle">
+                          <Badge
+                            bg={
+                              userRole === UserRole.VOLUNTEER
+                                ? DIRECTORY_COLORS.roleVolunteerBg
+                                : DIRECTORY_COLORS.roleParticipantBg
+                            }
+                            color={
+                              userRole === UserRole.VOLUNTEER
+                                ? DIRECTORY_COLORS.roleVolunteerText
+                                : DIRECTORY_COLORS.roleParticipantText
+                            }
+                            borderRadius="full"
+                            px={3.5}
+                            py={1.5}
+                            fontFamily="'Open Sans', sans-serif"
+                            fontWeight={400}
+                            fontSize="13px"
+                            lineHeight="1.25em"
+                          >
+                            {roleName}
+                          </Badge>
+                        </Table.Cell>
+                        <Table.Cell py={1.5} verticalAlign="middle">
+                          <DirectoryProgressSlider
+                            value={formStatusMap[user.formStatus as FormStatus]?.progress ?? 0}
+                          />
+                        </Table.Cell>
+                        <Table.Cell py={1.5} verticalAlign="middle">
+                          {(() => {
+                            const statusConfig = formStatusMap[user.formStatus as FormStatus];
+                            const statusLabel = statusConfig?.label ?? 'Intake form';
+                            const statusLevel = statusConfig?.status ?? 'Not started';
+                            const statusColors = getStatusColor(statusLevel);
+                            return (
+                              <Badge
+                                bg={statusColors.bg}
+                                color={statusColors.color}
+                                borderRadius="md"
+                                px={3.5}
+                                py={1.5}
+                                fontFamily="'Open Sans', sans-serif"
+                                fontWeight={400}
+                                fontSize="13px"
+                                lineHeight="1.25em"
+                              >
+                                {statusLabel}
+                              </Badge>
+                            );
+                          })()}
+                        </Table.Cell>
+                      </Table.Row>
+                    );
+                  })}
+                </Table.Body>
+              </Table.Root>
+            );
+          })();
 
           return (
             <LightMode>
@@ -515,184 +783,7 @@ export default function Directory() {
                   </Flex>
 
                   <Box overflowX="auto" borderRadius="md">
-                    <Table.Root
-                      variant="line"
-                      css={{
-                        '& tbody tr': {
-                          borderBottomColor: DIRECTORY_COLORS.tableBorder,
-                        },
-                      }}
-                    >
-                      <Table.Header bg="white">
-                        <Table.Row
-                          bg="white"
-                          color="#535862"
-                          fontWeight="600"
-                          fontSize="16px"
-                          fontFamily="'Open Sans', sans-serif"
-                          lineHeight="1.362em"
-                        >
-                          <Table.ColumnHeader width="40px">
-                            <Checkbox
-                              checked={
-                                sortedUsers.length > 0 && selectedUsers.size === sortedUsers.length
-                              }
-                              onCheckedChange={handleSelectAll}
-                            />
-                          </Table.ColumnHeader>
-                          <Table.ColumnHeader
-                            width="12%"
-                            onClick={() => {
-                              if (sortBy === 'nameDsc') {
-                                setSortBy('nameAsc');
-                              } else {
-                                setSortBy('nameDsc');
-                              }
-                            }}
-                            cursor="pointer"
-                          >
-                            <Flex alignItems="center" gap={1.5}>
-                              Name
-                              {sortBy === 'nameAsc' && <FiChevronUp size={16} />}
-                              {sortBy === 'nameDsc' && <FiChevronDown size={16} />}
-                              {sortBy !== 'nameAsc' && sortBy !== 'nameDsc' && (
-                                <TbSelector size={16} color="#A0A0A0" />
-                              )}
-                            </Flex>
-                          </Table.ColumnHeader>
-                          <Table.ColumnHeader width="10%">Language</Table.ColumnHeader>
-                          <Table.ColumnHeader width="15%">Assigned</Table.ColumnHeader>
-                          <Table.ColumnHeader
-                            onClick={() => {
-                              if (sortBy === 'statusDsc') {
-                                setSortBy('statusAsc');
-                              } else {
-                                setSortBy('statusDsc');
-                              }
-                            }}
-                            cursor="pointer"
-                          >
-                            <Flex alignItems="center" gap={1.5}>
-                              Status
-                              {sortBy === 'statusAsc' && <FiChevronUp size={16} />}
-                              {sortBy === 'statusDsc' && <FiChevronDown size={16} />}
-                              {sortBy !== 'statusAsc' && sortBy !== 'statusDsc' && (
-                                <TbSelector size={16} color="#A0A0A0" />
-                              )}
-                            </Flex>
-                          </Table.ColumnHeader>
-                          <Table.ColumnHeader width="100px"></Table.ColumnHeader>
-                          <Table.ColumnHeader></Table.ColumnHeader>
-                        </Table.Row>
-                      </Table.Header>
-                      <Table.Body>
-                        {sortedUsers.map((user: UserResponse) => {
-                          const displayName =
-                            `${user.firstName || ''} ${user.lastName || ''}`.trim();
-                          const roleName = user.roleId === 2 ? 'Volunteer' : 'Participant';
-
-                          return (
-                            <Table.Row
-                              key={user.id}
-                              bg={'white'}
-                              _hover={{ bg: 'gray.50' }}
-                              borderBottom="1px solid"
-                              borderBottomColor={DIRECTORY_COLORS.tableBorder}
-                              h="64px"
-                              minH="64px"
-                            >
-                              <Table.Cell py={1.5} verticalAlign="middle">
-                                <Checkbox
-                                  checked={selectedUsers.has(user.id.toString())}
-                                  onCheckedChange={(e) =>
-                                    handleSelectUser(user.id.toString(), !!e.checked)
-                                  }
-                                />
-                              </Table.Cell>
-                              <Table.Cell
-                                py={1.5}
-                                verticalAlign="middle"
-                                fontFamily="'Open Sans', sans-serif"
-                                fontWeight={400}
-                                fontSize="16px"
-                                lineHeight="1.362em"
-                                color="#495D6C"
-                              >
-                                {displayName}
-                              </Table.Cell>
-                              <Table.Cell py={1.5} verticalAlign="middle">
-                                <Badge
-                                  bg={DIRECTORY_COLORS.languageEnglishBg}
-                                  color={DIRECTORY_COLORS.languageEnglishText}
-                                  borderRadius="full"
-                                  px={3.5}
-                                  py={1.5}
-                                  fontFamily="'Open Sans', sans-serif"
-                                  fontWeight={400}
-                                  fontSize="13px"
-                                  lineHeight="1.25em"
-                                >
-                                  English
-                                </Badge>
-                              </Table.Cell>
-                              <Table.Cell py={1.5} verticalAlign="middle">
-                                <Badge
-                                  bg={
-                                    user.roleId === 2
-                                      ? DIRECTORY_COLORS.roleVolunteerBg
-                                      : DIRECTORY_COLORS.roleParticipantBg
-                                  }
-                                  color={
-                                    user.roleId === 2
-                                      ? DIRECTORY_COLORS.roleVolunteerText
-                                      : DIRECTORY_COLORS.roleParticipantText
-                                  }
-                                  borderRadius="full"
-                                  px={3.5}
-                                  py={1.5}
-                                  fontFamily="'Open Sans', sans-serif"
-                                  fontWeight={400}
-                                  fontSize="13px"
-                                  lineHeight="1.25em"
-                                >
-                                  {roleName}
-                                </Badge>
-                              </Table.Cell>
-                              <Table.Cell py={1.5} verticalAlign="middle">
-                                <DirectoryProgressSlider
-                                  value={formStatusMap[user.formStatus as FormStatus].progress}
-                                />
-                              </Table.Cell>
-                              <Table.Cell py={1.5} verticalAlign="middle">
-                                {(() => {
-                                  const statusLabel =
-                                    formStatusMap[user.formStatus as FormStatus]?.label ||
-                                    'intake-submitted';
-                                  const statusLevel =
-                                    formStatusMap[user.formStatus as FormStatus].status;
-                                  const statusColors = getStatusColor(statusLevel);
-                                  return (
-                                    <Badge
-                                      bg={statusColors.bg}
-                                      color={statusColors.color}
-                                      borderRadius="md"
-                                      px={3.5}
-                                      py={1.5}
-                                      fontFamily="'Open Sans', sans-serif"
-                                      fontWeight={400}
-                                      fontSize="13px"
-                                      lineHeight="1.25em"
-                                    >
-                                      {statusLabel}
-                                    </Badge>
-                                  );
-                                })()}
-                              </Table.Cell>
-                            </Table.Row>
-                          );
-                        })}
-                      </Table.Body>
-                    </Table.Root>
+                    {tableContent}
                   </Box>
                 </Box>
               </Box>

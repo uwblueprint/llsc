@@ -1,7 +1,7 @@
 """add rejected enum value to User model
 
 Revision ID: 8d2cd99b9eb8
-Revises: b56e0bf600a2
+Revises: 9f1a6d727929
 Create Date: 2025-10-30 19:50:23.495788
 
 """
@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "8d2cd99b9eb8"
-down_revision: Union[str, None] = "b56e0bf600a2"
+down_revision: Union[str, None] = "9f1a6d727929"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

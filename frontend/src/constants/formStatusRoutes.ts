@@ -10,6 +10,7 @@ export const PARTICIPANT_STATUS_ROUTES: StatusRouteMap = {
   [FormStatus.SECONDARY_APPLICATION_TODO]: '/participant/ranking',
   [FormStatus.SECONDARY_APPLICATION_SUBMITTED]: '/participant/ranking/thank-you',
   [FormStatus.COMPLETED]: '/participant/dashboard',
+  [FormStatus.REJECTED]: '/rejection',
 };
 
 export const VOLUNTEER_STATUS_ROUTES: StatusRouteMap = {
@@ -20,6 +21,7 @@ export const VOLUNTEER_STATUS_ROUTES: StatusRouteMap = {
   [FormStatus.SECONDARY_APPLICATION_TODO]: '/volunteer/secondary-application',
   [FormStatus.SECONDARY_APPLICATION_SUBMITTED]: '/volunteer/secondary-application/thank-you',
   [FormStatus.COMPLETED]: '/volunteer/dashboard',
+  [FormStatus.REJECTED]: '/rejection',
 };
 
 export const ADMIN_STATUS_ROUTES: StatusRouteMap = {
@@ -30,6 +32,7 @@ export const ADMIN_STATUS_ROUTES: StatusRouteMap = {
   [FormStatus.SECONDARY_APPLICATION_TODO]: '/admin',
   [FormStatus.SECONDARY_APPLICATION_SUBMITTED]: '/admin',
   [FormStatus.COMPLETED]: '/admin',
+  [FormStatus.REJECTED]: '/admin',
 };
 
 export const ROLE_STATUS_ROUTES: Record<UserRole, StatusRouteMap> = {

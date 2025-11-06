@@ -15,10 +15,21 @@ export function DirectoryDataProvider({ children }: DirectoryDataProviderProps) 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const response = await baseAPIClient.get('/users');
-        setUsers(response.data.users || response.data);
+        const usersData = response.data?.users || response.data || [];
+        setUsers(Array.isArray(usersData) ? usersData : []);
       } catch (err) {
-        setError(err as Error);
+        const error =
+          err instanceof Error
+            ? err
+            : new Error(
+                typeof err === 'object' && err !== null && 'message' in err
+                  ? String(err.message)
+                  : 'Failed to fetch users. Please try again.',
+              );
+        setError(error);
         console.error('Failed to fetch users:', err);
       } finally {
         setLoading(false);
