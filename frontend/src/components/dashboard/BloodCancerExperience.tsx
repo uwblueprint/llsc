@@ -115,7 +115,12 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
               >
                 Treatments you have done
               </Box>
-              <ActionButton onClick={() => setIsEditingTreatments(!isEditingTreatments)}>
+              <ActionButton onClick={async () => {
+                if (isEditingTreatments) {
+                  await onEditTreatments();
+                }
+                setIsEditingTreatments(!isEditingTreatments);
+              }}>
                 {isEditingTreatments ? 'Save' : 'Edit'}
               </ActionButton>
             </HStack>
@@ -206,7 +211,12 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
               >
                 Experiences you had
               </Box>
-              <ActionButton onClick={() => setIsEditingExperiences(!isEditingExperiences)}>
+              <ActionButton onClick={async () => {
+                if (isEditingExperiences) {
+                  await onEditExperiences();
+                }
+                setIsEditingExperiences(!isEditingExperiences);
+              }}>
                 {isEditingExperiences ? 'Save' : 'Edit'}
               </ActionButton>
             </HStack>

@@ -89,9 +89,24 @@ const updateAvailability = async (
     availableTimes: TimeRange[]
 ): Promise<CreateAvailabilityResponse | null> => {
     try {
-        // For a complete update, we can use the create endpoint
-        // as it handles existing time blocks gracefully
-        return await createAvailability(availableTimes);
+        const userId = getCurrentUserId();
+        if (!userId) {
+            console.error('User ID not found in localStorage');
+            return null;
+        }
+
+        const updateRequest: CreateAvailabilityRequest = {
+            userId,
+            availableTimes,
+        };
+
+        // Use PUT to completely replace availability
+        const { data } = await baseAPIClient.put<CreateAvailabilityResponse>(
+            "/availability",
+            updateRequest,
+            getAuthHeaders(),
+        );
+        return data;
     } catch (error) {
         console.error('Failed to update availability:', error);
         return null;

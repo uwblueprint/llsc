@@ -20,6 +20,7 @@ from .routes import (
     task,
     test,
     user,
+    user_data,
     volunteer_data,
 )
 from .utilities.constants import LOGGER_NAME
@@ -78,6 +79,7 @@ app.add_middleware(
 )
 app.include_router(auth.router)
 app.include_router(user.router)
+app.include_router(user_data.router)
 app.include_router(availability.router)
 app.include_router(suggested_times.router)
 app.include_router(match.router)

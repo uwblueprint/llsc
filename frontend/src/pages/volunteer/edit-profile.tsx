@@ -1,0 +1,511 @@
+import React, { useState, useEffect, useRef } from 'react';
+import TimeScheduler from '@/components/dashboard/TimeScheduler';
+import type { TimeSlot, TimeSchedulerRef } from '@/components/dashboard/types';
+import { useAvailability } from '@/hooks/useAvailability';
+import {
+  Box,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Button,
+} from '@chakra-ui/react';
+import { useRouter } from 'next/router';
+import { BiArrowBack } from 'react-icons/bi';
+import PersonalDetails from '@/components/dashboard/PersonalDetails';
+import BloodCancerExperience from '@/components/dashboard/BloodCancerExperience';
+import ActionButton from '@/components/dashboard/EditButton';
+import { COLORS } from '@/constants/form';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserData, updateUserData, TimeBlockResponse } from '@/APIClients/userDataAPIClient';
+
+const EditProfile: React.FC = () => {
+  const { user, loading: authLoading } = useAuth();
+  const [isEditingAvailability, setIsEditingAvailability] = useState(false);
+  const { updateAvailability } = useAvailability();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [savingAvailability, setSavingAvailability] = useState(false);
+  const timeSchedulerRef = useRef<TimeSchedulerRef>(null);
+
+  // Personal details state for profile
+  const [personalDetails, setPersonalDetails] = useState({
+    name: '',
+    email: '',
+    birthday: '',
+    gender: '',
+    pronouns: '',
+    timezone: 'Eastern Standard Time (EST)',
+    overview: ''
+  });
+
+  // Blood cancer experience state for profile
+  const [cancerExperience, setCancerExperience] = useState({
+    diagnosis: [] as string[],
+    dateOfDiagnosis: '',
+    treatments: [] as string[],
+    experiences: [] as string[]
+  });
+
+  // Helper function to convert TimeBlocks back to TimeSlots for the scheduler
+  const convertTimeBlocksToTimeSlots = (timeBlocks: TimeBlockResponse[]): TimeSlot[] => {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const timeSlots: TimeSlot[] = [];
+    const processedSlots = new Set<string>(); // Track processed slots to avoid duplicates
+
+    timeBlocks.forEach(block => {
+      const startDate = new Date(block.startTime);
+      const dayOfWeek = startDate.getDay();
+      const dayName = dayNames[dayOfWeek];
+      const hour = startDate.getHours();
+
+      // Create time slot for this hour (e.g., "9:00 - 10:00")
+      const timeStr = `${hour}:00 - ${hour + 1}:00`;
+      const slotKey = `${dayName}-${timeStr}`;
+
+      // Avoid duplicate slots (backend sends 30-min blocks, we need 1-hour slots)
+      if (!processedSlots.has(slotKey)) {
+        processedSlots.add(slotKey);
+        timeSlots.push({
+          day: dayName,
+          time: timeStr,
+          selected: true
+        });
+      }
+    });
+
+    console.log('Converted time blocks to slots:', timeSlots);
+    return timeSlots;
+  };
+
+  // Load user data from API
+  useEffect(() => {
+    // Redirect if not authenticated
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    // Wait for auth to be ready
+    if (authLoading) return;
+
+    const loadUserData = async () => {
+      setLoading(true);
+      try {
+        const userData = await getUserData();
+
+        if (userData) {
+          // Format date from ISO (YYYY-MM-DD) to display format (DD/MM/YYYY)
+          const formatDate = (isoDate: string | undefined | null): string => {
+            console.log('formatDate input:', isoDate, 'type:', typeof isoDate);
+            if (!isoDate) {
+              console.log('formatDate returning Not provided because isoDate is falsy');
+              return 'Not provided';
+            }
+            try {
+              const date = new Date(isoDate);
+              console.log('Created date object:', date);
+              const day = date.getDate().toString().padStart(2, '0');
+              const month = (date.getMonth() + 1).toString().padStart(2, '0');
+              const year = date.getFullYear();
+              const formatted = `${day}/${month}/${year}`;
+              console.log('Formatted date:', formatted);
+              return formatted;
+            } catch (error) {
+              console.error('formatDate error:', error);
+              return 'Not provided';
+            }
+          };
+
+          // Populate personal details (using camelCase after axios conversion)
+          const formattedBirthday = formatDate(userData.dateOfBirth);
+          const formattedPronouns = userData.pronouns?.join(', ') || 'Not provided';
+
+          console.log('FINAL VALUES:');
+          console.log('formattedBirthday:', formattedBirthday);
+          console.log('formattedPronouns:', formattedPronouns);
+
+          setPersonalDetails({
+            name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || user?.email || 'Not provided',
+            email: userData.email || user?.email || 'Not provided',
+            birthday: formattedBirthday,
+            gender: userData.genderIdentity || 'Not provided',
+            pronouns: formattedPronouns,
+            timezone: 'Eastern Standard Time (EST)', // TODO: Add timezone field to backend
+            overview: 'Not provided' // TODO: Add overview field to backend
+          });
+
+          console.log('Personal details state set to:', {
+            name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+            email: userData.email,
+            birthday: formattedBirthday,
+            gender: userData.genderIdentity,
+            pronouns: formattedPronouns
+          });
+
+          // Populate cancer experience
+          setCancerExperience({
+            diagnosis: userData.diagnosis ? [userData.diagnosis] : [],
+            dateOfDiagnosis: userData.dateOfDiagnosis || '',
+            treatments: userData.treatments || [],
+            experiences: userData.experiences || []
+          });
+
+          // Convert and populate availability
+          if (userData.availability && userData.availability.length > 0) {
+            const timeSlots = convertTimeBlocksToTimeSlots(userData.availability);
+            setProfileTimeSlots(timeSlots);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error loading user data:', error);
+      } finally {
+        console.log('✅ Finished loading, setting loading=false');
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, [authLoading, user, router]);
+
+  // Availability state for profile
+  const [profileTimeSlots, setProfileTimeSlots] = useState<TimeSlot[]>([]);
+
+  const handleTimeSlotsChange = (timeSlots: TimeSlot[]) => {
+    setProfileTimeSlots(timeSlots);
+  };
+
+  // Save handler for PersonalDetails
+  const handleSavePersonalDetail = async (field: string, value: string) => {
+    const updateData: Partial<any> = {};
+
+    // Map frontend field names to backend snake_case (axios will convert to camelCase on send)
+    if (field === 'name') {
+      const [firstName, ...lastNameParts] = value.split(' ');
+      updateData.first_name = firstName || '';
+      updateData.last_name = lastNameParts.join(' ') || '';
+    } else if (field === 'email') {
+      updateData.email = value;
+    } else if (field === 'birthday') {
+      // Convert DD/MM/YYYY to YYYY-MM-DD for backend
+      try {
+        const [day, month, year] = value.split('/');
+        updateData.date_of_birth = `${year}-${month}-${day}`;
+      } catch {
+        updateData.date_of_birth = value;
+      }
+    } else if (field === 'gender') {
+      updateData.gender_identity = value;
+    } else if (field === 'pronouns') {
+      updateData.pronouns = value.split(',').map(p => p.trim());
+    }
+
+    const result = await updateUserData(updateData);
+    if (!result) {
+      throw new Error('Failed to update');
+    }
+  };
+
+  // Save handler for treatments
+  const handleSaveTreatments = async () => {
+    const result = await updateUserData({
+      treatments: cancerExperience.treatments
+    });
+    if (!result) {
+      alert('Failed to save treatments');
+    }
+  };
+
+  // Save handler for experiences
+  const handleSaveExperiences = async () => {
+    const result = await updateUserData({
+      experiences: cancerExperience.experiences
+    });
+    if (!result) {
+      alert('Failed to save experiences');
+    }
+  };
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  const handleEditAvailability = () => {
+    setIsEditingAvailability(true);
+  };
+
+  const handleClearAvailability = () => {
+    console.log('🗑️ handleClearAvailability called');
+    // Call clear method on TimeScheduler via ref
+    timeSchedulerRef.current?.clear();
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingAvailability(false);
+  };
+
+  const handleSaveAvailability = async () => {
+    // Convert TimeSlots to TimeRanges for API (same logic as schedule.tsx)
+    const convertToTimeRanges = (timeSlots: TimeSlot[]) => {
+      const dayToIndex: Record<string, number> = {
+        'Monday': 1,
+        'Tuesday': 2,
+        'Wednesday': 3,
+        'Thursday': 4,
+        'Friday': 5,
+        'Saturday': 6,
+        'Sunday': 0,
+      };
+
+      const slotsByDay = timeSlots.reduce((acc, slot) => {
+        if (!acc[slot.day]) {
+          acc[slot.day] = [];
+        }
+        acc[slot.day].push(slot);
+        return acc;
+      }, {} as Record<string, TimeSlot[]>);
+
+      const timeRanges: any[] = [];
+
+      Object.entries(slotsByDay).forEach(([day, slots]) => {
+        const sortedSlots = slots.sort((a, b) => {
+          const aHour = parseInt(a.time.split(':')[0]);
+          const bHour = parseInt(b.time.split(':')[0]);
+          return aHour - bHour;
+        });
+
+        let rangeStart: string | null = null;
+        let lastEndHour = -1;
+
+        sortedSlots.forEach((slot, index) => {
+          const [startTimeStr, endTimeStr] = slot.time.split(' - ');
+          const startHour = parseInt(startTimeStr.split(':')[0]);
+          const endHour = parseInt(endTimeStr.split(':')[0]);
+
+          if (rangeStart === null) {
+            rangeStart = startTimeStr;
+            lastEndHour = endHour;
+          } else if (startHour === lastEndHour) {
+            lastEndHour = endHour;
+          } else {
+            timeRanges.push({
+              start_time: getNextDayOfWeek(dayToIndex[day], rangeStart),
+              end_time: getNextDayOfWeek(dayToIndex[day], `${lastEndHour}:00`),
+            });
+            rangeStart = startTimeStr;
+            lastEndHour = endHour;
+          }
+
+          if (index === sortedSlots.length - 1) {
+            timeRanges.push({
+              start_time: getNextDayOfWeek(dayToIndex[day], rangeStart!),
+              end_time: getNextDayOfWeek(dayToIndex[day], `${lastEndHour}:00`),
+            });
+          }
+        });
+      });
+
+      return timeRanges;
+    };
+
+    const getNextDayOfWeek = (dayOfWeek: number, timeStr: string): string => {
+      const [hour] = timeStr.split(':').map(Number);
+      const now = new Date();
+      const currentDay = now.getDay();
+
+      let daysUntilTarget = dayOfWeek - currentDay;
+      if (daysUntilTarget <= 0) {
+        daysUntilTarget += 7;
+      }
+
+      const targetDate = new Date(now);
+      targetDate.setDate(now.getDate() + daysUntilTarget);
+      targetDate.setHours(hour, 0, 0, 0);
+
+      return targetDate.toISOString();
+    };
+
+    setSavingAvailability(true);
+
+    try {
+      const availableTimes = convertToTimeRanges(profileTimeSlots);
+      console.log('Saving availability with time ranges:', availableTimes);
+
+      const result = await updateAvailability(availableTimes);
+
+      if (result) {
+        console.log('✅ Availability updated successfully:', result);
+        setIsEditingAvailability(false);
+      } else {
+        console.error('❌ Failed to update availability - result was null/undefined');
+        alert('Failed to save availability. Please try again.');
+      }
+    } catch (err) {
+      console.error('❌ Error updating availability:', err);
+      alert('An error occurred while saving. Please try again.');
+    } finally {
+      setSavingAvailability(false);
+    }
+  };
+
+  // Show loading while auth initializes or data loads
+  if (authLoading || loading) {
+    return (
+      <Box minH="100vh" bg="white" py={6} display="flex" justifyContent="center" alignItems="center">
+        <Text fontSize="lg" color={COLORS.fieldGray}>Loading...</Text>
+      </Box>
+    );
+  }
+
+  // Show nothing if not authenticated (will redirect)
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <Box minH="100vh" bg="white" py={6} display="flex" justifyContent="center">
+      <Box minH="2409px" overflow="auto" w="85%">
+        <VStack gap={6} align="stretch" p={6}>
+          {/* Back Button */}
+          <HStack gap={2} align="center" cursor="pointer" onClick={handleBack}>
+            <BiArrowBack color={COLORS.veniceBlue} />
+            <Text fontSize="sm" color={COLORS.fieldGray} fontFamily="'Open Sans', sans-serif">
+              Back
+            </Text>
+          </HStack>
+
+          {/* Main Content Wrapper */}
+          <Box h="2050px">
+            <VStack gap={6} align="stretch">
+              {/* Title */}
+              <Heading
+                w="630px"
+                h="49px"
+                fontSize="2.25rem"
+                fontWeight={600}
+                lineHeight="100%"
+                letterSpacing="-1.5%"
+                color={COLORS.veniceBlue}
+                fontFamily="'Open Sans', sans-serif"
+              >
+                Edit Profile
+              </Heading>
+
+              <Box mt="48px">
+                <VStack gap={0} align="stretch">
+                  <PersonalDetails
+                    personalDetails={personalDetails}
+                    setPersonalDetails={setPersonalDetails}
+                    onSave={handleSavePersonalDetail}
+                  />
+                  <BloodCancerExperience
+                    cancerExperience={cancerExperience}
+                    setCancerExperience={setCancerExperience}
+                    onEditTreatments={handleSaveTreatments}
+                    onEditExperiences={handleSaveExperiences}
+                  />
+                  <Box bg="white" p={0} mt="116px" w="100%" h="1000px">
+                    <HStack justify="space-between" align="center" mb={0}>
+                      <Heading 
+                        w="519px"
+                        h="40px"
+                        fontSize="1.625rem"
+                        fontWeight={600}
+                        lineHeight="40px"
+                        letterSpacing="0%"
+                        color="#1D3448"
+                        fontFamily="'Open Sans', sans-serif"
+                        mb="8px"
+                      >
+                        Your availability
+                      </Heading>
+                      {!isEditingAvailability ? (
+                        <ActionButton onClick={handleEditAvailability}>
+                          Edit
+                        </ActionButton>
+                      ) : (
+                        <HStack gap={3}>
+                          <Button
+                            bg="#B91C1C"
+                            color="white"
+                            px={4}
+                            py={2}
+                            borderRadius="6px"
+                            fontFamily="'Open Sans', sans-serif"
+                            fontWeight={600}
+                            fontSize="0.875rem"
+                            _hover={{ bg: "#991B1B" }}
+                            _active={{ bg: "#7F1D1D" }}
+                            onClick={handleClearAvailability}
+                          >
+                            Clear Availability
+                          </Button>
+                          <Button
+                            bg="#6B7280"
+                            color="white"
+                            px={4}
+                            py={2}
+                            borderRadius="6px"
+                            fontFamily="'Open Sans', sans-serif"
+                            fontWeight={600}
+                            fontSize="0.875rem"
+                            _hover={{ bg: "#4B5563" }}
+                            _active={{ bg: "#374151" }}
+                            onClick={handleCancelEdit}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            bg="#056067"
+                            color="white"
+                            px={4}
+                            py={2}
+                            borderRadius="6px"
+                            fontFamily="'Open Sans', sans-serif"
+                            fontWeight={600}
+                            fontSize="0.875rem"
+                            _hover={{ bg: "#044d52" }}
+                            _active={{ bg: "#033e42" }}
+                            onClick={handleSaveAvailability}
+                            disabled={savingAvailability}
+                          >
+                            {savingAvailability ? 'Saving...' : 'Save'}
+                          </Button>
+                        </HStack>
+                      )}
+                    </HStack>
+
+                    <Text 
+                      fontSize="1rem" 
+                      fontWeight={400}
+                      lineHeight="100%"
+                      letterSpacing="0%"
+                      color="#495D6C" 
+                      mb={4} 
+                      mt={0} 
+                      fontFamily="'Open Sans', sans-serif"
+                    >
+                      We require that availability be provided in sessions of at least 2 hours.
+                    </Text>
+
+                    <Box h="800px" w="100%" mr={0}>
+                      <TimeScheduler
+                        ref={timeSchedulerRef}
+                        showAvailability={true}
+                        onTimeSlotsChange={handleTimeSlotsChange}
+                        initialTimeSlots={profileTimeSlots}
+                        readOnly={!isEditingAvailability}
+                      />
+                    </Box>
+                  </Box>
+                </VStack>
+              </Box>
+            </VStack>
+          </Box>
+        </VStack>
+      </Box>
+    </Box>
+  );
+};
+
+export default EditProfile; 
