@@ -60,6 +60,26 @@ async def create_availability(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.put("/", response_model=CreateAvailabilityResponse)
+async def update_availability(
+    availability: CreateAvailabilityRequest,
+    availability_service: AvailabilityService = Depends(get_availability_service),
+    authorized: bool = has_roles([UserRole.ADMIN, UserRole.VOLUNTEER]),
+):
+    """
+    Completely replaces user's availability with the provided time slots.
+    Deletes all existing availability and creates new ones.
+    """
+    try:
+        updated = await availability_service.update_availability(availability)
+        return updated
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.delete("/", response_model=DeleteAvailabilityResponse)
 async def delete_availability(
     availability: DeleteAvailabilityRequest,

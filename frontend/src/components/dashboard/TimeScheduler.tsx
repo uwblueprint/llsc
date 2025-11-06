@@ -15,9 +15,11 @@ const hours = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
 const TimeScheduler: React.FC<TimeSchedulerProps> = ({
   showAvailability = false,
   onTimeSlotsChange,
-  prepopulateFromAPI = false
+  prepopulateFromAPI = false,
+  initialTimeSlots = [],
+  readOnly = false
 }) => {
-  const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([]);
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>(initialTimeSlots);
   const [isDragging, setIsDragging] = useState(false);
   const [dragValue, setDragValue] = useState<boolean | null>(null);
   const { getAvailability, loading } = useAvailability();
@@ -64,6 +66,13 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
 
     loadAvailability();
   }, [prepopulateFromAPI]);
+
+  // Update selectedTimeSlots when initialTimeSlots prop changes
+  useEffect(() => {
+    if (initialTimeSlots.length > 0) {
+      setSelectedTimeSlots(initialTimeSlots);
+    }
+  }, [initialTimeSlots]);
 
   // Notify parent when selectedTimeSlots change
   useEffect(() => {
@@ -233,7 +242,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
           </Box>
         ))}
         {showAvailability && (
-          <Box w="300px" />
+          <Box w="220px" />
         )}
       </Box>
 
@@ -263,7 +272,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
                 <Box
                   key={`${dayFull}-${hour}`}
                   flex="1"
-                  cursor="pointer"
+                  cursor={readOnly ? "default" : "pointer"}
                   bg={isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" : "white"}
                   transition="background 0.2s"
                   borderTop="0.91px solid"
@@ -271,13 +280,14 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
                   borderLeft={dayIndex === 0 ? "0.91px solid" : "none"}
                   borderRight="0.91px solid"
                   borderColor="#e3e3e3"
-                  _hover={{
+                  _hover={readOnly ? {} : {
                     bg: isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" :"rgba(255, 187, 138, 0.1)"
                   }}
-                  onMouseDown={() => handleMouseDown(dayFull, hour)}
-                  onMouseEnter={() => handleMouseEnter(dayFull, hour)}
-                  onMouseUp={handleMouseUp}
+                  onMouseDown={readOnly ? undefined : () => handleMouseDown(dayFull, hour)}
+                  onMouseEnter={readOnly ? undefined : () => handleMouseEnter(dayFull, hour)}
+                  onMouseUp={readOnly ? undefined : handleMouseUp}
                   userSelect="none"
+                  opacity={readOnly ? 0.7 : 1}
                 />
               ))}
             </Box>
@@ -286,92 +296,74 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
         
                  {/* Availability List - positioned alongside time grid */}
          {showAvailability && (
-           <Box w="300px" pt={0} pb={4} px={4} mr={0} alignSelf="flex-start">
-            <Text 
+           <Box w="220px" pt={0} pb={4} px={3} ml={6} mr={0} alignSelf="flex-start">
+            <Text
               fontFamily="'Open Sans', sans-serif"
               fontWeight={600}
-              fontSize="1.125rem"
-              lineHeight="1.875rem"
+              fontSize="1rem"
+              lineHeight="1.5rem"
               letterSpacing="0%"
               textAlign="center"
               color="#1D3448"
-              mb={4}
+              mb={3}
               mt={0}
             >
               Your Availability
             </Text>
-            
-            <VStack gap={4} align="stretch">
-                             {sortedDays.length > 0 ? (
-                 sortedDays.map((day) => (
-                   <Box key={day} display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
-                     <Text 
-                       fontFamily="'Open Sans', sans-serif"
-                       fontWeight={400}
-                       fontSize="1rem"
-                       lineHeight="100%"
-                       letterSpacing="-1.5%"
-                       color="#000000"
-                       minW="fit-content"
-                       mr={4}
-                     >
-                       {day}:
-                     </Text>
-                     <Box display="flex" flexDirection="column" gap={2} alignItems="flex-end">
-                       {combineContiguousSlots(groupedSlots[day]).map((timeSlot, index) => (
-                         <Box
-                           key={`${day}-${index}`}
-                           bg="rgba(179, 206, 209, 0.3)"
-                           color="#1D3448"
-                           px="10px"
-                           py="2px"
-                           borderRadius="16px"
-                           fontSize="14px"
-                           fontWeight={400}
-                           lineHeight="1.2"
-                           fontFamily="'Open Sans', sans-serif"
-                           textAlign="center"
-                           w="fit-content"
-                           h="24px"
-                           display="flex"
-                           alignItems="center"
-                           justifyContent="center"
-                         >
-                           <Text 
-                             fontSize="14px"
-                             fontWeight={400}
-                             lineHeight="1.2"
-                             letterSpacing="0%"
-                             textAlign="center"
-                             color="#056067"
-                             fontFamily="'Open Sans', sans-serif"
-                             whiteSpace="normal"
-                             wordBreak="break-word"
-                           >
-                             {formatTimeSlot(timeSlot)}
-                           </Text>
-                         </Box>
-                       ))}
-                     </Box>
-                   </Box>
-                 ))
-               ) : (
-                <Box 
-                  p={4} 
-                  bg="gray.50" 
-                  borderRadius="md" 
-                  textAlign="center"
-                  border="1px dashed"
-                  borderColor="gray.300"
-                >
-                  <Text fontSize="sm" color="gray.500">
-                    No time slots selected
+
+            <VStack gap={3} align="stretch">
+              {sortedDays.map((day) => (
+                <Box key={day} display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                  <Text
+                    fontFamily="'Open Sans', sans-serif"
+                    fontWeight={400}
+                    fontSize="0.875rem"
+                    lineHeight="100%"
+                    letterSpacing="-1.5%"
+                    color="#000000"
+                    minW="fit-content"
+                    mr={2}
+                  >
+                    {day}:
                   </Text>
-                  <Text fontSize="xs" color="gray.400" mt={1}>
-                    Click on the calendar to add your availability
-                  </Text>
+                  <Box display="flex" flexDirection="column" gap={1.5} alignItems="flex-end">
+                    {combineContiguousSlots(groupedSlots[day]).map((timeSlot, index) => (
+                      <Box
+                        key={`${day}-${index}`}
+                        bg="rgba(179, 206, 209, 0.3)"
+                        color="#1D3448"
+                        px="8px"
+                        py="1px"
+                        borderRadius="12px"
+                        fontSize="12px"
+                        fontWeight={400}
+                        lineHeight="1.2"
+                        fontFamily="'Open Sans', sans-serif"
+                        textAlign="center"
+                        w="fit-content"
+                        h="20px"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Text
+                          fontSize="12px"
+                          fontWeight={400}
+                          lineHeight="1.2"
+                          letterSpacing="0%"
+                          textAlign="center"
+                          color="#056067"
+                          fontFamily="'Open Sans', sans-serif"
+                          whiteSpace="normal"
+                          wordBreak="break-word"
+                        >
+                          {formatTimeSlot(timeSlot)}
+                        </Text>
+                      </Box>
+                    ))}
+                  </Box>
                 </Box>
-              )}
+              ))}
             </VStack>
           </Box>
         )}

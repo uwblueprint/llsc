@@ -18,6 +18,8 @@ interface ProfileTextInputProps {
   helperText?: string;
   edit?: boolean;
   onFocus?: () => void;
+  error?: string;
+  onBlur?: () => void;
 }
 
 const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
@@ -30,6 +32,8 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
   flex = "1",
   helperText,
   onFocus,
+  error,
+  onBlur,
 }) => {
   const styledLabel = (
     <Box>
@@ -67,9 +71,9 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
 
   const inputStyles = {
     background: 'white',
-    borderColor: '#D5D7DA',
+    borderColor: error ? '#EF4444' : '#D5D7DA',
     fontFamily: "'Open Sans', sans-serif",
-    border: '1px solid #D5D7DA',
+    border: `1px solid ${error ? '#EF4444' : '#D5D7DA'}`,
     borderRadius: '8px',
     paddingLeft: '14px',
     paddingRight: '14px',
@@ -99,15 +103,28 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
             minHeight: `${rows * 20 + 24}px`,
           }}
           onFocus={(e) => {
-            e.target.style.borderColor = '#319795';
-            e.target.style.boxShadow = '0 0 0 2px rgba(49, 151, 149, 0.2)';
+            e.target.style.borderColor = error ? '#EF4444' : '#319795';
+            e.target.style.boxShadow = error
+              ? '0 0 0 2px rgba(239, 68, 68, 0.2)'
+              : '0 0 0 2px rgba(49, 151, 149, 0.2)';
             onFocus?.();
           }}
           onBlur={(e) => {
-            e.target.style.borderColor = '#D5D7DA';
+            e.target.style.borderColor = error ? '#EF4444' : '#D5D7DA';
             e.target.style.boxShadow = 'none';
+            onBlur?.();
           }}
         />
+        {error && (
+          <Text
+            color="#EF4444"
+            fontSize="0.875rem"
+            mt={1}
+            fontFamily="'Open Sans', sans-serif"
+          >
+            {error}
+          </Text>
+        )}
       </Field>
     );
   }
@@ -124,15 +141,28 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
           height: '44px',
         }}
         onFocus={(e) => {
-          e.target.style.borderColor = '#319795';
-          e.target.style.boxShadow = '0 0 0 2px rgba(49, 151, 149, 0.2)';
+          e.target.style.borderColor = error ? '#EF4444' : '#319795';
+          e.target.style.boxShadow = error
+            ? '0 0 0 2px rgba(239, 68, 68, 0.2)'
+            : '0 0 0 2px rgba(49, 151, 149, 0.2)';
           onFocus?.();
         }}
         onBlur={(e) => {
-          e.target.style.borderColor = '#D5D7DA';
+          e.target.style.borderColor = error ? '#EF4444' : '#D5D7DA';
           e.target.style.boxShadow = 'none';
+          onBlur?.();
         }}
       />
+      {error && (
+        <Text
+          color="#EF4444"
+          fontSize="0.875rem"
+          mt={1}
+          fontFamily="'Open Sans', sans-serif"
+        >
+          {error}
+        </Text>
+      )}
     </Field>
   );
 };

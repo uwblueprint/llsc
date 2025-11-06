@@ -124,7 +124,7 @@ const SchedulePage: React.FC = () => {
     const result = await createAvailability(timeRanges);
 
     if (result) {
-      router.push('/volunteer/dashboard');
+      router.push('/volunteer/edit-profile');
     } else {
       alert(error || 'Failed to save availability. Please try again.');
     }

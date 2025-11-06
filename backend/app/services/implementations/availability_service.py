@@ -118,6 +118,53 @@ class AvailabilityService:
             self.logger.error(f"Error creating availability: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
+    async def update_availability(self, req: CreateAvailabilityRequest) -> CreateAvailabilityResponse:
+        """
+        Completely replaces user's availability with the provided time slots.
+        Deletes all existing availability first, then creates new ones.
+        """
+        try:
+            user: User = self.db.query(User).filter(User.id == req.user_id).one()
+
+            # Delete all existing availability for this user
+            existing_blocks = (
+                self.db.query(TimeBlock)
+                .join(available_times, TimeBlock.id == available_times.c.time_block_id)
+                .filter(available_times.c.user_id == user.id)
+                .all()
+            )
+
+            for block in existing_blocks:
+                self.db.delete(block)
+
+            self.db.flush()
+
+            # Now create new availability
+            added = 0
+            for time_range in req.available_times:
+                start_time = time_range.start_time
+                end_time = time_range.end_time
+
+                # create timeblocks (0.5 hr) with 30 min spacing
+                current_start_time = start_time
+                while current_start_time < end_time:
+                    time_block = TimeBlock(start_time=current_start_time)
+                    user.availability.append(time_block)
+                    added += 1
+
+                    # update current time by 30 minutes for the next block
+                    current_start_time += timedelta(hours=0.5)
+
+            self.db.flush()
+            validated_data = CreateAvailabilityResponse.model_validate({"user_id": req.user_id, "added": added})
+            self.db.commit()
+            return validated_data
+
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error updating availability for user {req.user_id}: {e}")
+            raise HTTPException(status_code=500, detail="Failed to update availability")
+
     async def delete_availability(self, req: DeleteAvailabilityRequest) -> DeleteAvailabilityResponse:
         """
         Takes a DeleteAvailabilityRequest with template slots.
