@@ -110,11 +110,11 @@ export function RejectionScreen() {
               <Text
                 key={`${sentence}-${index}`}
                 fontFamily="system-ui, -apple-system, sans-serif"
-              fontSize="18px"
-              color={COLORS.fieldGray}
-              lineHeight="1.6"
-              textAlign="center"
-            >
+                fontSize="18px"
+                color={COLORS.fieldGray}
+                lineHeight="1.6"
+                textAlign="center"
+              >
                 {hasEmail ? (
                   <>
                     {prefix}
@@ -131,7 +131,7 @@ export function RejectionScreen() {
                 ) : (
                   sentence
                 )}
-            </Text>
+              </Text>
             );
           })}
         </VStack>
