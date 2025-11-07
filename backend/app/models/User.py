@@ -21,6 +21,11 @@ class FormStatus(str, PyEnum):
     REJECTED = "rejected"
 
 
+class Language(str, PyEnum):
+    ENGLISH = "en"
+    FRENCH = "fr"
+
+
 class User(Base):
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -41,6 +46,16 @@ class User(Base):
         ),
         nullable=False,
         default=FormStatus.INTAKE_TODO,
+    )
+    language = Column(
+        SQLEnum(
+            Language,
+            name="language_enum",
+            create_type=False,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
+        default=Language.ENGLISH,
     )
 
     role = relationship("Role")
