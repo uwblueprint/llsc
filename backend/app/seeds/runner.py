@@ -14,6 +14,7 @@ from app.utilities.constants import LOGGER_NAME
 # Import all seed functions
 from .experiences import seed_experiences
 from .forms import seed_forms
+from .match_status import seed_match_status
 from .qualities import seed_qualities
 from .ranking_preferences import seed_ranking_preferences
 from .roles import seed_roles
@@ -59,6 +60,7 @@ def seed_database(verbose: bool = True) -> None:
             ("Forms", seed_forms),
             ("Users", seed_users),
             ("Ranking Preferences", seed_ranking_preferences),
+            ("Match Status", seed_match_status),
         ]
 
         for name, seed_func in seed_functions:
