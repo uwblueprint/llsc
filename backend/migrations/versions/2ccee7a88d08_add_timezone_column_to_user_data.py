@@ -1,7 +1,7 @@
 """add_timezone_column_to_user_data
 
 Revision ID: 2ccee7a88d08
-Revises: 9f1a6d727929
+Revises: 8d2cd99b9eb8
 Create Date: 2025-10-30 19:02:10.801071
 
 """
@@ -13,7 +13,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "2ccee7a88d08"
-down_revision: Union[str, None] = "9f1a6d727929"
+down_revision: Union[str, None] = "8d2cd99b9eb8"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
