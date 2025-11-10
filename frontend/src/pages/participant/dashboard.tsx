@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Container, Flex, Heading, Icon, Spinner, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Container, Flex, Heading, Icon, Spinner, Text, Textarea, VStack } from '@chakra-ui/react';
 import { FiPlus } from 'react-icons/fi';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { DashboardSidebar } from '@/components/participant/DashboardSidebar';
 import { VolunteerCard } from '@/components/participant/VolunteerCard';
+import { ConfirmedMatchCard } from '@/components/participant/ConfirmedMatchCard';
 import { RequestNewMatchesModal } from '@/components/participant/RequestNewMatchesModal';
 import { RequestConfirmationModal } from '@/components/participant/RequestConfirmationModal';
 import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClient';
@@ -14,6 +15,8 @@ import { Match } from '@/types/matchTypes';
 
 export default function ParticipantDashboardPage() {
   const [matches, setMatches] = useState<Match[]>([]);
+  const [confirmedMatches, setConfirmedMatches] = useState<Match[]>([]);
+  const [completedMatches, setCompletedMatches] = useState<Match[]>([]);
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +24,7 @@ export default function ParticipantDashboardPage() {
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [requestMessage, setRequestMessage] = useState('');
 
   const user = getCurrentUser();
   const userName = user?.firstName || 'there';
@@ -34,11 +38,21 @@ export default function ParticipantDashboardPage() {
       setLoading(true);
       setError(null);
       const data = await participantMatchAPIClient.getMyMatches();
-      // Filter to only show matches that are pending (accepted by volunteer, not yet scheduled)
+      
+      // Separate matches by status
       const pendingMatches = data.matches.filter(
         (match) => match.matchStatus === 'pending' || match.matchStatus === 'requesting_new_times'
       );
+      const confirmed = data.matches.filter(
+        (match) => match.matchStatus === 'confirmed'
+      );
+      const completed = data.matches.filter(
+        (match) => match.matchStatus === 'completed'
+      );
+      
       setMatches(pendingMatches);
+      setConfirmedMatches(confirmed);
+      setCompletedMatches(completed);
       setHasPendingRequest(data.hasPendingRequest || false);
     } catch (err) {
       console.error('Error loading matches:', err);
@@ -67,6 +81,16 @@ export default function ParticipantDashboardPage() {
     // TODO: Implement schedule flow
   };
 
+  const handleCancelCall = (matchId: number) => {
+    console.log('Cancel call flow not implemented yet for match:', matchId);
+    // TODO: Implement cancel call flow
+  };
+
+  const handleViewContactDetails = (matchId: number) => {
+    console.log('View contact details flow not implemented yet for match:', matchId);
+    // TODO: Implement view contact details flow
+  };
+
   const handleRequestNewMatchesClick = () => {
     setIsRequestModalOpen(true);
   };
@@ -77,6 +101,7 @@ export default function ParticipantDashboardPage() {
       await participantMatchAPIClient.requestNewVolunteers(message);
       setIsRequestModalOpen(false);
       setIsConfirmationModalOpen(true);
+      setRequestMessage(''); // Reset form message
       // Reload matches after requesting new volunteers
       await loadMatches();
     } catch (err) {
@@ -130,6 +155,77 @@ export default function ParticipantDashboardPage() {
       );
     }
 
+    // Show completed matches screen - inline form for requesting new matches
+    if (completedMatches.length > 0 && confirmedMatches.length === 0 && matches.length === 0) {
+      return (
+        <VStack align="stretch" gap={6}>
+          {/* Additional Notes Section */}
+          <VStack align="stretch" gap={3}>
+            <VStack align="stretch" gap={1}>
+              <Heading fontSize="md" fontWeight="600" color="#1D3448">
+                Any additional notes?
+              </Heading>
+              <Text fontSize="sm" color="#697380" lineHeight="1.5">
+                Please provide any additional information you would like us to consider when
+                finding volunteers.
+              </Text>
+            </VStack>
+            <Textarea
+              value={requestMessage}
+              onChange={(e) => setRequestMessage(e.target.value)}
+              placeholder="Share your thoughts!"
+              minH="200px"
+              resize="vertical"
+              border="1px solid"
+              borderColor="#D5D7DA"
+              borderRadius="md"
+              p={4}
+              _focus={{
+                borderColor: '#056067',
+                boxShadow: '0 0 0 1px #056067',
+              }}
+              disabled={isSubmitting}
+              fontSize="md"
+              bg="white"
+            />
+          </VStack>
+
+          {/* Submit Button */}
+          <Flex justify="flex-end" pt={4}>
+            <Button
+              bg="#056067"
+              color="white"
+              _hover={{ bg: '#044d52' }}
+              _active={{ bg: '#033a3e' }}
+              onClick={() => handleSubmitRequest(requestMessage.trim() || undefined)}
+              loading={isSubmitting}
+              loadingText="Submitting..."
+              px={6}
+            >
+              Submit Request
+            </Button>
+          </Flex>
+        </VStack>
+      );
+    }
+
+    // Show confirmed matches (upcoming calls)
+    if (confirmedMatches.length > 0) {
+      return (
+        <VStack align="stretch" gap={6}>
+          {confirmedMatches.map((match) => (
+            <ConfirmedMatchCard
+              key={match.id}
+              match={match}
+              onCancelCall={handleCancelCall}
+              onViewContactDetails={handleViewContactDetails}
+            />
+          ))}
+        </VStack>
+      );
+    }
+
+    // Show pending matches (not yet scheduled)
     if (matches.length === 0) {
       return (
         <Box bg="white" borderRadius="lg" p={8} textAlign="center" boxShadow="sm">
@@ -192,7 +288,7 @@ export default function ParticipantDashboardPage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
-        <Box minH="100vh" bg="#F3F4F6" py={10}>
+        <Box minH="100vh" bg="white" py={10}>
           <Container maxW="container.xl">
             <Flex
               direction={{ base: 'column', lg: 'row' }}
@@ -203,7 +299,7 @@ export default function ParticipantDashboardPage() {
 
               <Box flex={1} w="full">
                 <VStack align="stretch" gap={6}>
-                  {/* Header - Show pending message if hasPendingRequest, otherwise show normal header */}
+                  {/* Header - Show different headers based on state */}
                   {hasPendingRequest && activeTab === 'matches' ? (
                     <Flex justify="space-between" align="flex-start">
                       <Box flex={1}>
@@ -212,6 +308,64 @@ export default function ParticipantDashboardPage() {
                         </Heading>
                         <Text fontSize="md" color="#6B7280" opacity={0.85}>
                           Check back in a few days.
+                        </Text>
+                      </Box>
+                      {/* User Avatar in top right */}
+                      {user && (
+                        <Box
+                          w="48px"
+                          h="48px"
+                          bg="#4A5568"
+                          borderRadius="full"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          flexShrink={0}
+                          ml={4}
+                        >
+                          <Text fontSize="md" fontWeight="medium" color="white">
+                            {`${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()}
+                          </Text>
+                        </Box>
+                      )}
+                    </Flex>
+                  ) : confirmedMatches.length > 0 && activeTab === 'matches' ? (
+                    <Flex justify="space-between" align="flex-start">
+                      <Box flex={1}>
+                        <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
+                          Thanks for scheduling your call!
+                        </Heading>
+                        <Text fontSize="md" color="#6B7280" opacity={0.85}>
+                          Unfortunately, you can&apos;t schedule another call until your current call is done. Check your volunteer details here.
+                        </Text>
+                      </Box>
+                      {/* User Avatar in top right */}
+                      {user && (
+                        <Box
+                          w="48px"
+                          h="48px"
+                          bg="#4A5568"
+                          borderRadius="full"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          flexShrink={0}
+                          ml={4}
+                        >
+                          <Text fontSize="md" fontWeight="medium" color="white">
+                            {`${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()}
+                          </Text>
+                        </Box>
+                      )}
+                    </Flex>
+                  ) : completedMatches.length > 0 && confirmedMatches.length === 0 && matches.length === 0 && activeTab === 'matches' ? (
+                    <Flex justify="space-between" align="flex-start">
+                      <Box flex={1}>
+                        <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
+                          Request to match with new volunteers?
+                        </Heading>
+                        <Text fontSize="md" color="#6B7280" opacity={0.85}>
+                          Would you like our team to find you new matches? This process may take a few days.
                         </Text>
                       </Box>
                       {/* User Avatar in top right */}

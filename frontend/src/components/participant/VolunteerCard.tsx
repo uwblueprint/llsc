@@ -1,6 +1,5 @@
 import { Box, Button, Flex, Text, VStack } from '@chakra-ui/react';
 import { Match } from '@/types/matchTypes';
-import { Avatar } from '@/components/ui/avatar';
 
 interface VolunteerCardProps {
   match: Match;
@@ -126,17 +125,16 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
         </Flex>
 
         {/* Overview Section */}
-        <Box>
-          <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
-            Overview
-          </Text>
-          <Text fontSize="sm" color="#6B7280" lineHeight="1.5">
-            My journey with blood cancer started when I was about twelve years old and getting
-            treatment for the first time was extremely stress-inducing. My journey with blood
-            cancer started when I was about twelve years old and getting treatment for the first
-            time was extremely stress-inducing.
-          </Text>
-        </Box>
+        {volunteer.overview && (
+          <Box>
+            <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
+              Overview
+            </Text>
+            <Text fontSize="sm" color="#6B7280" lineHeight="1.5">
+              {volunteer.overview}
+            </Text>
+          </Box>
+        )}
 
         {/* Treatment Information Section */}
         {volunteer.treatments.length > 0 && (

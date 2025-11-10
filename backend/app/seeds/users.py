@@ -9,6 +9,7 @@ from app.models.Experience import Experience
 from app.models.Treatment import Treatment
 from app.models.User import FormStatus, User
 from app.models.UserData import UserData
+from app.models.VolunteerData import VolunteerData
 from app.utilities.form_constants import ExperienceId, TreatmentId
 
 
@@ -341,6 +342,20 @@ def seed_users(session: Session) -> None:
         if user_info["experiences"]:
             experiences = session.query(Experience).filter(Experience.id.in_(user_info["experiences"])).all()
             user_data.experiences = experiences
+
+        # Create volunteer_data entry for volunteers with experience text
+        if user_info["role"] == "volunteer":
+            volunteer_experience_text = user_info.get("volunteer_experience", 
+                "My journey with blood cancer started when I was about twelve years old and getting "
+                "treatment for the first time was extremely stress-inducing. My journey with blood "
+                "cancer started when I was about twelve years old and getting treatment for the first "
+                "time was extremely stress-inducing.")
+            
+            volunteer_data = VolunteerData(
+                user_id=user.id,
+                experience=volunteer_experience_text,
+            )
+            session.add(volunteer_data)
 
         created_users.append((user, user_info["role"]))
         print(f"Added {user_info['role']}: {user.first_name} {user.last_name}")

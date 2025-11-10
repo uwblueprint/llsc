@@ -52,6 +52,7 @@ class MatchVolunteerSummary(BaseModel):
     age: Optional[int] = None
     treatments: List[str] = Field(default_factory=list)
     experiences: List[str] = Field(default_factory=list)
+    overview: Optional[str] = None  # Volunteer experience/overview from volunteer_data
 
     model_config = ConfigDict(from_attributes=True)
 

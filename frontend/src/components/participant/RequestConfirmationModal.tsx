@@ -53,17 +53,18 @@ export function RequestConfirmationModal({ isOpen, onClose }: RequestConfirmatio
           </VStack>
 
           {/* Back Button */}
-          <Button
-            bg="#056067"
-            color="white"
-            _hover={{ bg: '#044d52' }}
-            _active={{ bg: '#033a3e' }}
-            onClick={onClose}
-            size="lg"
-            px={8}
-          >
-            Back to dashboard
-          </Button>
+          <Flex justify="center">
+            <Button
+              bg="#056067"
+              color="white"
+              _hover={{ bg: '#044d52' }}
+              _active={{ bg: '#033a3e' }}
+              onClick={onClose}
+              px={8}
+            >
+              Back to dashboard
+            </Button>
+          </Flex>
         </VStack>
       </Container>
     </Box>

@@ -18,6 +18,7 @@ export interface VolunteerSummary {
   timezone: string | null; // Volunteer's timezone (optional, being added in another branch)
   treatments: string[];
   experiences: string[];
+  overview: string | null; // Volunteer experience/overview from volunteer_data
 }
 
 export interface Match {

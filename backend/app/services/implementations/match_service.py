@@ -411,6 +411,7 @@ class MatchService:
                 .options(
                     joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.treatments),
                     joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.experiences),
+                    joinedload(Match.volunteer).joinedload(User.volunteer_data),
                     joinedload(Match.match_status),
                     joinedload(Match.suggested_time_blocks),
                     joinedload(Match.confirmed_time),
@@ -653,12 +654,14 @@ class MatchService:
             raise HTTPException(500, "Match is missing volunteer data")
 
         volunteer_data = volunteer.user_data
+        volunteer_data_record = volunteer.volunteer_data
 
         pronouns = None
         diagnosis = None
         age: Optional[int] = None
         treatments: List[str] = []
         experiences: List[str] = []
+        overview: Optional[str] = None
 
         if volunteer_data:
             if volunteer_data.pronouns:
@@ -674,6 +677,10 @@ class MatchService:
             if volunteer_data.experiences:
                 experiences = [e.name for e in volunteer_data.experiences if e and e.name]
 
+        # Get overview/experience from volunteer_data table
+        if volunteer_data_record and volunteer_data_record.experience:
+            overview = volunteer_data_record.experience
+
         volunteer_summary = MatchVolunteerSummary(
             id=volunteer.id,
             first_name=volunteer.first_name,
@@ -684,6 +691,7 @@ class MatchService:
             age=age,
             treatments=treatments,
             experiences=experiences,
+            overview=overview,
         )
 
         suggested_blocks = [
