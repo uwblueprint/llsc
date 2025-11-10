@@ -198,7 +198,7 @@ export default function ParticipantIntakePage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_TODO]}>
-        <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
+        <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12} overflow="visible">
           <Box
             w="full"
             maxW="1200px"
@@ -206,6 +206,8 @@ export default function ParticipantIntakePage() {
             borderRadius="8px"
             boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
             p={10}
+            overflow="visible"
+            position="relative"
           >
             {currentStepType === 'experience-personal' && (
               <PersonalInfoForm formType="participant" onSubmit={handleExperiencePersonalSubmit} />

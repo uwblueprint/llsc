@@ -7,40 +7,16 @@ import { CheckboxGroup } from '@/components/ui/checkbox-group';
 import { COLORS, VALIDATION } from '@/constants/form';
 import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
 import baseAPIClient from '@/APIClients/baseAPIClient';
+import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
 
-// Reusable Select component to replace inline styling
-type StyledSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
-  children: React.ReactNode;
-  error?: boolean;
-};
-
-const StyledSelect = React.forwardRef<HTMLSelectElement, StyledSelectProps>(
-  ({ children, error, style, ...props }, ref) => (
-    <select
-      ref={ref}
-      {...props}
-      style={{
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        fontSize: '14px',
-        color: COLORS.veniceBlue,
-        borderColor: error ? '#ef4444' : '#d1d5db',
-        borderRadius: '6px',
-        height: '40px',
-        width: '100%',
-        padding: '0 12px',
-        border: '1px solid',
-        outline: 'none',
-        backgroundColor: 'white',
-        textAlign: 'left',
-        direction: 'ltr',
-        ...(style || {}),
-      }}
-    >
-      {children}
-    </select>
-  ),
-);
-StyledSelect.displayName = 'StyledSelect';
+const GENDER_IDENTITY_OPTIONS = [
+  'Male',
+  'Female',
+  'Non-binary',
+  'Transgender',
+  'Prefer not to answer',
+  'Self-describe',
+];
 
 interface LovedOneFormData {
   genderIdentity: string;
@@ -61,17 +37,17 @@ const DEFAULT_VALUES: LovedOneFormData = {
 };
 
 const DIAGNOSIS_OPTIONS = [
-  'Acute Myeloid Leukaemia',
-  'Acute Lymphoblastic Leukaemia',
-  'Chronic Myeloid Leukaemia',
-  'Chronic Lymphocytic Leukaemia',
-  'Hodgkin Lymphoma',
-  'Non-Hodgkin Lymphoma',
-  'Multiple Myeloma',
-  'Myelodysplastic Syndrome',
-  'Myelofibrosis',
-  'Aplastic Anemia',
-  'Other',
+  'Unknown',
+  'Acute Myeloid Leukemia',
+  'Acute Lymphoblastic Leukemia',
+  'Acute Promyelocytic Leukemia',
+  'Mixed Phenotype Leukemia',
+  'Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma',
+  'Chronic Myeloid Leukemia',
+  'Hairy Cell Leukemia',
+  'Myeloma/Multiple Myeloma',
+  "Hodgkin's Lymphoma",
+  "Indolent/Low Grade Non-Hodgkin's Lymphoma",
 ];
 
 interface LovedOneFormProps {
@@ -205,15 +181,13 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                     },
                   }}
                   render={({ field }) => (
-                    <StyledSelect {...field} error={!!errors.genderIdentity}>
-                      <option value="">Gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Non-binary">Non-binary</option>
-                      <option value="Transgender">Transgender</option>
-                      <option value="Prefer not to answer">Prefer not to answer</option>
-                      <option value="Self-describe">Self-describe</option>
-                    </StyledSelect>
+                    <SingleSelectDropdown
+                      options={GENDER_IDENTITY_OPTIONS}
+                      selectedValue={field.value || ''}
+                      onSelectionChange={field.onChange}
+                      placeholder="Gender Identity"
+                      error={!!errors.genderIdentity}
+                    />
                   )}
                 />
               </FormField>
@@ -229,10 +203,8 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
-                    borderColor="#d1d5db"
                     borderRadius="6px"
                     h="40px"
-                    border="1px solid"
                     px={3}
                     _placeholder={{ color: '#9ca3af' }}
                     _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
@@ -255,7 +227,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
                   color={COLORS.veniceBlue}
-                  borderColor={errors.age ? 'red.500' : '#d1d5db'}
+                  borderColor={errors.age ? 'red.500' : undefined}
                   borderRadius="6px"
                   h="40px"
                   _placeholder={{ color: '#9ca3af' }}
@@ -300,14 +272,13 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                 control={control}
                 rules={{ required: 'Diagnosis is required' }}
                 render={({ field }) => (
-                  <StyledSelect {...field} error={!!errors.diagnosis}>
-                    <option value="">Select their diagnosis</option>
-                    {DIAGNOSIS_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </StyledSelect>
+                  <SingleSelectDropdown
+                    options={DIAGNOSIS_OPTIONS}
+                    selectedValue={field.value || ''}
+                    onSelectionChange={field.onChange}
+                    placeholder="Select their diagnosis"
+                    error={!!errors.diagnosis}
+                  />
                 )}
               />
             </FormField>
@@ -335,7 +306,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color={COLORS.veniceBlue}
-                      borderColor={errors.dateOfDiagnosis ? 'red.500' : '#d1d5db'}
+                      borderColor={errors.dateOfDiagnosis ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
