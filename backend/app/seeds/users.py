@@ -33,7 +33,7 @@ def seed_users(session: Session) -> None:
                 "gender_identity": "Woman",
                 "pronouns": ["she", "her"],
                 "ethnic_group": ["White/Caucasian"],
-                "marital_status": "Married",
+                "marital_status": "Married/Common Law",
                 "has_kids": "Yes",
                 "diagnosis": "Acute Lymphoblastic Leukemia",
                 "date_of_diagnosis": date(2023, 8, 10),
@@ -83,7 +83,7 @@ def seed_users(session: Session) -> None:
                 "gender_identity": "Woman",
                 "pronouns": ["she", "her"],
                 "ethnic_group": ["Hispanic/Latino"],
-                "marital_status": "Married",
+                "marital_status": "Married/Common Law",
                 "has_kids": "Yes",
                 "has_blood_cancer": "No",
                 "caring_for_someone": "Yes",
@@ -115,7 +115,7 @@ def seed_users(session: Session) -> None:
                 "gender_identity": "Man",
                 "pronouns": ["he", "him"],
                 "ethnic_group": ["White/Caucasian"],
-                "marital_status": "Married",
+                "marital_status": "Married/Common Law",
                 "has_kids": "Yes",
                 "diagnosis": "Acute Lymphoblastic Leukemia",
                 "date_of_diagnosis": date(2018, 4, 20),  # Survivor
@@ -149,7 +149,7 @@ def seed_users(session: Session) -> None:
                 "gender_identity": "Woman",  # Same as Sarah
                 "pronouns": ["she", "her"],
                 "ethnic_group": ["Asian"],
-                "marital_status": "Married",  # Same as Sarah
+                "marital_status": "Married/Common Law",  # Same as Sarah
                 "has_kids": "Yes",  # Same as Sarah
                 "diagnosis": "Acute Lymphoblastic Leukemia",  # Same diagnosis as Sarah!
                 "date_of_diagnosis": date(2020, 8, 15),  # Survivor
@@ -200,7 +200,7 @@ def seed_users(session: Session) -> None:
                 "gender_identity": "Woman",  # Same as Sarah
                 "pronouns": ["she", "her"],
                 "ethnic_group": ["Asian"],
-                "marital_status": "Married",  # Same as Sarah
+                "marital_status": "Married/Common Law",  # Same as Sarah
                 "has_kids": "Yes",  # Same as Sarah
                 "diagnosis": "Acute Lymphoblastic Leukemia",  # Same diagnosis as Sarah!
                 "date_of_diagnosis": date(2019, 5, 10),  # Survivor
@@ -225,7 +225,7 @@ def seed_users(session: Session) -> None:
                 "gender_identity": "Woman",  # Same as Sarah
                 "pronouns": ["she", "her"],
                 "ethnic_group": ["Hispanic/Latino"],
-                "marital_status": "Married",  # Same as Sarah
+                "marital_status": "Married/Common Law",  # Same as Sarah
                 "has_kids": "Yes",  # Same as Sarah
                 "diagnosis": "Acute Lymphoblastic Leukemia",  # Same diagnosis as Sarah!
                 "date_of_diagnosis": date(2021, 3, 18),  # Survivor
@@ -250,7 +250,7 @@ def seed_users(session: Session) -> None:
                 "gender_identity": "Woman",  # Same as Sarah
                 "pronouns": ["she", "her"],
                 "ethnic_group": ["White/Caucasian"],
-                "marital_status": "Married",  # Same as Sarah
+                "marital_status": "Married/Common Law",  # Same as Sarah
                 "has_kids": "Yes",  # Same as Sarah
                 "diagnosis": "Acute Lymphoblastic Leukemia",  # Same diagnosis as Sarah!
                 "date_of_diagnosis": date(2018, 9, 25),  # Survivor
@@ -276,7 +276,7 @@ def seed_users(session: Session) -> None:
                 "gender_identity": "Woman",
                 "pronouns": ["she", "her"],
                 "ethnic_group": ["White/Caucasian"],
-                "marital_status": "Married",
+                "marital_status": "Married/Common Law",
                 "has_kids": "Yes",
                 "has_blood_cancer": "No",  # Not a cancer patient herself
                 "caring_for_someone": "Yes",  # Is a caregiver

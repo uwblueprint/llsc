@@ -158,8 +158,8 @@ def test_participant_with_cancer_only(db_session, test_user):
                 "gender_identity": "Male",
                 "pronouns": ["he", "him"],
                 "ethnic_group": ["White"],
-                "marital_status": "Married",
-                "has_kids": "yes",
+                "marital_status": "Married/Common Law",
+                "has_kids": "Yes",
             },
             "cancer_experience": {
                 "diagnosis": "Leukemia",
@@ -185,8 +185,8 @@ def test_participant_with_cancer_only(db_session, test_user):
         assert user_data.gender_identity == "Male"
         assert user_data.pronouns == ["he", "him"]
         assert user_data.ethnic_group == ["White"]
-        assert user_data.marital_status == "Married"
-        assert user_data.has_kids == "yes"
+        assert user_data.marital_status == "Married/Common Law"
+        assert user_data.has_kids == "Yes"
 
         # Assert - Cancer Experience
         assert user_data.diagnosis == "Leukemia"
@@ -247,7 +247,7 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
                 "pronouns": ["she", "her"],
                 "ethnic_group": ["Indigenous"],
                 "marital_status": "Divorced",
-                "has_kids": "yes",
+                "has_kids": "Yes",
             },
             "caregiver_experience": {
                 "experiences": ["Anxiety", "Depression"],
@@ -339,8 +339,8 @@ def test_form_submission_json_structure(db_session, test_user):
                 "pronouns": ["they", "them"],
                 "ethnic_group": ["Other", "Asian"],
                 "ethnic_group_custom": "Mixed heritage - Filipino and Indigenous",
-                "marital_status": "Common-law",
-                "has_kids": "yes",
+                "marital_status": "Married/Common Law",
+                "has_kids": "Yes",
             },
             "cancer_experience": {
                 "diagnosis": "Ovarian Cancer",
@@ -471,8 +471,8 @@ def test_participant_caregiver_without_cancer(db_session, test_user):
                 "gender_identity": "Female",
                 "pronouns": ["she", "her"],
                 "ethnic_group": ["Black"],
-                "marital_status": "Married",
-                "has_kids": "yes",
+                "marital_status": "Married/Common Law",
+                "has_kids": "Yes",
             },
             "loved_one": {
                 "demographics": {"gender_identity": "Male", "age": "55-64"},
@@ -550,8 +550,8 @@ def test_participant_cancer_patient_and_caregiver(db_session, test_user):
                 "pronouns": ["he", "him"],
                 "ethnic_group": ["White", "Other"],
                 "ethnic_group_custom": "Mixed European heritage",
-                "marital_status": "Married",
-                "has_kids": "yes",
+                "marital_status": "Married/Common Law",
+                "has_kids": "Yes",
             },
             "cancer_experience": {
                 "diagnosis": "Lymphoma",
@@ -658,7 +658,7 @@ def test_participant_no_cancer_experience(db_session, test_user):
         assert "Asian" in user_data.ethnic_group
         assert "Indigenous" in user_data.ethnic_group
         assert user_data.marital_status == "Single"
-        assert user_data.has_kids == "no"
+        assert user_data.has_kids == "No"
 
         # Assert - No cancer-related data
         assert user_data.diagnosis is None
@@ -770,8 +770,8 @@ def test_volunteer_cancer_patient_and_caregiver(db_session, test_user):
                 "gender_identity": "Female",
                 "pronouns": ["she", "her"],
                 "ethnic_group": ["White"],
-                "marital_status": "Married",
-                "has_kids": "yes",
+                "marital_status": "Married/Common Law",
+                "has_kids": "Yes",
             },
             "cancer_experience": {
                 "diagnosis": "Breast Cancer",
@@ -870,7 +870,7 @@ def test_volunteer_no_cancer_experience(db_session, test_user):
         assert user_data.pronouns == ["he", "him"]
         assert user_data.ethnic_group == ["White"]
         assert user_data.marital_status == "Single"
-        assert user_data.has_kids == "no"
+        assert user_data.has_kids == "No"
 
         # Assert - No cancer-related data
         assert user_data.diagnosis is None
