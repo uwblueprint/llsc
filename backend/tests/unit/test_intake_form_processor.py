@@ -635,7 +635,7 @@ def test_participant_no_cancer_experience(db_session, test_user):
                 "pronouns": ["she", "her"],
                 "ethnic_group": ["Asian", "Indigenous"],
                 "marital_status": "Single",
-                "has_kids": "no",
+                "has_kids": "No",
             },
             # No cancer_experience, caregiver_experience, or loved_one sections
         }
@@ -848,7 +848,7 @@ def test_volunteer_no_cancer_experience(db_session, test_user):
                 "pronouns": ["he", "him"],
                 "ethnic_group": ["White"],
                 "marital_status": "Single",
-                "has_kids": "no",
+                "has_kids": "No",
             },
             # No cancer_experience, caregiver_experience, or loved_one sections
         }

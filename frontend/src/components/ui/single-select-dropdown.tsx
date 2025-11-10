@@ -80,14 +80,7 @@ export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
           e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
         }}
       >
-        <Box
-          display="flex"
-          alignItems="center"
-          flex="1"
-          gap="8px"
-          flexWrap="wrap"
-          minHeight="32px"
-        >
+        <Box display="flex" alignItems="center" flex="1" gap="8px" flexWrap="wrap" minHeight="32px">
           {selectedValue ? (
             <Box
               display="inline-flex"
@@ -130,22 +123,12 @@ export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
               </button>
             </Box>
           ) : (
-            <Text
-              fontFamily="system-ui, -apple-system, sans-serif"
-              fontSize="14px"
-              color="#9ca3af"
-            >
+            <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color="#9ca3af">
               {placeholder}
             </Text>
           )}
         </Box>
-        <Box
-          as="span"
-          fontSize="12px"
-          color="#9ca3af"
-          ml="8px"
-          flexShrink={0}
-        >
+        <Box as="span" fontSize="12px" color="#9ca3af" ml="8px" flexShrink={0}>
           {isOpen ? '▲' : '▼'}
         </Box>
       </button>
@@ -189,12 +172,14 @@ export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                   appearance: 'none',
                   WebkitAppearance: 'none',
                   MozAppearance: 'none',
-                  border: selectedValue === option ? `1px solid ${COLORS.teal}` : '1px solid #d1d5db',
+                  border:
+                    selectedValue === option ? `1px solid ${COLORS.teal}` : '1px solid #d1d5db',
                   borderRadius: '3px',
                   backgroundColor: selectedValue === option ? COLORS.teal : 'white',
-                  backgroundImage: selectedValue === option
-                    ? "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M10 3L4.5 8.5L2 6l1.5-1.5L4.5 6L8.5 2L10 3z'/%3E%3C/svg%3E\")"
-                    : 'none',
+                  backgroundImage:
+                    selectedValue === option
+                      ? "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M10 3L4.5 8.5L2 6l1.5-1.5L4.5 6L8.5 2L10 3z'/%3E%3C/svg%3E\")"
+                      : 'none',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'center',
                   backgroundSize: '12px 12px',

@@ -83,14 +83,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
         }}
       >
-        <Box
-          display="flex"
-          alignItems="center"
-          flex="1"
-          gap="8px"
-          flexWrap="wrap"
-          minHeight="32px"
-        >
+        <Box display="flex" alignItems="center" flex="1" gap="8px" flexWrap="wrap" minHeight="32px">
           {selectedValues.length > 0 ? (
             selectedValues.map((value) => (
               <Box
@@ -136,22 +129,12 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
               </Box>
             ))
           ) : (
-            <Text
-              fontFamily="system-ui, -apple-system, sans-serif"
-              fontSize="14px"
-              color="#9ca3af"
-            >
+            <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color="#9ca3af">
               {placeholder}
             </Text>
           )}
         </Box>
-        <Box
-          as="span"
-          fontSize="12px"
-          color="#9ca3af"
-          ml="8px"
-          flexShrink={0}
-        >
+        <Box as="span" fontSize="12px" color="#9ca3af" ml="8px" flexShrink={0}>
           {isOpen ? '▲' : '▼'}
         </Box>
       </button>
