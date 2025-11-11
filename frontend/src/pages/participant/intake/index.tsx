@@ -66,6 +66,7 @@ export default function ParticipantIntakePage() {
     formType: 'participant',
   });
   const [, setSubmitting] = useState(false);
+  const [hasDropdownOpen, setHasDropdownOpen] = useState(false);
 
   const computeFlowSteps = (data: IntakeFormData) => {
     const { hasBloodCancer, caringForSomeone } = data;
@@ -226,7 +227,14 @@ export default function ParticipantIntakePage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_TODO]}>
-        <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12} overflow="visible">
+        <Flex
+          minH="100vh"
+          bg={COLORS.lightGray}
+          justify="center"
+          py={12}
+          overflow="visible"
+          pb={hasDropdownOpen ? '50vh' : 12}
+        >
           <Box
             w="full"
             maxW="1200px"
@@ -238,7 +246,11 @@ export default function ParticipantIntakePage() {
             position="relative"
           >
             {currentStepType === 'experience-personal' && (
-              <PersonalInfoForm formType="participant" onSubmit={handleExperiencePersonalSubmit} />
+              <PersonalInfoForm
+                formType="participant"
+                onSubmit={handleExperiencePersonalSubmit}
+                onDropdownOpenChange={setHasDropdownOpen}
+              />
             )}
 
             {currentStepType === 'demographics-cancer' && (

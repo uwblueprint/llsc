@@ -26,9 +26,14 @@ interface PersonalInfoFormData {
 interface PersonalInfoFormProps {
   formType: 'participant' | 'volunteer';
   onSubmit: (experienceData: ExperienceData, personalData: PersonalData) => void;
+  onDropdownOpenChange?: (isOpen: boolean) => void;
 }
 
-export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) {
+export function PersonalInfoForm({
+  formType,
+  onSubmit,
+  onDropdownOpenChange,
+}: PersonalInfoFormProps) {
   const router = useRouter();
   const {
     control,
@@ -321,6 +326,7 @@ export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) 
                     onSelectionChange={field.onChange}
                     placeholder="Province"
                     error={!!errors.province}
+                    onOpenChange={onDropdownOpenChange}
                   />
                 )}
               />
