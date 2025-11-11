@@ -8,6 +8,7 @@ interface SingleSelectDropdownProps {
   onSelectionChange: (value: string) => void;
   placeholder: string;
   error?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
@@ -16,15 +17,23 @@ export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
   onSelectionChange,
   placeholder,
   error,
+  onOpenChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleToggle = () => {
+    const newIsOpen = !isOpen;
+    setIsOpen(newIsOpen);
+    onOpenChange?.(newIsOpen);
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        onOpenChange?.(false);
       }
     };
 
@@ -35,11 +44,12 @@ export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, onOpenChange]);
 
   const handleSelect = (option: string) => {
     onSelectionChange(option);
     setIsOpen(false);
+    onOpenChange?.(false);
   };
 
   const handleRemove = (e: React.MouseEvent) => {
@@ -51,7 +61,7 @@ export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
     <Box position="relative" w="full" ref={dropdownRef}>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         style={{
           width: '100%',
           minHeight: '40px',

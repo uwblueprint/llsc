@@ -66,6 +66,7 @@ export default function VolunteerIntakePage() {
     formType: 'volunteer',
   });
   const [, setSubmitting] = useState(false);
+  const [hasDropdownOpen, setHasDropdownOpen] = useState(false);
 
   // Determine flow based on experience type selections
   const computeFlowSteps = (data: IntakeFormData) => {
@@ -235,7 +236,7 @@ export default function VolunteerIntakePage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_TODO]}>
-        <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12} overflow="visible">
+        <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12} overflow="visible" pb={hasDropdownOpen ? '30vh' : 12}>
           <Box
             w="full"
             maxW="1200px"
@@ -247,7 +248,11 @@ export default function VolunteerIntakePage() {
             position="relative"
           >
             {currentStepType === 'experience-personal' && (
-              <PersonalInfoForm formType="volunteer" onSubmit={handleExperiencePersonalSubmit} />
+              <PersonalInfoForm
+                formType="volunteer"
+                onSubmit={handleExperiencePersonalSubmit}
+                onDropdownOpenChange={setHasDropdownOpen}
+              />
             )}
 
             {currentStepType === 'demographics-cancer' && (
