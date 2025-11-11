@@ -227,7 +227,14 @@ export default function ParticipantIntakePage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_TODO]}>
-        <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12} overflow="visible" pb={hasDropdownOpen ? '50vh' : 12}>
+        <Flex
+          minH="100vh"
+          bg={COLORS.lightGray}
+          justify="center"
+          py={12}
+          overflow="visible"
+          pb={hasDropdownOpen ? '50vh' : 12}
+        >
           <Box
             w="full"
             maxW="1200px"

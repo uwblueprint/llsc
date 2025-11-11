@@ -236,7 +236,14 @@ export default function VolunteerIntakePage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_TODO]}>
-        <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12} overflow="visible" pb={hasDropdownOpen ? '30vh' : 12}>
+        <Flex
+          minH="100vh"
+          bg={COLORS.lightGray}
+          justify="center"
+          py={12}
+          overflow="visible"
+          pb={hasDropdownOpen ? '30vh' : 12}
+        >
           <Box
             w="full"
             maxW="1200px"
