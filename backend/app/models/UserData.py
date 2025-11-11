@@ -59,6 +59,7 @@ class UserData(Base):
     ethnic_group = Column(JSON, nullable=True)  # Array of strings
     marital_status = Column(Text, nullable=True)
     has_kids = Column(Text, nullable=True)
+    timezone = Column(Text, nullable=True)
 
     # Cancer Experience
     diagnosis = Column(Text, nullable=True)

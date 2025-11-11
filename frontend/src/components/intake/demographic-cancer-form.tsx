@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Heading, Button, VStack, HStack, Text, Input } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { FormField } from '@/components/ui/form-field';
@@ -7,6 +7,9 @@ import { CheckboxGroup } from '@/components/ui/checkbox-group';
 import { COLORS, VALIDATION } from '@/constants/form';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
+import { detectCanadianTimezone } from '@/utils/timezoneUtils';
+import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
+import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown';
 
 // Reusable Select component to replace inline styling
 type StyledSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
@@ -48,36 +51,38 @@ interface DemographicCancerFormData {
   ethnicGroup: string[];
   maritalStatus: string;
   hasKids: string;
+  timezone: string;
   diagnosis: string;
   dateOfDiagnosis: string;
   treatments: string[];
   experiences: string[];
 }
 
-const DEFAULT_VALUES: DemographicCancerFormData = {
+const getDefaultValues = (): DemographicCancerFormData => ({
   genderIdentity: '',
   pronouns: [],
   ethnicGroup: [],
   maritalStatus: '',
   hasKids: '',
+  timezone: detectCanadianTimezone(),
   diagnosis: '',
   dateOfDiagnosis: '',
   treatments: [],
   experiences: [],
-};
+});
 
 const DIAGNOSIS_OPTIONS = [
-  'Acute Myeloid Leukaemia',
-  'Acute Lymphoblastic Leukaemia',
-  'Chronic Myeloid Leukaemia',
-  'Chronic Lymphocytic Leukaemia',
-  'Hodgkin Lymphoma',
-  'Non-Hodgkin Lymphoma',
-  'Multiple Myeloma',
-  'Myelodysplastic Syndrome',
-  'Myelofibrosis',
-  'Aplastic Anemia',
-  'Other',
+  'Unknown',
+  'Acute Myeloid Leukemia',
+  'Acute Lymphoblastic Leukemia',
+  'Acute Promyelocytic Leukemia',
+  'Mixed Phenotype Leukemia',
+  'Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma',
+  'Chronic Myeloid Leukemia',
+  'Hairy Cell Leukemia',
+  'Myeloma/Multiple Myeloma',
+  "Hodgkin's Lymphoma",
+  "Indolent/Low Grade Non-Hodgkin's Lymphoma",
 ];
 
 interface DemographicCancerFormProps {
@@ -106,166 +111,25 @@ const PRONOUNS_OPTIONS = [
   'Self-describe',
 ];
 
+const TIMEZONE_OPTIONS = ['NST', 'AST', 'EST', 'CST', 'MST', 'PST'];
+
+const MARITAL_STATUS_OPTIONS = ['Single', 'Married/Common Law', 'Divorced', 'Widowed'];
+
+const HAS_KIDS_OPTIONS = ['Yes', 'No', 'Prefer not to answer'];
+
 const ETHNIC_OPTIONS = [
-  'Indigenous',
-  'Arab',
-  'Black',
-  'Chinese',
-  'Filipino',
-  'Japanese',
-  'Korean',
-  'Latin American',
+  'Black (including African and Caribbean descent)',
+  'Middle Eastern, Western or Central Asian',
+  'East Asian',
   'South Asian',
   'Southeast Asian',
-  'West Asian',
+  'Indigenous person from Canada',
+  'Latin American',
   'White',
+  'Mixed Ethnicity (Individuals who identify with more than one racial/ethnic or cultural group)',
   'Prefer not to answer',
-  'Self-describe',
+  'Another background/Prefer to self-describe (please specify):',
 ];
-
-// Multi-select dropdown component
-const MultiSelectDropdown: React.FC<{
-  options: string[];
-  selectedValues: string[];
-  onSelectionChange: (values: string[]) => void;
-  placeholder: string;
-}> = ({ options, selectedValues, onSelectionChange, placeholder }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
-
-  const handleCheckboxChange = (option: string, checked: boolean) => {
-    if (checked) {
-      onSelectionChange([...selectedValues, option]);
-    } else {
-      onSelectionChange(selectedValues.filter((val) => val !== option));
-    }
-  };
-
-  const displayText = selectedValues.length > 0 ? selectedValues.join(', ') : placeholder;
-
-  return (
-    <Box position="relative" w="full" ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          width: '100%',
-          height: '40px',
-          padding: '0 12px',
-          border: '1px solid #d1d5db',
-          borderRadius: '6px',
-          backgroundColor: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          fontSize: '14px',
-          color: COLORS.veniceBlue,
-          textAlign: 'left',
-          cursor: 'pointer',
-          outline: 'none',
-        }}
-        onFocus={(e) => {
-          e.target.style.borderColor = COLORS.teal;
-          e.target.style.boxShadow = `0 0 0 3px ${COLORS.teal}20`;
-        }}
-        onBlur={(e) => {
-          e.target.style.borderColor = '#d1d5db';
-          e.target.style.boxShadow = 'none';
-        }}
-      >
-        <span
-          style={{
-            flex: '1',
-            textAlign: 'left',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            color: selectedValues.length > 0 ? COLORS.veniceBlue : '#9ca3af',
-          }}
-        >
-          {displayText}
-        </span>
-        <span style={{ fontSize: '12px', color: '#9ca3af', marginLeft: '8px' }}>
-          {isOpen ? '▲' : '▼'}
-        </span>
-      </button>
-
-      {isOpen && (
-        <Box
-          position="absolute"
-          top="calc(100% + 4px)"
-          left="0"
-          right="0"
-          bg="white"
-          border="1px solid #d1d5db"
-          borderRadius="6px"
-          boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-          zIndex={10}
-          maxH="200px"
-          overflowY="auto"
-        >
-          {options.map((option) => (
-            <Box
-              key={option}
-              px={3}
-              py={2}
-              display="flex"
-              alignItems="center"
-              gap={2}
-              _hover={{ bg: '#f9fafb' }}
-              cursor="pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                const isSelected = selectedValues.includes(option);
-                handleCheckboxChange(option, !isSelected);
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={selectedValues.includes(option)}
-                onChange={(e) => handleCheckboxChange(option, e.target.checked)}
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  accentColor: COLORS.teal,
-                  cursor: 'pointer',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              />
-              <Text
-                fontFamily="system-ui, -apple-system, sans-serif"
-                fontSize="14px"
-                color={COLORS.veniceBlue}
-                cursor="pointer"
-                flex="1"
-              >
-                {option}
-              </Text>
-            </Box>
-          ))}
-        </Box>
-      )}
-    </Box>
-  );
-};
 
 export function DemographicCancerForm({
   formType,
@@ -274,7 +138,7 @@ export function DemographicCancerForm({
   caringForSomeone,
 }: DemographicCancerFormProps) {
   const { control, handleSubmit, formState, watch } = useForm<DemographicCancerFormData>({
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: getDefaultValues(),
   });
   const { errors, isSubmitting } = formState;
 
@@ -343,8 +207,14 @@ export function DemographicCancerForm({
         pronouns: data.pronouns.includes('Self-describe')
           ? data.pronouns.map((p) => (p === 'Self-describe' ? pronounsCustom : p))
           : data.pronouns,
-        ethnicGroup: data.ethnicGroup.includes('Self-describe')
-          ? data.ethnicGroup.map((e) => (e === 'Self-describe' ? ethnicGroupCustom : e))
+        ethnicGroup: data.ethnicGroup.includes(
+          'Another background/Prefer to self-describe (please specify):',
+        )
+          ? data.ethnicGroup.map((e) =>
+              e === 'Another background/Prefer to self-describe (please specify):'
+                ? ethnicGroupCustom
+                : e,
+            )
           : data.ethnicGroup,
       };
 
@@ -427,14 +297,13 @@ export function DemographicCancerForm({
                     },
                   }}
                   render={({ field }) => (
-                    <StyledSelect {...field} error={!!errors.genderIdentity}>
-                      <option value="">Gender Identity</option>
-                      {GENDER_IDENTITY_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </StyledSelect>
+                    <SingleSelectDropdown
+                      options={GENDER_IDENTITY_OPTIONS}
+                      selectedValue={field.value || ''}
+                      onSelectionChange={field.onChange}
+                      placeholder="Gender Identity"
+                      error={!!errors.genderIdentity}
+                    />
                   )}
                 />
               </FormField>
@@ -450,11 +319,12 @@ export function DemographicCancerForm({
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
-                    borderColor="#d1d5db"
                     borderRadius="6px"
                     h="40px"
-                    border="1px solid"
                     px={3}
+                    border="1px solid"
+                    borderColor="#d1d5db"
+                    boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
                     _placeholder={{ color: '#9ca3af' }}
                     _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
                   />
@@ -487,6 +357,7 @@ export function DemographicCancerForm({
                       selectedValues={field.value || []}
                       onSelectionChange={field.onChange}
                       placeholder="Pronouns"
+                      error={!!errors.pronouns}
                     />
                   )}
                 />
@@ -503,17 +374,40 @@ export function DemographicCancerForm({
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
-                    borderColor="#d1d5db"
                     borderRadius="6px"
                     h="40px"
-                    border="1px solid"
                     px={3}
+                    border="1px solid"
+                    borderColor="#d1d5db"
+                    boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
                     _placeholder={{ color: '#9ca3af' }}
                     _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
                   />
                 </FormField>
               </Box>
             )}
+          </HStack>
+
+          {/* Time Zone - Left aligned */}
+          <HStack gap={4} w="full" align="start">
+            <Box w="50%">
+              <FormField label="Time Zone" error={errors.timezone?.message}>
+                <Controller
+                  name="timezone"
+                  control={control}
+                  rules={{ required: 'Time zone is required' }}
+                  render={({ field }) => (
+                    <SingleSelectDropdown
+                      options={TIMEZONE_OPTIONS}
+                      selectedValue={field.value || ''}
+                      onSelectionChange={field.onChange}
+                      placeholder="Time Zone"
+                      error={!!errors.timezone}
+                    />
+                  )}
+                />
+              </FormField>
+            </Box>
           </HStack>
 
           {/* Ethnic or Cultural Group - Left aligned */}
@@ -528,8 +422,13 @@ export function DemographicCancerForm({
                       if (!value || value.length === 0) {
                         return 'Please select at least one ethnic or cultural group';
                       }
-                      if (value.includes('Self-describe') && !ethnicGroupCustom.trim()) {
-                        return 'Please specify your ethnic or cultural group when selecting Self-describe';
+                      if (
+                        value.includes(
+                          'Another background/Prefer to self-describe (please specify):',
+                        ) &&
+                        !ethnicGroupCustom.trim()
+                      ) {
+                        return 'Please specify your ethnic or cultural group when selecting self-describe';
                       }
                       return true;
                     },
@@ -540,13 +439,16 @@ export function DemographicCancerForm({
                       selectedValues={field.value || []}
                       onSelectionChange={field.onChange}
                       placeholder="Ethnic or Cultural Group"
+                      error={!!errors.ethnicGroup}
                     />
                   )}
                 />
               </FormField>
             </Box>
 
-            {ethnicGroup.includes('Self-describe') && (
+            {ethnicGroup.includes(
+              'Another background/Prefer to self-describe (please specify):',
+            ) && (
               <Box w="50%">
                 <FormField label="Please specify">
                   <Input
@@ -556,11 +458,12 @@ export function DemographicCancerForm({
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
-                    borderColor="#d1d5db"
                     borderRadius="6px"
                     h="40px"
-                    border="1px solid"
                     px={3}
+                    border="1px solid"
+                    borderColor="#d1d5db"
+                    boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
                     _placeholder={{ color: '#9ca3af' }}
                     _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
                   />
@@ -577,16 +480,13 @@ export function DemographicCancerForm({
                 control={control}
                 rules={{ required: 'Marital status is required' }}
                 render={({ field }) => (
-                  <StyledSelect {...field} error={!!errors.maritalStatus}>
-                    <option value="">Marital Status</option>
-                    <option value="single">Single</option>
-                    <option value="married">Married</option>
-                    <option value="divorced">Divorced</option>
-                    <option value="widowed">Widowed</option>
-                    <option value="separated">Separated</option>
-                    <option value="common-law">Common Law</option>
-                    <option value="prefer-not-to-answer">Prefer not to answer</option>
-                  </StyledSelect>
+                  <SingleSelectDropdown
+                    options={MARITAL_STATUS_OPTIONS}
+                    selectedValue={field.value || ''}
+                    onSelectionChange={field.onChange}
+                    placeholder="Marital Status"
+                    error={!!errors.maritalStatus}
+                  />
                 )}
               />
             </FormField>
@@ -597,12 +497,13 @@ export function DemographicCancerForm({
                 control={control}
                 rules={{ required: 'Please specify if you have kids' }}
                 render={({ field }) => (
-                  <StyledSelect {...field} error={!!errors.hasKids}>
-                    <option value="">Do you have kids?</option>
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                    <option value="prefer-not-to-answer">Prefer not to answer</option>
-                  </StyledSelect>
+                  <SingleSelectDropdown
+                    options={HAS_KIDS_OPTIONS}
+                    selectedValue={field.value || ''}
+                    onSelectionChange={field.onChange}
+                    placeholder="Do you have kids?"
+                    error={!!errors.hasKids}
+                  />
                 )}
               />
             </FormField>
@@ -643,14 +544,13 @@ export function DemographicCancerForm({
                 control={control}
                 rules={{ required: 'Diagnosis is required' }}
                 render={({ field }) => (
-                  <StyledSelect {...field} error={!!errors.diagnosis}>
-                    <option value="">Select your diagnosis</option>
-                    {DIAGNOSIS_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </StyledSelect>
+                  <SingleSelectDropdown
+                    options={DIAGNOSIS_OPTIONS}
+                    selectedValue={field.value || ''}
+                    onSelectionChange={field.onChange}
+                    placeholder="Select your diagnosis"
+                    error={!!errors.diagnosis}
+                  />
                 )}
               />
             </FormField>
@@ -678,7 +578,7 @@ export function DemographicCancerForm({
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color={COLORS.veniceBlue}
-                      borderColor={errors.dateOfDiagnosis ? 'red.500' : '#d1d5db'}
+                      borderColor={errors.dateOfDiagnosis ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
@@ -803,15 +703,17 @@ interface BasicDemographicsFormData {
   ethnicGroup: string[];
   maritalStatus: string;
   hasKids: string;
+  timezone: string;
 }
 
-const BASIC_DEFAULT_VALUES: BasicDemographicsFormData = {
+const getBasicDefaultValues = (): BasicDemographicsFormData => ({
   genderIdentity: '',
   pronouns: [],
   ethnicGroup: [],
   maritalStatus: '',
   hasKids: '',
-};
+  timezone: detectCanadianTimezone(),
+});
 
 interface BasicDemographicsFormProps {
   formType?: 'participant' | 'volunteer';
@@ -825,7 +727,7 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
     formState: { errors, isSubmitting },
     watch,
   } = useForm<BasicDemographicsFormData>({
-    defaultValues: BASIC_DEFAULT_VALUES,
+    defaultValues: getBasicDefaultValues(),
   });
 
   // Local state for custom values
@@ -847,8 +749,14 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
         pronouns: data.pronouns.includes('Self-describe')
           ? data.pronouns.map((p) => (p === 'Self-describe' ? pronounsCustom : p))
           : data.pronouns,
-        ethnicGroup: data.ethnicGroup.includes('Self-describe')
-          ? data.ethnicGroup.map((e) => (e === 'Self-describe' ? ethnicGroupCustom : e))
+        ethnicGroup: data.ethnicGroup.includes(
+          'Another background/Prefer to self-describe (please specify):',
+        )
+          ? data.ethnicGroup.map((e) =>
+              e === 'Another background/Prefer to self-describe (please specify):'
+                ? ethnicGroupCustom
+                : e,
+            )
           : data.ethnicGroup,
       };
 
@@ -931,14 +839,13 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                     },
                   }}
                   render={({ field }) => (
-                    <StyledSelect {...field} error={!!errors.genderIdentity}>
-                      <option value="">Gender Identity</option>
-                      {GENDER_IDENTITY_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </StyledSelect>
+                    <SingleSelectDropdown
+                      options={GENDER_IDENTITY_OPTIONS}
+                      selectedValue={field.value || ''}
+                      onSelectionChange={field.onChange}
+                      placeholder="Gender Identity"
+                      error={!!errors.genderIdentity}
+                    />
                   )}
                 />
               </FormField>
@@ -954,11 +861,12 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
-                    borderColor="#d1d5db"
                     borderRadius="6px"
                     h="40px"
-                    border="1px solid"
                     px={3}
+                    border="1px solid"
+                    borderColor="#d1d5db"
+                    boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
                     _placeholder={{ color: '#9ca3af' }}
                     _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
                   />
@@ -991,6 +899,7 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                       selectedValues={field.value || []}
                       onSelectionChange={field.onChange}
                       placeholder="Pronouns"
+                      error={!!errors.pronouns}
                     />
                   )}
                 />
@@ -1007,17 +916,40 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
-                    borderColor="#d1d5db"
                     borderRadius="6px"
                     h="40px"
-                    border="1px solid"
                     px={3}
+                    border="1px solid"
+                    borderColor="#d1d5db"
+                    boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
                     _placeholder={{ color: '#9ca3af' }}
                     _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
                   />
                 </FormField>
               </Box>
             )}
+          </HStack>
+
+          {/* Time Zone - Left aligned */}
+          <HStack gap={4} w="full" align="start">
+            <Box w="50%">
+              <FormField label="Time Zone" error={errors.timezone?.message}>
+                <Controller
+                  name="timezone"
+                  control={control}
+                  rules={{ required: 'Time zone is required' }}
+                  render={({ field }) => (
+                    <SingleSelectDropdown
+                      options={TIMEZONE_OPTIONS}
+                      selectedValue={field.value || ''}
+                      onSelectionChange={field.onChange}
+                      placeholder="Time Zone"
+                      error={!!errors.timezone}
+                    />
+                  )}
+                />
+              </FormField>
+            </Box>
           </HStack>
 
           {/* Ethnic or Cultural Group */}
@@ -1032,8 +964,13 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                       if (!value || value.length === 0) {
                         return 'Please select at least one ethnic or cultural group';
                       }
-                      if (value.includes('Self-describe') && !ethnicGroupCustom.trim()) {
-                        return 'Please specify your ethnic or cultural group when selecting Self-describe';
+                      if (
+                        value.includes(
+                          'Another background/Prefer to self-describe (please specify):',
+                        ) &&
+                        !ethnicGroupCustom.trim()
+                      ) {
+                        return 'Please specify your ethnic or cultural group when selecting self-describe';
                       }
                       return true;
                     },
@@ -1044,13 +981,16 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                       selectedValues={field.value || []}
                       onSelectionChange={field.onChange}
                       placeholder="Ethnic or Cultural Group"
+                      error={!!errors.ethnicGroup}
                     />
                   )}
                 />
               </FormField>
             </Box>
 
-            {ethnicGroup.includes('Self-describe') && (
+            {ethnicGroup.includes(
+              'Another background/Prefer to self-describe (please specify):',
+            ) && (
               <Box w="50%">
                 <FormField label="Please specify">
                   <Input
@@ -1060,11 +1000,12 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
-                    borderColor="#d1d5db"
                     borderRadius="6px"
                     h="40px"
-                    border="1px solid"
                     px={3}
+                    border="1px solid"
+                    borderColor="#d1d5db"
+                    boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
                     _placeholder={{ color: '#9ca3af' }}
                     _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
                   />
@@ -1081,16 +1022,13 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                 control={control}
                 rules={{ required: 'Marital status is required' }}
                 render={({ field }) => (
-                  <StyledSelect {...field} error={!!errors.maritalStatus}>
-                    <option value="">Marital Status</option>
-                    <option value="single">Single</option>
-                    <option value="married">Married</option>
-                    <option value="divorced">Divorced</option>
-                    <option value="widowed">Widowed</option>
-                    <option value="separated">Separated</option>
-                    <option value="common-law">Common Law</option>
-                    <option value="prefer-not-to-answer">Prefer not to answer</option>
-                  </StyledSelect>
+                  <SingleSelectDropdown
+                    options={MARITAL_STATUS_OPTIONS}
+                    selectedValue={field.value || ''}
+                    onSelectionChange={field.onChange}
+                    placeholder="Marital Status"
+                    error={!!errors.maritalStatus}
+                  />
                 )}
               />
             </FormField>
@@ -1101,12 +1039,13 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                 control={control}
                 rules={{ required: 'Please specify if you have kids' }}
                 render={({ field }) => (
-                  <StyledSelect {...field} error={!!errors.hasKids}>
-                    <option value="">Do you have kids?</option>
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                    <option value="prefer-not-to-answer">Prefer not to answer</option>
-                  </StyledSelect>
+                  <SingleSelectDropdown
+                    options={HAS_KIDS_OPTIONS}
+                    selectedValue={field.value || ''}
+                    onSelectionChange={field.onChange}
+                    placeholder="Do you have kids?"
+                    error={!!errors.hasKids}
+                  />
                 )}
               />
             </FormField>

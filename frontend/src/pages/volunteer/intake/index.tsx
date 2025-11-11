@@ -27,6 +27,7 @@ interface DemographicCancerFormData {
   ethnicGroup: string[];
   maritalStatus: string;
   hasKids: string;
+  timezone: string;
   diagnosis: string;
   dateOfDiagnosis: string;
   treatments: string[];
@@ -49,6 +50,7 @@ interface BasicDemographicsFormData {
   ethnicGroup: string[];
   maritalStatus: string;
   hasKids: string;
+  timezone: string;
 }
 
 export default function VolunteerIntakePage() {
@@ -137,6 +139,7 @@ export default function VolunteerIntakePage() {
           ethnicGroup: data.ethnicGroup,
           maritalStatus: data.maritalStatus,
           hasKids: data.hasKids,
+          timezone: data.timezone,
         },
         ...(prev.hasBloodCancer === 'yes' && {
           cancerExperience: {
@@ -193,6 +196,7 @@ export default function VolunteerIntakePage() {
           ethnicGroup: data.ethnicGroup,
           maritalStatus: data.maritalStatus,
           hasKids: data.hasKids,
+          timezone: data.timezone,
         },
       };
       void advanceAfterUpdate(updated);
@@ -203,7 +207,7 @@ export default function VolunteerIntakePage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_TODO]}>
-        <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
+        <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12} overflow="visible">
           <Box
             w="full"
             maxW="1200px"
@@ -211,6 +215,8 @@ export default function VolunteerIntakePage() {
             borderRadius="8px"
             boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
             p={10}
+            overflow="visible"
+            position="relative"
           >
             {currentStepType === 'experience-personal' && (
               <PersonalInfoForm formType="volunteer" onSubmit={handleExperiencePersonalSubmit} />

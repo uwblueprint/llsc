@@ -40,7 +40,7 @@ export default function VolunteerSecondary() {
 
   const handleInputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     e.target.style.borderColor = 'rgb(209 213 219)';
-    e.target.style.boxShadow = 'none';
+    e.target.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
   };
 
   const handleSubmit = async () => {
@@ -178,9 +178,9 @@ export default function VolunteerSecondary() {
                 }}
                 placeholder="Type here...."
                 className="w-3/5 h-56 p-4 border border-gray-300 rounded-lg resize-none outline-none bg-white text-gray-900 placeholder-gray-400"
+                style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '16px' }}
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
-                style={{ fontSize: '16px' }}
               />
               <div className="mt-3 w-3/5 flex justify-end">
                 <span
@@ -250,6 +250,7 @@ export default function VolunteerSecondary() {
                     onChange={(e) => handleReferenceChange(0, 'name', e.target.value)}
                     placeholder="John Doe"
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
+                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                   />
@@ -262,6 +263,7 @@ export default function VolunteerSecondary() {
                     onChange={(e) => handleReferenceChange(0, 'email', e.target.value)}
                     placeholder="john.doe@gmail.com"
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
+                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                   />
@@ -276,6 +278,7 @@ export default function VolunteerSecondary() {
                     onChange={(e) => handleReferenceChange(0, 'phone', e.target.value)}
                     placeholder="###-###-####"
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
+                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                   />
@@ -295,6 +298,7 @@ export default function VolunteerSecondary() {
                     onChange={(e) => handleReferenceChange(1, 'name', e.target.value)}
                     placeholder="John Doe"
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
+                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                   />
@@ -307,6 +311,7 @@ export default function VolunteerSecondary() {
                     onChange={(e) => handleReferenceChange(1, 'email', e.target.value)}
                     placeholder="john.doe@gmail.com"
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
+                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                   />
@@ -321,6 +326,7 @@ export default function VolunteerSecondary() {
                     onChange={(e) => handleReferenceChange(1, 'phone', e.target.value)}
                     placeholder="###-###-####"
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
+                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                   />
@@ -338,6 +344,7 @@ export default function VolunteerSecondary() {
                 onChange={(e) => setAdditionalComments(e.target.value)}
                 placeholder="Type here...."
                 className="w-2/3 h-32 p-4 border border-gray-300 rounded-lg resize-none outline-none bg-white text-gray-900 placeholder-gray-400"
+                style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
               />

@@ -27,6 +27,25 @@ export const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
 
     const child = React.Children.only<React.ReactElement<InputElementProps>>(children);
 
+    const filteredProps = Object.fromEntries(
+      Object.entries(children.props).filter(([, value]) => value !== undefined),
+    );
+
+    const getBorderColor = (color: unknown): string => {
+      if (color === 'red.500' || color === 'red') return '#ef4444';
+      if (typeof color === 'string' && color.startsWith('#')) return color;
+      return '#d1d5db';
+    };
+
+    const borderColor = filteredProps.borderColor || '#d1d5db';
+    const borderColorHex = getBorderColor(borderColor);
+    const mergedProps = {
+      ...filteredProps,
+      border: filteredProps.border || `1px solid ${borderColorHex}`,
+      borderColor: borderColor,
+      boxShadow: filteredProps.boxShadow || '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+    } as Record<string, unknown>;
+
     return (
       <Group ref={ref} {...rest}>
         {startElement && (
@@ -39,14 +58,12 @@ export const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
             ps: `calc(var(--input-height) - ${startOffset})`,
           }),
           ...(endElement && { pe: `calc(var(--input-height) - ${endOffset})` }),
-          ...children.props,
-          borderRadius: 'md',
-          border: '1px solid',
-          borderColor: 'gray.300',
-          padding: '10px',
-          fontSize: 'md',
-          _focus: { borderColor: 'teal.500', boxShadow: '0 0 0 1px #319795' },
-          _placeholder: { color: 'gray.400' },
+          borderRadius: mergedProps.borderRadius || 'md',
+          padding: mergedProps.padding || '10px',
+          fontSize: mergedProps.fontSize || 'md',
+          _focus: mergedProps._focus || { borderColor: 'teal.500', boxShadow: '0 0 0 1px #319795' },
+          _placeholder: mergedProps._placeholder || { color: 'gray.400' },
+          ...mergedProps,
         })}
         {endElement && (
           <InputElement placement="end" {...endElementProps}>

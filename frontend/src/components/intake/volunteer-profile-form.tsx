@@ -146,13 +146,14 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
-                    borderColor={errors.experience ? 'red.500' : '#d1d5db'}
                     borderRadius="6px"
                     minH="200px"
                     resize="vertical"
-                    border="1px solid"
                     px={3}
                     py={3}
+                    border="1px solid"
+                    borderColor={errors.experience ? 'red.500' : '#d1d5db'}
+                    boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
                     _placeholder={{ color: '#9ca3af' }}
                     _focus={{
                       borderColor: COLORS.teal,
