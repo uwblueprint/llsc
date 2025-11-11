@@ -133,6 +133,7 @@ async def get_current_user(
             auth_id=user.auth_id,
             approved=user.approved,
             form_status=user.form_status,
+            language=user.language,
         )
     except HTTPException:
         raise
