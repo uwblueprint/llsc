@@ -78,7 +78,9 @@ export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) 
 
     // Validate all eligibility criteria are checked (only for volunteers)
     if (formType === 'volunteer') {
-      const allChecked = Object.values(data.eligibilityCriteria).every((checked) => checked === true);
+      const allChecked = Object.values(data.eligibilityCriteria).every(
+        (checked) => checked === true,
+      );
       if (!allChecked) {
         return; // Form validation will show errors
       }
@@ -371,16 +373,19 @@ export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) 
             fontSize="15px"
             mb={6}
           >
-            Our volunteers are a valuable part of our organization and vital to this program. Before continuing, please ensure you meet the criteria below.          </Text>
-            <Text
-                    fontFamily="system-ui, -apple-system, sans-serif"
-                    fontSize="14px"
-                    color={COLORS.veniceBlue}
-                    mb={3}
-                    fontWeight={600}
-                  >
-            Please review the criteria and check off all that apply. You must agree with all statements to become a First Connections volunteer.
-            </Text>
+            Our volunteers are a valuable part of our organization and vital to this program. Before
+            continuing, please ensure you meet the criteria below.{' '}
+          </Text>
+          <Text
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontSize="14px"
+            color={COLORS.veniceBlue}
+            mb={3}
+            fontWeight={600}
+          >
+            Please review the criteria and check off all that apply. You must agree with all
+            statements to become a First Connections volunteer.
+          </Text>
           <Controller
             name="eligibilityCriteria"
             control={control}
@@ -512,7 +517,10 @@ export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) 
                 <Checkbox
                   checked={field.value.comfortableSharingExperience}
                   onCheckedChange={(details) =>
-                    field.onChange({ ...field.value, comfortableSharingExperience: details.checked })
+                    field.onChange({
+                      ...field.value,
+                      comfortableSharingExperience: details.checked,
+                    })
                   }
                 >
                   <Text
