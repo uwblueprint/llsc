@@ -50,6 +50,7 @@ class MatchVolunteerSummary(BaseModel):
     pronouns: Optional[List[str]] = None
     diagnosis: Optional[str] = None
     age: Optional[int] = None
+    timezone: Optional[str] = None
     treatments: List[str] = Field(default_factory=list)
     experiences: List[str] = Field(default_factory=list)
     overview: Optional[str] = None  # Volunteer experience/overview from volunteer_data

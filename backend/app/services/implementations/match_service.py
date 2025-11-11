@@ -659,6 +659,7 @@ class MatchService:
         pronouns = None
         diagnosis = None
         age: Optional[int] = None
+        timezone: Optional[str] = None
         treatments: List[str] = []
         experiences: List[str] = []
         overview: Optional[str] = None
@@ -667,6 +668,7 @@ class MatchService:
             if volunteer_data.pronouns:
                 pronouns = volunteer_data.pronouns
             diagnosis = volunteer_data.diagnosis
+            timezone = volunteer_data.timezone
 
             if volunteer_data.date_of_birth:
                 age = self._calculate_age(volunteer_data.date_of_birth)
@@ -689,6 +691,7 @@ class MatchService:
             pronouns=pronouns,
             diagnosis=diagnosis,
             age=age,
+            timezone=timezone,
             treatments=treatments,
             experiences=experiences,
             overview=overview,
