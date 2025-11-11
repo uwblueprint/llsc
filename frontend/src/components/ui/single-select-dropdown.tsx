@@ -48,7 +48,7 @@ export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
   };
 
   return (
-    <Box position="relative" w="full" ref={dropdownRef} zIndex={1}>
+    <Box position="relative" w="full" ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -143,7 +143,7 @@ export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
           border="1px solid #d1d5db"
           borderRadius="6px"
           boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-          zIndex={1000}
+          zIndex={9999}
         >
           {options.map((option) => (
             <Box
