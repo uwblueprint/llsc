@@ -167,6 +167,7 @@ def test_participant_with_cancer_only(db_session, test_user):
                 "treatments": ["Chemotherapy", "Transfusions"],
                 "experiences": ["Anxiety", "Fatigue"],
             },
+            "additional_info": "    I have specific dietary restrictions and prefer morning appointments.",
         }
 
         # Act
@@ -195,6 +196,9 @@ def test_participant_with_cancer_only(db_session, test_user):
         # Assert - Flow Control
         assert user_data.has_blood_cancer == "yes"
         assert user_data.caring_for_someone == "no"
+
+        # Assert - Additional Info
+        assert user_data.additional_info == "I have specific dietary restrictions and prefer morning appointments."
 
         # Assert - Treatments (many-to-many)
         treatment_names = [t.name for t in user_data.treatments]
@@ -252,6 +256,7 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
             "caregiver_experience": {
                 "experiences": ["Anxiety", "Depression"],
             },
+            "additional_info": "I have experience with elderly care and can provide emotional support. I have special requirements  \n\t",
             "loved_one": {
                 "demographics": {"gender_identity": "Male", "age": "45-54"},
                 "cancer_experience": {
@@ -284,6 +289,12 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
         experience_names = [e.name for e in user_data.experiences]
         assert "Anxiety" in experience_names
         assert "Depression" in experience_names
+
+        # Assert - Additional Info
+        assert (
+            user_data.additional_info
+            == "I have experience with elderly care and can provide emotional support. I have special requirements"
+        )
 
         # Assert - No personal cancer experience
         assert user_data.diagnosis is None
@@ -357,6 +368,7 @@ def test_form_submission_json_structure(db_session, test_user):
                     "experiences": ["Brain Fog", "Feeling Overwhelmed"],
                 },
             },
+            "additional_info": "I'm only free on weekdays.",
         }
 
         # Act
@@ -379,6 +391,8 @@ def test_form_submission_json_structure(db_session, test_user):
         assert len(user_data.experiences) >= 2  # Anxiety + Fertility
         assert len(user_data.loved_one_treatments) >= 2  # Radiation + Palliative
         assert len(user_data.loved_one_experiences) >= 2  # Brain Fog + Feeling Overwhelmed
+
+        assert user_data.additional_info == "I'm only free on weekdays."
 
         db_session.refresh(test_user)
         assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
@@ -415,6 +429,7 @@ def test_empty_and_minimal_data_handling(db_session, test_user):
                 "marital_status": "",  # Empty string
                 "has_kids": "",
             },
+            "additional_info": "",
             # No cancer_experience, caregiver_experience, or loved_one sections
         }
 
@@ -438,6 +453,8 @@ def test_empty_and_minimal_data_handling(db_session, test_user):
         assert len(user_data.treatments) == 0
         assert len(user_data.experiences) == 0
         assert user_data.loved_one_gender_identity is None
+
+        assert user_data.additional_info == ""
 
         db_session.refresh(test_user)
         assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
@@ -483,6 +500,7 @@ def test_participant_caregiver_without_cancer(db_session, test_user):
                     "experiences": ["Anxiety", "Communication Challenges"],
                 },
             },
+            "additional_info": "I need to be in the same city as the loved one",
         }
 
         # Act
@@ -519,6 +537,8 @@ def test_participant_caregiver_without_cancer(db_session, test_user):
         assert "Immunotherapy" in loved_one_treatment_names
         assert "Anxiety" in loved_one_experience_names
         assert "Communication Challenges" in loved_one_experience_names
+
+        assert user_data.additional_info == "I need to be in the same city as the loved one"
 
         db_session.commit()
 
@@ -605,6 +625,8 @@ def test_participant_cancer_patient_and_caregiver(db_session, test_user):
         assert "Other" in user_data.ethnic_group
         assert user_data.other_ethnic_group == "Mixed European heritage"
 
+        assert user_data.additional_info is None
+
         db_session.commit()
 
     except Exception:
@@ -671,6 +693,8 @@ def test_participant_no_cancer_experience(db_session, test_user):
         assert user_data.loved_one_diagnosis is None
         assert len(user_data.loved_one_treatments) == 0
         assert len(user_data.loved_one_experiences) == 0
+
+        assert user_data.additional_info is None
 
         db_session.commit()
 
@@ -741,6 +765,8 @@ def test_volunteer_cancer_patient_only(db_session, test_user):
         assert len(user_data.loved_one_treatments) == 0
         assert len(user_data.loved_one_experiences) == 0
 
+        assert user_data.additional_info is None
+
         db_session.commit()
 
     except Exception:
@@ -788,6 +814,7 @@ def test_volunteer_cancer_patient_and_caregiver(db_session, test_user):
                     "experiences": ["Brain Fog", "Fatigue"],
                 },
             },
+            "additional_info": "N/A",
         }
 
         # Act
@@ -817,6 +844,8 @@ def test_volunteer_cancer_patient_and_caregiver(db_session, test_user):
         assert len(user_data.experiences) >= 2
         assert len(user_data.loved_one_treatments) >= 2
         assert len(user_data.loved_one_experiences) >= 2
+
+        assert user_data.additional_info == "N/A"
 
         db_session.commit()
 
@@ -883,6 +912,8 @@ def test_volunteer_no_cancer_experience(db_session, test_user):
         assert user_data.loved_one_diagnosis is None
         assert len(user_data.loved_one_treatments) == 0
         assert len(user_data.loved_one_experiences) == 0
+
+        assert user_data.additional_info is None
 
         db_session.commit()
 
@@ -1179,6 +1210,7 @@ def test_unicode_and_special_characters(db_session, test_user):
                 "treatments": ["Chimiothérapie"],
                 "experiences": ["Fatigue"],
             },
+            "additional_info": "émojis 🎉, unicode 中文, and various symbols @#$%^&*()",
         }
 
         user_data = processor.process_form_submission(str(test_user.id), form_data)
@@ -1191,6 +1223,8 @@ def test_unicode_and_special_characters(db_session, test_user):
         assert "中国人" in user_data.other_ethnic_group
         assert "हिन्दी" in user_data.other_ethnic_group
         assert "🌍" in user_data.other_ethnic_group
+
+        assert user_data.additional_info == "émojis 🎉, unicode 中文, and various symbols @#$%^&*()"
 
         db_session.commit()
 

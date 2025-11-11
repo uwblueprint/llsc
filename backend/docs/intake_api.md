@@ -55,8 +55,9 @@ Create a new form submission and process it into structured data.
         "dateOfDiagnosis": "DD/MM/YYYY (optional)",
         "treatments": ["array of treatment names (optional)"],
         "experiences": ["array of experience names (optional)"],
-      }
-    }
+      }, 
+    },
+    "additional_info": "string (optional)",
   }
 }
 ```
@@ -159,7 +160,8 @@ curl -X POST "/intake/submissions" \
         "dateOfDiagnosis": "10/01/2020",
         "treatments": ["Chemotherapy", "Radiation Therapy"],
         "experiences": ["Fatigue", "Depression"]
-      }
+      }, 
+      "additional_info": "",
     }
   }'
 ```
@@ -194,7 +196,8 @@ curl -X POST "/intake/submissions" \
           "treatments": ["Chemotherapy"],
           "experiences": ["Hair Loss", "Anxiety"]
         }
-      }
+      },
+      "additional_info": "string (optional)",
     }
   }'
 ``` 

@@ -68,6 +68,7 @@ class UserData(Base):
     # "Other" text fields for custom entries
     other_ethnic_group = Column(Text, nullable=True)
     gender_identity_custom = Column(Text, nullable=True)
+    additional_info = Column(Text, nullable=True)
 
     # Flow control fields
     has_blood_cancer = Column(Text, nullable=True)
