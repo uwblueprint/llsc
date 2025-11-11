@@ -9,6 +9,7 @@ import {
   BasicDemographicsForm,
 } from '@/components/intake/demographic-cancer-form';
 import { LovedOneForm } from '@/components/intake/loved-one-form';
+import { AdditionalInfoForm } from '@/components/intake/additional-info-form';
 import {
   COLORS,
   IntakeFormData,
@@ -53,6 +54,10 @@ interface BasicDemographicsFormData {
   timezone: string;
 }
 
+interface AdditionalInfoFormData {
+  additionalInfo: string;
+}
+
 export default function ParticipantIntakePage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -66,16 +71,28 @@ export default function ParticipantIntakePage() {
     const { hasBloodCancer, caringForSomeone } = data;
     if (hasBloodCancer === 'yes' && caringForSomeone === 'no') {
       // Flow 1: Participant - Cancer Patient
-      return ['experience-personal', 'demographics-cancer', 'thank-you'];
+      return ['experience-personal', 'demographics-cancer', 'additional-info', 'thank-you'];
     } else if (hasBloodCancer === 'no' && caringForSomeone === 'yes') {
       // Flow 2: Participant - Caregiver Without Cancer
-      return ['experience-personal', 'demographics-caregiver', 'loved-one', 'thank-you'];
+      return [
+        'experience-personal',
+        'demographics-caregiver',
+        'loved-one',
+        'additional-info',
+        'thank-you',
+      ];
     } else if (hasBloodCancer === 'yes' && caringForSomeone === 'yes') {
       // Flow 5: Participant - Caregiver with Cancer
-      return ['experience-personal', 'demographics-cancer', 'loved-one', 'thank-you'];
+      return [
+        'experience-personal',
+        'demographics-cancer',
+        'loved-one',
+        'additional-info',
+        'thank-you',
+      ];
     } else if (hasBloodCancer === 'no' && caringForSomeone === 'no') {
       // Flow 7: Participant - No Cancer Experience
-      return ['experience-personal', 'demographics-basic', 'thank-you'];
+      return ['experience-personal', 'demographics-basic', 'additional-info', 'thank-you'];
     }
 
     // Default to first step if selections not made yet
@@ -195,6 +212,17 @@ export default function ParticipantIntakePage() {
     });
   };
 
+  const handleAdditionalInfoNext = (data: AdditionalInfoFormData) => {
+    setFormData((prev) => {
+      const updated: IntakeFormData = {
+        ...prev,
+        additionalInfo: data.additionalInfo,
+      };
+      void advanceAfterUpdate(updated);
+      return updated;
+    });
+  };
+
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_TODO]}>
@@ -237,6 +265,10 @@ export default function ParticipantIntakePage() {
 
             {currentStepType === 'demographics-basic' && (
               <BasicDemographicsForm formType="participant" onNext={handleBasicDemographicsNext} />
+            )}
+
+            {currentStepType === 'additional-info' && (
+              <AdditionalInfoForm formType="participant" onSubmit={handleAdditionalInfoNext} />
             )}
           </Box>
         </Flex>
