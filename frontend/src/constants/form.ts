@@ -58,6 +58,7 @@ export interface IntakeFormData {
     ethnicGroup: string[];
     maritalStatus: string;
     hasKids: string;
+    timezone: string;
   };
 
   // User's Cancer Experience (if applicable)
@@ -111,6 +112,7 @@ export interface DemographicsData {
   ethnicGroup: string[];
   maritalStatus: string;
   hasKids: string;
+  timezone: string;
 }
 
 export interface CancerExperienceData {
@@ -149,5 +151,6 @@ export const INITIAL_INTAKE_FORM_DATA: IntakeFormData = {
     ethnicGroup: [],
     maritalStatus: '',
     hasKids: '',
+    timezone: '',
   },
 };

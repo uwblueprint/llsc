@@ -35,7 +35,7 @@ Create a new form submission and process it into structured data.
       "pronouns": ["array of strings (optional)"],
       "ethnicGroup": ["array of strings (optional)"],
       "maritalStatus": "string (optional)",
-      "hasKids": "yes|no|prefer not to say (optional)",
+      "hasKids": "Yes|No|Prefer not to answer (optional)",
       "ethnicGroupCustom": "string (optional)",
       "genderIdentityCustom": "string (optional)"
     },

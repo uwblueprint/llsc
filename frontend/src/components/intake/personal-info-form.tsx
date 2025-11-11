@@ -8,6 +8,7 @@ import { ExperienceTypeSection } from '@/components/intake/experience-type-secti
 import { COLORS, PROVINCES, VALIDATION, ExperienceData, PersonalData } from '@/constants/form';
 import { CustomRadio } from '@/components/CustomRadio';
 import { useRouter } from 'next/router';
+import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
 
 interface PersonalInfoFormData {
   hasBloodCancer: 'yes' | 'no' | '';
@@ -153,7 +154,7 @@ export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) 
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color={COLORS.veniceBlue}
-                      borderColor={errors.firstName ? 'red.500' : '#d1d5db'}
+                      borderColor={errors.firstName ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
@@ -178,7 +179,7 @@ export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) 
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color={COLORS.veniceBlue}
-                      borderColor={errors.lastName ? 'red.500' : '#d1d5db'}
+                      borderColor={errors.lastName ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
@@ -206,7 +207,7 @@ export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) 
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color={COLORS.veniceBlue}
-                      borderColor={errors.dateOfBirth ? 'red.500' : '#d1d5db'}
+                      borderColor={errors.dateOfBirth ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
@@ -236,7 +237,7 @@ export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) 
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color={COLORS.veniceBlue}
-                      borderColor={errors.phoneNumber ? 'red.500' : '#d1d5db'}
+                      borderColor={errors.phoneNumber ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
@@ -269,7 +270,7 @@ export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) 
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color={COLORS.veniceBlue}
-                      borderColor={errors.postalCode ? 'red.500' : '#d1d5db'}
+                      borderColor={errors.postalCode ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
@@ -293,7 +294,7 @@ export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) 
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color={COLORS.veniceBlue}
-                      borderColor={errors.city ? 'red.500' : '#d1d5db'}
+                      borderColor={errors.city ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
@@ -314,28 +315,15 @@ export function PersonalInfoForm({ formType, onSubmit }: PersonalInfoFormProps) 
                 control={control}
                 rules={{ required: 'Province is required' }}
                 render={({ field }) => (
-                  <InputGroup>
-                    <Input
-                      {...field}
-                      placeholder="Province"
-                      fontFamily="system-ui, -apple-system, sans-serif"
-                      fontSize="14px"
-                      color={COLORS.veniceBlue}
-                      borderColor={errors.province ? 'red.500' : '#d1d5db'}
-                      borderRadius="6px"
-                      h="40px"
-                      _placeholder={{ color: '#9ca3af' }}
-                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
-                      list="provinces"
-                    />
-                  </InputGroup>
+                  <SingleSelectDropdown
+                    options={[...PROVINCES]}
+                    selectedValue={field.value || ''}
+                    onSelectionChange={field.onChange}
+                    placeholder="Province"
+                    error={!!errors.province}
+                  />
                 )}
               />
-              <datalist id="provinces">
-                {PROVINCES.map((province) => (
-                  <option key={province} value={province} />
-                ))}
-              </datalist>
             </FormField>
             <Box flex="1" /> {/* Empty box to maintain two-column layout */}
           </HStack>
