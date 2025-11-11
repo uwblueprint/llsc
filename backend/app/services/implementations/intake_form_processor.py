@@ -81,7 +81,6 @@ class IntakeFormProcessor:
                 owning_user.form_status = FormStatus.INTAKE_SUBMITTED
 
             if "additional_info" in form_data:
-                # TODO: let me know if you want this in a process function
                 user_data.additional_info = self._trim_text(form_data.get("additional_info"))
 
             # Commit all changes
