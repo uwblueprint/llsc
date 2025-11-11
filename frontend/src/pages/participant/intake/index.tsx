@@ -142,10 +142,12 @@ export default function ParticipantIntakePage() {
     setFormData((prev) => {
       const updated: IntakeFormData = {
         ...prev,
+        language: data.preferredLanguage as 'en' | 'fr',
         demographics: {
           genderIdentity: data.genderIdentity,
           pronouns: data.pronouns,
           ethnicGroup: data.ethnicGroup,
+          preferredLanguage: data.preferredLanguage,
           maritalStatus: data.maritalStatus,
           hasKids: data.hasKids,
           timezone: data.timezone,
@@ -199,10 +201,12 @@ export default function ParticipantIntakePage() {
     setFormData((prev) => {
       const updated: IntakeFormData = {
         ...prev,
+        language: data.preferredLanguage as 'en' | 'fr',
         demographics: {
           genderIdentity: data.genderIdentity,
           pronouns: data.pronouns,
           ethnicGroup: data.ethnicGroup,
+          preferredLanguage: data.preferredLanguage,
           maritalStatus: data.maritalStatus,
           hasKids: data.hasKids,
           timezone: data.timezone,

@@ -22,6 +22,11 @@ export enum FormStatus {
   REJECTED = 'rejected',
 }
 
+export enum Language {
+  ENGLISH = 'en',
+  FRENCH = 'fr',
+}
+
 export interface UserBase {
   firstName: string;
   lastName: string;
@@ -43,6 +48,7 @@ export interface UserCreateResponse {
   roleId: number;
   authId: string;
   formStatus: FormStatus;
+  language: Language;
 }
 
 export interface LoginRequest {
