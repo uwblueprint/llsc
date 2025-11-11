@@ -131,10 +131,12 @@ export default function VolunteerIntakePage() {
     setFormData((prev) => {
       const updated: IntakeFormData = {
         ...prev,
+        language: data.preferredLanguage as 'en' | 'fr',
         demographics: {
           genderIdentity: data.genderIdentity,
           pronouns: data.pronouns,
           ethnicGroup: data.ethnicGroup,
+          preferredLanguage: data.preferredLanguage,
           maritalStatus: data.maritalStatus,
           hasKids: data.hasKids,
         },
@@ -187,10 +189,12 @@ export default function VolunteerIntakePage() {
     setFormData((prev) => {
       const updated: IntakeFormData = {
         ...prev,
+        language: data.preferredLanguage as 'en' | 'fr',
         demographics: {
           genderIdentity: data.genderIdentity,
           pronouns: data.pronouns,
           ethnicGroup: data.ethnicGroup,
+          preferredLanguage: data.preferredLanguage,
           maritalStatus: data.maritalStatus,
           hasKids: data.hasKids,
         },

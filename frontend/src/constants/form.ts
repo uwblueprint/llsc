@@ -39,6 +39,7 @@ export interface IntakeFormData {
   formType: 'participant' | 'volunteer';
   hasBloodCancer: 'yes' | 'no' | '';
   caringForSomeone: 'yes' | 'no' | '';
+  language: 'en' | 'fr';
 
   // Personal Information
   personalInfo: {
@@ -56,6 +57,7 @@ export interface IntakeFormData {
     genderIdentity: string;
     pronouns: string[];
     ethnicGroup: string[];
+    preferredLanguage: string;
     maritalStatus: string;
     hasKids: string;
   };
@@ -109,6 +111,7 @@ export interface DemographicsData {
   genderIdentity: string;
   pronouns: string[];
   ethnicGroup: string[];
+  preferredLanguage: string;
   maritalStatus: string;
   hasKids: string;
 }
@@ -134,6 +137,7 @@ export const INITIAL_INTAKE_FORM_DATA: IntakeFormData = {
   formType: 'participant',
   hasBloodCancer: '',
   caringForSomeone: '',
+  language: 'en',
   personalInfo: {
     firstName: '',
     lastName: '',

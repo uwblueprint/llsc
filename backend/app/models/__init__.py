@@ -22,7 +22,7 @@ from .SuggestedTime import suggested_times
 from .Task import Task, TaskPriority, TaskStatus, TaskType
 from .TimeBlock import TimeBlock
 from .Treatment import Treatment
-from .User import FormStatus, User
+from .User import FormStatus, Language, User
 from .UserData import UserData
 from .VolunteerData import VolunteerData
 
@@ -45,6 +45,7 @@ __all__ = [
     "Form",
     "FormSubmission",
     "FormStatus",
+    "Language",
     "Task",
     "TaskType",
     "TaskPriority",

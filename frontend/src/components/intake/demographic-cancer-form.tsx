@@ -46,6 +46,7 @@ interface DemographicCancerFormData {
   genderIdentity: string;
   pronouns: string[];
   ethnicGroup: string[];
+  preferredLanguage: string;
   maritalStatus: string;
   hasKids: string;
   diagnosis: string;
@@ -58,6 +59,7 @@ const DEFAULT_VALUES: DemographicCancerFormData = {
   genderIdentity: '',
   pronouns: [],
   ethnicGroup: [],
+  preferredLanguage: '',
   maritalStatus: '',
   hasKids: '',
   diagnosis: '',
@@ -516,9 +518,9 @@ export function DemographicCancerForm({
             )}
           </HStack>
 
-          {/* Ethnic or Cultural Group - Left aligned */}
+          {/* Ethnic or Cultural Group (Left) and Preferred Language (Right) */}
           <HStack gap={4} w="full" align="start">
-            <Box w="50%">
+            <Box flex="1">
               <FormField label="Ethnic or Cultural Group" error={errors.ethnicGroup?.message}>
                 <Controller
                   name="ethnicGroup"
@@ -546,28 +548,46 @@ export function DemographicCancerForm({
               </FormField>
             </Box>
 
-            {ethnicGroup.includes('Self-describe') && (
-              <Box w="50%">
-                <FormField label="Please specify">
-                  <Input
-                    value={ethnicGroupCustom}
-                    onChange={(e) => setEthnicGroupCustom(e.target.value)}
-                    placeholder="Please specify"
-                    fontFamily="system-ui, -apple-system, sans-serif"
-                    fontSize="14px"
-                    color={COLORS.veniceBlue}
-                    borderColor="#d1d5db"
-                    borderRadius="6px"
-                    h="40px"
-                    border="1px solid"
-                    px={3}
-                    _placeholder={{ color: '#9ca3af' }}
-                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
-                  />
-                </FormField>
-              </Box>
-            )}
+            <Box flex="1">
+              <FormField label="Preferred Language" error={errors.preferredLanguage?.message}>
+                <Controller
+                  name="preferredLanguage"
+                  control={control}
+                  rules={{ required: 'Please select your preferred language' }}
+                  render={({ field }) => (
+                    <StyledSelect {...field} error={!!errors.preferredLanguage}>
+                      <option value="">Select language</option>
+                      <option value="en">English</option>
+                      <option value="fr">Français</option>
+                    </StyledSelect>
+                  )}
+                />
+              </FormField>
+            </Box>
           </HStack>
+
+          {/* Self-describe input for Ethnic Group (conditional, full width) */}
+          {ethnicGroup.includes('Self-describe') && (
+            <Box w="full">
+              <FormField label="Please specify your ethnic or cultural group">
+                <Input
+                  value={ethnicGroupCustom}
+                  onChange={(e) => setEthnicGroupCustom(e.target.value)}
+                  placeholder="Please specify"
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  fontSize="14px"
+                  color={COLORS.veniceBlue}
+                  borderColor="#d1d5db"
+                  borderRadius="6px"
+                  h="40px"
+                  border="1px solid"
+                  px={3}
+                  _placeholder={{ color: '#9ca3af' }}
+                  _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                />
+              </FormField>
+            </Box>
+          )}
 
           {/* Marital Status and Kids - Keep side by side */}
           <HStack gap={4} w="full">
@@ -801,6 +821,7 @@ interface BasicDemographicsFormData {
   genderIdentity: string;
   pronouns: string[];
   ethnicGroup: string[];
+  preferredLanguage: string;
   maritalStatus: string;
   hasKids: string;
 }
@@ -809,6 +830,7 @@ const BASIC_DEFAULT_VALUES: BasicDemographicsFormData = {
   genderIdentity: '',
   pronouns: [],
   ethnicGroup: [],
+  preferredLanguage: '',
   maritalStatus: '',
   hasKids: '',
 };
@@ -1020,9 +1042,9 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
             )}
           </HStack>
 
-          {/* Ethnic or Cultural Group */}
+          {/* Ethnic or Cultural Group (Left) and Preferred Language (Right) */}
           <HStack gap={4} w="full" align="start">
-            <Box w="50%">
+            <Box flex="1">
               <FormField label="Ethnic or Cultural Group" error={errors.ethnicGroup?.message}>
                 <Controller
                   name="ethnicGroup"
@@ -1050,28 +1072,46 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
               </FormField>
             </Box>
 
-            {ethnicGroup.includes('Self-describe') && (
-              <Box w="50%">
-                <FormField label="Please specify">
-                  <Input
-                    value={ethnicGroupCustom}
-                    onChange={(e) => setEthnicGroupCustom(e.target.value)}
-                    placeholder="Please specify"
-                    fontFamily="system-ui, -apple-system, sans-serif"
-                    fontSize="14px"
-                    color={COLORS.veniceBlue}
-                    borderColor="#d1d5db"
-                    borderRadius="6px"
-                    h="40px"
-                    border="1px solid"
-                    px={3}
-                    _placeholder={{ color: '#9ca3af' }}
-                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
-                  />
-                </FormField>
-              </Box>
-            )}
+            <Box flex="1">
+              <FormField label="Preferred Language" error={errors.preferredLanguage?.message}>
+                <Controller
+                  name="preferredLanguage"
+                  control={control}
+                  rules={{ required: 'Please select your preferred language' }}
+                  render={({ field }) => (
+                    <StyledSelect {...field} error={!!errors.preferredLanguage}>
+                      <option value="">Select language</option>
+                      <option value="en">English</option>
+                      <option value="fr">Français</option>
+                    </StyledSelect>
+                  )}
+                />
+              </FormField>
+            </Box>
           </HStack>
+
+          {/* Self-describe input for Ethnic Group (conditional, full width) */}
+          {ethnicGroup.includes('Self-describe') && (
+            <Box w="full">
+              <FormField label="Please specify your ethnic or cultural group">
+                <Input
+                  value={ethnicGroupCustom}
+                  onChange={(e) => setEthnicGroupCustom(e.target.value)}
+                  placeholder="Please specify"
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  fontSize="14px"
+                  color={COLORS.veniceBlue}
+                  borderColor="#d1d5db"
+                  borderRadius="6px"
+                  h="40px"
+                  border="1px solid"
+                  px={3}
+                  _placeholder={{ color: '#9ca3af' }}
+                  _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                />
+              </FormField>
+            </Box>
+          )}
 
           {/* Marital Status and Kids */}
           <HStack gap={4} w="full">
