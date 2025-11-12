@@ -1,14 +1,5 @@
 import { useState } from 'react';
-import {
-  Box,
-  Button,
-  Container,
-  Flex,
-  Heading,
-  Text,
-  Textarea,
-  VStack,
-} from '@chakra-ui/react';
+import { Box, Button, Container, Flex, Heading, Text, Textarea, VStack } from '@chakra-ui/react';
 import { FiChevronLeft } from 'react-icons/fi';
 import { Icon } from '@chakra-ui/react';
 
@@ -154,4 +145,3 @@ export function RequestNewMatchesModal({
     </Box>
   );
 }
-

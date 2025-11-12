@@ -17,9 +17,8 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
   };
 
   // Format pronouns for display
-  const pronounsText = volunteer.pronouns && volunteer.pronouns.length > 0
-    ? volunteer.pronouns.join('/')
-    : null;
+  const pronounsText =
+    volunteer.pronouns && volunteer.pronouns.length > 0 ? volunteer.pronouns.join('/') : null;
 
   // Format timezone (remove underscores, capitalize)
   const formatTimezone = (tz: string) => {
@@ -27,9 +26,7 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
   };
 
   // Get volunteer timezone or use placeholder
-  const volunteerTimezone = volunteer.timezone 
-    ? formatTimezone(volunteer.timezone)
-    : 'TBD';
+  const volunteerTimezone = volunteer.timezone ? formatTimezone(volunteer.timezone) : 'TBD';
 
   return (
     <Box
@@ -144,14 +141,7 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
             </Text>
             <Flex gap={2} flexWrap="wrap">
               {volunteer.treatments.map((treatment) => (
-                <Box
-                  key={treatment}
-                  bg="#EEF4FF"
-                  px={3}
-                  py={1.5}
-                  borderRadius="14px"
-                  fontSize="sm"
-                >
+                <Box key={treatment} bg="#EEF4FF" px={3} py={1.5} borderRadius="14px" fontSize="sm">
                   <Text color="#3538CD" fontWeight="500">
                     {treatment}
                   </Text>
@@ -208,4 +198,3 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
     </Box>
   );
 }
-

@@ -70,4 +70,3 @@ export function RequestConfirmationModal({ isOpen, onClose }: RequestConfirmatio
     </Box>
   );
 }
-

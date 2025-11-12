@@ -8,7 +8,6 @@ interface DashboardSidebarProps {
 }
 
 export function DashboardSidebar({ activeTab, onTabChange }: DashboardSidebarProps) {
-
   const navItems = [
     { key: 'matches' as const, label: 'Matches', icon: FiUser },
     { key: 'contact' as const, label: 'Contact', icon: FiMail },
@@ -70,7 +69,7 @@ export function DashboardSidebar({ activeTab, onTabChange }: DashboardSidebarPro
                 </Flex>
               );
             })}
-            
+
             {/* Sign Out - in same panel */}
             <Flex
               align="center"
@@ -93,4 +92,3 @@ export function DashboardSidebar({ activeTab, onTabChange }: DashboardSidebarPro
     </Box>
   );
 }
-

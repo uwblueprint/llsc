@@ -1,5 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Container, Flex, Heading, Icon, Spinner, Text, Textarea, VStack } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Container,
+  Flex,
+  Heading,
+  Icon,
+  Spinner,
+  Text,
+  Textarea,
+  VStack,
+} from '@chakra-ui/react';
 import { FiPlus } from 'react-icons/fi';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
@@ -38,18 +49,14 @@ export default function ParticipantDashboardPage() {
       setLoading(true);
       setError(null);
       const data = await participantMatchAPIClient.getMyMatches();
-      
+
       // Separate matches by status
       const pendingMatches = data.matches.filter(
-        (match) => match.matchStatus === 'pending' || match.matchStatus === 'requesting_new_times'
+        (match) => match.matchStatus === 'pending' || match.matchStatus === 'requesting_new_times',
       );
-      const confirmed = data.matches.filter(
-        (match) => match.matchStatus === 'confirmed'
-      );
-      const completed = data.matches.filter(
-        (match) => match.matchStatus === 'completed'
-      );
-      
+      const confirmed = data.matches.filter((match) => match.matchStatus === 'confirmed');
+      const completed = data.matches.filter((match) => match.matchStatus === 'completed');
+
       setMatches(pendingMatches);
       setConfirmedMatches(confirmed);
       setCompletedMatches(completed);
@@ -166,8 +173,8 @@ export default function ParticipantDashboardPage() {
                 Any additional notes?
               </Heading>
               <Text fontSize="sm" color="#697380" lineHeight="1.5">
-                Please provide any additional information you would like us to consider when
-                finding volunteers.
+                Please provide any additional information you would like us to consider when finding
+                volunteers.
               </Text>
             </VStack>
             <Textarea
@@ -244,7 +251,7 @@ export default function ParticipantDashboardPage() {
         {matches.map((match) => (
           <VolunteerCard key={match.id} match={match} onSchedule={handleSchedule} />
         ))}
-        
+
         {/* Request New Matches Button */}
         <Button
           bg="#056067"
@@ -278,9 +285,7 @@ export default function ParticipantDashboardPage() {
         <Heading size="lg" color="gray.800" mb={3}>
           Contact
         </Heading>
-        <Text color="gray.600">
-          Schedule a call with a volunteer to unlock contact details.
-        </Text>
+        <Text color="gray.600">Schedule a call with a volunteer to unlock contact details.</Text>
       </Box>
     );
   };
@@ -336,7 +341,8 @@ export default function ParticipantDashboardPage() {
                           Thanks for scheduling your call!
                         </Heading>
                         <Text fontSize="md" color="#6B7280" opacity={0.85}>
-                          Unfortunately, you can&apos;t schedule another call until your current call is done. Check your volunteer details here.
+                          Unfortunately, you can&apos;t schedule another call until your current
+                          call is done. Check your volunteer details here.
                         </Text>
                       </Box>
                       {/* User Avatar in top right */}
@@ -358,14 +364,18 @@ export default function ParticipantDashboardPage() {
                         </Box>
                       )}
                     </Flex>
-                  ) : completedMatches.length > 0 && confirmedMatches.length === 0 && matches.length === 0 && activeTab === 'matches' ? (
+                  ) : completedMatches.length > 0 &&
+                    confirmedMatches.length === 0 &&
+                    matches.length === 0 &&
+                    activeTab === 'matches' ? (
                     <Flex justify="space-between" align="flex-start">
                       <Box flex={1}>
                         <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
                           Request to match with new volunteers?
                         </Heading>
                         <Text fontSize="md" color="#6B7280" opacity={0.85}>
-                          Would you like our team to find you new matches? This process may take a few days.
+                          Would you like our team to find you new matches? This process may take a
+                          few days.
                         </Text>
                       </Box>
                       {/* User Avatar in top right */}

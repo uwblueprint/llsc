@@ -31,9 +31,8 @@ export function ConfirmedMatchCard({
   };
 
   // Format pronouns for display
-  const pronounsText = volunteer.pronouns && volunteer.pronouns.length > 0
-    ? volunteer.pronouns.join('/')
-    : null;
+  const pronounsText =
+    volunteer.pronouns && volunteer.pronouns.length > 0 ? volunteer.pronouns.join('/') : null;
 
   // Format timezone (remove underscores, capitalize)
   const formatTimezone = (tz: string) => {
@@ -41,19 +40,12 @@ export function ConfirmedMatchCard({
   };
 
   // Get volunteer timezone or use placeholder
-  const volunteerTimezone = volunteer.timezone 
-    ? formatTimezone(volunteer.timezone)
-    : 'TBD';
+  const volunteerTimezone = volunteer.timezone ? formatTimezone(volunteer.timezone) : 'TBD';
 
   return (
     <VStack align="stretch" gap={4}>
       {/* Date Badge - Above the card */}
-      <Box
-        display="flex"
-        alignItems="center"
-        gap={2}
-        alignSelf="flex-start"
-      >
+      <Box display="flex" alignItems="center" gap={2} alignSelf="flex-start">
         <Text fontSize="20px" fontWeight="600" color="#056067" fontFamily="Open Sans">
           {dateShort}
         </Text>
@@ -65,11 +57,7 @@ export function ConfirmedMatchCard({
       {/* Card with blue bar and volunteer info */}
       <Flex gap={3} align="stretch">
         {/* Time - to the left of blue bar */}
-        <Box
-          display="flex"
-          alignItems="flex-start"
-          pt={2}
-        >
+        <Box display="flex" alignItems="flex-start" pt={2}>
           <Text
             fontSize="18px"
             fontWeight="400"
@@ -80,13 +68,9 @@ export function ConfirmedMatchCard({
             {timeFormatted}
           </Text>
         </Box>
-        
+
         {/* Blue vertical bar */}
-        <Box
-          bg="#5F989D"
-          w="4px"
-          borderRadius="4px"
-        />
+        <Box bg="#5F989D" w="4px" borderRadius="4px" />
 
         {/* Volunteer Card */}
         <Box
@@ -101,188 +85,187 @@ export function ConfirmedMatchCard({
           <VStack align="stretch" gap={4}>
             {/* Volunteer Info */}
             <Flex gap={4} align="flex-start">
-          {/* Avatar */}
-          <Flex
-            w="60px"
-            h="60px"
-            bg="rgba(179, 206, 209, 0.3)"
-            borderRadius="full"
-            align="center"
-            justify="center"
-            flexShrink={0}
-          >
-            <Text fontSize="xl" fontWeight="medium" color="#056067">
-              {getInitials()}
-            </Text>
-          </Flex>
-
-          {/* Name, pronouns, and info badges */}
-          <VStack align="stretch" gap={3} flex={1}>
-            {/* Name and pronouns */}
-            <Flex gap={2} align="baseline" flexWrap="wrap">
-              <Text fontSize="lg" fontWeight="600" color="#1F2937">
-                {volunteer.firstName} {volunteer.lastName}
-              </Text>
-              {pronounsText && (
-                <Text fontSize="sm" color="#6B7280">
-                  {pronounsText}
-                </Text>
-              )}
-            </Flex>
-
-            {/* Info badges */}
-            <Flex gap={2} flexWrap="wrap">
-              {typeof volunteer.age === 'number' && (
-                <Box
-                  bg="#B3CED14D"
-                  px={3}
-                  py={1.5}
-                  borderRadius="14px"
-                  fontSize="sm"
-                  display="flex"
-                  alignItems="center"
-                  gap={1.5}
-                >
-                  <Text color="#3538CD" fontWeight="500">
-                    👤 Current Age: {volunteer.age}
-                  </Text>
-                </Box>
-              )}
-              <Box
-                bg="#B3CED14D"
-                px={3}
-                py={1.5}
-                borderRadius="14px"
-                fontSize="sm"
-                display="flex"
-                alignItems="center"
-                gap={1.5}
+              {/* Avatar */}
+              <Flex
+                w="60px"
+                h="60px"
+                bg="rgba(179, 206, 209, 0.3)"
+                borderRadius="full"
+                align="center"
+                justify="center"
+                flexShrink={0}
               >
-                <Text color="#3538CD" fontWeight="500">
-                  🕐 Time Zone: {volunteerTimezone}
+                <Text fontSize="xl" fontWeight="medium" color="#056067">
+                  {getInitials()}
                 </Text>
-              </Box>
-              {volunteer.diagnosis && (
-                <Box
-                  bg="#B3CED14D"
-                  px={3}
-                  py={1.5}
-                  borderRadius="14px"
-                  fontSize="sm"
-                  display="flex"
-                  alignItems="center"
-                  gap={1.5}
-                >
-                  <Text color="#3538CD" fontWeight="500">
-                    🎗️ {volunteer.diagnosis}
+              </Flex>
+
+              {/* Name, pronouns, and info badges */}
+              <VStack align="stretch" gap={3} flex={1}>
+                {/* Name and pronouns */}
+                <Flex gap={2} align="baseline" flexWrap="wrap">
+                  <Text fontSize="lg" fontWeight="600" color="#1F2937">
+                    {volunteer.firstName} {volunteer.lastName}
                   </Text>
-                </Box>
-              )}
-            </Flex>
-          </VStack>
-          </Flex>
+                  {pronounsText && (
+                    <Text fontSize="sm" color="#6B7280">
+                      {pronounsText}
+                    </Text>
+                  )}
+                </Flex>
 
-          {/* Overview Section */}
-          {volunteer.overview && (
-            <Box>
-              <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
-                Overview
-              </Text>
-              <Text fontSize="sm" color="#6B7280" lineHeight="1.5">
-                {volunteer.overview}
-              </Text>
-            </Box>
-          )}
-
-          {/* Treatment Information Section */}
-          {volunteer.treatments.length > 0 && (
-            <Box>
-              <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
-                Treatment Information
-              </Text>
-              <Flex gap={2} flexWrap="wrap">
-                {volunteer.treatments.map((treatment) => (
+                {/* Info badges */}
+                <Flex gap={2} flexWrap="wrap">
+                  {typeof volunteer.age === 'number' && (
+                    <Box
+                      bg="#B3CED14D"
+                      px={3}
+                      py={1.5}
+                      borderRadius="14px"
+                      fontSize="sm"
+                      display="flex"
+                      alignItems="center"
+                      gap={1.5}
+                    >
+                      <Text color="#3538CD" fontWeight="500">
+                        👤 Current Age: {volunteer.age}
+                      </Text>
+                    </Box>
+                  )}
                   <Box
-                    key={treatment}
-                    bg="#EEF4FF"
+                    bg="#B3CED14D"
                     px={3}
                     py={1.5}
                     borderRadius="14px"
                     fontSize="sm"
+                    display="flex"
+                    alignItems="center"
+                    gap={1.5}
                   >
                     <Text color="#3538CD" fontWeight="500">
-                      {treatment}
+                      🕐 Time Zone: {volunteerTimezone}
                     </Text>
                   </Box>
-                ))}
-              </Flex>
-            </Box>
-          )}
+                  {volunteer.diagnosis && (
+                    <Box
+                      bg="#B3CED14D"
+                      px={3}
+                      py={1.5}
+                      borderRadius="14px"
+                      fontSize="sm"
+                      display="flex"
+                      alignItems="center"
+                      gap={1.5}
+                    >
+                      <Text color="#3538CD" fontWeight="500">
+                        🎗️ {volunteer.diagnosis}
+                      </Text>
+                    </Box>
+                  )}
+                </Flex>
+              </VStack>
+            </Flex>
 
-          {/* Experience Information Section */}
-          {volunteer.experiences.length > 0 && (
-            <Box>
-              <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
-                Experience Information
-              </Text>
-              <Flex gap={2} flexWrap="wrap">
-                {volunteer.experiences.map((experience) => (
-                  <Box
-                    key={experience}
-                    bg="#FDF2FA"
-                    px={3}
-                    py={1.5}
-                    borderRadius="14px"
-                    fontSize="sm"
-                  >
-                    <Text color="#C11574" fontWeight="500">
-                      {experience}
-                    </Text>
-                  </Box>
-                ))}
-              </Flex>
-            </Box>
-          )}
+            {/* Overview Section */}
+            {volunteer.overview && (
+              <Box>
+                <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
+                  Overview
+                </Text>
+                <Text fontSize="sm" color="#6B7280" lineHeight="1.5">
+                  {volunteer.overview}
+                </Text>
+              </Box>
+            )}
 
-          {/* Action Buttons */}
-          <Flex justify="flex-end" gap={3} mt={2}>
-            {onCancelCall && (
-              <Button
-                bg="#DC2626"
-                color="white"
-                border="1px solid"
-                borderColor="#DC2626"
-                px={6}
-                py={2.5}
-                borderRadius="7px"
-                fontWeight="600"
-                fontSize="md"
-                _hover={{ bg: '#B91C1C', borderColor: '#B91C1C' }}
-                onClick={() => onCancelCall(match.id)}
-              >
-                Cancel Call
-              </Button>
+            {/* Treatment Information Section */}
+            {volunteer.treatments.length > 0 && (
+              <Box>
+                <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
+                  Treatment Information
+                </Text>
+                <Flex gap={2} flexWrap="wrap">
+                  {volunteer.treatments.map((treatment) => (
+                    <Box
+                      key={treatment}
+                      bg="#EEF4FF"
+                      px={3}
+                      py={1.5}
+                      borderRadius="14px"
+                      fontSize="sm"
+                    >
+                      <Text color="#3538CD" fontWeight="500">
+                        {treatment}
+                      </Text>
+                    </Box>
+                  ))}
+                </Flex>
+              </Box>
             )}
-            {onViewContactDetails && (
-              <Button
-                bg="#056067"
-                color="white"
-                px={6}
-                py={2.5}
-                borderRadius="7px"
-                fontWeight="600"
-                fontSize="md"
-                _hover={{ bg: '#044d52' }}
-                onClick={() => onViewContactDetails(match.id)}
-              >
-                View Contact Details
-              </Button>
+
+            {/* Experience Information Section */}
+            {volunteer.experiences.length > 0 && (
+              <Box>
+                <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
+                  Experience Information
+                </Text>
+                <Flex gap={2} flexWrap="wrap">
+                  {volunteer.experiences.map((experience) => (
+                    <Box
+                      key={experience}
+                      bg="#FDF2FA"
+                      px={3}
+                      py={1.5}
+                      borderRadius="14px"
+                      fontSize="sm"
+                    >
+                      <Text color="#C11574" fontWeight="500">
+                        {experience}
+                      </Text>
+                    </Box>
+                  ))}
+                </Flex>
+              </Box>
             )}
-          </Flex>
+
+            {/* Action Buttons */}
+            <Flex justify="flex-end" gap={3} mt={2}>
+              {onCancelCall && (
+                <Button
+                  bg="#DC2626"
+                  color="white"
+                  border="1px solid"
+                  borderColor="#DC2626"
+                  px={6}
+                  py={2.5}
+                  borderRadius="7px"
+                  fontWeight="600"
+                  fontSize="md"
+                  _hover={{ bg: '#B91C1C', borderColor: '#B91C1C' }}
+                  onClick={() => onCancelCall(match.id)}
+                >
+                  Cancel Call
+                </Button>
+              )}
+              {onViewContactDetails && (
+                <Button
+                  bg="#056067"
+                  color="white"
+                  px={6}
+                  py={2.5}
+                  borderRadius="7px"
+                  fontWeight="600"
+                  fontSize="md"
+                  _hover={{ bg: '#044d52' }}
+                  onClick={() => onViewContactDetails(match.id)}
+                >
+                  View Contact Details
+                </Button>
+              )}
+            </Flex>
           </VStack>
         </Box>
       </Flex>
     </VStack>
   );
 }
-

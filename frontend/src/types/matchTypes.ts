@@ -46,4 +46,3 @@ export interface MatchListResponse {
   matches: Match[];
   hasPendingRequest: boolean;
 }
-
