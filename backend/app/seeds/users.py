@@ -345,12 +345,14 @@ def seed_users(session: Session) -> None:
 
         # Create volunteer_data entry for volunteers with experience text
         if user_info["role"] == "volunteer":
-            volunteer_experience_text = user_info.get("volunteer_experience", 
+            volunteer_experience_text = user_info.get(
+                "volunteer_experience",
                 "My journey with blood cancer started when I was about twelve years old and getting "
                 "treatment for the first time was extremely stress-inducing. My journey with blood "
                 "cancer started when I was about twelve years old and getting treatment for the first "
-                "time was extremely stress-inducing.")
-            
+                "time was extremely stress-inducing.",
+            )
+
             volunteer_data = VolunteerData(
                 user_id=user.id,
                 experience=volunteer_experience_text,
