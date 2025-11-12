@@ -476,6 +476,7 @@ class MatchService:
                 self.db.query(Match)
                 .options(
                     joinedload(Match.volunteer).joinedload(User.availability),
+                    joinedload(Match.participant),
                     joinedload(Match.match_status),
                 )
                 .filter(Match.id == match_id, Match.deleted_at.is_(None))
@@ -517,6 +518,11 @@ class MatchService:
 
             # Transition status to "pending" so participant can see it
             self._set_match_status(match, "pending")
+
+            # Clear pending volunteer request flag since match is now visible to participant
+            participant = match.participant
+            if participant and participant.pending_volunteer_request:
+                participant.pending_volunteer_request = False
 
             self.db.flush()
             self.db.commit()
