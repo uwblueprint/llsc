@@ -31,4 +31,3 @@ export const participantMatchAPIClient = {
     return response.data;
   },
 };
-
