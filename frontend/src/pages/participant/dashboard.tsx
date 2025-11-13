@@ -21,7 +21,7 @@ import { RequestNewMatchesModal } from '@/components/participant/RequestNewMatch
 import { RequestConfirmationModal } from '@/components/participant/RequestConfirmationModal';
 import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClient';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
-import { FormStatus, UserRole } from '@/types/authTypes';
+import { AuthenticatedUser, FormStatus, UserRole } from '@/types/authTypes';
 import { Match } from '@/types/matchTypes';
 
 export default function ParticipantDashboardPage() {
@@ -36,11 +36,14 @@ export default function ParticipantDashboardPage() {
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestMessage, setRequestMessage] = useState('');
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
 
-  const user = getCurrentUser();
   const userName = user?.firstName || 'there';
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setUser(getCurrentUser());
+    }
     loadMatches();
   }, []);
 
