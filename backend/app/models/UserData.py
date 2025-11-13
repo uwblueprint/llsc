@@ -89,3 +89,6 @@ class UserData(Base):
     # Loved one many-to-many relationships
     loved_one_treatments = relationship("Treatment", secondary=user_loved_one_treatments)
     loved_one_experiences = relationship("Experience", secondary=user_loved_one_experiences)
+
+    # Back-reference to User
+    user = relationship("User", back_populates="user_data")

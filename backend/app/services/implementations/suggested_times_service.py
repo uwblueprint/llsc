@@ -46,22 +46,15 @@ class SuggestedTimesService:
             match = self.db.query(Match).filter_by(id=match_id).one()
 
             for time_range in suggested_new_times:
-                # time format looks like: 2025-03-17 09:30:00
                 start_time = time_range.start_time
                 end_time = time_range.end_time
 
-                # create timeblocks (0.5 hr) with 15 min spacing
                 current_start_time = start_time
-                while current_start_time + timedelta(hours=0.5) <= end_time:
-                    # create time block
+                while current_start_time + timedelta(minutes=30) <= end_time:
                     time_block = TimeBlock(start_time=current_start_time)
-
-                    # add to suggestedTime
                     match.suggested_time_blocks.append(time_block)
-
-                    # update current time by 15 minutes for the next block
-                    current_start_time += timedelta(minutes=15)
                     added += 1
+                    current_start_time += timedelta(minutes=30)
 
             self.db.flush()  # push inserts, get DB-generated fields populated
             validated_data = SuggestedTimeCreateResponse.model_validate({"match_id": match_id, "added": added})

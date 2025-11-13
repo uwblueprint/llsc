@@ -41,6 +41,7 @@ class TaskService(ITaskService):
                 assignee_id=task.assignee_id,
                 start_date=task.start_date or datetime.utcnow(),
                 end_date=task.end_date,
+                description=task.description,
             )
 
             self.db.add(db_task)
