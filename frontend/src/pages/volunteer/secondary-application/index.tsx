@@ -9,6 +9,7 @@ import { COLORS } from '@/constants/form';
 import { VolunteerProfileForm } from '@/components/intake/volunteer-profile-form';
 import { VolunteerReferencesForm } from '@/components/intake/volunteer-references-form';
 import { syncCurrentUser } from '@/APIClients/authAPIClient';
+import baseAPIClient from '@/APIClients/baseAPIClient';
 
 export default function SecondaryApplicationPage() {
   const router = useRouter();
@@ -23,6 +24,36 @@ export default function SecondaryApplicationPage() {
     reference2: { fullName: '', email: '', phoneNumber: '' },
     additionalInfo: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const submitSecondaryApplication = async (
+    profile: { experience: string },
+    references: {
+      reference1: { fullName: string; email: string; phoneNumber: string };
+      reference2: { fullName: string; email: string; phoneNumber: string };
+      additionalInfo: string;
+    },
+  ) => {
+    const payload = {
+      experience: profile.experience,
+      references_json: JSON.stringify([
+        {
+          fullName: references.reference1.fullName,
+          email: references.reference1.email,
+          phoneNumber: references.reference1.phoneNumber,
+        },
+        {
+          fullName: references.reference2.fullName,
+          email: references.reference2.email,
+          phoneNumber: references.reference2.phoneNumber,
+        },
+      ]),
+      additional_comments: references.additionalInfo,
+    };
+
+    await baseAPIClient.post('/volunteer-data/submit', payload);
+  };
 
   const WelcomeScreenStep = () => (
     <WelcomeScreen
@@ -80,12 +111,26 @@ export default function SecondaryApplicationPage() {
       >
         <VolunteerReferencesForm
           onNext={async (data) => {
+            setSubmitError(null);
+            setIsSubmitting(true);
             setReferencesData(data);
-            setCurrentStep(4);
-            await syncCurrentUser();
-            await router.replace('/volunteer/secondary-application/thank-you');
+
+            try {
+              await submitSecondaryApplication(profileData, data);
+              await syncCurrentUser();
+              await router.replace('/volunteer/secondary-application/thank-you');
+            } catch (error) {
+              const message =
+                (error as any)?.response?.data?.detail ||
+                (error instanceof Error ? error.message : 'Failed to submit volunteer data');
+              setSubmitError(message);
+            } finally {
+              setIsSubmitting(false);
+            }
           }}
           onBack={() => setCurrentStep(2)}
+          isSubmitting={isSubmitting}
+          submitError={submitError}
         />
       </Box>
     </Box>

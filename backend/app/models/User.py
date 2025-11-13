@@ -31,6 +31,7 @@ class User(Base):
     auth_id = Column(Text, nullable=False)
     approved = Column(Boolean, default=False)
     active = Column(Boolean, nullable=False, default=True)
+    pending_volunteer_request = Column(Boolean, nullable=False, default=False)
     form_status = Column(
         SQLEnum(
             FormStatus,
@@ -52,3 +53,5 @@ class User(Base):
     volunteer_matches = relationship("Match", back_populates="volunteer", foreign_keys=[Match.volunteer_id])
 
     volunteer_data = relationship("VolunteerData", back_populates="user", uselist=False)
+
+    user_data = relationship("UserData", back_populates="user", uselist=False)

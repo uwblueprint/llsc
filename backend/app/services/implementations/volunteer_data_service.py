@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.interfaces.volunteer_data_service import IVolunteerDataService
+from app.models.User import FormStatus, User
 from app.models.VolunteerData import VolunteerData
 from app.schemas.volunteer_data import (
     VolunteerDataCreateRequest,
@@ -22,22 +23,34 @@ class VolunteerDataService(IVolunteerDataService):
 
     async def create_volunteer_data(self, volunteer_data: VolunteerDataCreateRequest) -> VolunteerDataResponse:
         try:
-            if volunteer_data.user_id is not None:
-                existing_data = (
-                    self.db.query(VolunteerData).filter(VolunteerData.user_id == volunteer_data.user_id).first()
-                )
+            user_id = volunteer_data.user_id
+            user = None
+
+            # Check if volunteer data already exists for this user
+            if user_id is not None:
+                existing_data = self.db.query(VolunteerData).filter(VolunteerData.user_id == user_id).first()
                 if existing_data:
                     raise HTTPException(status_code=409, detail="Volunteer data already exists for this user")
 
+                user = self.db.query(User).filter(User.id == user_id).first()
+                if not user:
+                    raise HTTPException(status_code=404, detail="User not found")
+
             # Create new volunteer data entry
             db_volunteer_data = VolunteerData(
-                user_id=volunteer_data.user_id,
+                user_id=user_id,
                 experience=volunteer_data.experience,
                 references_json=volunteer_data.references_json,
                 additional_comments=volunteer_data.additional_comments,
             )
 
             self.db.add(db_volunteer_data)
+
+            # Update the user's form_status if we have a user
+            if user_id and user and user.form_status == FormStatus.SECONDARY_APPLICATION_TODO:
+                # Update to SECONDARY_APPLICATION_SUBMITTED when volunteer submits secondary application
+                user.form_status = FormStatus.SECONDARY_APPLICATION_SUBMITTED
+
             self.db.commit()
             self.db.refresh(db_volunteer_data)
 

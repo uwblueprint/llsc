@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.middleware.auth import has_roles
 from app.schemas.user import UserRole
@@ -9,8 +11,9 @@ from app.schemas.volunteer_data import (
     VolunteerDataResponse,
     VolunteerDataUpdateRequest,
 )
+from app.services.implementations.user_service import UserService
 from app.services.implementations.volunteer_data_service import VolunteerDataService
-from app.utilities.service_utils import get_volunteer_data_service
+from app.utilities.service_utils import get_user_service, get_volunteer_data_service
 
 router = APIRouter(
     prefix="/volunteer-data",
@@ -18,16 +21,28 @@ router = APIRouter(
 )
 
 
-# Public endpoint - anyone can submit volunteer data
+# Authenticated endpoint - volunteers submit their secondary application data
 @router.post("/submit", response_model=VolunteerDataResponse)
 async def submit_volunteer_data(
     volunteer_data: VolunteerDataPublicSubmission,
+    request: Request,
     volunteer_data_service: VolunteerDataService = Depends(get_volunteer_data_service),
+    user_service: UserService = Depends(get_user_service),
+    authorized: bool = has_roles([UserRole.VOLUNTEER, UserRole.ADMIN]),
 ):
-    """Public endpoint for volunteers to submit their application data"""
+    """Endpoint for authenticated volunteers to submit their secondary application data"""
     try:
+        # Get current user from request state (set by auth middleware)
+        current_user_auth_id = request.state.user_id
+
+        try:
+            user_id_str = await user_service.get_user_id_by_auth_id(current_user_auth_id)
+            user_id = UUID(user_id_str)
+        except ValueError as err:
+            raise HTTPException(status_code=404, detail=str(err)) from err
+
         create_request = VolunteerDataCreateRequest(
-            user_id=None,
+            user_id=user_id,
             experience=volunteer_data.experience,
             references_json=volunteer_data.references_json,
             additional_comments=volunteer_data.additional_comments,
