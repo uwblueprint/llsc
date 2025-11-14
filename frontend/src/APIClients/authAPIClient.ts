@@ -417,6 +417,7 @@ export interface UserResponse {
   authId: string;
   approved: boolean;
   formStatus: string;
+  language: string;
 }
 
 export interface UserListResponse {
