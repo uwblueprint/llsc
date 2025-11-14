@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.Experience import Experience
 from app.models.Treatment import Treatment
-from app.models.User import FormStatus, User
+from app.models.User import FormStatus, Language, User
 from app.models.UserData import UserData
 from app.models.VolunteerData import VolunteerData
 from app.utilities.form_constants import ExperienceId, TreatmentId
@@ -318,6 +318,7 @@ def seed_users(session: Session) -> None:
             approved=True,
             active=True,
             form_status=FormStatus.INTAKE_TODO,
+            language=Language.ENGLISH,
         )
         session.add(user)
         session.flush()  # Get user ID
