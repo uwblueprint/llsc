@@ -19,7 +19,7 @@ import { useState } from 'react';
 import { FiSearch, FiMenu, FiMail, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { TbSelector } from 'react-icons/tb';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
-import { UserRole, FormStatus } from '@/types/authTypes';
+import { UserRole, FormStatus, Language } from '@/types/authTypes';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DirectoryProgressSlider } from '@/components/ui/directory-progress-slider';
 import { DirectoryDataProvider } from '@/components/admin/DirectoryDataProvider';
@@ -439,19 +439,34 @@ export default function Directory() {
                           {displayName}
                         </Table.Cell>
                         <Table.Cell py={1.5} verticalAlign="middle">
-                          <Badge
-                            bg={DIRECTORY_COLORS.languageEnglishBg}
-                            color={DIRECTORY_COLORS.languageEnglishText}
-                            borderRadius="full"
-                            px={3.5}
-                            py={1.5}
-                            fontFamily="'Open Sans', sans-serif"
-                            fontWeight={400}
-                            fontSize="13px"
-                            lineHeight="1.25em"
-                          >
-                            English
-                          </Badge>
+                          {(() => {
+                            const isFrench =
+                              user.language === Language.FRENCH || user.language === 'fr';
+                            const languageName = isFrench ? 'French' : 'English';
+                            const languageBg = isFrench
+                              ? DIRECTORY_COLORS.languageFrenchBg
+                              : DIRECTORY_COLORS.languageEnglishBg;
+                            const languageColor = isFrench
+                              ? DIRECTORY_COLORS.languageFrenchText
+                              : DIRECTORY_COLORS.languageEnglishText;
+
+                            return (
+                              <Badge
+                                bg={languageBg}
+                                color={languageColor}
+                                borderRadius="full"
+                                px={3.5}
+                                py={1.5}
+                                width={'72px'}
+                                fontFamily="'Open Sans', sans-serif"
+                                fontWeight={400}
+                                fontSize="13px"
+                                lineHeight="1.25em"
+                              >
+                                {languageName}
+                              </Badge>
+                            );
+                          })()}
                         </Table.Cell>
                         <Table.Cell py={1.5} verticalAlign="middle">
                           <Badge

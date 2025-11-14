@@ -124,17 +124,7 @@ async def get_current_user(
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        return UserCreateResponse(
-            id=user.id,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            email=user.email,
-            role_id=user.role_id,
-            auth_id=user.auth_id,
-            approved=user.approved,
-            form_status=user.form_status,
-            language=user.language,
-        )
+        return UserCreateResponse.model_validate(user)
     except HTTPException:
         raise
     except Exception as e:
