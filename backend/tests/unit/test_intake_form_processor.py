@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from app.models.Experience import Experience
 from app.models.Role import Role
 from app.models.Treatment import Treatment
-from app.models.User import FormStatus, User
+from app.models.User import FormStatus, Language, User
 from app.models.UserData import UserData
 from app.schemas.user import UserRole
 from app.services.implementations.intake_form_processor import IntakeFormProcessor
@@ -883,6 +883,189 @@ def test_volunteer_no_cancer_experience(db_session, test_user):
         assert user_data.loved_one_diagnosis is None
         assert len(user_data.loved_one_treatments) == 0
         assert len(user_data.loved_one_experiences) == 0
+
+        db_session.commit()
+
+    except Exception:
+        db_session.rollback()
+        raise
+
+
+# Language Tests
+def test_language_setting_french(db_session, test_user):
+    """Test that French language is properly set from form submission"""
+    try:
+        # Arrange
+        processor = IntakeFormProcessor(db_session)
+        form_data = {
+            "form_type": "participant",
+            "language": "fr",  # French language
+            "has_blood_cancer": "no",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "Jean",
+                "last_name": "Dupont",
+                "date_of_birth": "01/01/1990",
+                "phone_number": "555-1234",
+                "city": "Montréal",
+                "province": "Québec",
+                "postal_code": "H3A 1A1",
+            },
+            "demographics": {
+                "gender_identity": "Male",
+                "pronouns": ["il", "lui"],
+                "ethnic_group": [],
+                "marital_status": "",
+                "has_kids": "",
+            },
+        }
+
+        # Act
+        processor.process_form_submission(str(test_user.id), form_data)
+
+        # Assert
+        db_session.refresh(test_user)
+        assert test_user.language == Language.FRENCH
+        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
+
+        db_session.commit()
+
+    except Exception:
+        db_session.rollback()
+        raise
+
+
+def test_language_setting_english(db_session, test_user):
+    """Test that English language is properly set from form submission"""
+    try:
+        # Arrange
+        processor = IntakeFormProcessor(db_session)
+        form_data = {
+            "form_type": "participant",
+            "language": "en",  # English language
+            "has_blood_cancer": "no",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "John",
+                "last_name": "Smith",
+                "date_of_birth": "01/01/1990",
+                "phone_number": "555-1234",
+                "city": "Toronto",
+                "province": "Ontario",
+                "postal_code": "M5V 3A1",
+            },
+            "demographics": {
+                "gender_identity": "Male",
+                "pronouns": ["he", "him"],
+                "ethnic_group": [],
+                "marital_status": "",
+                "has_kids": "",
+            },
+        }
+
+        # Act
+        processor.process_form_submission(str(test_user.id), form_data)
+
+        # Assert
+        db_session.refresh(test_user)
+        assert test_user.language == Language.ENGLISH
+        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
+
+        db_session.commit()
+
+    except Exception:
+        db_session.rollback()
+        raise
+
+
+def test_language_defaults_to_english_when_not_provided(db_session, test_user):
+    """Test that language defaults to English when not provided in form"""
+    try:
+        # Arrange - Set user to French initially
+        test_user.language = Language.FRENCH
+        db_session.commit()
+
+        processor = IntakeFormProcessor(db_session)
+        form_data = {
+            "form_type": "participant",
+            # No language field provided
+            "has_blood_cancer": "no",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "Jane",
+                "last_name": "Doe",
+                "date_of_birth": "01/01/1990",
+                "phone_number": "555-1234",
+                "city": "Vancouver",
+                "province": "British Columbia",
+                "postal_code": "V6B 1A1",
+            },
+            "demographics": {
+                "gender_identity": "Female",
+                "pronouns": ["she", "her"],
+                "ethnic_group": [],
+                "marital_status": "",
+                "has_kids": "",
+            },
+        }
+
+        # Act
+        processor.process_form_submission(str(test_user.id), form_data)
+
+        # Assert - Should default to English
+        db_session.refresh(test_user)
+        assert test_user.language == Language.ENGLISH
+        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
+
+        db_session.commit()
+
+    except Exception:
+        db_session.rollback()
+        raise
+
+
+def test_language_persists_across_form_resubmission(db_session, test_user):
+    """Test that language can be changed when form is resubmitted"""
+    try:
+        # Arrange - First submission with French
+        processor = IntakeFormProcessor(db_session)
+        form_data = {
+            "form_type": "participant",
+            "language": "fr",
+            "has_blood_cancer": "no",
+            "caring_for_someone": "no",
+            "personal_info": {
+                "first_name": "Marie",
+                "last_name": "Tremblay",
+                "date_of_birth": "01/01/1990",
+                "phone_number": "555-1234",
+                "city": "Québec",
+                "province": "Québec",
+                "postal_code": "G1R 1R1",
+            },
+            "demographics": {
+                "gender_identity": "Female",
+                "pronouns": ["elle"],
+                "ethnic_group": [],
+                "marital_status": "",
+                "has_kids": "",
+            },
+        }
+
+        # Act - First submission
+        processor.process_form_submission(str(test_user.id), form_data)
+        db_session.refresh(test_user)
+        assert test_user.language == Language.FRENCH
+
+        # Act - Second submission with English
+        form_data["language"] = "en"
+        form_data["personal_info"]["first_name"] = "Mary"
+        processor.process_form_submission(str(test_user.id), form_data)
+
+        # Assert - Language should be updated to English
+        db_session.refresh(test_user)
+        assert test_user.language == Language.ENGLISH
+        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
 
         db_session.commit()
 
