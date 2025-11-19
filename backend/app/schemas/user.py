@@ -9,6 +9,10 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
+from .time_block import TimeBlockEntity
+from .user_data import UserDataResponse
+from .volunteer_data import VolunteerDataResponse
+
 # TODO:
 # confirm complexity rules for fields (such as password)
 
@@ -137,6 +141,9 @@ class UserResponse(BaseModel):
     approved: bool
     role: "RoleResponse"
     form_status: FormStatus
+    user_data: Optional[UserDataResponse] = None
+    volunteer_data: Optional[VolunteerDataResponse] = None
+    availability: List[TimeBlockEntity] = []
 
     model_config = ConfigDict(from_attributes=True)
 

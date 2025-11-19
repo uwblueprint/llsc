@@ -407,17 +407,9 @@ export const refresh = async (): Promise<boolean> => {
   }
 };
 
-// User types for admin and user management
-export interface UserResponse {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
-  email: string;
-  roleId: number;
-  authId: string;
-  approved: boolean;
-  formStatus: string;
-}
+import { UserResponse } from '../types/userTypes';
+
+export type { UserResponse };
 
 export interface UserListResponse {
   users: UserResponse[];

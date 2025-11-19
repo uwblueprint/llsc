@@ -63,7 +63,7 @@ async def get_users(
 async def get_user(
     user_id: str,
     user_service: UserService = Depends(get_user_service),
-    authorized: bool = has_roles([UserRole.ADMIN]),
+    # authorized: bool = has_roles([UserRole.ADMIN]),
 ):
     try:
         return await user_service.get_user_by_id(user_id)

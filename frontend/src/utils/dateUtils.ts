@@ -35,6 +35,16 @@ export function formatDateShort(dateString: string): string {
 }
 
 /**
+ * Format a date to show full date (e.g., "February 26, 2024")
+ * @param dateString - ISO 8601 datetime string
+ * @returns Formatted date string
+ */
+export function formatDateLong(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+/**
  * Format a time to show in 12-hour format (e.g., "12:00PM")
  * @param dateString - ISO 8601 datetime string
  * @returns Formatted time string

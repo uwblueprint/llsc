@@ -4,10 +4,10 @@ from uuid import UUID
 
 import firebase_admin.auth
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.interfaces.user_service import IUserService
-from app.models import FormStatus, Role, User
+from app.models import FormStatus, Role, User, UserData, VolunteerData
 from app.schemas.user import (
     SignUpMethod,
     UserCreateRequest,
@@ -151,7 +151,20 @@ class UserService(IUserService):
 
     async def get_user_by_id(self, user_id: str) -> UserResponse:
         try:
-            user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
+            user = (
+                self.db.query(User)
+                .options(
+                    joinedload(User.role),
+                    joinedload(User.user_data).joinedload(UserData.treatments),
+                    joinedload(User.user_data).joinedload(UserData.experiences),
+                    joinedload(User.user_data).joinedload(UserData.loved_one_treatments),
+                    joinedload(User.user_data).joinedload(UserData.loved_one_experiences),
+                    joinedload(User.volunteer_data),
+                    joinedload(User.availability),
+                )
+                .filter(User.id == UUID(user_id))
+                .first()
+            )
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
             return UserResponse.model_validate(user)
@@ -180,7 +193,17 @@ class UserService(IUserService):
     async def get_users(self) -> List[UserResponse]:
         try:
             # Filter users to only include participants and volunteers (role_id 1 and 2)
-            users = self.db.query(User).join(Role).filter(User.role_id.in_([1, 2])).all()
+            users = (
+                self.db.query(User)
+                .options(
+                    joinedload(User.role),
+                    joinedload(User.user_data),
+                    joinedload(User.volunteer_data),
+                    joinedload(User.availability),
+                )
+                .filter(User.role_id.in_([1, 2]))
+                .all()
+            )
             return [UserResponse.model_validate(user) for user in users]
         except Exception as e:
             self.logger.error(f"Error getting users: {str(e)}")
