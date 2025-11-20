@@ -11,6 +11,7 @@ from app.schemas.user import (
     UserRole,
     UserUpdateRequest,
 )
+from app.schemas.user_data import UserDataUpdateRequest
 from app.services.implementations.user_service import UserService
 from app.utilities.service_utils import get_user_service
 
@@ -63,7 +64,7 @@ async def get_users(
 async def get_user(
     user_id: str,
     user_service: UserService = Depends(get_user_service),
-    # authorized: bool = has_roles([UserRole.ADMIN]),
+    authorized: bool = has_roles([UserRole.ADMIN]),
 ):
     try:
         return await user_service.get_user_by_id(user_id)
@@ -83,6 +84,22 @@ async def update_user(
 ):
     try:
         return await user_service.update_user_by_id(user_id, user_update)
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# admin only update user_data (cancer experience, treatments, experiences, etc.)
+@router.patch("/{user_id}/user-data", response_model=UserResponse)
+async def update_user_data(
+    user_id: str,
+    user_data_update: UserDataUpdateRequest,
+    user_service: UserService = Depends(get_user_service),
+    authorized: bool = has_roles([UserRole.ADMIN]),
+):
+    try:
+        return await user_service.update_user_data_by_id(user_id, user_data_update)
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:

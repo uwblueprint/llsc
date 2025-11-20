@@ -796,21 +796,69 @@ class MatchService:
             return
 
         now = datetime.now(timezone.utc)
-        sorted_blocks = sorted(
-            volunteer.availability,
-            key=lambda tb: tb.start_time or now,
-        )
+        
+        # Define the projection window (e.g., next 2 weeks)
+        projection_weeks = 2
+        
+        # Filter for template blocks (blocks in the past, specifically our reference week in 2000)
+        # We can just check if the year is 2000, or generally if it's far in the past.
+        # For robustness, let's assume any block before "now" is potentially a template if we are using this system.
+        # But strictly, our frontend sends 2000-01-XX.
+        
+        template_blocks = [
+            tb for tb in volunteer.availability 
+            if tb.start_time and tb.start_time.year == 2000
+        ]
 
-        for block in sorted_blocks:
-            if block.start_time is None:
-                continue
-            if block.start_time < now:
-                continue
-            if block.start_time.minute not in {0, 30}:
-                continue
+        if not template_blocks:
+            # Fallback for legacy data: use existing logic for non-template blocks
+            sorted_blocks = sorted(
+                volunteer.availability,
+                key=lambda tb: tb.start_time or now,
+            )
+            for block in sorted_blocks:
+                if block.start_time is None:
+                    continue
+                if block.start_time < now:
+                    continue
+                if block.start_time.minute not in {0, 30}:
+                    continue
+                new_block = TimeBlock(start_time=block.start_time)
+                match.suggested_time_blocks.append(new_block)
+            return
 
-            new_block = TimeBlock(start_time=block.start_time)
-            match.suggested_time_blocks.append(new_block)
+        # Project template blocks onto the next `projection_weeks` weeks
+        # Find the next Monday to start the cycle
+        # If today is Monday, start today. If today is Tuesday, start next Monday? 
+        # Usually availability is "next 2 weeks". Let's start from "tomorrow" or "today" and find matching days.
+        
+        # Let's iterate through the next 14 days
+        for day_offset in range(projection_weeks * 7):
+            target_date = now + timedelta(days=day_offset)
+            target_day_of_week = target_date.weekday() # 0=Mon, 6=Sun
+            
+            # Find templates that match this day of week
+            # Template reference: Jan 3, 2000 was a Monday.
+            # Jan 3 (Mon) -> weekday 0
+            # ...
+            # Jan 9 (Sun) -> weekday 6
+            
+            for template in template_blocks:
+                if template.start_time.weekday() == target_day_of_week:
+                    # Create a new block for this target date with the template's time
+                    new_start_time = target_date.replace(
+                        hour=template.start_time.hour,
+                        minute=template.start_time.minute,
+                        second=0,
+                        microsecond=0
+                    )
+                    
+                    # Ensure we don't add blocks in the past (if we started from 'now' and time has passed today)
+                    if new_start_time < now:
+                        continue
+                        
+                    new_block = TimeBlock(start_time=new_start_time)
+                    match.suggested_time_blocks.append(new_block)
 
     def _reassign_volunteer(self, match: Match, volunteer: User) -> None:
         match.volunteer_id = volunteer.id

@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 
 from app.interfaces.user_service import IUserService
-from app.models import FormStatus, Role, User, UserData, VolunteerData
+from app.models import FormStatus, Role, User, UserData, VolunteerData, Treatment, Experience
 from app.schemas.user import (
     SignUpMethod,
     UserCreateRequest,
@@ -16,6 +16,7 @@ from app.schemas.user import (
     UserRole,
     UserUpdateRequest,
 )
+from app.schemas.user_data import UserDataUpdateRequest
 from app.utilities.constants import LOGGER_NAME
 
 
@@ -254,4 +255,117 @@ class UserService(IUserService):
         except Exception as e:
             self.db.rollback()
             self.logger.error(f"Error updating user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    async def update_user_data_by_id(self, user_id: str, user_data_update: UserDataUpdateRequest) -> UserResponse:
+        """
+        Update user_data fields for a user. Handles partial updates including
+        treatments and experiences (many-to-many relationships).
+        """
+        try:
+            db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            # Get or create UserData
+            user_data = self.db.query(UserData).filter(UserData.user_id == UUID(user_id)).first()
+            if not user_data:
+                user_data = UserData(user_id=UUID(user_id))
+                self.db.add(user_data)
+                self.db.flush()
+
+            update_data = user_data_update.model_dump(exclude_unset=True)
+
+            # Update simple fields (personal info, demographics, cancer experience)
+            simple_fields = [
+                # Personal Information
+                'first_name', 'last_name', 'date_of_birth', 'phone', 'city', 'province', 'postal_code',
+                # Demographics
+                'gender_identity', 'marital_status', 'has_kids', 'timezone',
+                # Cancer Experience
+                'diagnosis', 'date_of_diagnosis', 'additional_info',
+                # Loved One Demographics
+                'loved_one_gender_identity', 'loved_one_age',
+                # Loved One Cancer Experience
+                'loved_one_diagnosis', 'loved_one_date_of_diagnosis'
+            ]
+            for field in simple_fields:
+                if field in update_data:
+                    setattr(user_data, field, update_data[field])
+
+            # Handle pronouns (array field)
+            if 'pronouns' in update_data:
+                user_data.pronouns = update_data['pronouns']
+
+            # Handle ethnic_group (array field)
+            if 'ethnic_group' in update_data:
+                user_data.ethnic_group = update_data['ethnic_group']
+
+            # Handle treatments (many-to-many)
+            if 'treatments' in update_data:
+                user_data.treatments.clear()
+                if update_data['treatments']:
+                    for treatment_name in update_data['treatments']:
+                        if treatment_name:
+                            treatment = self.db.query(Treatment).filter(Treatment.name == treatment_name).first()
+                            if treatment:
+                                user_data.treatments.append(treatment)
+
+            # Handle experiences (many-to-many)
+            if 'experiences' in update_data:
+                user_data.experiences.clear()
+                if update_data['experiences']:
+                    for experience_name in update_data['experiences']:
+                        if experience_name:
+                            experience = self.db.query(Experience).filter(Experience.name == experience_name).first()
+                            if experience:
+                                user_data.experiences.append(experience)
+
+            # Handle loved one treatments (many-to-many)
+            if 'loved_one_treatments' in update_data:
+                user_data.loved_one_treatments.clear()
+                if update_data['loved_one_treatments']:
+                    for treatment_name in update_data['loved_one_treatments']:
+                        if treatment_name:
+                            treatment = self.db.query(Treatment).filter(Treatment.name == treatment_name).first()
+                            if treatment:
+                                user_data.loved_one_treatments.append(treatment)
+
+            # Handle loved one experiences (many-to-many)
+            if 'loved_one_experiences' in update_data:
+                user_data.loved_one_experiences.clear()
+                if update_data['loved_one_experiences']:
+                    for experience_name in update_data['loved_one_experiences']:
+                        if experience_name:
+                            experience = self.db.query(Experience).filter(Experience.name == experience_name).first()
+                            if experience:
+                                user_data.loved_one_experiences.append(experience)
+
+            self.db.commit()
+            self.db.refresh(db_user)
+
+            # Return updated user with all relationships loaded
+            updated_user = (
+                self.db.query(User)
+                .options(
+                    joinedload(User.role),
+                    joinedload(User.user_data).joinedload(UserData.treatments),
+                    joinedload(User.user_data).joinedload(UserData.experiences),
+                    joinedload(User.user_data).joinedload(UserData.loved_one_treatments),
+                    joinedload(User.user_data).joinedload(UserData.loved_one_experiences),
+                    joinedload(User.volunteer_data),
+                    joinedload(User.availability),
+                )
+                .filter(User.id == UUID(user_id))
+                .first()
+            )
+            return UserResponse.model_validate(updated_user)
+
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error updating user_data for user {user_id}: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))

@@ -431,3 +431,135 @@ export const getUserById = async (userId: string): Promise<UserResponse> => {
   const response = await baseAPIClient.get<UserResponse>(`/users/${userId}`);
   return response.data;
 };
+
+/**
+ * Update user data (profile information, cancer experience, etc.)
+ */
+export const updateUserData = async (
+  userId: string,
+  userDataUpdate: {
+    firstName?: string;
+    lastName?: string;
+    dateOfBirth?: string;
+    phone?: string;
+    city?: string;
+    province?: string;
+    postalCode?: string;
+    genderIdentity?: string;
+    pronouns?: string[];
+    ethnicGroup?: string[];
+    maritalStatus?: string;
+    hasKids?: string;
+    timezone?: string;
+    diagnosis?: string;
+    dateOfDiagnosis?: string;
+    treatments?: string[];
+    experiences?: string[];
+    additionalInfo?: string;
+    lovedOneGenderIdentity?: string;
+    lovedOneAge?: string;
+    lovedOneDiagnosis?: string;
+    lovedOneDateOfDiagnosis?: string;
+    lovedOneTreatments?: string[];
+    lovedOneExperiences?: string[];
+  }
+): Promise<UserResponse> => {
+  // Convert camelCase to snake_case for backend
+  const backendData: Record<string, unknown> = {};
+  
+  if (userDataUpdate.firstName !== undefined) backendData.first_name = userDataUpdate.firstName;
+  if (userDataUpdate.lastName !== undefined) backendData.last_name = userDataUpdate.lastName;
+  if (userDataUpdate.dateOfBirth !== undefined) backendData.date_of_birth = userDataUpdate.dateOfBirth;
+  if (userDataUpdate.phone !== undefined) backendData.phone = userDataUpdate.phone;
+  if (userDataUpdate.city !== undefined) backendData.city = userDataUpdate.city;
+  if (userDataUpdate.province !== undefined) backendData.province = userDataUpdate.province;
+  if (userDataUpdate.postalCode !== undefined) backendData.postal_code = userDataUpdate.postalCode;
+  if (userDataUpdate.genderIdentity !== undefined) backendData.gender_identity = userDataUpdate.genderIdentity;
+  if (userDataUpdate.pronouns !== undefined) backendData.pronouns = userDataUpdate.pronouns;
+  if (userDataUpdate.ethnicGroup !== undefined) backendData.ethnic_group = userDataUpdate.ethnicGroup;
+  if (userDataUpdate.maritalStatus !== undefined) backendData.marital_status = userDataUpdate.maritalStatus;
+  if (userDataUpdate.hasKids !== undefined) backendData.has_kids = userDataUpdate.hasKids;
+  if (userDataUpdate.timezone !== undefined) backendData.timezone = userDataUpdate.timezone;
+  if (userDataUpdate.diagnosis !== undefined) backendData.diagnosis = userDataUpdate.diagnosis;
+  if (userDataUpdate.dateOfDiagnosis !== undefined) {
+    // Convert null to null (to clear date) or keep the date string
+    backendData.date_of_diagnosis = userDataUpdate.dateOfDiagnosis;
+  }
+  if (userDataUpdate.treatments !== undefined) backendData.treatments = userDataUpdate.treatments;
+  if (userDataUpdate.experiences !== undefined) backendData.experiences = userDataUpdate.experiences;
+  if (userDataUpdate.additionalInfo !== undefined) backendData.additional_info = userDataUpdate.additionalInfo;
+  if (userDataUpdate.lovedOneGenderIdentity !== undefined) backendData.loved_one_gender_identity = userDataUpdate.lovedOneGenderIdentity;
+  if (userDataUpdate.lovedOneAge !== undefined) backendData.loved_one_age = userDataUpdate.lovedOneAge;
+  if (userDataUpdate.lovedOneDiagnosis !== undefined) backendData.loved_one_diagnosis = userDataUpdate.lovedOneDiagnosis;
+  if (userDataUpdate.lovedOneDateOfDiagnosis !== undefined) {
+    // Convert null to null (to clear date) or keep the date string
+    backendData.loved_one_date_of_diagnosis = userDataUpdate.lovedOneDateOfDiagnosis;
+  }
+  if (userDataUpdate.lovedOneTreatments !== undefined) backendData.loved_one_treatments = userDataUpdate.lovedOneTreatments;
+  if (userDataUpdate.lovedOneExperiences !== undefined) backendData.loved_one_experiences = userDataUpdate.lovedOneExperiences;
+
+  const response = await baseAPIClient.patch<UserResponse>(`/users/${userId}/user-data`, backendData);
+  return response.data;
+};
+
+/**
+ * Availability API types and functions
+ */
+export interface TimeRange {
+  startTime: string; // ISO datetime string
+  endTime: string; // ISO datetime string
+}
+
+export interface CreateAvailabilityRequest {
+  userId: string;
+  availableTimes: TimeRange[];
+}
+
+export interface DeleteAvailabilityRequest {
+  userId: string;
+  delete: TimeRange[];
+}
+
+/**
+ * Get availability for a user
+ */
+export const getAvailability = async (userId: string): Promise<{ availableTimes: Array<{ id: number; startTime: string }> }> => {
+  const response = await baseAPIClient.get<{ userId: string; availableTimes: Array<{ id: number; startTime: string }> }>(`/availability?user_id=${userId}`);
+  return response.data;
+};
+
+/**
+ * Create availability for a user
+ */
+export const createAvailability = async (request: CreateAvailabilityRequest): Promise<{ userId: string; added: number }> => {
+  // Convert camelCase to snake_case for backend
+  const backendData = {
+    user_id: request.userId,
+    available_times: request.availableTimes.map(range => ({
+      start_time: range.startTime,
+      end_time: range.endTime,
+    })),
+  };
+  const response = await baseAPIClient.post<{ user_id: string; added: number }>('/availability', backendData);
+  return { userId: response.data.user_id, added: response.data.added };
+};
+
+/**
+ * Delete availability for a user
+ */
+export const deleteAvailability = async (request: DeleteAvailabilityRequest): Promise<{ userId: string; deleted: number; availability: Array<{ id: number; startTime: string }> }> => {
+  // Convert camelCase to snake_case for backend
+  const backendData = {
+    user_id: request.userId,
+    delete: request.delete.map(range => ({
+      start_time: range.startTime,
+      end_time: range.endTime,
+    })),
+  };
+  const response = await baseAPIClient.delete<{ user_id: string; deleted: number; availability: Array<{ id: number; start_time: string }> }>('/availability', { data: backendData });
+  return {
+    userId: response.data.user_id,
+    deleted: response.data.deleted,
+    availability: response.data.availability.map(block => ({ id: block.id, startTime: block.start_time })),
+  };
+};
