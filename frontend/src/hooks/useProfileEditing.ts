@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { updateUserData } from '@/APIClients/authAPIClient';
 import { UserResponse } from '@/types/userTypes';
-import { ProfileEditData, CancerEditData, LovedOneEditData, SaveMessage } from '@/types/userProfileTypes';
+import {
+  ProfileEditData,
+  CancerEditData,
+  LovedOneEditData,
+  SaveMessage,
+} from '@/types/userProfileTypes';
 
 interface UseProfileEditingProps {
   userId: string | string[] | undefined;
@@ -10,7 +15,12 @@ interface UseProfileEditingProps {
   setSaveMessage: (message: SaveMessage | null) => void;
 }
 
-export function useProfileEditing({ userId, user, setUser, setSaveMessage }: UseProfileEditingProps) {
+export function useProfileEditing({
+  userId,
+  user,
+  setUser,
+  setSaveMessage,
+}: UseProfileEditingProps) {
   const [isEditingProfileSummary, setIsEditingProfileSummary] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [profileEditData, setProfileEditData] = useState<ProfileEditData>({});
@@ -42,7 +52,7 @@ export function useProfileEditing({ userId, user, setUser, setSaveMessage }: Use
 
   const handleSaveProfileSummary = async () => {
     if (!userId || !user) return;
-    
+
     setIsSaving(true);
     try {
       const updatedUser = await updateUserData(userId as string, {
@@ -59,7 +69,7 @@ export function useProfileEditing({ userId, user, setUser, setSaveMessage }: Use
         lovedOneGenderIdentity: profileEditData.lovedOneGenderIdentity,
         lovedOneAge: profileEditData.lovedOneAge,
       });
-      
+
       setUser(updatedUser);
       setIsEditingProfileSummary(false);
       setSaveMessage({ type: 'success', text: 'Profile summary updated successfully' });
@@ -84,16 +94,16 @@ export function useProfileEditing({ userId, user, setUser, setSaveMessage }: Use
       setLovedOneEditData({
         diagnosis: currentData?.lovedOneDiagnosis || '',
         dateOfDiagnosis: currentData?.lovedOneDateOfDiagnosis || '',
-        treatments: currentData?.lovedOneTreatments?.map(t => t.name) || [],
-        experiences: currentData?.lovedOneExperiences?.map(e => e.name) || [],
+        treatments: currentData?.lovedOneTreatments?.map((t) => t.name) || [],
+        experiences: currentData?.lovedOneExperiences?.map((e) => e.name) || [],
       });
     } else {
       const currentData = userData;
       setCancerEditData({
         diagnosis: currentData?.diagnosis || '',
         dateOfDiagnosis: currentData?.dateOfDiagnosis || '',
-        treatments: currentData?.treatments?.map(t => t.name) || [],
-        experiences: currentData?.experiences?.map(e => e.name) || [],
+        treatments: currentData?.treatments?.map((t) => t.name) || [],
+        experiences: currentData?.experiences?.map((e) => e.name) || [],
         additionalInfo: currentData?.additionalInfo || '',
       });
     }
@@ -108,30 +118,36 @@ export function useProfileEditing({ userId, user, setUser, setSaveMessage }: Use
 
   const handleSaveField = async (fieldName: string, isLovedOne: boolean = false) => {
     if (!userId || !user) return;
-    
+
     setIsSaving(true);
     try {
       const updateData: Record<string, unknown> = {};
-      
+
       if (isLovedOne) {
-        if (fieldName === 'diagnosis' || fieldName === 'lovedOneDiagnosis') updateData.lovedOneDiagnosis = lovedOneEditData.diagnosis;
+        if (fieldName === 'diagnosis' || fieldName === 'lovedOneDiagnosis')
+          updateData.lovedOneDiagnosis = lovedOneEditData.diagnosis;
         if (fieldName === 'dateOfDiagnosis' || fieldName === 'lovedOneDateOfDiagnosis') {
-          updateData.lovedOneDateOfDiagnosis = lovedOneEditData.dateOfDiagnosis && lovedOneEditData.dateOfDiagnosis.trim() !== '' 
-            ? lovedOneEditData.dateOfDiagnosis 
-            : null;
+          updateData.lovedOneDateOfDiagnosis =
+            lovedOneEditData.dateOfDiagnosis && lovedOneEditData.dateOfDiagnosis.trim() !== ''
+              ? lovedOneEditData.dateOfDiagnosis
+              : null;
         }
-        if (fieldName === 'treatments' || fieldName === 'lovedOneTreatments') updateData.lovedOneTreatments = lovedOneEditData.treatments;
-        if (fieldName === 'experiences' || fieldName === 'lovedOneExperiences') updateData.lovedOneExperiences = lovedOneEditData.experiences;
+        if (fieldName === 'treatments' || fieldName === 'lovedOneTreatments')
+          updateData.lovedOneTreatments = lovedOneEditData.treatments;
+        if (fieldName === 'experiences' || fieldName === 'lovedOneExperiences')
+          updateData.lovedOneExperiences = lovedOneEditData.experiences;
       } else {
         if (fieldName === 'diagnosis') updateData.diagnosis = cancerEditData.diagnosis;
         if (fieldName === 'dateOfDiagnosis') {
-          updateData.dateOfDiagnosis = cancerEditData.dateOfDiagnosis && cancerEditData.dateOfDiagnosis.trim() !== '' 
-            ? cancerEditData.dateOfDiagnosis 
-            : null;
+          updateData.dateOfDiagnosis =
+            cancerEditData.dateOfDiagnosis && cancerEditData.dateOfDiagnosis.trim() !== ''
+              ? cancerEditData.dateOfDiagnosis
+              : null;
         }
         if (fieldName === 'treatments') updateData.treatments = cancerEditData.treatments;
         if (fieldName === 'experiences') updateData.experiences = cancerEditData.experiences;
-        if (fieldName === 'additionalInfo') updateData.additionalInfo = cancerEditData.additionalInfo;
+        if (fieldName === 'additionalInfo')
+          updateData.additionalInfo = cancerEditData.additionalInfo;
       }
 
       const updatedUser = await updateUserData(userId as string, updateData);
@@ -168,4 +184,3 @@ export function useProfileEditing({ userId, user, setUser, setSaveMessage }: Use
     handleSaveField,
   };
 }
-

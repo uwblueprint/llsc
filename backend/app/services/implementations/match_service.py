@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.models import AvailabilityTemplate, Match, MatchStatus, TimeBlock, User
 from app.models.UserData import UserData
-from app.utilities.timezone_utils import get_timezone_from_abbreviation
 from app.schemas.match import (
     MatchCreateRequest,
     MatchCreateResponse,
@@ -25,6 +24,7 @@ from app.schemas.match import (
 )
 from app.schemas.time_block import TimeBlockEntity, TimeRange
 from app.schemas.user import UserRole
+from app.utilities.timezone_utils import get_timezone_from_abbreviation
 
 SCHEDULE_CLEANUP_STATUSES = {
     "pending",
@@ -65,10 +65,7 @@ class MatchService:
 
             for volunteer_id in req.volunteer_ids:
                 volunteer: User | None = (
-                    self.db.query(User)
-                    .options(joinedload(User.user_data))
-                    .filter(User.id == volunteer_id)
-                    .first()
+                    self.db.query(User).options(joinedload(User.user_data)).filter(User.id == volunteer_id).first()
                 )
                 if not volunteer:
                     raise HTTPException(404, f"Volunteer {volunteer_id} not found")
@@ -118,10 +115,7 @@ class MatchService:
             volunteer_changed = False
             if req.volunteer_id is not None and req.volunteer_id != match.volunteer_id:
                 volunteer: User | None = (
-                    self.db.query(User)
-                    .options(joinedload(User.user_data))
-                    .filter(User.id == req.volunteer_id)
-                    .first()
+                    self.db.query(User).options(joinedload(User.user_data)).filter(User.id == req.volunteer_id).first()
                 )
                 if not volunteer:
                     raise HTTPException(404, f"Volunteer {req.volunteer_id} not found")
@@ -780,30 +774,22 @@ class MatchService:
 
     def _has_valid_availability(self, volunteer: User) -> bool:
         """Check if volunteer has any active availability templates."""
-        template_count = (
-            self.db.query(AvailabilityTemplate)
-            .filter_by(user_id=volunteer.id, is_active=True)
-            .count()
-        )
-        
+        template_count = self.db.query(AvailabilityTemplate).filter_by(user_id=volunteer.id, is_active=True).count()
+
         return template_count > 0
 
     def _attach_initial_suggested_times(self, match: Match, volunteer: User) -> None:
         """
         Projects volunteer's availability templates onto the next 2 weeks
         and creates TimeBlocks for the match's suggested times.
-        
+
         Template times are interpreted in the volunteer's local timezone,
         then converted to UTC for storage.
         """
         now = datetime.now(timezone.utc)
-        
+
         # Get active availability templates for this volunteer
-        templates = (
-            self.db.query(AvailabilityTemplate)
-            .filter_by(user_id=volunteer.id, is_active=True)
-            .all()
-        )
+        templates = self.db.query(AvailabilityTemplate).filter_by(user_id=volunteer.id, is_active=True).all()
 
         if not templates:
             return
@@ -812,52 +798,47 @@ class MatchService:
         volunteer_tz: Optional[ZoneInfo] = None
         if volunteer.user_data and volunteer.user_data.timezone:
             volunteer_tz = get_timezone_from_abbreviation(volunteer.user_data.timezone)
-        
+
         # Default to UTC if no timezone is set (shouldn't happen in production, but handle gracefully)
         if not volunteer_tz:
             self.logger.warning(
-                f"Volunteer {volunteer.id} has no timezone set. "
-                "Interpreting availability templates as UTC."
+                f"Volunteer {volunteer.id} has no timezone set. Interpreting availability templates as UTC."
             )
             volunteer_tz = timezone.utc
 
         # Project templates onto the next week
         projection_weeks = 1
-        
+
         for day_offset in range(projection_weeks * 7):
             # Calculate target date in UTC
             target_date_utc = now + timedelta(days=day_offset)
-            
+
             # Convert UTC date to volunteer's local date to get the correct weekday
             # Templates are defined in the volunteer's local timezone, so we must
             # compare against the local weekday, not the UTC weekday
             target_date_local = target_date_utc.astimezone(volunteer_tz).date()
             target_day_of_week = target_date_local.weekday()  # 0=Mon, 6=Sun (in volunteer's timezone)
-            
+
             # Find templates that match this day of week
             for template in templates:
                 if template.day_of_week == target_day_of_week:
                     # Create datetime in volunteer's local timezone
-                    current_time_local = datetime.combine(
-                        target_date_local,
-                        template.start_time
-                    ).replace(tzinfo=volunteer_tz)
-                    
-                    end_time_local = datetime.combine(
-                        target_date_local,
-                        template.end_time
-                    ).replace(tzinfo=volunteer_tz)
-                    
+                    current_time_local = datetime.combine(target_date_local, template.start_time).replace(
+                        tzinfo=volunteer_tz
+                    )
+
+                    end_time_local = datetime.combine(target_date_local, template.end_time).replace(tzinfo=volunteer_tz)
+
                     # Convert to UTC for storage
                     current_time_utc = current_time_local.astimezone(timezone.utc)
                     end_time_utc = end_time_local.astimezone(timezone.utc)
-                    
+
                     while current_time_utc < end_time_utc:
                         # Ensure we don't add blocks in the past
                         if current_time_utc >= now:
                             new_block = TimeBlock(start_time=current_time_utc)
                             match.suggested_time_blocks.append(new_block)
-                        
+
                         current_time_utc += timedelta(minutes=30)
 
     def _reassign_volunteer(self, match: Match, volunteer: User) -> None:

@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import {
-  Box,
-  Flex,
-  Text,
-  Spinner,
-} from '@chakra-ui/react';
+import { Box, Flex, Text, Spinner } from '@chakra-ui/react';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { UserRole } from '@/types/authTypes';
@@ -25,7 +20,7 @@ export default function AdminUserProfile() {
   const router = useRouter();
   const { id } = router.query;
   const [saveMessage, setSaveMessage] = useState<SaveMessage | null>(null);
-  
+
   // Custom hooks
   const { user, loading, setUser } = useUserProfile(id);
   const { treatmentOptions, experienceOptions } = useIntakeOptions();
@@ -51,7 +46,7 @@ export default function AdminUserProfile() {
     setUser,
     setSaveMessage,
   });
-  
+
   const {
     isEditingAvailability,
     selectedTimeSlots,
@@ -93,16 +88,17 @@ export default function AdminUserProfile() {
     );
   }
 
-
   const role = roleIdToUserRole(user.roleId);
   const userData = user.userData;
   const volunteerData = user.volunteerData;
 
   // Determine active tab based on route or query param
-  const activeTab = router.query.tab as string || 'profile';
-  
+  const activeTab = (router.query.tab as string) || 'profile';
+
   const handleTabChange = (tab: string) => {
-    router.push({ pathname: router.pathname, query: { ...router.query, tab } }, undefined, { shallow: true });
+    router.push({ pathname: router.pathname, query: { ...router.query, tab } }, undefined, {
+      shallow: true,
+    });
   };
 
   // Don't render if role is null (shouldn't happen, but TypeScript safety)
@@ -119,68 +115,68 @@ export default function AdminUserProfile() {
 
   return (
     <ProtectedPage allowedRoles={[UserRole.ADMIN]}>
-        <AdminHeader />
-        <SuccessMessage message={saveMessage} />
-        <Flex minH="calc(100vh - 72px)" bg="gray.50">
-          {/* Left Sidebar */}
-          <Box w="320px" p={8} display={{ base: 'none', md: 'block' }} bg="white">
-            <ProfileNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+      <AdminHeader />
+      <SuccessMessage message={saveMessage} />
+      <Flex minH="calc(100vh - 72px)" bg="gray.50">
+        {/* Left Sidebar */}
+        <Box w="320px" p={8} display={{ base: 'none', md: 'block' }} bg="white">
+          <ProfileNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
-            {/* Profile Summary Card */}
-            <ProfileSummary
-              userData={userData}
-              userEmail={user.email}
-              isEditing={isEditingProfileSummary}
-              isSaving={isSaving}
-              editData={profileEditData}
-              onEditDataChange={setProfileEditData}
-              onStartEdit={handleStartEditProfileSummary}
-              onSave={handleSaveProfileSummary}
-              onCancel={handleCancelEditProfileSummary}
-            />
+          {/* Profile Summary Card */}
+          <ProfileSummary
+            userData={userData}
+            userEmail={user.email}
+            isEditing={isEditingProfileSummary}
+            isSaving={isSaving}
+            editData={profileEditData}
+            onEditDataChange={setProfileEditData}
+            onStartEdit={handleStartEditProfileSummary}
+            onSave={handleSaveProfileSummary}
+            onCancel={handleCancelEditProfileSummary}
+          />
+        </Box>
+
+        {/* Main Content */}
+        {activeTab === 'profile' || !activeTab ? (
+          <ProfileContent
+            user={user}
+            role={role}
+            userData={userData}
+            volunteerData={volunteerData}
+            editingField={editingField}
+            isSaving={isSaving}
+            cancerEditData={cancerEditData}
+            lovedOneEditData={lovedOneEditData}
+            treatmentOptions={treatmentOptions}
+            experienceOptions={experienceOptions}
+            isEditingAvailability={isEditingAvailability}
+            selectedTimeSlots={selectedTimeSlots}
+            isDragging={isDragging}
+            dragStart={dragStart}
+            getDragRangeSlots={getDragRangeSlots}
+            isSavingAvailability={isSavingAvailability}
+            onCancerEditDataChange={setCancerEditData}
+            onLovedOneEditDataChange={setLovedOneEditData}
+            onStartEditField={handleStartEditField}
+            onCancelEditField={handleCancelEditField}
+            onSaveField={handleSaveField}
+            onStartEditAvailability={handleStartEditAvailability}
+            onCancelEditAvailability={handleCancelEditAvailability}
+            onSaveAvailability={handleSaveAvailability}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+          />
+        ) : activeTab === 'forms' ? (
+          <Box flex="1" p={8} bg="white">
+            <Text>Forms content coming soon...</Text>
           </Box>
-
-          {/* Main Content */}
-          {activeTab === 'profile' || !activeTab ? (
-            <ProfileContent
-              user={user}
-              role={role}
-              userData={userData}
-              volunteerData={volunteerData}
-              editingField={editingField}
-              isSaving={isSaving}
-              cancerEditData={cancerEditData}
-              lovedOneEditData={lovedOneEditData}
-              treatmentOptions={treatmentOptions}
-              experienceOptions={experienceOptions}
-              isEditingAvailability={isEditingAvailability}
-              selectedTimeSlots={selectedTimeSlots}
-              isDragging={isDragging}
-              dragStart={dragStart}
-              getDragRangeSlots={getDragRangeSlots}
-              isSavingAvailability={isSavingAvailability}
-              onCancerEditDataChange={setCancerEditData}
-              onLovedOneEditDataChange={setLovedOneEditData}
-              onStartEditField={handleStartEditField}
-              onCancelEditField={handleCancelEditField}
-              onSaveField={handleSaveField}
-              onStartEditAvailability={handleStartEditAvailability}
-              onCancelEditAvailability={handleCancelEditAvailability}
-              onSaveAvailability={handleSaveAvailability}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-            />
-          ) : activeTab === 'forms' ? (
-            <Box flex="1" p={8} bg="white">
-              <Text>Forms content coming soon...</Text>
-            </Box>
-          ) : activeTab === 'matches' ? (
-            <Box flex="1" p={8} bg="white">
-              <Text>Matches content coming soon...</Text>
-            </Box>
-          ) : null}
-        </Flex>
+        ) : activeTab === 'matches' ? (
+          <Box flex="1" p={8} bg="white">
+            <Text>Matches content coming soon...</Text>
+          </Box>
+        ) : null}
+      </Flex>
     </ProtectedPage>
   );
 }

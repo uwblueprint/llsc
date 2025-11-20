@@ -48,38 +48,40 @@ export function CancerExperienceSection({
 
   return (
     <Box>
-      <Heading 
-        color={COLORS.veniceBlue} 
-        mb={6} 
+      <Heading
+        color={COLORS.veniceBlue}
+        mb={6}
         fontWeight={600}
         fontSize="22px"
         lineHeight="1.82em"
       >
         Blood cancer experience information
       </Heading>
-      
+
       <SimpleGrid columns={2} gap={8} position="relative">
         {/* Diagnosis */}
         <Box position="relative" zIndex={editingField === 'diagnosis' ? 20 : 'auto'}>
           <Flex justify="space-between" align="center" mb={2}>
-            <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">Diagnosis</Text>
+            <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">
+              Diagnosis
+            </Text>
             {editingField === 'diagnosis' ? (
               <HStack gap={2}>
-                <Button 
-                  size="xs" 
+                <Button
+                  size="xs"
                   variant="ghost"
-                  fontSize="sm" 
+                  fontSize="sm"
                   onClick={onCancelEdit}
                   disabled={isSaving}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  size="xs" 
-                  bg={COLORS.teal} 
-                  color="white" 
-                  fontSize="sm" 
-                  fontWeight={500} 
+                <Button
+                  size="xs"
+                  bg={COLORS.teal}
+                  color="white"
+                  fontSize="sm"
+                  fontWeight={500}
                   px={4.5}
                   py={2}
                   borderRadius="md"
@@ -94,12 +96,12 @@ export function CancerExperienceSection({
                 </Button>
               </HStack>
             ) : (
-              <Button 
-                size="xs" 
-                bg={COLORS.teal} 
-                color="white" 
-                fontSize="sm" 
-                fontWeight={500} 
+              <Button
+                size="xs"
+                bg={COLORS.teal}
+                color="white"
+                fontSize="sm"
+                fontWeight={500}
                 px={4.5}
                 py={2}
                 borderRadius="md"
@@ -126,11 +128,27 @@ export function CancerExperienceSection({
           ) : (
             <Flex gap={2} flexWrap="wrap">
               {userData?.diagnosis ? (
-                <Badge bg={COLORS.bgTealLight} color={COLORS.tealDarker} px={3} py={1} borderRadius="full" fontSize="14px" fontWeight={400} lineHeight="1.43em">
+                <Badge
+                  bg={COLORS.bgTealLight}
+                  color={COLORS.tealDarker}
+                  px={3}
+                  py={1}
+                  borderRadius="full"
+                  fontSize="14px"
+                  fontWeight={400}
+                  lineHeight="1.43em"
+                >
                   {userData.diagnosis}
                 </Badge>
               ) : (
-                <Text color={COLORS.textSecondary} fontSize="16px" fontWeight={400} lineHeight="1.5em">N/A</Text>
+                <Text
+                  color={COLORS.textSecondary}
+                  fontSize="16px"
+                  fontWeight={400}
+                  lineHeight="1.5em"
+                >
+                  N/A
+                </Text>
               )}
             </Flex>
           )}
@@ -139,24 +157,26 @@ export function CancerExperienceSection({
         {/* Date of Diagnosis */}
         <Box>
           <Flex justify="space-between" align="center" mb={2}>
-            <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">Date of Diagnosis</Text>
+            <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">
+              Date of Diagnosis
+            </Text>
             {editingField === 'dateOfDiagnosis' ? (
               <HStack gap={2}>
-                <Button 
-                  size="xs" 
+                <Button
+                  size="xs"
                   variant="ghost"
-                  fontSize="sm" 
+                  fontSize="sm"
                   onClick={onCancelEdit}
                   disabled={isSaving}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  size="xs" 
-                  bg={COLORS.teal} 
-                  color="white" 
-                  fontSize="sm" 
-                  fontWeight={500} 
+                <Button
+                  size="xs"
+                  bg={COLORS.teal}
+                  color="white"
+                  fontSize="sm"
+                  fontWeight={500}
                   px={4.5}
                   py={2}
                   borderRadius="md"
@@ -171,12 +191,12 @@ export function CancerExperienceSection({
                 </Button>
               </HStack>
             ) : (
-              <Button 
-                size="xs" 
-                bg={COLORS.teal} 
-                color="white" 
-                fontSize="sm" 
-                fontWeight={500} 
+              <Button
+                size="xs"
+                bg={COLORS.teal}
+                color="white"
+                fontSize="sm"
+                fontWeight={500}
                 px={4.5}
                 py={2}
                 borderRadius="md"
@@ -207,24 +227,26 @@ export function CancerExperienceSection({
         {/* Treatments */}
         <Box position="relative" zIndex={editingField === 'treatments' ? 20 : 'auto'}>
           <Flex justify="space-between" align="center" mb={2}>
-            <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">Treatments</Text>
+            <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">
+              Treatments
+            </Text>
             {editingField === 'treatments' ? (
               <HStack gap={2}>
-                <Button 
-                  size="xs" 
+                <Button
+                  size="xs"
                   variant="ghost"
-                  fontSize="sm" 
+                  fontSize="sm"
                   onClick={onCancelEdit}
                   disabled={isSaving}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  size="xs" 
-                  bg={COLORS.teal} 
-                  color="white" 
-                  fontSize="sm" 
-                  fontWeight={500} 
+                <Button
+                  size="xs"
+                  bg={COLORS.teal}
+                  color="white"
+                  fontSize="sm"
+                  fontWeight={500}
                   px={4.5}
                   py={2}
                   borderRadius="md"
@@ -239,12 +261,12 @@ export function CancerExperienceSection({
                 </Button>
               </HStack>
             ) : (
-              <Button 
-                size="xs" 
-                bg={COLORS.teal} 
-                color="white" 
-                fontSize="sm" 
-                fontWeight={500} 
+              <Button
+                size="xs"
+                bg={COLORS.teal}
+                color="white"
+                fontSize="sm"
+                fontWeight={500}
                 px={4.5}
                 py={2}
                 borderRadius="md"
@@ -263,20 +285,35 @@ export function CancerExperienceSection({
               <MultiSelectDropdown
                 options={treatmentOptions}
                 selectedValues={editData.treatments || []}
-                onSelectionChange={(values) => onEditDataChange({ ...editData, treatments: values })}
+                onSelectionChange={(values) =>
+                  onEditDataChange({ ...editData, treatments: values })
+                }
                 placeholder="Select treatments"
               />
             </Box>
           ) : (
             <VStack align="start" gap={1}>
               {userData?.treatments?.length ? (
-                userData.treatments.map(t => (
-                  <Text key={t.id} color={COLORS.textPrimary} fontSize="16px" fontWeight={400} lineHeight="1.5em">
+                userData.treatments.map((t) => (
+                  <Text
+                    key={t.id}
+                    color={COLORS.textPrimary}
+                    fontSize="16px"
+                    fontWeight={400}
+                    lineHeight="1.5em"
+                  >
                     {t.name}
                   </Text>
                 ))
               ) : (
-                <Text color={COLORS.textSecondary} fontSize="16px" fontWeight={400} lineHeight="1.5em">None listed</Text>
+                <Text
+                  color={COLORS.textSecondary}
+                  fontSize="16px"
+                  fontWeight={400}
+                  lineHeight="1.5em"
+                >
+                  None listed
+                </Text>
               )}
             </VStack>
           )}
@@ -285,24 +322,26 @@ export function CancerExperienceSection({
         {/* Experiences */}
         <Box position="relative" zIndex={editingField === 'experiences' ? 20 : 'auto'}>
           <Flex justify="space-between" align="center" mb={2}>
-            <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">Experiences</Text>
+            <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">
+              Experiences
+            </Text>
             {editingField === 'experiences' ? (
               <HStack gap={2}>
-                <Button 
-                  size="xs" 
+                <Button
+                  size="xs"
                   variant="ghost"
-                  fontSize="sm" 
+                  fontSize="sm"
                   onClick={onCancelEdit}
                   disabled={isSaving}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  size="xs" 
-                  bg={COLORS.teal} 
-                  color="white" 
-                  fontSize="sm" 
-                  fontWeight={500} 
+                <Button
+                  size="xs"
+                  bg={COLORS.teal}
+                  color="white"
+                  fontSize="sm"
+                  fontWeight={500}
                   px={4.5}
                   py={2}
                   borderRadius="md"
@@ -317,12 +356,12 @@ export function CancerExperienceSection({
                 </Button>
               </HStack>
             ) : (
-              <Button 
-                size="xs" 
-                bg={COLORS.teal} 
-                color="white" 
-                fontSize="sm" 
-                fontWeight={500} 
+              <Button
+                size="xs"
+                bg={COLORS.teal}
+                color="white"
+                fontSize="sm"
+                fontWeight={500}
                 px={4.5}
                 py={2}
                 borderRadius="md"
@@ -341,20 +380,35 @@ export function CancerExperienceSection({
               <MultiSelectDropdown
                 options={experienceOptions}
                 selectedValues={editData.experiences || []}
-                onSelectionChange={(values) => onEditDataChange({ ...editData, experiences: values })}
+                onSelectionChange={(values) =>
+                  onEditDataChange({ ...editData, experiences: values })
+                }
                 placeholder="Select experiences"
               />
             </Box>
           ) : (
             <VStack align="start" gap={1}>
               {userData?.experiences?.length ? (
-                userData.experiences.map(e => (
-                  <Text key={e.id} color={COLORS.textPrimary} fontSize="16px" fontWeight={400} lineHeight="1.5em">
+                userData.experiences.map((e) => (
+                  <Text
+                    key={e.id}
+                    color={COLORS.textPrimary}
+                    fontSize="16px"
+                    fontWeight={400}
+                    lineHeight="1.5em"
+                  >
                     {e.name}
                   </Text>
                 ))
               ) : (
-                <Text color={COLORS.textSecondary} fontSize="16px" fontWeight={400} lineHeight="1.5em">None listed</Text>
+                <Text
+                  color={COLORS.textSecondary}
+                  fontSize="16px"
+                  fontWeight={400}
+                  lineHeight="1.5em"
+                >
+                  None listed
+                </Text>
               )}
             </VStack>
           )}
@@ -363,4 +417,3 @@ export function CancerExperienceSection({
     </Box>
   );
 }
-

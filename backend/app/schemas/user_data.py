@@ -22,7 +22,7 @@ class ExperienceResponse(BaseModel):
 class UserDataResponse(BaseModel):
     id: UUID
     user_id: UUID
-    
+
     # Personal Information
     first_name: Optional[str]
     last_name: Optional[str]
@@ -44,7 +44,7 @@ class UserDataResponse(BaseModel):
     # Cancer Experience
     diagnosis: Optional[str]
     date_of_diagnosis: Optional[date]
-    
+
     # Custom entries
     other_ethnic_group: Optional[str]
     gender_identity_custom: Optional[str]
@@ -74,7 +74,7 @@ class UserDataUpdateRequest(BaseModel):
     Request schema for user_data updates, all fields optional.
     Supports partial updates for user's own data and loved one's data.
     """
-    
+
     # Personal Information
     first_name: Optional[str] = None
     last_name: Optional[str] = None
@@ -83,7 +83,7 @@ class UserDataUpdateRequest(BaseModel):
     city: Optional[str] = None
     province: Optional[str] = None
     postal_code: Optional[str] = None
-    
+
     # Demographics
     gender_identity: Optional[str] = None
     pronouns: Optional[List[str]] = Field(None, description="List of pronoun strings")
@@ -91,18 +91,18 @@ class UserDataUpdateRequest(BaseModel):
     marital_status: Optional[str] = None
     has_kids: Optional[str] = None
     timezone: Optional[str] = None
-    
+
     # User's Cancer Experience
     diagnosis: Optional[str] = None
     date_of_diagnosis: Optional[date] = None
     treatments: Optional[List[str]] = Field(None, description="List of treatment names")
     experiences: Optional[List[str]] = Field(None, description="List of experience names")
     additional_info: Optional[str] = None
-    
+
     # Loved One Demographics
     loved_one_gender_identity: Optional[str] = None
     loved_one_age: Optional[str] = None
-    
+
     # Loved One's Cancer Experience
     loved_one_diagnosis: Optional[str] = None
     loved_one_date_of_diagnosis: Optional[date] = None
@@ -110,4 +110,3 @@ class UserDataUpdateRequest(BaseModel):
     loved_one_experiences: Optional[List[str]] = Field(None, description="List of experience names")
 
     model_config = ConfigDict(from_attributes=True)
-

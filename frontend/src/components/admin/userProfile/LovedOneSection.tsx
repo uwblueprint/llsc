@@ -52,15 +52,13 @@ export function LovedOneSection({
   return (
     <>
       {/* Divider between user's own info and loved one info */}
-      {hasOwnCancer && (
-        <Box borderBottom="1px solid" borderColor={COLORS.grayBorder} />
-      )}
+      {hasOwnCancer && <Box borderBottom="1px solid" borderColor={COLORS.grayBorder} />}
 
       <Box>
         {!hasOwnCancer && (
-          <Heading 
-            color={COLORS.veniceBlue} 
-            mb={6} 
+          <Heading
+            color={COLORS.veniceBlue}
+            mb={6}
             fontWeight={600}
             fontSize="22px"
             lineHeight="1.82em"
@@ -69,9 +67,9 @@ export function LovedOneSection({
           </Heading>
         )}
         {hasOwnCancer && (
-          <Heading 
-            color={COLORS.veniceBlue} 
-            mb={6} 
+          <Heading
+            color={COLORS.veniceBlue}
+            mb={6}
             fontWeight={600}
             fontSize="22px"
             lineHeight="1.82em"
@@ -85,30 +83,35 @@ export function LovedOneSection({
             <Flex align="center" justify="space-between" mb={2}>
               <Flex align="center" gap={2}>
                 <FiHeart size={14} color={COLORS.veniceBlue} />
-                <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">
+                <Text
+                  fontWeight={600}
+                  color={COLORS.veniceBlue}
+                  fontSize="16px"
+                  lineHeight="1.875em"
+                >
                   Loved One&apos;s Diagnosis
                 </Text>
               </Flex>
               {editingField === 'lovedOneDiagnosis' ? (
                 <HStack gap={2}>
-                  <Button 
-                    size="xs" 
+                  <Button
+                    size="xs"
                     variant="ghost"
-                    fontSize="sm" 
+                    fontSize="sm"
                     onClick={onCancelEdit}
                     disabled={isSaving}
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    size="xs" 
-                    bg={COLORS.teal} 
-                    color="white" 
-                    fontSize="sm" 
-                    fontWeight={500} 
+                  <Button
+                    size="xs"
+                    bg={COLORS.teal}
+                    color="white"
+                    fontSize="sm"
+                    fontWeight={500}
                     px={4.5}
                     py={2}
-                    borderRadius="md" 
+                    borderRadius="md"
                     border="1px solid"
                     borderColor={COLORS.teal}
                     boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
@@ -120,12 +123,12 @@ export function LovedOneSection({
                   </Button>
                 </HStack>
               ) : (
-                <Button 
-                  size="xs" 
-                  bg={COLORS.teal} 
-                  color="white" 
-                  fontSize="sm" 
-                  fontWeight={500} 
+                <Button
+                  size="xs"
+                  bg={COLORS.teal}
+                  color="white"
+                  fontSize="sm"
+                  fontWeight={500}
                   px={4.5}
                   py={2}
                   borderRadius="md"
@@ -152,11 +155,27 @@ export function LovedOneSection({
             ) : (
               <Flex gap={2} flexWrap="wrap">
                 {userData?.lovedOneDiagnosis ? (
-                  <Badge bg={COLORS.bgTealLight} color={COLORS.tealDarker} px={3} py={1} borderRadius="full" fontSize="14px" fontWeight={400} lineHeight="1.43em">
+                  <Badge
+                    bg={COLORS.bgTealLight}
+                    color={COLORS.tealDarker}
+                    px={3}
+                    py={1}
+                    borderRadius="full"
+                    fontSize="14px"
+                    fontWeight={400}
+                    lineHeight="1.43em"
+                  >
                     {userData.lovedOneDiagnosis}
                   </Badge>
                 ) : (
-                  <Text color={COLORS.textSecondary} fontSize="16px" fontWeight={400} lineHeight="1.5em">N/A</Text>
+                  <Text
+                    color={COLORS.textSecondary}
+                    fontSize="16px"
+                    fontWeight={400}
+                    lineHeight="1.5em"
+                  >
+                    N/A
+                  </Text>
                 )}
               </Flex>
             )}
@@ -167,30 +186,35 @@ export function LovedOneSection({
             <Flex align="center" justify="space-between" mb={2}>
               <Flex align="center" gap={2}>
                 <FiHeart size={14} color={COLORS.veniceBlue} />
-                <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">
+                <Text
+                  fontWeight={600}
+                  color={COLORS.veniceBlue}
+                  fontSize="16px"
+                  lineHeight="1.875em"
+                >
                   Loved One&apos;s Date of Diagnosis
                 </Text>
               </Flex>
               {editingField === 'lovedOneDateOfDiagnosis' ? (
                 <HStack gap={2}>
-                  <Button 
-                    size="xs" 
+                  <Button
+                    size="xs"
                     variant="ghost"
-                    fontSize="sm" 
+                    fontSize="sm"
                     onClick={onCancelEdit}
                     disabled={isSaving}
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    size="xs" 
-                    bg={COLORS.teal} 
-                    color="white" 
-                    fontSize="sm" 
-                    fontWeight={500} 
+                  <Button
+                    size="xs"
+                    bg={COLORS.teal}
+                    color="white"
+                    fontSize="sm"
+                    fontWeight={500}
                     px={4.5}
                     py={2}
-                    borderRadius="md" 
+                    borderRadius="md"
                     border="1px solid"
                     borderColor={COLORS.teal}
                     boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
@@ -202,12 +226,12 @@ export function LovedOneSection({
                   </Button>
                 </HStack>
               ) : (
-                <Button 
-                  size="xs" 
-                  bg={COLORS.teal} 
-                  color="white" 
-                  fontSize="sm" 
-                  fontWeight={500} 
+                <Button
+                  size="xs"
+                  bg={COLORS.teal}
+                  color="white"
+                  fontSize="sm"
+                  fontWeight={500}
                   px={4.5}
                   py={2}
                   borderRadius="md"
@@ -229,8 +253,15 @@ export function LovedOneSection({
                 fontSize="16px"
               />
             ) : (
-              <Text color={COLORS.textPrimary} fontSize="16px" fontWeight={400} lineHeight="1.875em">
-                {userData?.lovedOneDateOfDiagnosis ? formatDateLong(userData.lovedOneDateOfDiagnosis) : 'N/A'}
+              <Text
+                color={COLORS.textPrimary}
+                fontSize="16px"
+                fontWeight={400}
+                lineHeight="1.875em"
+              >
+                {userData?.lovedOneDateOfDiagnosis
+                  ? formatDateLong(userData.lovedOneDateOfDiagnosis)
+                  : 'N/A'}
               </Text>
             )}
           </Box>
@@ -240,27 +271,32 @@ export function LovedOneSection({
             <Flex justify="space-between" align="center" mb={2}>
               <Flex align="center" gap={2}>
                 <FiHeart size={14} color={COLORS.veniceBlue} />
-                <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">
+                <Text
+                  fontWeight={600}
+                  color={COLORS.veniceBlue}
+                  fontSize="16px"
+                  lineHeight="1.875em"
+                >
                   Treatments Loved One Has Done
                 </Text>
               </Flex>
               {editingField === 'lovedOneTreatments' ? (
                 <HStack gap={2}>
-                  <Button 
-                    size="xs" 
+                  <Button
+                    size="xs"
                     variant="ghost"
-                    fontSize="sm" 
+                    fontSize="sm"
                     onClick={onCancelEdit}
                     disabled={isSaving}
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    size="xs" 
-                    bg={COLORS.teal} 
-                    color="white" 
-                    fontSize="sm" 
-                    fontWeight={500} 
+                  <Button
+                    size="xs"
+                    bg={COLORS.teal}
+                    color="white"
+                    fontSize="sm"
+                    fontWeight={500}
                     px={4.5}
                     py={2}
                     borderRadius="md"
@@ -275,12 +311,12 @@ export function LovedOneSection({
                   </Button>
                 </HStack>
               ) : (
-                <Button 
-                  size="xs" 
-                  bg={COLORS.teal} 
-                  color="white" 
-                  fontSize="sm" 
-                  fontWeight={500} 
+                <Button
+                  size="xs"
+                  bg={COLORS.teal}
+                  color="white"
+                  fontSize="sm"
+                  fontWeight={500}
                   px={4.5}
                   py={2}
                   borderRadius="md"
@@ -299,20 +335,35 @@ export function LovedOneSection({
                 <MultiSelectDropdown
                   options={treatmentOptions}
                   selectedValues={editData.treatments || []}
-                  onSelectionChange={(values) => onEditDataChange({ ...editData, treatments: values })}
+                  onSelectionChange={(values) =>
+                    onEditDataChange({ ...editData, treatments: values })
+                  }
                   placeholder="Select treatments"
                 />
               </Box>
             ) : (
               <VStack align="start" gap={1}>
                 {userData?.lovedOneTreatments?.length ? (
-                  userData.lovedOneTreatments.map(t => (
-                    <Text key={t.id} color={COLORS.textPrimary} fontSize="16px" fontWeight={400} lineHeight="1.5em">
+                  userData.lovedOneTreatments.map((t) => (
+                    <Text
+                      key={t.id}
+                      color={COLORS.textPrimary}
+                      fontSize="16px"
+                      fontWeight={400}
+                      lineHeight="1.5em"
+                    >
                       {t.name}
                     </Text>
                   ))
                 ) : (
-                  <Text color={COLORS.textSecondary} fontSize="16px" fontWeight={400} lineHeight="1.5em">None listed</Text>
+                  <Text
+                    color={COLORS.textSecondary}
+                    fontSize="16px"
+                    fontWeight={400}
+                    lineHeight="1.5em"
+                  >
+                    None listed
+                  </Text>
                 )}
               </VStack>
             )}
@@ -323,27 +374,32 @@ export function LovedOneSection({
             <Flex justify="space-between" align="center" mb={2}>
               <Flex align="center" gap={2}>
                 <FiHeart size={14} color={COLORS.veniceBlue} />
-                <Text fontWeight={600} color={COLORS.veniceBlue} fontSize="16px" lineHeight="1.875em">
+                <Text
+                  fontWeight={600}
+                  color={COLORS.veniceBlue}
+                  fontSize="16px"
+                  lineHeight="1.875em"
+                >
                   Experiences Loved One Had
                 </Text>
               </Flex>
               {editingField === 'lovedOneExperiences' ? (
                 <HStack gap={2}>
-                  <Button 
-                    size="xs" 
+                  <Button
+                    size="xs"
                     variant="ghost"
-                    fontSize="sm" 
+                    fontSize="sm"
                     onClick={onCancelEdit}
                     disabled={isSaving}
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    size="xs" 
-                    bg={COLORS.teal} 
-                    color="white" 
-                    fontSize="sm" 
-                    fontWeight={500} 
+                  <Button
+                    size="xs"
+                    bg={COLORS.teal}
+                    color="white"
+                    fontSize="sm"
+                    fontWeight={500}
                     px={4.5}
                     py={2}
                     borderRadius="md"
@@ -358,12 +414,12 @@ export function LovedOneSection({
                   </Button>
                 </HStack>
               ) : (
-                <Button 
-                  size="xs" 
-                  bg={COLORS.teal} 
-                  color="white" 
-                  fontSize="sm" 
-                  fontWeight={500} 
+                <Button
+                  size="xs"
+                  bg={COLORS.teal}
+                  color="white"
+                  fontSize="sm"
+                  fontWeight={500}
                   px={4.5}
                   py={2}
                   borderRadius="md"
@@ -382,20 +438,35 @@ export function LovedOneSection({
                 <MultiSelectDropdown
                   options={experienceOptions}
                   selectedValues={editData.experiences || []}
-                  onSelectionChange={(values) => onEditDataChange({ ...editData, experiences: values })}
+                  onSelectionChange={(values) =>
+                    onEditDataChange({ ...editData, experiences: values })
+                  }
                   placeholder="Select experiences"
                 />
               </Box>
             ) : (
               <VStack align="start" gap={1}>
                 {userData?.lovedOneExperiences?.length ? (
-                  userData.lovedOneExperiences.map(e => (
-                    <Text key={e.id} color={COLORS.textPrimary} fontSize="16px" fontWeight={400} lineHeight="1.5em">
+                  userData.lovedOneExperiences.map((e) => (
+                    <Text
+                      key={e.id}
+                      color={COLORS.textPrimary}
+                      fontSize="16px"
+                      fontWeight={400}
+                      lineHeight="1.5em"
+                    >
                       {e.name}
                     </Text>
                   ))
                 ) : (
-                  <Text color={COLORS.textSecondary} fontSize="16px" fontWeight={400} lineHeight="1.5em">None listed</Text>
+                  <Text
+                    color={COLORS.textSecondary}
+                    fontSize="16px"
+                    fontWeight={400}
+                    lineHeight="1.5em"
+                  >
+                    None listed
+                  </Text>
                 )}
               </VStack>
             )}
@@ -405,4 +476,3 @@ export function LovedOneSection({
     </>
   );
 }
-

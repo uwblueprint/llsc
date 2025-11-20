@@ -40,9 +40,9 @@ export const AdminHeader: React.FC = () => {
 
         {/* Navigation Items */}
         <Flex align="center" gap="32px">
-          <Flex 
-            align="center" 
-            gap="8px" 
+          <Flex
+            align="center"
+            gap="8px"
             cursor="pointer"
             onClick={handleTaskListClick}
             _hover={{ opacity: 0.7 }}
@@ -51,9 +51,9 @@ export const AdminHeader: React.FC = () => {
             <FiFolder size="16px" color={COLORS.gray700} />
             <LabelSmall color={COLORS.gray700}>Task List</LabelSmall>
           </Flex>
-          <Flex 
-            align="center" 
-            gap="8px" 
+          <Flex
+            align="center"
+            gap="8px"
             cursor="pointer"
             onClick={handleProgressTrackerClick}
             _hover={{ opacity: 0.7 }}

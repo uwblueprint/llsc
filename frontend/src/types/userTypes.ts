@@ -61,7 +61,7 @@ export interface TimeBlock {
 export interface AvailabilityTemplate {
   dayOfWeek: number; // 0=Monday, 1=Tuesday, ..., 6=Sunday
   startTime: string; // Time string in format "HH:MM:SS"
-  endTime: string;   // Time string in format "HH:MM:SS"
+  endTime: string; // Time string in format "HH:MM:SS"
 }
 
 export interface UserResponse {
@@ -81,4 +81,3 @@ export interface UserResponse {
   volunteerData?: VolunteerData | null;
   availability?: AvailabilityTemplate[];
 }
-

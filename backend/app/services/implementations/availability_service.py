@@ -1,5 +1,5 @@
 import logging
-from datetime import timedelta, time as dt_time
+from datetime import time as dt_time
 from typing import List
 
 from fastapi import HTTPException
@@ -28,25 +28,22 @@ class AvailabilityService:
         """
         try:
             user_id = req.user_id
-            user = self.db.query(User).filter_by(id=user_id).one()
-            
+            # Verify user exists
+            self.db.query(User).filter_by(id=user_id).one()
+
             # Get templates
-            templates = self.db.query(AvailabilityTemplate).filter_by(
-                user_id=user_id, is_active=True
-            ).all()
-            
+            templates = self.db.query(AvailabilityTemplate).filter_by(user_id=user_id, is_active=True).all()
+
             # Convert to response format
             template_slots: List[AvailabilityTemplateSlot] = []
             for template in templates:
-                template_slots.append(AvailabilityTemplateSlot(
-                    day_of_week=template.day_of_week,
-                    start_time=template.start_time,
-                    end_time=template.end_time
-                ))
-            
-            validated_data = AvailabilityEntity.model_validate(
-                {"user_id": user_id, "templates": template_slots}
-            )
+                template_slots.append(
+                    AvailabilityTemplateSlot(
+                        day_of_week=template.day_of_week, start_time=template.start_time, end_time=template.end_time
+                    )
+                )
+
+            validated_data = AvailabilityEntity.model_validate({"user_id": user_id, "templates": template_slots})
             return validated_data
 
         except Exception as e:
@@ -62,53 +59,51 @@ class AvailabilityService:
         added = 0
         try:
             user_id = availability.user_id
-            user = self.db.query(User).filter_by(id=user_id).one()
-            
+            # Verify user exists
+            self.db.query(User).filter_by(id=user_id).one()
+
             # Delete all existing templates for this user
             self.db.query(AvailabilityTemplate).filter_by(user_id=user_id).delete()
-            
+
             # Track templates we've seen to avoid duplicates
             seen_templates = set()
-            
+
             for template_slot in availability.templates:
                 # Validate day_of_week
                 if not (0 <= template_slot.day_of_week <= 6):
                     raise HTTPException(
                         status_code=400,
-                        detail=f"Invalid day_of_week: {template_slot.day_of_week}. Must be 0-6 (Monday-Sunday)"
+                        detail=f"Invalid day_of_week: {template_slot.day_of_week}. Must be 0-6 (Monday-Sunday)",
                     )
-                
+
                 # Validate time range
                 if template_slot.end_time <= template_slot.start_time:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"end_time must be after start_time"
-                    )
-                
+                    raise HTTPException(status_code=400, detail="end_time must be after start_time")
+
                 # Create template for each 30-minute block in the range
                 current_time = template_slot.start_time
                 end_time = template_slot.end_time
-                
+
                 while current_time < end_time:
                     # Calculate next 30-minute increment
                     next_time = self._add_minutes(current_time, 30)
                     if next_time > end_time:
                         next_time = end_time
-                    
+
                     template_key = (template_slot.day_of_week, current_time)
-                    
+
                     if template_key not in seen_templates:
                         template = AvailabilityTemplate(
                             user_id=user_id,
                             day_of_week=template_slot.day_of_week,
                             start_time=current_time,
                             end_time=next_time,
-                            is_active=True
+                            is_active=True,
                         )
                         self.db.add(template)
                         seen_templates.add(template_key)
                         added += 1
-                    
+
                     current_time = next_time
 
             self.db.flush()
@@ -133,53 +128,47 @@ class AvailabilityService:
 
         try:
             user_id = req.user_id
-            user = self.db.query(User).filter(User.id == user_id).one()
-            
+            # Verify user exists
+            self.db.query(User).filter(User.id == user_id).one()
+
             # Collect templates to delete
             templates_to_delete = set()
-            
+
             for template_slot in req.templates:
                 # Validate day_of_week
                 if not (0 <= template_slot.day_of_week <= 6):
                     self.logger.warning(f"Skipping invalid day_of_week: {template_slot.day_of_week}")
                     continue
-                
+
                 # Find all templates in this range
                 current_time = template_slot.start_time
                 end_time = template_slot.end_time
-                
+
                 while current_time < end_time:
                     templates_to_delete.add((template_slot.day_of_week, current_time))
                     current_time = self._add_minutes(current_time, 30)
-            
+
             # Delete matching templates
             for day_of_week, time_val in templates_to_delete:
                 deleted_count = (
                     self.db.query(AvailabilityTemplate)
-                    .filter_by(
-                        user_id=user_id,
-                        day_of_week=day_of_week,
-                        start_time=time_val,
-                        is_active=True
-                    )
+                    .filter_by(user_id=user_id, day_of_week=day_of_week, start_time=time_val, is_active=True)
                     .delete()
                 )
                 deleted += deleted_count
 
             self.db.flush()
-            
+
             # Get remaining templates for response
-            templates = self.db.query(AvailabilityTemplate).filter_by(
-                user_id=user_id, is_active=True
-            ).all()
-            
+            templates = self.db.query(AvailabilityTemplate).filter_by(user_id=user_id, is_active=True).all()
+
             remaining_slots: List[AvailabilityTemplateSlot] = []
             for template in templates:
-                remaining_slots.append(AvailabilityTemplateSlot(
-                    day_of_week=template.day_of_week,
-                    start_time=template.start_time,
-                    end_time=template.end_time
-                ))
+                remaining_slots.append(
+                    AvailabilityTemplateSlot(
+                        day_of_week=template.day_of_week, start_time=template.start_time, end_time=template.end_time
+                    )
+                )
 
             response = DeleteAvailabilityResponse.model_validate(
                 {"user_id": req.user_id, "deleted": deleted, "templates": remaining_slots}

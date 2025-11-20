@@ -1,21 +1,23 @@
 import os
-import pytest
-from datetime import date, datetime, timedelta, time as dt_time, timezone
+from datetime import date
+from datetime import time as dt_time
 from uuid import uuid4
+
+import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.models import AvailabilityTemplate, Role, User, UserData, Treatment, Experience, TimeBlock
-from app.schemas.user import UserRole
-from app.schemas.user_data import UserDataUpdateRequest
+from app.models import AvailabilityTemplate, Experience, Role, Treatment, User, UserData
 from app.schemas.availability import (
     AvailabilityTemplateSlot,
     CreateAvailabilityRequest,
     DeleteAvailabilityRequest,
 )
-from app.services.implementations.user_service import UserService
+from app.schemas.user import UserRole
+from app.schemas.user_data import UserDataUpdateRequest
 from app.services.implementations.availability_service import AvailabilityService
+from app.services.implementations.user_service import UserService
 
 # Test DB Configuration - Always require Postgres for full parity
 POSTGRES_DATABASE_URL = os.getenv("POSTGRES_TEST_DATABASE_URL")
@@ -31,8 +33,6 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 @pytest.fixture(scope="function")
 def db_session():
     """Provide a clean database session for each test"""
-    from sqlalchemy import text
-    from sqlalchemy.exc import IntegrityError
 
     session = TestingSessionLocal()
 
@@ -219,11 +219,11 @@ async def test_update_treatments_clears_old_and_adds_new(db_session, test_user_w
 
     assert result.user_data is not None
     result_treatment_names = {t.name for t in result.user_data.treatments}
-    
+
     # Verify old treatments are removed
     assert "Chemotherapy" not in result_treatment_names
     assert "Radiation" not in result_treatment_names
-    
+
     # Verify new treatments are added
     assert "Immunotherapy" in result_treatment_names
     assert "Oral Chemotherapy" in result_treatment_names
@@ -251,11 +251,11 @@ async def test_update_experiences_clears_old_and_adds_new(db_session, test_user_
 
     assert result.user_data is not None
     result_experience_names = {e.name for e in result.user_data.experiences}
-    
+
     # Verify old experiences are removed
     assert "Fatigue" not in result_experience_names
     assert "Anxiety / Depression" not in result_experience_names
-    
+
     # Verify new experiences are added
     assert "Brain Fog" in result_experience_names
     assert "Feeling Overwhelmed" in result_experience_names
@@ -284,12 +284,12 @@ async def test_update_treatments_with_empty_list_clears_all(db_session, test_use
 async def test_update_loved_one_treatments(db_session, test_user_with_data):
     """Test updating loved one treatments"""
     user, user_data = test_user_with_data
-    
+
     # Add initial loved one treatments
     treatment1 = db_session.query(Treatment).filter(Treatment.name == "Chemotherapy").first()
     user_data.loved_one_treatments.append(treatment1)
     db_session.commit()
-    
+
     user_service = UserService(db_session)
 
     # Update with new loved one treatments
@@ -301,10 +301,10 @@ async def test_update_loved_one_treatments(db_session, test_user_with_data):
 
     assert result.user_data is not None
     result_treatment_names = {t.name for t in result.user_data.loved_one_treatments}
-    
+
     # Verify old treatment is removed
     assert "Chemotherapy" not in result_treatment_names
-    
+
     # Verify new treatments are added
     assert "Radiation" in result_treatment_names
     assert "Immunotherapy" in result_treatment_names
@@ -315,12 +315,12 @@ async def test_update_loved_one_treatments(db_session, test_user_with_data):
 async def test_update_loved_one_experiences(db_session, test_user_with_data):
     """Test updating loved one experiences"""
     user, user_data = test_user_with_data
-    
+
     # Add initial loved one experiences
     experience1 = db_session.query(Experience).filter(Experience.name == "Fatigue").first()
     user_data.loved_one_experiences.append(experience1)
     db_session.commit()
-    
+
     user_service = UserService(db_session)
 
     # Update with new loved one experiences
@@ -332,10 +332,10 @@ async def test_update_loved_one_experiences(db_session, test_user_with_data):
 
     assert result.user_data is not None
     result_experience_names = {e.name for e in result.user_data.loved_one_experiences}
-    
+
     # Verify old experience is removed
     assert "Fatigue" not in result_experience_names
-    
+
     # Verify new experiences are added
     assert "Anxiety / Depression" in result_experience_names
     assert "Brain Fog" in result_experience_names
@@ -407,7 +407,7 @@ async def test_update_with_invalid_treatment_name_ignores_it(db_session, test_us
 
     assert result.user_data is not None
     treatment_names = {t.name for t in result.user_data.treatments}
-    
+
     # Only valid treatments should be added
     assert "Chemotherapy" in treatment_names
     assert "Radiation" in treatment_names
@@ -425,7 +425,7 @@ async def test_update_user_not_found_raises_error(db_session):
 
     with pytest.raises(Exception) as exc_info:
         await user_service.update_user_data_by_id(fake_user_id, update_request)
-    
+
     assert "not found" in str(exc_info.value).lower() or exc_info.value.status_code == 404
 
 
@@ -494,7 +494,7 @@ def volunteer_user(db_session):
 async def test_create_availability_adds_templates(db_session, volunteer_user):
     """Test that creating availability adds templates correctly"""
     availability_service = AvailabilityService(db_session)
-    
+
     # Create templates: Monday 10:00 AM to 11:30 AM
     templates = [
         AvailabilityTemplateSlot(
@@ -503,17 +503,17 @@ async def test_create_availability_adds_templates(db_session, volunteer_user):
             end_time=dt_time(11, 30),
         )
     ]
-    
+
     create_request = CreateAvailabilityRequest(
         user_id=volunteer_user.id,
         templates=templates,
     )
-    
+
     result = await availability_service.create_availability(create_request)
-    
+
     assert result.user_id == volunteer_user.id
     assert result.added == 3  # 10:00, 10:30, 11:00 (3 templates)
-    
+
     # Verify templates were created
     templates = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id).all()
     assert len(templates) == 3
@@ -529,7 +529,7 @@ async def test_create_availability_adds_templates(db_session, volunteer_user):
 async def test_create_availability_multiple_ranges(db_session, volunteer_user):
     """Test creating availability with multiple time ranges"""
     availability_service = AvailabilityService(db_session)
-    
+
     templates = [
         AvailabilityTemplateSlot(
             day_of_week=0,  # Monday
@@ -542,17 +542,17 @@ async def test_create_availability_multiple_ranges(db_session, volunteer_user):
             end_time=dt_time(15, 0),
         ),
     ]
-    
+
     create_request = CreateAvailabilityRequest(
         user_id=volunteer_user.id,
         templates=templates,
     )
-    
+
     result = await availability_service.create_availability(create_request)
-    
+
     # Should add 4 templates total (2 from each range)
     assert result.added == 4
-    
+
     templates = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id).all()
     assert len(templates) == 4
 
@@ -561,7 +561,7 @@ async def test_create_availability_multiple_ranges(db_session, volunteer_user):
 async def test_delete_availability_removes_templates(db_session, volunteer_user):
     """Test that deleting availability removes templates correctly"""
     availability_service = AvailabilityService(db_session)
-    
+
     # First, create some availability
     templates = [
         AvailabilityTemplateSlot(
@@ -573,10 +573,10 @@ async def test_delete_availability_removes_templates(db_session, volunteer_user)
     await availability_service.create_availability(
         CreateAvailabilityRequest(user_id=volunteer_user.id, templates=templates)
     )
-    
+
     templates = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id).all()
     assert len(templates) == 4  # 10:00, 10:30, 11:00, 11:30
-    
+
     # Now delete a portion of it (10:00 to 11:00, should remove 2 templates)
     delete_templates = [
         AvailabilityTemplateSlot(
@@ -585,21 +585,19 @@ async def test_delete_availability_removes_templates(db_session, volunteer_user)
             end_time=dt_time(11, 0),
         )
     ]
-    
+
     delete_request = DeleteAvailabilityRequest(
         user_id=volunteer_user.id,
         templates=delete_templates,
     )
-    
+
     result = await availability_service.delete_availability(delete_request)
-    
+
     assert result.user_id == volunteer_user.id
     assert result.deleted == 2  # Removed 10:00 and 10:30
-    
+
     # Verify remaining templates
-    remaining = db_session.query(AvailabilityTemplate).filter_by(
-        user_id=volunteer_user.id, is_active=True
-    ).all()
+    remaining = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id, is_active=True).all()
     assert len(remaining) == 2  # Should have 11:00 and 11:30 left
     times = {t.start_time for t in remaining}
     assert dt_time(11, 0) in times
@@ -610,7 +608,7 @@ async def test_delete_availability_removes_templates(db_session, volunteer_user)
 async def test_delete_availability_ignores_non_existent(db_session, volunteer_user):
     """Test that deleting availability ignores non-existent templates"""
     availability_service = AvailabilityService(db_session)
-    
+
     # Create some availability
     templates = [
         AvailabilityTemplateSlot(
@@ -622,10 +620,10 @@ async def test_delete_availability_ignores_non_existent(db_session, volunteer_us
     await availability_service.create_availability(
         CreateAvailabilityRequest(user_id=volunteer_user.id, templates=templates)
     )
-    
+
     templates = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id).all()
     assert len(templates) == 2
-    
+
     # Try to delete templates that don't exist (Tuesday 14:00 to 15:00)
     delete_templates = [
         AvailabilityTemplateSlot(
@@ -634,21 +632,19 @@ async def test_delete_availability_ignores_non_existent(db_session, volunteer_us
             end_time=dt_time(15, 0),
         )
     ]
-    
+
     delete_request = DeleteAvailabilityRequest(
         user_id=volunteer_user.id,
         templates=delete_templates,
     )
-    
+
     result = await availability_service.delete_availability(delete_request)
-    
+
     # Should delete 0 templates since none exist
     assert result.deleted == 0
-    
+
     # Verify original templates are still there
-    remaining = db_session.query(AvailabilityTemplate).filter_by(
-        user_id=volunteer_user.id, is_active=True
-    ).all()
+    remaining = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id, is_active=True).all()
     assert len(remaining) == 2
 
 
@@ -656,7 +652,7 @@ async def test_delete_availability_ignores_non_existent(db_session, volunteer_us
 async def test_delete_all_availability(db_session, volunteer_user):
     """Test deleting all availability"""
     availability_service = AvailabilityService(db_session)
-    
+
     # Create availability
     templates = [
         AvailabilityTemplateSlot(
@@ -668,10 +664,10 @@ async def test_delete_all_availability(db_session, volunteer_user):
     await availability_service.create_availability(
         CreateAvailabilityRequest(user_id=volunteer_user.id, templates=templates)
     )
-    
+
     templates = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id).all()
     assert len(templates) == 4
-    
+
     # Delete all availability
     delete_templates = [
         AvailabilityTemplateSlot(
@@ -684,15 +680,13 @@ async def test_delete_all_availability(db_session, volunteer_user):
         user_id=volunteer_user.id,
         templates=delete_templates,
     )
-    
+
     result = await availability_service.delete_availability(delete_request)
-    
+
     assert result.deleted == 4
-    
+
     # Verify all templates are removed
-    remaining = db_session.query(AvailabilityTemplate).filter_by(
-        user_id=volunteer_user.id, is_active=True
-    ).all()
+    remaining = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id, is_active=True).all()
     assert len(remaining) == 0
 
 
@@ -700,7 +694,7 @@ async def test_delete_all_availability(db_session, volunteer_user):
 async def test_delete_availability_user_not_found(db_session):
     """Test that deleting availability raises error for non-existent user"""
     availability_service = AvailabilityService(db_session)
-    
+
     fake_user_id = uuid4()
     delete_templates = [
         AvailabilityTemplateSlot(
@@ -709,15 +703,15 @@ async def test_delete_availability_user_not_found(db_session):
             end_time=dt_time(11, 0),
         )
     ]
-    
+
     delete_request = DeleteAvailabilityRequest(
         user_id=fake_user_id,
         templates=delete_templates,
     )
-    
+
     with pytest.raises(Exception) as exc_info:
         await availability_service.delete_availability(delete_request)
-    
+
     # The service currently raises 500 for user not found (could be improved to 404)
     assert exc_info.value.status_code == 500
 
@@ -726,7 +720,7 @@ async def test_delete_availability_user_not_found(db_session):
 async def test_create_availability_user_not_found(db_session):
     """Test that creating availability raises error for non-existent user"""
     availability_service = AvailabilityService(db_session)
-    
+
     fake_user_id = uuid4()
     templates = [
         AvailabilityTemplateSlot(
@@ -735,15 +729,14 @@ async def test_create_availability_user_not_found(db_session):
             end_time=dt_time(11, 0),
         )
     ]
-    
+
     create_request = CreateAvailabilityRequest(
         user_id=fake_user_id,
         templates=templates,
     )
-    
+
     with pytest.raises(Exception) as exc_info:
         await availability_service.create_availability(create_request)
-    
+
     # The service currently raises 500 for user not found (could be improved to 404)
     assert exc_info.value.status_code == 500
-

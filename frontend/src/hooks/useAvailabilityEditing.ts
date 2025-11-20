@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
-import { getUserById, createAvailability, deleteAvailability, AvailabilityTemplate } from '@/APIClients/authAPIClient';
+import {
+  getUserById,
+  createAvailability,
+  deleteAvailability,
+  AvailabilityTemplate,
+} from '@/APIClients/authAPIClient';
 import { UserResponse } from '@/types/userTypes';
 import { SaveMessage } from '@/types/userProfileTypes';
 
@@ -44,7 +49,7 @@ export function useAvailabilityEditing({
         const startKey = `${dragStart.dayIndex}-${dragStart.timeIndex}`;
         const isRemoving = selectedTimeSlots.has(startKey);
 
-        slotsInRange.forEach(key => {
+        slotsInRange.forEach((key) => {
           if (isRemoving) {
             newSlots.delete(key);
           } else {
@@ -69,9 +74,9 @@ export function useAvailabilityEditing({
     const slots = new Set<string>();
     if (user?.availability) {
       // Convert availability templates to grid slots
-      user.availability.forEach(template => {
+      user.availability.forEach((template) => {
         const dayOfWeek = template.dayOfWeek; // Already 0=Mon, 6=Sun
-        
+
         // Parse start and end times (format: "HH:MM:SS" or "HH:MM")
         const parseTime = (timeStr: string): { hour: number; minute: number } => {
           const parts = timeStr.split(':');
@@ -80,14 +85,14 @@ export function useAvailabilityEditing({
             minute: parseInt(parts[1], 10),
           };
         };
-        
+
         const startTime = parseTime(template.startTime);
         const endTime = parseTime(template.endTime);
-        
+
         // Calculate time indices
         const startTimeIndex = (startTime.hour - 8) * 2 + (startTime.minute === 30 ? 1 : 0);
         const endTimeIndex = (endTime.hour - 8) * 2 + (endTime.minute === 30 ? 1 : 0);
-        
+
         // Add all slots in the range
         for (let timeIndex = startTimeIndex; timeIndex < endTimeIndex; timeIndex++) {
           if (timeIndex >= 0 && timeIndex < 48) {
@@ -137,7 +142,7 @@ export function useAvailabilityEditing({
     const startKey = `${dragStart.dayIndex}-${dragStart.timeIndex}`;
     const isRemoving = selectedTimeSlots.has(startKey);
 
-    slotsInRange.forEach(key => {
+    slotsInRange.forEach((key) => {
       if (isRemoving) {
         newSlots.delete(key);
       } else {
@@ -153,7 +158,7 @@ export function useAvailabilityEditing({
 
   const getDragRangeSlots = (): Set<string> => {
     if (!dragStart || !dragEnd) return new Set();
-    
+
     const minDay = Math.min(dragStart.dayIndex, dragEnd.dayIndex);
     const maxDay = Math.max(dragStart.dayIndex, dragEnd.dayIndex);
     const minTime = Math.min(dragStart.timeIndex, dragEnd.timeIndex);
@@ -173,13 +178,15 @@ export function useAvailabilityEditing({
    */
   const convertSlotsToTemplates = (): AvailabilityTemplate[] => {
     const templates: AvailabilityTemplate[] = [];
-    const slots = Array.from(selectedTimeSlots).map(key => {
-      const [dayIndex, timeIndex] = key.split('-').map(Number);
-      return { dayIndex, timeIndex };
-    }).sort((a, b) => {
-      if (a.dayIndex !== b.dayIndex) return a.dayIndex - b.dayIndex;
-      return a.timeIndex - b.timeIndex;
-    });
+    const slots = Array.from(selectedTimeSlots)
+      .map((key) => {
+        const [dayIndex, timeIndex] = key.split('-').map(Number);
+        return { dayIndex, timeIndex };
+      })
+      .sort((a, b) => {
+        if (a.dayIndex !== b.dayIndex) return a.dayIndex - b.dayIndex;
+        return a.timeIndex - b.timeIndex;
+      });
 
     interface TemplateSlot {
       dayIndex: number;
@@ -189,14 +196,18 @@ export function useAvailabilityEditing({
     let currentRange: TemplateSlot | null = null;
 
     slots.forEach(({ dayIndex, timeIndex }) => {
-      if (!currentRange || currentRange.dayIndex !== dayIndex || currentRange.endTimeIndex !== timeIndex - 1) {
+      if (
+        !currentRange ||
+        currentRange.dayIndex !== dayIndex ||
+        currentRange.endTimeIndex !== timeIndex - 1
+      ) {
         if (currentRange) {
           // Convert timeIndex to hours and minutes
           const startHour = 8 + Math.floor(currentRange.startTimeIndex / 2);
           const startMinute = (currentRange.startTimeIndex % 2) * 30;
           const endHour = 8 + Math.floor((currentRange.endTimeIndex + 1) / 2);
           const endMinute = ((currentRange.endTimeIndex + 1) % 2) * 30;
-          
+
           templates.push({
             dayOfWeek: currentRange.dayIndex,
             startTime: `${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00`,
@@ -217,7 +228,7 @@ export function useAvailabilityEditing({
       const startMinute = (range.startTimeIndex % 2) * 30;
       const endHour = 8 + Math.floor((range.endTimeIndex + 1) / 2);
       const endMinute = ((range.endTimeIndex + 1) % 2) * 30;
-      
+
       templates.push({
         dayOfWeek: range.dayIndex,
         startTime: `${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00`,
@@ -230,7 +241,7 @@ export function useAvailabilityEditing({
 
   const handleSaveAvailability = async () => {
     if (!userId || !user) return;
-    
+
     setIsSaving(true);
     try {
       // Convert selected slots to templates and create them

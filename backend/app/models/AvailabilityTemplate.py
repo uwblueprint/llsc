@@ -1,8 +1,7 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Time
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Time
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from sqlalchemy import DateTime
 
 from .Base import Base
 
@@ -13,6 +12,7 @@ class AvailabilityTemplate(Base):
     Each template represents a time slot on a specific day of the week.
     These templates are projected forward to create specific TimeBlocks for matches.
     """
+
     __tablename__ = "availability_templates"
 
     id = Column(Integer, primary_key=True)
@@ -23,7 +23,7 @@ class AvailabilityTemplate(Base):
 
     # Time of day (just time, no date)
     start_time = Column(Time, nullable=False)  # e.g., 14:00:00
-    end_time = Column(Time, nullable=False)    # e.g., 16:00:00
+    end_time = Column(Time, nullable=False)  # e.g., 16:00:00
 
     # Optional: for future enhancements (e.g., temporarily disable a template)
     is_active = Column(Boolean, default=True)
@@ -32,4 +32,3 @@ class AvailabilityTemplate(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     user = relationship("User", back_populates="availability_templates")
-

@@ -13,19 +13,19 @@ export function ProfileNavigation({ activeTab, onTabChange }: ProfileNavigationP
   const isMatchesActive = activeTab === 'matches';
 
   return (
-    <Box 
-      border="1px solid" 
-      borderColor={COLORS.grayBorder} 
-      borderRadius="md" 
+    <Box
+      border="1px solid"
+      borderColor={COLORS.grayBorder}
+      borderRadius="md"
       overflow="hidden"
       mb={8}
     >
       <VStack align="stretch" gap={0}>
-        <Button 
-          variant="ghost" 
-          justifyContent="flex-start" 
+        <Button
+          variant="ghost"
+          justifyContent="flex-start"
           bg={isProfileActive ? 'blue.50' : 'transparent'}
-          color={isProfileActive ? COLORS.veniceBlue : COLORS.textSecondary} 
+          color={isProfileActive ? COLORS.veniceBlue : COLORS.textSecondary}
           fontWeight={isProfileActive ? 600 : 400}
           fontSize="sm"
           px={4}
@@ -40,11 +40,11 @@ export function ProfileNavigation({ activeTab, onTabChange }: ProfileNavigationP
             <Text>Profile Information</Text>
           </HStack>
         </Button>
-        <Button 
-          variant="ghost" 
-          justifyContent="flex-start" 
+        <Button
+          variant="ghost"
+          justifyContent="flex-start"
           bg={isFormsActive ? 'blue.50' : 'transparent'}
-          color={isFormsActive ? COLORS.veniceBlue : COLORS.textSecondary} 
+          color={isFormsActive ? COLORS.veniceBlue : COLORS.textSecondary}
           fontWeight={isFormsActive ? 600 : 400}
           fontSize="sm"
           px={4}
@@ -59,11 +59,11 @@ export function ProfileNavigation({ activeTab, onTabChange }: ProfileNavigationP
             <Text>Forms</Text>
           </HStack>
         </Button>
-        <Button 
-          variant="ghost" 
-          justifyContent="flex-start" 
+        <Button
+          variant="ghost"
+          justifyContent="flex-start"
           bg={isMatchesActive ? 'blue.50' : 'transparent'}
-          color={isMatchesActive ? COLORS.veniceBlue : COLORS.textSecondary} 
+          color={isMatchesActive ? COLORS.veniceBlue : COLORS.textSecondary}
           fontWeight={isMatchesActive ? 600 : 400}
           fontSize="sm"
           px={4}
@@ -82,4 +82,3 @@ export function ProfileNavigation({ activeTab, onTabChange }: ProfileNavigationP
     </Box>
   );
 }
-

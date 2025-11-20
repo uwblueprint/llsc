@@ -462,22 +462,26 @@ export const updateUserData = async (
     lovedOneDateOfDiagnosis?: string;
     lovedOneTreatments?: string[];
     lovedOneExperiences?: string[];
-  }
+  },
 ): Promise<UserResponse> => {
   // Convert camelCase to snake_case for backend
   const backendData: Record<string, unknown> = {};
-  
+
   if (userDataUpdate.firstName !== undefined) backendData.first_name = userDataUpdate.firstName;
   if (userDataUpdate.lastName !== undefined) backendData.last_name = userDataUpdate.lastName;
-  if (userDataUpdate.dateOfBirth !== undefined) backendData.date_of_birth = userDataUpdate.dateOfBirth;
+  if (userDataUpdate.dateOfBirth !== undefined)
+    backendData.date_of_birth = userDataUpdate.dateOfBirth;
   if (userDataUpdate.phone !== undefined) backendData.phone = userDataUpdate.phone;
   if (userDataUpdate.city !== undefined) backendData.city = userDataUpdate.city;
   if (userDataUpdate.province !== undefined) backendData.province = userDataUpdate.province;
   if (userDataUpdate.postalCode !== undefined) backendData.postal_code = userDataUpdate.postalCode;
-  if (userDataUpdate.genderIdentity !== undefined) backendData.gender_identity = userDataUpdate.genderIdentity;
+  if (userDataUpdate.genderIdentity !== undefined)
+    backendData.gender_identity = userDataUpdate.genderIdentity;
   if (userDataUpdate.pronouns !== undefined) backendData.pronouns = userDataUpdate.pronouns;
-  if (userDataUpdate.ethnicGroup !== undefined) backendData.ethnic_group = userDataUpdate.ethnicGroup;
-  if (userDataUpdate.maritalStatus !== undefined) backendData.marital_status = userDataUpdate.maritalStatus;
+  if (userDataUpdate.ethnicGroup !== undefined)
+    backendData.ethnic_group = userDataUpdate.ethnicGroup;
+  if (userDataUpdate.maritalStatus !== undefined)
+    backendData.marital_status = userDataUpdate.maritalStatus;
   if (userDataUpdate.hasKids !== undefined) backendData.has_kids = userDataUpdate.hasKids;
   if (userDataUpdate.timezone !== undefined) backendData.timezone = userDataUpdate.timezone;
   if (userDataUpdate.diagnosis !== undefined) backendData.diagnosis = userDataUpdate.diagnosis;
@@ -486,19 +490,29 @@ export const updateUserData = async (
     backendData.date_of_diagnosis = userDataUpdate.dateOfDiagnosis;
   }
   if (userDataUpdate.treatments !== undefined) backendData.treatments = userDataUpdate.treatments;
-  if (userDataUpdate.experiences !== undefined) backendData.experiences = userDataUpdate.experiences;
-  if (userDataUpdate.additionalInfo !== undefined) backendData.additional_info = userDataUpdate.additionalInfo;
-  if (userDataUpdate.lovedOneGenderIdentity !== undefined) backendData.loved_one_gender_identity = userDataUpdate.lovedOneGenderIdentity;
-  if (userDataUpdate.lovedOneAge !== undefined) backendData.loved_one_age = userDataUpdate.lovedOneAge;
-  if (userDataUpdate.lovedOneDiagnosis !== undefined) backendData.loved_one_diagnosis = userDataUpdate.lovedOneDiagnosis;
+  if (userDataUpdate.experiences !== undefined)
+    backendData.experiences = userDataUpdate.experiences;
+  if (userDataUpdate.additionalInfo !== undefined)
+    backendData.additional_info = userDataUpdate.additionalInfo;
+  if (userDataUpdate.lovedOneGenderIdentity !== undefined)
+    backendData.loved_one_gender_identity = userDataUpdate.lovedOneGenderIdentity;
+  if (userDataUpdate.lovedOneAge !== undefined)
+    backendData.loved_one_age = userDataUpdate.lovedOneAge;
+  if (userDataUpdate.lovedOneDiagnosis !== undefined)
+    backendData.loved_one_diagnosis = userDataUpdate.lovedOneDiagnosis;
   if (userDataUpdate.lovedOneDateOfDiagnosis !== undefined) {
     // Convert null to null (to clear date) or keep the date string
     backendData.loved_one_date_of_diagnosis = userDataUpdate.lovedOneDateOfDiagnosis;
   }
-  if (userDataUpdate.lovedOneTreatments !== undefined) backendData.loved_one_treatments = userDataUpdate.lovedOneTreatments;
-  if (userDataUpdate.lovedOneExperiences !== undefined) backendData.loved_one_experiences = userDataUpdate.lovedOneExperiences;
+  if (userDataUpdate.lovedOneTreatments !== undefined)
+    backendData.loved_one_treatments = userDataUpdate.lovedOneTreatments;
+  if (userDataUpdate.lovedOneExperiences !== undefined)
+    backendData.loved_one_experiences = userDataUpdate.lovedOneExperiences;
 
-  const response = await baseAPIClient.patch<UserResponse>(`/users/${userId}/user-data`, backendData);
+  const response = await baseAPIClient.patch<UserResponse>(
+    `/users/${userId}/user-data`,
+    backendData,
+  );
   return response.data;
 };
 
@@ -508,7 +522,7 @@ export const updateUserData = async (
 export interface AvailabilityTemplate {
   dayOfWeek: number; // 0=Monday, 1=Tuesday, ..., 6=Sunday
   startTime: string; // Time string in format "HH:MM:SS" or "HH:MM"
-  endTime: string;   // Time string in format "HH:MM:SS" or "HH:MM"
+  endTime: string; // Time string in format "HH:MM:SS" or "HH:MM"
 }
 
 export interface CreateAvailabilityRequest {
@@ -524,10 +538,15 @@ export interface DeleteAvailabilityRequest {
 /**
  * Get availability for a user
  */
-export const getAvailability = async (userId: string): Promise<{ templates: AvailabilityTemplate[] }> => {
-  const response = await baseAPIClient.get<{ user_id: string; templates: Array<{ day_of_week: number; start_time: string; end_time: string }> }>(`/availability?user_id=${userId}`);
+export const getAvailability = async (
+  userId: string,
+): Promise<{ templates: AvailabilityTemplate[] }> => {
+  const response = await baseAPIClient.get<{
+    user_id: string;
+    templates: Array<{ day_of_week: number; start_time: string; end_time: string }>;
+  }>(`/availability?user_id=${userId}`);
   return {
-    templates: response.data.templates.map(t => ({
+    templates: response.data.templates.map((t) => ({
       dayOfWeek: t.day_of_week,
       startTime: t.start_time,
       endTime: t.end_time,
@@ -538,38 +557,49 @@ export const getAvailability = async (userId: string): Promise<{ templates: Avai
 /**
  * Create availability for a user
  */
-export const createAvailability = async (request: CreateAvailabilityRequest): Promise<{ userId: string; added: number }> => {
+export const createAvailability = async (
+  request: CreateAvailabilityRequest,
+): Promise<{ userId: string; added: number }> => {
   // Convert camelCase to snake_case for backend
   const backendData = {
     user_id: request.userId,
-    templates: request.templates.map(template => ({
+    templates: request.templates.map((template) => ({
       day_of_week: template.dayOfWeek,
       start_time: template.startTime,
       end_time: template.endTime,
     })),
   };
-  const response = await baseAPIClient.post<{ user_id: string; added: number }>('/availability', backendData);
+  const response = await baseAPIClient.post<{ user_id: string; added: number }>(
+    '/availability',
+    backendData,
+  );
   return { userId: response.data.user_id, added: response.data.added };
 };
 
 /**
  * Delete availability for a user
  */
-export const deleteAvailability = async (request: DeleteAvailabilityRequest): Promise<{ userId: string; deleted: number; templates: AvailabilityTemplate[] }> => {
+export const deleteAvailability = async (
+  request: DeleteAvailabilityRequest,
+): Promise<{ userId: string; deleted: number; templates: AvailabilityTemplate[] }> => {
   // Convert camelCase to snake_case for backend
   const backendData = {
     user_id: request.userId,
-    templates: request.templates.map(template => ({
+    templates: request.templates.map((template) => ({
       day_of_week: template.dayOfWeek,
       start_time: template.startTime,
       end_time: template.endTime,
     })),
   };
-  const response = await baseAPIClient.delete<{ user_id: string; deleted: number; templates: Array<{ day_of_week: number; start_time: string; end_time: string }> }>('/availability', { data: backendData });
+  const response = await baseAPIClient.delete<{
+    user_id: string;
+    deleted: number;
+    templates: Array<{ day_of_week: number; start_time: string; end_time: string }>;
+  }>('/availability', { data: backendData });
   return {
     userId: response.data.user_id,
     deleted: response.data.deleted,
-    templates: response.data.templates.map(t => ({
+    templates: response.data.templates.map((t) => ({
       dayOfWeek: t.day_of_week,
       startTime: t.start_time,
       endTime: t.end_time,

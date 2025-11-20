@@ -41,15 +41,24 @@ export function ProfileSummary({
   onCancel,
 }: ProfileSummaryProps) {
   return (
-    <Box bg="white" p={6} borderRadius="lg" border="1px solid" borderColor={COLORS.grayBorder} mt={6}>
+    <Box
+      bg="white"
+      p={6}
+      borderRadius="lg"
+      border="1px solid"
+      borderColor={COLORS.grayBorder}
+      mt={6}
+    >
       <Flex justify="space-between" align="center" mb={4}>
-        <Heading size="sm" color={COLORS.veniceBlue} fontWeight={600}>Profile Summary</Heading>
+        <Heading size="sm" color={COLORS.veniceBlue} fontWeight={600}>
+          Profile Summary
+        </Heading>
         {!isEditing ? (
-          <IconButton 
-            aria-label="Edit" 
-            variant="ghost" 
-            size="sm" 
-            color={COLORS.veniceBlue} 
+          <IconButton
+            aria-label="Edit"
+            variant="ghost"
+            size="sm"
+            color={COLORS.veniceBlue}
             _hover={{ bg: 'blue.50', color: COLORS.veniceBlue }}
             onClick={onStartEdit}
           >
@@ -57,18 +66,18 @@ export function ProfileSummary({
           </IconButton>
         ) : (
           <HStack gap={2}>
-            <Button 
-              size="sm" 
-              variant="ghost" 
+            <Button
+              size="sm"
+              variant="ghost"
               color={COLORS.veniceBlue}
               onClick={onCancel}
               disabled={isSaving}
             >
               Cancel
             </Button>
-            <Button 
-              size="sm" 
-              bg={COLORS.teal} 
+            <Button
+              size="sm"
+              bg={COLORS.teal}
               color="white"
               onClick={onSave}
               loading={isSaving}
@@ -82,7 +91,9 @@ export function ProfileSummary({
       <VStack align="stretch" gap={4}>
         {/* Name */}
         <Box>
-          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>Name</Text>
+          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
+            Name
+          </Text>
           {isEditing ? (
             <HStack gap={2}>
               <Input
@@ -108,12 +119,18 @@ export function ProfileSummary({
         </Box>
         {/* Email Address - Read only */}
         <Box>
-          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>Email Address</Text>
-          <Text fontSize="sm" color={COLORS.veniceBlue}>{userEmail || userData?.email || 'N/A'}</Text>
+          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
+            Email Address
+          </Text>
+          <Text fontSize="sm" color={COLORS.veniceBlue}>
+            {userEmail || userData?.email || 'N/A'}
+          </Text>
         </Box>
         {/* Birthday */}
         <Box>
-          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>Birthday</Text>
+          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
+            Birthday
+          </Text>
           {isEditing ? (
             <Input
               type="date"
@@ -130,7 +147,9 @@ export function ProfileSummary({
         </Box>
         {/* Phone Number */}
         <Box>
-          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>Phone Number</Text>
+          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
+            Phone Number
+          </Text>
           {isEditing ? (
             <Input
               size="sm"
@@ -140,12 +159,16 @@ export function ProfileSummary({
               fontSize="sm"
             />
           ) : (
-            <Text fontSize="sm" color={COLORS.veniceBlue}>{userData?.phone || 'N/A'}</Text>
+            <Text fontSize="sm" color={COLORS.veniceBlue}>
+              {userData?.phone || 'N/A'}
+            </Text>
           )}
         </Box>
         {/* Gender */}
         <Box>
-          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>Gender</Text>
+          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
+            Gender
+          </Text>
           {isEditing ? (
             <Input
               size="sm"
@@ -155,30 +178,43 @@ export function ProfileSummary({
               fontSize="sm"
             />
           ) : (
-            <Text fontSize="sm" color={COLORS.veniceBlue}>{userData?.genderIdentity || 'N/A'}</Text>
+            <Text fontSize="sm" color={COLORS.veniceBlue}>
+              {userData?.genderIdentity || 'N/A'}
+            </Text>
           )}
         </Box>
         {/* Pronouns */}
         <Box>
-          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>Pronouns</Text>
+          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
+            Pronouns
+          </Text>
           {isEditing ? (
             <Input
               size="sm"
               value={editData.pronouns?.join(', ') || ''}
-              onChange={(e) => onEditDataChange({ 
-                ...editData, 
-                pronouns: e.target.value.split(',').map(p => p.trim()).filter(Boolean)
-              })}
+              onChange={(e) =>
+                onEditDataChange({
+                  ...editData,
+                  pronouns: e.target.value
+                    .split(',')
+                    .map((p) => p.trim())
+                    .filter(Boolean),
+                })
+              }
               placeholder="Pronouns (comma-separated)"
               fontSize="sm"
             />
           ) : (
-            <Text fontSize="sm" color={COLORS.veniceBlue}>{formatArray(userData?.pronouns)}</Text>
+            <Text fontSize="sm" color={COLORS.veniceBlue}>
+              {formatArray(userData?.pronouns)}
+            </Text>
           )}
         </Box>
         {/* Time Zone */}
         <Box>
-          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>Time Zone</Text>
+          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
+            Time Zone
+          </Text>
           {isEditing ? (
             <Input
               size="sm"
@@ -188,35 +224,52 @@ export function ProfileSummary({
               fontSize="sm"
             />
           ) : (
-            <Text fontSize="sm" color={COLORS.veniceBlue}>{userData?.timezone || 'N/A'}</Text>
+            <Text fontSize="sm" color={COLORS.veniceBlue}>
+              {userData?.timezone || 'N/A'}
+            </Text>
           )}
         </Box>
         {/* Ethnic or Cultural Group */}
         <Box>
-          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>Ethnic or Cultural Group</Text>
+          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
+            Ethnic or Cultural Group
+          </Text>
           {isEditing ? (
             <Input
               size="sm"
               value={editData.ethnicGroup?.join(', ') || ''}
-              onChange={(e) => onEditDataChange({ 
-                ...editData, 
-                ethnicGroup: e.target.value.split(',').map(g => g.trim()).filter(Boolean)
-              })}
+              onChange={(e) =>
+                onEditDataChange({
+                  ...editData,
+                  ethnicGroup: e.target.value
+                    .split(',')
+                    .map((g) => g.trim())
+                    .filter(Boolean),
+                })
+              }
               placeholder="Ethnic or Cultural Group (comma-separated)"
               fontSize="sm"
             />
           ) : (
-            <Text fontSize="sm" color={COLORS.veniceBlue}>{formatArray(userData?.ethnicGroup)}</Text>
+            <Text fontSize="sm" color={COLORS.veniceBlue}>
+              {formatArray(userData?.ethnicGroup)}
+            </Text>
           )}
         </Box>
         {/* Preferred Language */}
         <Box>
-          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>Preferred Language</Text>
-          <Text fontSize="sm" color={COLORS.veniceBlue}>N/A</Text>
+          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
+            Preferred Language
+          </Text>
+          <Text fontSize="sm" color={COLORS.veniceBlue}>
+            N/A
+          </Text>
         </Box>
         {/* Marital Status */}
         <Box>
-          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>Marital Status</Text>
+          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
+            Marital Status
+          </Text>
           {isEditing ? (
             <Input
               size="sm"
@@ -226,12 +279,16 @@ export function ProfileSummary({
               fontSize="sm"
             />
           ) : (
-            <Text fontSize="sm" color={COLORS.veniceBlue}>{capitalizeWords(userData?.maritalStatus)}</Text>
+            <Text fontSize="sm" color={COLORS.veniceBlue}>
+              {capitalizeWords(userData?.maritalStatus)}
+            </Text>
           )}
         </Box>
         {/* Parental Status */}
         <Box>
-          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>Parental Status</Text>
+          <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
+            Parental Status
+          </Text>
           {isEditing ? (
             <Input
               size="sm"
@@ -241,10 +298,12 @@ export function ProfileSummary({
               fontSize="sm"
             />
           ) : (
-            <Text fontSize="sm" color={COLORS.veniceBlue}>{capitalizeWords(userData?.hasKids)}</Text>
+            <Text fontSize="sm" color={COLORS.veniceBlue}>
+              {capitalizeWords(userData?.hasKids)}
+            </Text>
           )}
         </Box>
-        
+
         {/* Divider before Loved One fields */}
         {userData?.caringForSomeone === 'yes' && (
           <>
@@ -252,13 +311,17 @@ export function ProfileSummary({
             <Box>
               <Flex align="center" gap={2} mb={1}>
                 <FiHeart size={12} color={COLORS.veniceBlue} />
-                <Text fontSize="xs" color={COLORS.textSecondary}>LO&apos;s Gender</Text>
+                <Text fontSize="xs" color={COLORS.textSecondary}>
+                  LO&apos;s Gender
+                </Text>
               </Flex>
               {isEditing ? (
                 <Input
                   size="sm"
                   value={editData.lovedOneGenderIdentity || ''}
-                  onChange={(e) => onEditDataChange({ ...editData, lovedOneGenderIdentity: e.target.value })}
+                  onChange={(e) =>
+                    onEditDataChange({ ...editData, lovedOneGenderIdentity: e.target.value })
+                  }
                   placeholder="Loved One's Gender"
                   fontSize="sm"
                   ml={4}
@@ -272,7 +335,9 @@ export function ProfileSummary({
             <Box>
               <Flex align="center" gap={2} mb={1}>
                 <FiHeart size={12} color={COLORS.veniceBlue} />
-                <Text fontSize="xs" color={COLORS.textSecondary}>LO&apos;s Age</Text>
+                <Text fontSize="xs" color={COLORS.textSecondary}>
+                  LO&apos;s Age
+                </Text>
               </Flex>
               {isEditing ? (
                 <Input
@@ -295,4 +360,3 @@ export function ProfileSummary({
     </Box>
   );
 }
-

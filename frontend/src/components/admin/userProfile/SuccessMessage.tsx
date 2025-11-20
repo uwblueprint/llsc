@@ -22,10 +22,13 @@ export function SuccessMessage({ message }: SuccessMessageProps) {
       borderColor={message.type === 'success' ? 'green.200' : 'red.200'}
       minW="300px"
     >
-      <Text fontSize="sm" fontWeight={500} color={message.type === 'success' ? 'green.700' : 'red.700'}>
+      <Text
+        fontSize="sm"
+        fontWeight={500}
+        color={message.type === 'success' ? 'green.700' : 'red.700'}
+      >
         {message.text}
       </Text>
     </Box>
   );
 }
-

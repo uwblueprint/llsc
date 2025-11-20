@@ -1,17 +1,16 @@
+from datetime import time
 from typing import List
 from uuid import UUID
-from datetime import time
 
 from pydantic import BaseModel
-
-from app.schemas.time_block import TimeBlockEntity
 
 
 class AvailabilityTemplateSlot(BaseModel):
     """Represents a single availability template slot (day of week + time range)"""
+
     day_of_week: int  # 0=Monday, 1=Tuesday, ..., 6=Sunday
     start_time: time  # e.g., 14:00:00
-    end_time: time    # e.g., 16:00:00
+    end_time: time  # e.g., 16:00:00
 
 
 class CreateAvailabilityRequest(BaseModel):

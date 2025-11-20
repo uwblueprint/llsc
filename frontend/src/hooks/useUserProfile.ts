@@ -24,4 +24,3 @@ export function useUserProfile(userId: string | string[] | undefined) {
 
   return { user, loading, setUser };
 }
-

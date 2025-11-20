@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Flex,
-  Heading,
-  Text,
-  Button,
-  VStack,
-} from '@chakra-ui/react';
+import { Box, Flex, Heading, Text, Button, VStack } from '@chakra-ui/react';
 import { UserRole } from '@/types/authTypes';
 import { COLORS } from '@/constants/colors';
 import { UserResponse } from '@/types/userTypes';
@@ -81,9 +74,9 @@ export function ProfileContent({
         {/* Header Section */}
         <Flex justify="space-between" align="start" mb={8}>
           <Box>
-            <Heading 
-              color={COLORS.veniceBlue} 
-              fontWeight={600} 
+            <Heading
+              color={COLORS.veniceBlue}
+              fontWeight={600}
               fontSize="34px"
               lineHeight="1.36em"
               letterSpacing="-0.015em"
@@ -91,23 +84,23 @@ export function ProfileContent({
             >
               {user.firstName} {user.lastName}
             </Heading>
-            <Text 
-              color={COLORS.textSecondary} 
-              fontSize="20px" 
-              fontWeight={600} 
+            <Text
+              color={COLORS.textSecondary}
+              fontSize="20px"
+              fontWeight={600}
               lineHeight="1.36em"
               letterSpacing="-0.015em"
-              textTransform="capitalize" 
+              textTransform="capitalize"
               mt={1}
             >
               {role}
             </Text>
           </Box>
           <VStack align="flex-end" gap={2}>
-            <Button 
-              variant="ghost" 
-              color={COLORS.red} 
-              _hover={{ textDecoration: 'underline', bg: 'transparent' }} 
+            <Button
+              variant="ghost"
+              color={COLORS.red}
+              _hover={{ textDecoration: 'underline', bg: 'transparent' }}
               fontSize="sm"
               fontWeight={400}
               p={0}
@@ -116,13 +109,13 @@ export function ProfileContent({
             >
               Deactivate Account
             </Button>
-            <Button 
-              bg={COLORS.red} 
-              color="white" 
-              _hover={{ bg: '#8a0000' }} 
-              fontSize="sm" 
+            <Button
+              bg={COLORS.red}
+              color="white"
+              _hover={{ bg: '#8a0000' }}
+              fontSize="sm"
               fontWeight={600}
-              px={8} 
+              px={8}
               py={3}
               borderRadius="md"
             >
@@ -135,29 +128,24 @@ export function ProfileContent({
         {role === UserRole.VOLUNTEER && (
           <>
             <Box mb={10}>
-              <Heading 
-                color={COLORS.veniceBlue} 
-                mb={2} 
+              <Heading
+                color={COLORS.veniceBlue}
+                mb={2}
                 fontWeight={600}
                 fontSize="16px"
                 lineHeight="1.875em"
               >
                 Overview
               </Heading>
-              <Text 
-                color={COLORS.textPrimary} 
-                fontSize="16px" 
-                fontWeight={400}
-                lineHeight="1.36em"
-              >
-                {volunteerData?.experience || userData?.additionalInfo || "No overview provided."}
+              <Text color={COLORS.textPrimary} fontSize="16px" fontWeight={400} lineHeight="1.36em">
+                {volunteerData?.experience || userData?.additionalInfo || 'No overview provided.'}
               </Text>
             </Box>
-            
+
             <Box borderBottom="1px solid" borderColor={COLORS.grayBorder} mb={8} />
           </>
         )}
-        
+
         {/* Detailed Info */}
         <VStack align="stretch" gap={8}>
           {/* User's Own Cancer Experience */}
@@ -211,4 +199,3 @@ export function ProfileContent({
     </Box>
   );
 }
-

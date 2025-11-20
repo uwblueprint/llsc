@@ -9,7 +9,7 @@ export const capitalizeWords = (str?: string | null) => {
   if (!str) return 'N/A';
   return str
     .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
 
@@ -27,4 +27,3 @@ export const DIAGNOSIS_OPTIONS: string[] = [
   "Hodgkin's Lymphoma",
   "Indolent/Low Grade Non-Hodgkin's Lymphoma",
 ];
-

@@ -7,7 +7,8 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 
 from app.interfaces.user_service import IUserService
-from app.models import FormStatus, Role, User, UserData, VolunteerData, Treatment, Experience
+from app.models import Experience, FormStatus, Role, Treatment, User, UserData
+from app.schemas.availability import AvailabilityTemplateSlot
 from app.schemas.user import (
     SignUpMethod,
     UserCreateRequest,
@@ -168,28 +169,26 @@ class UserService(IUserService):
             )
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
-            
+
             # Convert templates to AvailabilityTemplateSlot for UserResponse
-            from app.schemas.availability import AvailabilityTemplateSlot
-            
             availability_templates = []
             for template in user.availability_templates:
                 if template.is_active:
-                    availability_templates.append(AvailabilityTemplateSlot(
-                        day_of_week=template.day_of_week,
-                        start_time=template.start_time,
-                        end_time=template.end_time
-                    ))
-            
+                    availability_templates.append(
+                        AvailabilityTemplateSlot(
+                            day_of_week=template.day_of_week, start_time=template.start_time, end_time=template.end_time
+                        )
+                    )
+
             # Create a temporary user object with availability for validation
             user_dict = {
                 **{c.name: getattr(user, c.name) for c in user.__table__.columns},
-                'availability': availability_templates,
-                'role': user.role,
-                'user_data': user.user_data,
-                'volunteer_data': user.volunteer_data,
+                "availability": availability_templates,
+                "role": user.role,
+                "user_data": user.user_data,
+                "volunteer_data": user.volunteer_data,
             }
-            
+
             return UserResponse.model_validate(user_dict)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid user ID format")
@@ -227,30 +226,30 @@ class UserService(IUserService):
                 .filter(User.role_id.in_([1, 2]))
                 .all()
             )
-            
+
             # Convert templates to AvailabilityTemplateSlot for each user
-            from app.schemas.availability import AvailabilityTemplateSlot
-            
             user_responses = []
             for user in users:
                 availability_templates = []
                 for template in user.availability_templates:
                     if template.is_active:
-                        availability_templates.append(AvailabilityTemplateSlot(
-                            day_of_week=template.day_of_week,
-                            start_time=template.start_time,
-                            end_time=template.end_time
-                        ))
-                
+                        availability_templates.append(
+                            AvailabilityTemplateSlot(
+                                day_of_week=template.day_of_week,
+                                start_time=template.start_time,
+                                end_time=template.end_time,
+                            )
+                        )
+
                 user_dict = {
                     **{c.name: getattr(user, c.name) for c in user.__table__.columns},
-                    'availability': availability_templates,
-                    'role': user.role,
-                    'user_data': user.user_data,
-                    'volunteer_data': user.volunteer_data,
+                    "availability": availability_templates,
+                    "role": user.role,
+                    "user_data": user.user_data,
+                    "volunteer_data": user.volunteer_data,
                 }
                 user_responses.append(UserResponse.model_validate(user_dict))
-            
+
             return user_responses
         except Exception as e:
             self.logger.error(f"Error getting users: {str(e)}")
@@ -268,30 +267,30 @@ class UserService(IUserService):
                 .filter(User.role_id == 3)
                 .all()
             )
-            
+
             # Convert templates to AvailabilityTemplateSlot for each admin (though admins typically don't have availability)
-            from app.schemas.availability import AvailabilityTemplateSlot
-            
             user_responses = []
             for user in users:
                 availability_templates = []
                 for template in user.availability_templates:
                     if template.is_active:
-                        availability_templates.append(AvailabilityTemplateSlot(
-                            day_of_week=template.day_of_week,
-                            start_time=template.start_time,
-                            end_time=template.end_time
-                        ))
-                
+                        availability_templates.append(
+                            AvailabilityTemplateSlot(
+                                day_of_week=template.day_of_week,
+                                start_time=template.start_time,
+                                end_time=template.end_time,
+                            )
+                        )
+
                 user_dict = {
                     **{c.name: getattr(user, c.name) for c in user.__table__.columns},
-                    'availability': availability_templates,
-                    'role': user.role,
-                    'user_data': user.user_data,
-                    'volunteer_data': user.volunteer_data,
+                    "availability": availability_templates,
+                    "role": user.role,
+                    "user_data": user.user_data,
+                    "volunteer_data": user.volunteer_data,
                 }
                 user_responses.append(UserResponse.model_validate(user_dict))
-            
+
             return user_responses
         except Exception as e:
             self.logger.error(f"Error retrieving admin users: {str(e)}")
@@ -332,27 +331,25 @@ class UserService(IUserService):
                 .filter(User.id == UUID(user_id))
                 .first()
             )
-            
+
             # Convert templates to AvailabilityTemplateSlot for UserResponse
-            from app.schemas.availability import AvailabilityTemplateSlot
-            
             availability_templates = []
             for template in updated_user.availability_templates:
                 if template.is_active:
-                    availability_templates.append(AvailabilityTemplateSlot(
-                        day_of_week=template.day_of_week,
-                        start_time=template.start_time,
-                        end_time=template.end_time
-                    ))
-            
+                    availability_templates.append(
+                        AvailabilityTemplateSlot(
+                            day_of_week=template.day_of_week, start_time=template.start_time, end_time=template.end_time
+                        )
+                    )
+
             user_dict = {
                 **{c.name: getattr(updated_user, c.name) for c in updated_user.__table__.columns},
-                'availability': availability_templates,
-                'role': updated_user.role,
-                'user_data': updated_user.user_data,
-                'volunteer_data': updated_user.volunteer_data,
+                "availability": availability_templates,
+                "role": updated_user.role,
+                "user_data": updated_user.user_data,
+                "volunteer_data": updated_user.volunteer_data,
             }
-            
+
             return UserResponse.model_validate(user_dict)
 
         except ValueError:
@@ -386,63 +383,76 @@ class UserService(IUserService):
             # Update simple fields (personal info, demographics, cancer experience)
             simple_fields = [
                 # Personal Information
-                'first_name', 'last_name', 'date_of_birth', 'phone', 'city', 'province', 'postal_code',
+                "first_name",
+                "last_name",
+                "date_of_birth",
+                "phone",
+                "city",
+                "province",
+                "postal_code",
                 # Demographics
-                'gender_identity', 'marital_status', 'has_kids', 'timezone',
+                "gender_identity",
+                "marital_status",
+                "has_kids",
+                "timezone",
                 # Cancer Experience
-                'diagnosis', 'date_of_diagnosis', 'additional_info',
+                "diagnosis",
+                "date_of_diagnosis",
+                "additional_info",
                 # Loved One Demographics
-                'loved_one_gender_identity', 'loved_one_age',
+                "loved_one_gender_identity",
+                "loved_one_age",
                 # Loved One Cancer Experience
-                'loved_one_diagnosis', 'loved_one_date_of_diagnosis'
+                "loved_one_diagnosis",
+                "loved_one_date_of_diagnosis",
             ]
             for field in simple_fields:
                 if field in update_data:
                     setattr(user_data, field, update_data[field])
 
             # Handle pronouns (array field)
-            if 'pronouns' in update_data:
-                user_data.pronouns = update_data['pronouns']
+            if "pronouns" in update_data:
+                user_data.pronouns = update_data["pronouns"]
 
             # Handle ethnic_group (array field)
-            if 'ethnic_group' in update_data:
-                user_data.ethnic_group = update_data['ethnic_group']
+            if "ethnic_group" in update_data:
+                user_data.ethnic_group = update_data["ethnic_group"]
 
             # Handle treatments (many-to-many)
-            if 'treatments' in update_data:
+            if "treatments" in update_data:
                 user_data.treatments.clear()
-                if update_data['treatments']:
-                    for treatment_name in update_data['treatments']:
+                if update_data["treatments"]:
+                    for treatment_name in update_data["treatments"]:
                         if treatment_name:
                             treatment = self.db.query(Treatment).filter(Treatment.name == treatment_name).first()
                             if treatment:
                                 user_data.treatments.append(treatment)
 
             # Handle experiences (many-to-many)
-            if 'experiences' in update_data:
+            if "experiences" in update_data:
                 user_data.experiences.clear()
-                if update_data['experiences']:
-                    for experience_name in update_data['experiences']:
+                if update_data["experiences"]:
+                    for experience_name in update_data["experiences"]:
                         if experience_name:
                             experience = self.db.query(Experience).filter(Experience.name == experience_name).first()
                             if experience:
                                 user_data.experiences.append(experience)
 
             # Handle loved one treatments (many-to-many)
-            if 'loved_one_treatments' in update_data:
+            if "loved_one_treatments" in update_data:
                 user_data.loved_one_treatments.clear()
-                if update_data['loved_one_treatments']:
-                    for treatment_name in update_data['loved_one_treatments']:
+                if update_data["loved_one_treatments"]:
+                    for treatment_name in update_data["loved_one_treatments"]:
                         if treatment_name:
                             treatment = self.db.query(Treatment).filter(Treatment.name == treatment_name).first()
                             if treatment:
                                 user_data.loved_one_treatments.append(treatment)
 
             # Handle loved one experiences (many-to-many)
-            if 'loved_one_experiences' in update_data:
+            if "loved_one_experiences" in update_data:
                 user_data.loved_one_experiences.clear()
-                if update_data['loved_one_experiences']:
-                    for experience_name in update_data['loved_one_experiences']:
+                if update_data["loved_one_experiences"]:
+                    for experience_name in update_data["loved_one_experiences"]:
                         if experience_name:
                             experience = self.db.query(Experience).filter(Experience.name == experience_name).first()
                             if experience:
@@ -466,28 +476,26 @@ class UserService(IUserService):
                 .filter(User.id == UUID(user_id))
                 .first()
             )
-            
+
             # Convert templates to AvailabilityTemplateSlot for UserResponse (same as get_user_by_id)
-            from app.schemas.availability import AvailabilityTemplateSlot
-            
             availability_templates = []
             for template in updated_user.availability_templates:
                 if template.is_active:
-                    availability_templates.append(AvailabilityTemplateSlot(
-                        day_of_week=template.day_of_week,
-                        start_time=template.start_time,
-                        end_time=template.end_time
-                    ))
-            
+                    availability_templates.append(
+                        AvailabilityTemplateSlot(
+                            day_of_week=template.day_of_week, start_time=template.start_time, end_time=template.end_time
+                        )
+                    )
+
             # Create a temporary user object with availability for validation
             user_dict = {
                 **{c.name: getattr(updated_user, c.name) for c in updated_user.__table__.columns},
-                'availability': availability_templates,
-                'role': updated_user.role,
-                'user_data': updated_user.user_data,
-                'volunteer_data': updated_user.volunteer_data,
+                "availability": availability_templates,
+                "role": updated_user.role,
+                "user_data": updated_user.user_data,
+                "volunteer_data": updated_user.volunteer_data,
             }
-            
+
             return UserResponse.model_validate(user_dict)
 
         except ValueError:

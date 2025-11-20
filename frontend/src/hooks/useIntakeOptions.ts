@@ -8,12 +8,12 @@ export function useIntakeOptions() {
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const response = await baseAPIClient.get<{ 
-          treatments: Array<{ id: number; name: string }>; 
-          experiences: Array<{ id: number; name: string }> 
+        const response = await baseAPIClient.get<{
+          treatments: Array<{ id: number; name: string }>;
+          experiences: Array<{ id: number; name: string }>;
         }>('/intake/options?target=both');
-        setTreatmentOptions(response.data.treatments?.map(t => t.name) || []);
-        setExperienceOptions(response.data.experiences?.map(e => e.name) || []);
+        setTreatmentOptions(response.data.treatments?.map((t) => t.name) || []);
+        setExperienceOptions(response.data.experiences?.map((e) => e.name) || []);
       } catch (error) {
         console.error('Failed to fetch options:', error);
       }
@@ -23,4 +23,3 @@ export function useIntakeOptions() {
 
   return { treatmentOptions, experienceOptions };
 }
-

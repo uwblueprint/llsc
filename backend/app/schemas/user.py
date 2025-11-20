@@ -9,10 +9,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
-from .time_block import TimeBlockEntity
+from .availability import AvailabilityTemplateSlot
 from .user_data import UserDataResponse
 from .volunteer_data import VolunteerDataResponse
-from .availability import AvailabilityTemplateSlot
 
 # TODO:
 # confirm complexity rules for fields (such as password)

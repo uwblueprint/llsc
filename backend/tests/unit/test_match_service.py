@@ -20,7 +20,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.models import AvailabilityTemplate, Match, MatchStatus, Role, TimeBlock, User, UserData
+from app.models import Match, MatchStatus, Role, TimeBlock, User, UserData
+from app.schemas.availability import AvailabilityTemplateSlot, CreateAvailabilityRequest
 from app.schemas.match import (
     MatchCreateRequest,
     MatchRequestNewVolunteersResponse,
@@ -28,11 +29,8 @@ from app.schemas.match import (
 )
 from app.schemas.time_block import TimeRange
 from app.schemas.user import UserRole
+from app.services.implementations.availability_service import AvailabilityService
 from app.services.implementations.match_service import MatchService
-from app.services.implementations.availability_service import AvailabilityService
-from app.schemas.availability import AvailabilityTemplateSlot, CreateAvailabilityRequest
-from app.services.implementations.availability_service import AvailabilityService
-from app.schemas.availability import AvailabilityTemplateSlot, CreateAvailabilityRequest
 
 # Check for Postgres test database (same pattern as test_user.py)
 POSTGRES_DATABASE_URL = os.getenv("POSTGRES_TEST_DATABASE_URL")
@@ -189,20 +187,20 @@ async def volunteer_with_availability(db_session, volunteer_user):
     db_session.add(user_data)
     db_session.commit()
     db_session.refresh(volunteer_user)
-    
+
     # Create availability templates: Monday 10:00-12:00 EST
     availability_service = AvailabilityService(db_session)
     templates = [
         AvailabilityTemplateSlot(
             day_of_week=0,  # Monday
             start_time=datetime(2000, 1, 1, 10, 0).time(),  # 10:00
-            end_time=datetime(2000, 1, 1, 12, 0).time(),    # 12:00
+            end_time=datetime(2000, 1, 1, 12, 0).time(),  # 12:00
         )
     ]
     await availability_service.create_availability(
         CreateAvailabilityRequest(user_id=volunteer_user.id, templates=templates)
     )
-    
+
     db_session.refresh(volunteer_user)
     return volunteer_user
 
@@ -218,20 +216,20 @@ async def volunteer_with_mixed_availability(db_session, another_volunteer):
     db_session.add(user_data)
     db_session.commit()
     db_session.refresh(another_volunteer)
-    
+
     # Create availability templates: Tuesday 14:00-15:00 EST
     availability_service = AvailabilityService(db_session)
     templates = [
         AvailabilityTemplateSlot(
             day_of_week=1,  # Tuesday
             start_time=datetime(2000, 1, 1, 14, 0).time(),  # 14:00
-            end_time=datetime(2000, 1, 1, 15, 0).time(),    # 15:00
+            end_time=datetime(2000, 1, 1, 15, 0).time(),  # 15:00
         )
     ]
     await availability_service.create_availability(
         CreateAvailabilityRequest(user_id=another_volunteer.id, templates=templates)
     )
-    
+
     db_session.refresh(another_volunteer)
     return another_volunteer
 
@@ -248,7 +246,7 @@ async def volunteer_with_alt_availability(db_session):
     )
     db_session.add(volunteer)
     db_session.flush()
-    
+
     # Create user_data with EST timezone
     user_data = UserData(
         user_id=volunteer.id,
@@ -257,19 +255,17 @@ async def volunteer_with_alt_availability(db_session):
     db_session.add(user_data)
     db_session.commit()
     db_session.refresh(volunteer)
-    
+
     # Create availability templates: Wednesday 9:00-10:00 EST
     availability_service = AvailabilityService(db_session)
     templates = [
         AvailabilityTemplateSlot(
             day_of_week=2,  # Wednesday
-            start_time=datetime(2000, 1, 1, 9, 0).time(),   # 9:00
-            end_time=datetime(2000, 1, 1, 10, 0).time(),     # 10:00
+            start_time=datetime(2000, 1, 1, 9, 0).time(),  # 9:00
+            end_time=datetime(2000, 1, 1, 10, 0).time(),  # 10:00
         )
     ]
-    await availability_service.create_availability(
-        CreateAvailabilityRequest(user_id=volunteer.id, templates=templates)
-    )
+    await availability_service.create_availability(CreateAvailabilityRequest(user_id=volunteer.id, templates=templates))
 
     db_session.commit()
     db_session.refresh(volunteer)

@@ -3,21 +3,21 @@
 import uuid
 from datetime import date
 
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
+from app.models.AvailabilityTemplate import AvailabilityTemplate
 from app.models.Experience import Experience
+from app.models.FormSubmission import FormSubmission
+from app.models.Match import Match
+from app.models.RankingPreference import RankingPreference
+from app.models.SuggestedTime import suggested_times
+from app.models.Task import Task
 from app.models.Treatment import Treatment
 from app.models.User import FormStatus, User
 from app.models.UserData import UserData
 from app.models.VolunteerData import VolunteerData
-from app.models.RankingPreference import RankingPreference
-from app.models.Match import Match
-from app.models.FormSubmission import FormSubmission
-from app.models.Task import Task
-from app.models.SuggestedTime import suggested_times
-from app.models.AvailabilityTemplate import AvailabilityTemplate
 from app.utilities.form_constants import ExperienceId, TreatmentId
-from sqlalchemy import delete
 
 
 def seed_users(session: Session) -> None:
@@ -317,37 +317,33 @@ def seed_users(session: Session) -> None:
         if existing_user:
             print(f"User already exists, overwriting: {user_info['user_data']['email']}")
             user_id = existing_user.id
-            
+
             # Manually delete all related data first (since cascade delete may not be configured)
             # Delete ranking preferences
             session.query(RankingPreference).filter(RankingPreference.user_id == user_id).delete()
-            
+
             # Get matches that need to be deleted (to delete suggested_times first)
-            matches_to_delete = session.query(Match).filter(
-                (Match.participant_id == user_id) | (Match.volunteer_id == user_id)
-            ).all()
-            
+            matches_to_delete = (
+                session.query(Match).filter((Match.participant_id == user_id) | (Match.volunteer_id == user_id)).all()
+            )
+
             # Delete suggested_times for these matches first (must be done before deleting matches)
             # Use raw SQL to delete from suggested_times table to avoid relationship issues
             match_ids = [match.id for match in matches_to_delete]
             if match_ids:
-                session.execute(
-                    delete(suggested_times).where(suggested_times.c.match_id.in_(match_ids))
-                )
+                session.execute(delete(suggested_times).where(suggested_times.c.match_id.in_(match_ids)))
                 session.flush()  # Ensure suggested_times deletions are processed
-            
+
             # Now delete the matches (after suggested_times are cleared)
             for match in matches_to_delete:
                 session.delete(match)
-            
+
             # Delete form submissions
             session.query(FormSubmission).filter(FormSubmission.user_id == user_id).delete()
-            
+
             # Delete tasks (as participant or assignee)
-            session.query(Task).filter(
-                (Task.participant_id == user_id) | (Task.assignee_id == user_id)
-            ).delete()
-            
+            session.query(Task).filter((Task.participant_id == user_id) | (Task.assignee_id == user_id)).delete()
+
             # Delete user_data and its relationships
             if existing_user.user_data:
                 # Clear many-to-many relationships first
@@ -356,14 +352,14 @@ def seed_users(session: Session) -> None:
                 existing_user.user_data.loved_one_treatments.clear()
                 existing_user.user_data.loved_one_experiences.clear()
                 session.delete(existing_user.user_data)
-            
+
             # Delete volunteer_data
             if existing_user.volunteer_data:
                 session.delete(existing_user.volunteer_data)
-            
+
             # Clear availability templates
             session.query(AvailabilityTemplate).filter_by(user_id=existing_user.id).delete()
-            
+
             # Now delete the user
             session.delete(existing_user)
             session.flush()  # Ensure deletion is processed before creating new user
@@ -409,12 +405,16 @@ def seed_users(session: Session) -> None:
 
         # Add loved one treatments if they exist
         if user_info.get("loved_one_treatments"):
-            loved_one_treatments = session.query(Treatment).filter(Treatment.id.in_(user_info["loved_one_treatments"])).all()
+            loved_one_treatments = (
+                session.query(Treatment).filter(Treatment.id.in_(user_info["loved_one_treatments"])).all()
+            )
             user_data.loved_one_treatments = loved_one_treatments
 
         # Add loved one experiences if they exist
         if user_info.get("loved_one_experiences"):
-            loved_one_experiences = session.query(Experience).filter(Experience.id.in_(user_info["loved_one_experiences"])).all()
+            loved_one_experiences = (
+                session.query(Experience).filter(Experience.id.in_(user_info["loved_one_experiences"])).all()
+            )
             user_data.loved_one_experiences = loved_one_experiences
 
         # Create volunteer_data entry for volunteers with experience text
