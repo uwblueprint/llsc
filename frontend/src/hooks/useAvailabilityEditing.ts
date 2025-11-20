@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getUserById, createAvailability, deleteAvailability, TimeRange } from '@/APIClients/authAPIClient';
+import { getUserById, createAvailability, deleteAvailability, AvailabilityTemplate } from '@/APIClients/authAPIClient';
 import { UserResponse } from '@/types/userTypes';
 import { SaveMessage } from '@/types/userProfileTypes';
 
@@ -68,17 +68,31 @@ export function useAvailabilityEditing({
   const handleStartEditAvailability = () => {
     const slots = new Set<string>();
     if (user?.availability) {
-      user.availability.forEach(block => {
-        const date = new Date(block.startTime);
-        const jsDay = date.getDay();
-        const gridDay = jsDay === 0 ? 6 : jsDay - 1;
+      // Convert availability templates to grid slots
+      user.availability.forEach(template => {
+        const dayOfWeek = template.dayOfWeek; // Already 0=Mon, 6=Sun
         
-        const hour = date.getHours();
-        const minute = date.getMinutes();
-        const timeIndex = (hour - 8) * 2 + (minute === 30 ? 1 : 0);
+        // Parse start and end times (format: "HH:MM:SS" or "HH:MM")
+        const parseTime = (timeStr: string): { hour: number; minute: number } => {
+          const parts = timeStr.split(':');
+          return {
+            hour: parseInt(parts[0], 10),
+            minute: parseInt(parts[1], 10),
+          };
+        };
         
-        if (timeIndex >= 0 && timeIndex < 48) {
-          slots.add(`${gridDay}-${timeIndex}`);
+        const startTime = parseTime(template.startTime);
+        const endTime = parseTime(template.endTime);
+        
+        // Calculate time indices
+        const startTimeIndex = (startTime.hour - 8) * 2 + (startTime.minute === 30 ? 1 : 0);
+        const endTimeIndex = (endTime.hour - 8) * 2 + (endTime.minute === 30 ? 1 : 0);
+        
+        // Add all slots in the range
+        for (let timeIndex = startTimeIndex; timeIndex < endTimeIndex; timeIndex++) {
+          if (timeIndex >= 0 && timeIndex < 48) {
+            slots.add(`${dayOfWeek}-${timeIndex}`);
+          }
         }
       });
     }
@@ -154,9 +168,11 @@ export function useAvailabilityEditing({
     return rangeSlots;
   };
 
-  const convertSlotsToTimeRanges = (): TimeRange[] => {
-    const referenceMonday = new Date('2000-01-03T00:00:00');
-    const ranges: TimeRange[] = [];
+  /**
+   * Convert selected grid slots to availability templates (day_of_week + time ranges)
+   */
+  const convertSlotsToTemplates = (): AvailabilityTemplate[] => {
+    const templates: AvailabilityTemplate[] = [];
     const slots = Array.from(selectedTimeSlots).map(key => {
       const [dayIndex, timeIndex] = key.split('-').map(Number);
       return { dayIndex, timeIndex };
@@ -165,26 +181,26 @@ export function useAvailabilityEditing({
       return a.timeIndex - b.timeIndex;
     });
 
-    interface TimeRangeSlot {
+    interface TemplateSlot {
       dayIndex: number;
       startTimeIndex: number;
       endTimeIndex: number;
     }
-    let currentRange: TimeRangeSlot | null = null;
+    let currentRange: TemplateSlot | null = null;
 
     slots.forEach(({ dayIndex, timeIndex }) => {
       if (!currentRange || currentRange.dayIndex !== dayIndex || currentRange.endTimeIndex !== timeIndex - 1) {
         if (currentRange) {
-          const startDate = new Date(referenceMonday);
-          startDate.setDate(referenceMonday.getDate() + currentRange.dayIndex);
-          startDate.setHours(8 + Math.floor(currentRange.startTimeIndex / 2), (currentRange.startTimeIndex % 2) * 30, 0, 0);
+          // Convert timeIndex to hours and minutes
+          const startHour = 8 + Math.floor(currentRange.startTimeIndex / 2);
+          const startMinute = (currentRange.startTimeIndex % 2) * 30;
+          const endHour = 8 + Math.floor((currentRange.endTimeIndex + 1) / 2);
+          const endMinute = ((currentRange.endTimeIndex + 1) % 2) * 30;
           
-          const endDate = new Date(startDate);
-          endDate.setMinutes(endDate.getMinutes() + 30 * (currentRange.endTimeIndex - currentRange.startTimeIndex + 1));
-          
-          ranges.push({
-            startTime: startDate.toISOString(),
-            endTime: endDate.toISOString(),
+          templates.push({
+            dayOfWeek: currentRange.dayIndex,
+            startTime: `${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00`,
+            endTime: `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}:00`,
           });
         }
         currentRange = { dayIndex, startTimeIndex: timeIndex, endTimeIndex: timeIndex };
@@ -196,21 +212,20 @@ export function useAvailabilityEditing({
     });
 
     if (currentRange !== null) {
-      const range: TimeRangeSlot = currentRange;
-      const startDate = new Date(referenceMonday);
-      startDate.setDate(referenceMonday.getDate() + range.dayIndex);
-      startDate.setHours(8 + Math.floor(range.startTimeIndex / 2), (range.startTimeIndex % 2) * 30, 0, 0);
+      const range: TemplateSlot = currentRange;
+      const startHour = 8 + Math.floor(range.startTimeIndex / 2);
+      const startMinute = (range.startTimeIndex % 2) * 30;
+      const endHour = 8 + Math.floor((range.endTimeIndex + 1) / 2);
+      const endMinute = ((range.endTimeIndex + 1) % 2) * 30;
       
-      const endDate = new Date(startDate);
-      endDate.setMinutes(endDate.getMinutes() + 30 * (range.endTimeIndex - range.startTimeIndex + 1));
-      
-      ranges.push({
-        startTime: startDate.toISOString(),
-        endTime: endDate.toISOString(),
+      templates.push({
+        dayOfWeek: range.dayIndex,
+        startTime: `${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00`,
+        endTime: `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}:00`,
       });
     }
 
-    return ranges;
+    return templates;
   };
 
   const handleSaveAvailability = async () => {
@@ -218,61 +233,13 @@ export function useAvailabilityEditing({
     
     setIsSaving(true);
     try {
-      const existingRanges: TimeRange[] = [];
-      if (user.availability && user.availability.length > 0) {
-        const sortedBlocks = [...user.availability].sort((a, b) => 
-          new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-        );
-        
-        let currentStart: Date | null = null;
-        let currentEnd: Date | null = null;
-        
-        sortedBlocks.forEach(block => {
-          const blockStart = new Date(block.startTime);
-          const blockEnd = new Date(blockStart);
-          blockEnd.setMinutes(blockEnd.getMinutes() + 30);
-          
-          if (!currentStart) {
-            currentStart = blockStart;
-            currentEnd = blockEnd;
-          } else if (currentEnd && blockStart.getTime() === currentEnd.getTime()) {
-            currentEnd = blockEnd;
-          } else {
-            if (currentStart && currentEnd) {
-              existingRanges.push({
-                startTime: currentStart.toISOString(),
-                endTime: currentEnd.toISOString(),
-              });
-            }
-            currentStart = blockStart;
-            currentEnd = blockEnd;
-          }
-        });
-        
-        if (currentStart !== null && currentEnd !== null) {
-          const start: Date = currentStart;
-          const end: Date = currentEnd;
-          existingRanges.push({
-            startTime: start.toISOString(),
-            endTime: end.toISOString(),
-          });
-        }
-      }
-
-      if (existingRanges.length > 0) {
-        await deleteAvailability({
-          userId: userId as string,
-          delete: existingRanges,
-        });
-      }
-
-      const newRanges = convertSlotsToTimeRanges();
-      if (newRanges.length > 0) {
-        await createAvailability({
-          userId: userId as string,
-          availableTimes: newRanges,
-        });
-      }
+      // Convert selected slots to templates and create them
+      // Backend create_availability replaces all existing templates, so we don't need to delete separately
+      const newTemplates = convertSlotsToTemplates();
+      await createAvailability({
+        userId: userId as string,
+        templates: newTemplates,
+      });
 
       const updatedUser = await getUserById(userId as string);
       setUser(updatedUser);
@@ -309,4 +276,3 @@ export function useAvailabilityEditing({
     handleCancelEditAvailability,
   };
 }
-

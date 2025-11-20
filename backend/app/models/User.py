@@ -45,8 +45,8 @@ class User(Base):
 
     role = relationship("Role")
 
-    # time blocks in an availability for a user
-    availability = relationship("TimeBlock", secondary="available_times", back_populates="users")
+    # recurring availability templates (day of week + time)
+    availability_templates = relationship("AvailabilityTemplate", back_populates="user")
 
     participant_matches = relationship("Match", back_populates="participant", foreign_keys=[Match.participant_id])
 

@@ -161,21 +161,28 @@ export function AvailabilitySection({
                       // In edit mode, check selectedTimeSlots
                       isAvailable = selectedTimeSlots.has(slotKey);
                     } else {
-                      // In view mode, check user.availability
-                      isAvailable = user.availability?.some(block => {
-                        const date = new Date(block.startTime);
-                        const jsDay = date.getDay(); // 0=Sun, 1=Mon...
-                        const gridDay = jsDay === 0 ? 6 : jsDay - 1;
+                      // In view mode, check user.availability templates
+                      isAvailable = user.availability?.some(template => {
+                        // Parse time strings (format: "HH:MM:SS" or "HH:MM")
+                        const parseTime = (timeStr: string): { hour: number; minute: number } => {
+                          const parts = timeStr.split(':');
+                          return {
+                            hour: parseInt(parts[0], 10),
+                            minute: parseInt(parts[1], 10),
+                          };
+                        };
                         
-                        const hour = date.getHours();
-                        const minute = date.getMinutes();
+                        const startTime = parseTime(template.startTime);
+                        const endTime = parseTime(template.endTime);
                         
-                        // Calculate target hour and minute based on timeIndex
-                        // timeIndex 0 -> 8:00, 1 -> 8:30, 2 -> 9:00...
-                        const targetHour = 8 + Math.floor(timeIndex / 2);
-                        const targetMinute = (timeIndex % 2) * 30;
+                        // Calculate time indices
+                        const startTimeIndex = (startTime.hour - 8) * 2 + (startTime.minute === 30 ? 1 : 0);
+                        const endTimeIndex = (endTime.hour - 8) * 2 + (endTime.minute === 30 ? 1 : 0);
                         
-                        return gridDay === dayIndex && hour === targetHour && minute === targetMinute;
+                        // Check if this slot is within the template's range
+                        return template.dayOfWeek === dayIndex && 
+                               timeIndex >= startTimeIndex && 
+                               timeIndex < endTimeIndex;
                       }) || false;
                     }
 
@@ -228,62 +235,80 @@ export function AvailabilitySection({
           <Heading size="xs" mb={4} color={COLORS.veniceBlue}>Your Availability</Heading>
           <VStack align="stretch" gap={4}>
             {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => {
-              // Filter blocks for this day
-              // Note: getDay() returns 0 for Sunday, 1 for Monday, etc.
-              // Our map index 0 is Monday, so we need to match correctly.
-              // Monday (index 0) -> getDay() 1
-              // ...
-              // Saturday (index 5) -> getDay() 6
-              // Sunday (index 6) -> getDay() 0
-              const targetDay = index === 6 ? 0 : index + 1;
-              
-              const dayBlocks = user.availability?.filter(block => {
-                const date = new Date(block.startTime);
-                return date.getDay() === targetDay;
-              }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+              // Filter templates for this day (index 0=Monday, 6=Sunday)
+              const dayTemplates = user.availability?.filter(template => {
+                return template.dayOfWeek === index;
+              }) || [];
 
-              if (!dayBlocks || dayBlocks.length === 0) {
+              if (dayTemplates.length === 0) {
                 return null;
               }
 
-              // Group contiguous blocks into ranges
-              const ranges: { start: Date; end: Date }[] = [];
-              if (dayBlocks.length > 0) {
-                let currentStart = new Date(dayBlocks[0].startTime);
-                let currentEnd = new Date(dayBlocks[0].startTime);
-                currentEnd.setMinutes(currentEnd.getMinutes() + 30); // Each block is 30 mins
+              // Parse time string to minutes since midnight
+              const parseTimeToMinutes = (timeStr: string): number => {
+                const parts = timeStr.split(':');
+                const hour = parseInt(parts[0], 10);
+                const minute = parseInt(parts[1], 10);
+                return hour * 60 + minute;
+              };
 
-                for (let i = 1; i < dayBlocks.length; i++) {
-                  const nextBlockStart = new Date(dayBlocks[i].startTime);
-                  if (nextBlockStart.getTime() === currentEnd.getTime()) {
-                    // Contiguous, extend current range
-                    currentEnd.setMinutes(currentEnd.getMinutes() + 30);
-                  } else {
-                    // Gap found, push current range and start new one
-                    ranges.push({ start: currentStart, end: currentEnd });
-                    currentStart = nextBlockStart;
-                    currentEnd = new Date(nextBlockStart);
-                    currentEnd.setMinutes(currentEnd.getMinutes() + 30);
+              // Convert minutes since midnight back to time string
+              const minutesToTimeString = (minutes: number): string => {
+                const hour = Math.floor(minutes / 60);
+                const minute = minutes % 60;
+                const date = new Date();
+                date.setHours(hour, minute, 0);
+                return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+              };
+
+              // Expand templates into 30-minute blocks
+              const blocks: number[] = [];
+              dayTemplates.forEach(template => {
+                const startMinutes = parseTimeToMinutes(template.startTime);
+                const endMinutes = parseTimeToMinutes(template.endTime);
+                
+                // Add each 30-minute block
+                for (let minutes = startMinutes; minutes < endMinutes; minutes += 30) {
+                  if (!blocks.includes(minutes)) {
+                    blocks.push(minutes);
                   }
                 }
-                ranges.push({ start: currentStart, end: currentEnd });
+              });
+
+              // Sort blocks by time
+              blocks.sort((a, b) => a - b);
+
+              // Group consecutive blocks into ranges
+              const ranges: { start: number; end: number }[] = [];
+              if (blocks.length > 0) {
+                let rangeStart = blocks[0];
+                let rangeEnd = blocks[0] + 30; // Each block is 30 minutes
+
+                for (let i = 1; i < blocks.length; i++) {
+                  const currentBlock = blocks[i];
+                  // If this block is contiguous with the current range, extend it
+                  if (currentBlock === rangeEnd) {
+                    rangeEnd = currentBlock + 30;
+                  } else {
+                    // Gap found, save current range and start new one
+                    ranges.push({ start: rangeStart, end: rangeEnd });
+                    rangeStart = currentBlock;
+                    rangeEnd = currentBlock + 30;
+                  }
+                }
+                // Don't forget the last range
+                ranges.push({ start: rangeStart, end: rangeEnd });
               }
 
               return (
                 <Box key={day}>
                   <Text fontSize="xs" mb={1} color={COLORS.textPrimary}>{day}:</Text>
                   <Flex gap={2} flexWrap="wrap">
-                    {ranges.map((range, i) => {
-                      // Format time: 12:00 PM - 4:00 PM
-                      const formatTime = (date: Date) => {
-                        return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-                      };
-                      return (
-                        <Badge key={i} bg={COLORS.bgTealLight} color={COLORS.tealDarker} fontSize="xs" textTransform="none" borderRadius="full">
-                          {formatTime(range.start)} - {formatTime(range.end)}
-                        </Badge>
-                      );
-                    })}
+                    {ranges.map((range, i) => (
+                      <Badge key={i} bg={COLORS.bgTealLight} color={COLORS.tealDarker} fontSize="xs" textTransform="none" borderRadius="full">
+                        {minutesToTimeString(range.start)} - {minutesToTimeString(range.end)}
+                      </Badge>
+                    ))}
                   </Flex>
                 </Box>
               );

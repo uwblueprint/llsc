@@ -505,27 +505,34 @@ export const updateUserData = async (
 /**
  * Availability API types and functions
  */
-export interface TimeRange {
-  startTime: string; // ISO datetime string
-  endTime: string; // ISO datetime string
+export interface AvailabilityTemplate {
+  dayOfWeek: number; // 0=Monday, 1=Tuesday, ..., 6=Sunday
+  startTime: string; // Time string in format "HH:MM:SS" or "HH:MM"
+  endTime: string;   // Time string in format "HH:MM:SS" or "HH:MM"
 }
 
 export interface CreateAvailabilityRequest {
   userId: string;
-  availableTimes: TimeRange[];
+  templates: AvailabilityTemplate[];
 }
 
 export interface DeleteAvailabilityRequest {
   userId: string;
-  delete: TimeRange[];
+  templates: AvailabilityTemplate[];
 }
 
 /**
  * Get availability for a user
  */
-export const getAvailability = async (userId: string): Promise<{ availableTimes: Array<{ id: number; startTime: string }> }> => {
-  const response = await baseAPIClient.get<{ userId: string; availableTimes: Array<{ id: number; startTime: string }> }>(`/availability?user_id=${userId}`);
-  return response.data;
+export const getAvailability = async (userId: string): Promise<{ templates: AvailabilityTemplate[] }> => {
+  const response = await baseAPIClient.get<{ user_id: string; templates: Array<{ day_of_week: number; start_time: string; end_time: string }> }>(`/availability?user_id=${userId}`);
+  return {
+    templates: response.data.templates.map(t => ({
+      dayOfWeek: t.day_of_week,
+      startTime: t.start_time,
+      endTime: t.end_time,
+    })),
+  };
 };
 
 /**
@@ -535,9 +542,10 @@ export const createAvailability = async (request: CreateAvailabilityRequest): Pr
   // Convert camelCase to snake_case for backend
   const backendData = {
     user_id: request.userId,
-    available_times: request.availableTimes.map(range => ({
-      start_time: range.startTime,
-      end_time: range.endTime,
+    templates: request.templates.map(template => ({
+      day_of_week: template.dayOfWeek,
+      start_time: template.startTime,
+      end_time: template.endTime,
     })),
   };
   const response = await baseAPIClient.post<{ user_id: string; added: number }>('/availability', backendData);
@@ -547,19 +555,24 @@ export const createAvailability = async (request: CreateAvailabilityRequest): Pr
 /**
  * Delete availability for a user
  */
-export const deleteAvailability = async (request: DeleteAvailabilityRequest): Promise<{ userId: string; deleted: number; availability: Array<{ id: number; startTime: string }> }> => {
+export const deleteAvailability = async (request: DeleteAvailabilityRequest): Promise<{ userId: string; deleted: number; templates: AvailabilityTemplate[] }> => {
   // Convert camelCase to snake_case for backend
   const backendData = {
     user_id: request.userId,
-    delete: request.delete.map(range => ({
-      start_time: range.startTime,
-      end_time: range.endTime,
+    templates: request.templates.map(template => ({
+      day_of_week: template.dayOfWeek,
+      start_time: template.startTime,
+      end_time: template.endTime,
     })),
   };
-  const response = await baseAPIClient.delete<{ user_id: string; deleted: number; availability: Array<{ id: number; start_time: string }> }>('/availability', { data: backendData });
+  const response = await baseAPIClient.delete<{ user_id: string; deleted: number; templates: Array<{ day_of_week: number; start_time: string; end_time: string }> }>('/availability', { data: backendData });
   return {
     userId: response.data.user_id,
     deleted: response.data.deleted,
-    availability: response.data.availability.map(block => ({ id: block.id, startTime: block.start_time })),
+    templates: response.data.templates.map(t => ({
+      dayOfWeek: t.day_of_week,
+      startTime: t.start_time,
+      endTime: t.end_time,
+    })),
   };
 };

@@ -87,7 +87,7 @@ def db_session():
         session.execute(
             text(
                 "TRUNCATE TABLE form_submissions, user_loved_one_experiences, user_loved_one_treatments, "
-                "user_experiences, user_treatments, available_times, matches, suggested_times, user_data, users "
+                "user_experiences, user_treatments, availability_templates, matches, suggested_times, user_data, users "
                 "RESTART IDENTITY CASCADE"
             )
         )

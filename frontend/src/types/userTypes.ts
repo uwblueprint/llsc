@@ -58,6 +58,12 @@ export interface TimeBlock {
   startTime: string;
 }
 
+export interface AvailabilityTemplate {
+  dayOfWeek: number; // 0=Monday, 1=Tuesday, ..., 6=Sunday
+  startTime: string; // Time string in format "HH:MM:SS"
+  endTime: string;   // Time string in format "HH:MM:SS"
+}
+
 export interface UserResponse {
   id: string;
   firstName: string | null;
@@ -73,6 +79,6 @@ export interface UserResponse {
   };
   userData?: UserData | null;
   volunteerData?: VolunteerData | null;
-  availability?: TimeBlock[];
+  availability?: AvailabilityTemplate[];
 }
 

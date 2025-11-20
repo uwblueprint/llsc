@@ -15,6 +15,7 @@ from app.models.Match import Match
 from app.models.FormSubmission import FormSubmission
 from app.models.Task import Task
 from app.models.SuggestedTime import suggested_times
+from app.models.AvailabilityTemplate import AvailabilityTemplate
 from app.utilities.form_constants import ExperienceId, TreatmentId
 from sqlalchemy import delete
 
@@ -360,10 +361,8 @@ def seed_users(session: Session) -> None:
             if existing_user.volunteer_data:
                 session.delete(existing_user.volunteer_data)
             
-            # Clear availability relationships (delete time blocks)
-            if existing_user.availability:
-                for time_block in list(existing_user.availability):
-                    session.delete(time_block)
+            # Clear availability templates
+            session.query(AvailabilityTemplate).filter_by(user_id=existing_user.id).delete()
             
             # Now delete the user
             session.delete(existing_user)

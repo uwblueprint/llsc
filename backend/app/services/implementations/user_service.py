@@ -161,14 +161,36 @@ class UserService(IUserService):
                     joinedload(User.user_data).joinedload(UserData.loved_one_treatments),
                     joinedload(User.user_data).joinedload(UserData.loved_one_experiences),
                     joinedload(User.volunteer_data),
-                    joinedload(User.availability),
+                    joinedload(User.availability_templates),
                 )
                 .filter(User.id == UUID(user_id))
                 .first()
             )
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
-            return UserResponse.model_validate(user)
+            
+            # Convert templates to AvailabilityTemplateSlot for UserResponse
+            from app.schemas.availability import AvailabilityTemplateSlot
+            
+            availability_templates = []
+            for template in user.availability_templates:
+                if template.is_active:
+                    availability_templates.append(AvailabilityTemplateSlot(
+                        day_of_week=template.day_of_week,
+                        start_time=template.start_time,
+                        end_time=template.end_time
+                    ))
+            
+            # Create a temporary user object with availability for validation
+            user_dict = {
+                **{c.name: getattr(user, c.name) for c in user.__table__.columns},
+                'availability': availability_templates,
+                'role': user.role,
+                'user_data': user.user_data,
+                'volunteer_data': user.volunteer_data,
+            }
+            
+            return UserResponse.model_validate(user_dict)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid user ID format")
         except HTTPException:
@@ -200,12 +222,36 @@ class UserService(IUserService):
                     joinedload(User.role),
                     joinedload(User.user_data),
                     joinedload(User.volunteer_data),
-                    joinedload(User.availability),
+                    joinedload(User.availability_templates),
                 )
                 .filter(User.role_id.in_([1, 2]))
                 .all()
             )
-            return [UserResponse.model_validate(user) for user in users]
+            
+            # Convert templates to AvailabilityTemplateSlot for each user
+            from app.schemas.availability import AvailabilityTemplateSlot
+            
+            user_responses = []
+            for user in users:
+                availability_templates = []
+                for template in user.availability_templates:
+                    if template.is_active:
+                        availability_templates.append(AvailabilityTemplateSlot(
+                            day_of_week=template.day_of_week,
+                            start_time=template.start_time,
+                            end_time=template.end_time
+                        ))
+                
+                user_dict = {
+                    **{c.name: getattr(user, c.name) for c in user.__table__.columns},
+                    'availability': availability_templates,
+                    'role': user.role,
+                    'user_data': user.user_data,
+                    'volunteer_data': user.volunteer_data,
+                }
+                user_responses.append(UserResponse.model_validate(user_dict))
+            
+            return user_responses
         except Exception as e:
             self.logger.error(f"Error getting users: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
@@ -213,8 +259,40 @@ class UserService(IUserService):
     async def get_admins(self) -> List[UserResponse]:
         try:
             # Get only admin users (role_id 3)
-            users = self.db.query(User).join(Role).filter(User.role_id == 3).all()
-            return [UserResponse.model_validate(user) for user in users]
+            users = (
+                self.db.query(User)
+                .options(
+                    joinedload(User.role),
+                    joinedload(User.availability_templates),
+                )
+                .filter(User.role_id == 3)
+                .all()
+            )
+            
+            # Convert templates to AvailabilityTemplateSlot for each admin (though admins typically don't have availability)
+            from app.schemas.availability import AvailabilityTemplateSlot
+            
+            user_responses = []
+            for user in users:
+                availability_templates = []
+                for template in user.availability_templates:
+                    if template.is_active:
+                        availability_templates.append(AvailabilityTemplateSlot(
+                            day_of_week=template.day_of_week,
+                            start_time=template.start_time,
+                            end_time=template.end_time
+                        ))
+                
+                user_dict = {
+                    **{c.name: getattr(user, c.name) for c in user.__table__.columns},
+                    'availability': availability_templates,
+                    'role': user.role,
+                    'user_data': user.user_data,
+                    'volunteer_data': user.volunteer_data,
+                }
+                user_responses.append(UserResponse.model_validate(user_dict))
+            
+            return user_responses
         except Exception as e:
             self.logger.error(f"Error retrieving admin users: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
@@ -244,9 +322,38 @@ class UserService(IUserService):
             self.db.commit()
             self.db.refresh(db_user)
 
-            # return user with role information
-            updated_user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
-            return UserResponse.model_validate(updated_user)
+            # return user with role information and availability
+            updated_user = (
+                self.db.query(User)
+                .options(
+                    joinedload(User.role),
+                    joinedload(User.availability_templates),
+                )
+                .filter(User.id == UUID(user_id))
+                .first()
+            )
+            
+            # Convert templates to AvailabilityTemplateSlot for UserResponse
+            from app.schemas.availability import AvailabilityTemplateSlot
+            
+            availability_templates = []
+            for template in updated_user.availability_templates:
+                if template.is_active:
+                    availability_templates.append(AvailabilityTemplateSlot(
+                        day_of_week=template.day_of_week,
+                        start_time=template.start_time,
+                        end_time=template.end_time
+                    ))
+            
+            user_dict = {
+                **{c.name: getattr(updated_user, c.name) for c in updated_user.__table__.columns},
+                'availability': availability_templates,
+                'role': updated_user.role,
+                'user_data': updated_user.user_data,
+                'volunteer_data': updated_user.volunteer_data,
+            }
+            
+            return UserResponse.model_validate(user_dict)
 
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid user ID format")
@@ -354,12 +461,34 @@ class UserService(IUserService):
                     joinedload(User.user_data).joinedload(UserData.loved_one_treatments),
                     joinedload(User.user_data).joinedload(UserData.loved_one_experiences),
                     joinedload(User.volunteer_data),
-                    joinedload(User.availability),
+                    joinedload(User.availability_templates),
                 )
                 .filter(User.id == UUID(user_id))
                 .first()
             )
-            return UserResponse.model_validate(updated_user)
+            
+            # Convert templates to AvailabilityTemplateSlot for UserResponse (same as get_user_by_id)
+            from app.schemas.availability import AvailabilityTemplateSlot
+            
+            availability_templates = []
+            for template in updated_user.availability_templates:
+                if template.is_active:
+                    availability_templates.append(AvailabilityTemplateSlot(
+                        day_of_week=template.day_of_week,
+                        start_time=template.start_time,
+                        end_time=template.end_time
+                    ))
+            
+            # Create a temporary user object with availability for validation
+            user_dict = {
+                **{c.name: getattr(updated_user, c.name) for c in updated_user.__table__.columns},
+                'availability': availability_templates,
+                'role': updated_user.role,
+                'user_data': updated_user.user_data,
+                'volunteer_data': updated_user.volunteer_data,
+            }
+            
+            return UserResponse.model_validate(user_dict)
 
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid user ID format")

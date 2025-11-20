@@ -1,16 +1,19 @@
 import os
 import pytest
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, time as dt_time, timezone
 from uuid import uuid4
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.models import Role, User, UserData, Treatment, Experience, TimeBlock
+from app.models import AvailabilityTemplate, Role, User, UserData, Treatment, Experience, TimeBlock
 from app.schemas.user import UserRole
 from app.schemas.user_data import UserDataUpdateRequest
-from app.schemas.availability import CreateAvailabilityRequest, DeleteAvailabilityRequest
-from app.schemas.time_block import TimeRange
+from app.schemas.availability import (
+    AvailabilityTemplateSlot,
+    CreateAvailabilityRequest,
+    DeleteAvailabilityRequest,
+)
 from app.services.implementations.user_service import UserService
 from app.services.implementations.availability_service import AvailabilityService
 
@@ -38,7 +41,7 @@ def db_session():
         session.execute(
             text(
                 "TRUNCATE TABLE user_loved_one_experiences, user_loved_one_treatments, "
-                "user_experiences, user_treatments, available_times, time_blocks, "
+                "user_experiences, user_treatments, availability_templates, time_blocks, "
                 "user_data, users RESTART IDENTITY CASCADE"
             )
         )
@@ -488,65 +491,38 @@ def volunteer_user(db_session):
 
 
 @pytest.mark.asyncio
-async def test_create_availability_adds_time_blocks(db_session, volunteer_user):
-    """Test that creating availability adds time blocks correctly"""
+async def test_create_availability_adds_templates(db_session, volunteer_user):
+    """Test that creating availability adds templates correctly"""
     availability_service = AvailabilityService(db_session)
     
-    # Create a time range: tomorrow 10:00 AM to 11:30 AM (should create 3 blocks: 10:00, 10:30, 11:00)
-    now = datetime.now(timezone.utc)
-    tomorrow = now + timedelta(days=1)
-    start_time = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
-    end_time = tomorrow.replace(hour=11, minute=30, second=0, microsecond=0)
+    # Create templates: Monday 10:00 AM to 11:30 AM
+    templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=0,  # Monday
+            start_time=dt_time(10, 0),
+            end_time=dt_time(11, 30),
+        )
+    ]
     
     create_request = CreateAvailabilityRequest(
         user_id=volunteer_user.id,
-        available_times=[TimeRange(start_time=start_time, end_time=end_time)],
+        templates=templates,
     )
     
     result = await availability_service.create_availability(create_request)
     
     assert result.user_id == volunteer_user.id
-    assert result.added == 3  # 10:00, 10:30, 11:00
+    assert result.added == 3  # 10:00, 10:30, 11:00 (3 templates)
     
-    # Verify time blocks were created
-    db_session.refresh(volunteer_user)
-    assert len(volunteer_user.availability) == 3
-    start_times = {tb.start_time for tb in volunteer_user.availability}
-    assert start_time in start_times
-    assert start_time + timedelta(minutes=30) in start_times
-    assert start_time + timedelta(hours=1) in start_times
-
-
-@pytest.mark.asyncio
-async def test_create_availability_ignores_existing_blocks(db_session, volunteer_user):
-    """Test that creating availability ignores existing time blocks"""
-    availability_service = AvailabilityService(db_session)
-    
-    # Create an existing time block
-    now = datetime.now(timezone.utc)
-    tomorrow = now + timedelta(days=1)
-    existing_time = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
-    existing_block = TimeBlock(start_time=existing_time)
-    volunteer_user.availability.append(existing_block)
-    db_session.commit()
-    
-    # Try to create availability that includes the existing block
-    start_time = existing_time
-    end_time = tomorrow.replace(hour=11, minute=0, second=0, microsecond=0)
-    
-    create_request = CreateAvailabilityRequest(
-        user_id=volunteer_user.id,
-        available_times=[TimeRange(start_time=start_time, end_time=end_time)],
-    )
-    
-    result = await availability_service.create_availability(create_request)
-    
-    # Should only add 1 new block (10:30), not the existing 10:00
-    assert result.added == 1
-    
-    # Verify we still have 2 blocks total
-    db_session.refresh(volunteer_user)
-    assert len(volunteer_user.availability) == 2
+    # Verify templates were created
+    templates = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id).all()
+    assert len(templates) == 3
+    times = {t.start_time for t in templates}
+    assert dt_time(10, 0) in times
+    assert dt_time(10, 30) in times
+    assert dt_time(11, 0) in times
+    # All should be Monday (day_of_week 0)
+    assert all(t.day_of_week == 0 for t in templates)
 
 
 @pytest.mark.asyncio
@@ -554,60 +530,65 @@ async def test_create_availability_multiple_ranges(db_session, volunteer_user):
     """Test creating availability with multiple time ranges"""
     availability_service = AvailabilityService(db_session)
     
-    now = datetime.now(timezone.utc)
-    tomorrow = now + timedelta(days=1)
-    
-    # Create two separate time ranges
-    range1_start = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
-    range1_end = tomorrow.replace(hour=11, minute=0, second=0, microsecond=0)
-    
-    range2_start = tomorrow.replace(hour=14, minute=0, second=0, microsecond=0)
-    range2_end = tomorrow.replace(hour=15, minute=0, second=0, microsecond=0)
+    templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=0,  # Monday
+            start_time=dt_time(9, 0),
+            end_time=dt_time(10, 0),
+        ),
+        AvailabilityTemplateSlot(
+            day_of_week=0,  # Monday
+            start_time=dt_time(14, 0),
+            end_time=dt_time(15, 0),
+        ),
+    ]
     
     create_request = CreateAvailabilityRequest(
         user_id=volunteer_user.id,
-        available_times=[
-            TimeRange(start_time=range1_start, end_time=range1_end),
-            TimeRange(start_time=range2_start, end_time=range2_end),
-        ],
+        templates=templates,
     )
     
     result = await availability_service.create_availability(create_request)
     
-    # Should add 4 blocks total (2 from each range)
+    # Should add 4 templates total (2 from each range)
     assert result.added == 4
     
-    db_session.refresh(volunteer_user)
-    assert len(volunteer_user.availability) == 4
+    templates = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id).all()
+    assert len(templates) == 4
 
 
 @pytest.mark.asyncio
-async def test_delete_availability_removes_time_blocks(db_session, volunteer_user):
-    """Test that deleting availability removes time blocks correctly"""
+async def test_delete_availability_removes_templates(db_session, volunteer_user):
+    """Test that deleting availability removes templates correctly"""
     availability_service = AvailabilityService(db_session)
     
     # First, create some availability
-    now = datetime.now(timezone.utc)
-    tomorrow = now + timedelta(days=1)
-    start_time = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
-    end_time = tomorrow.replace(hour=12, minute=0, second=0, microsecond=0)
-    
-    create_request = CreateAvailabilityRequest(
-        user_id=volunteer_user.id,
-        available_times=[TimeRange(start_time=start_time, end_time=end_time)],
+    templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=0,  # Monday
+            start_time=dt_time(10, 0),
+            end_time=dt_time(12, 0),  # 10:00, 10:30, 11:00, 11:30
+        )
+    ]
+    await availability_service.create_availability(
+        CreateAvailabilityRequest(user_id=volunteer_user.id, templates=templates)
     )
-    await availability_service.create_availability(create_request)
     
-    db_session.refresh(volunteer_user)
-    assert len(volunteer_user.availability) == 4  # 10:00, 10:30, 11:00, 11:30
+    templates = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id).all()
+    assert len(templates) == 4  # 10:00, 10:30, 11:00, 11:30
     
-    # Now delete a portion of it (10:00 to 11:00, should remove 2 blocks)
-    delete_start = start_time
-    delete_end = tomorrow.replace(hour=11, minute=0, second=0, microsecond=0)
+    # Now delete a portion of it (10:00 to 11:00, should remove 2 templates)
+    delete_templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=0,
+            start_time=dt_time(10, 0),
+            end_time=dt_time(11, 0),
+        )
+    ]
     
     delete_request = DeleteAvailabilityRequest(
         user_id=volunteer_user.id,
-        delete=[TimeRange(start_time=delete_start, end_time=delete_end)],
+        templates=delete_templates,
     )
     
     result = await availability_service.delete_availability(delete_request)
@@ -615,51 +596,60 @@ async def test_delete_availability_removes_time_blocks(db_session, volunteer_use
     assert result.user_id == volunteer_user.id
     assert result.deleted == 2  # Removed 10:00 and 10:30
     
-    # Verify remaining blocks
-    db_session.refresh(volunteer_user)
-    assert len(volunteer_user.availability) == 2  # Should have 11:00 and 11:30 left
-    remaining_times = {tb.start_time for tb in volunteer_user.availability}
-    assert tomorrow.replace(hour=11, minute=0, second=0, microsecond=0) in remaining_times
-    assert tomorrow.replace(hour=11, minute=30, second=0, microsecond=0) in remaining_times
+    # Verify remaining templates
+    remaining = db_session.query(AvailabilityTemplate).filter_by(
+        user_id=volunteer_user.id, is_active=True
+    ).all()
+    assert len(remaining) == 2  # Should have 11:00 and 11:30 left
+    times = {t.start_time for t in remaining}
+    assert dt_time(11, 0) in times
+    assert dt_time(11, 30) in times
 
 
 @pytest.mark.asyncio
-async def test_delete_availability_ignores_non_existent_blocks(db_session, volunteer_user):
-    """Test that deleting availability ignores non-existent time blocks"""
+async def test_delete_availability_ignores_non_existent(db_session, volunteer_user):
+    """Test that deleting availability ignores non-existent templates"""
     availability_service = AvailabilityService(db_session)
     
     # Create some availability
-    now = datetime.now(timezone.utc)
-    tomorrow = now + timedelta(days=1)
-    start_time = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
-    end_time = tomorrow.replace(hour=11, minute=0, second=0, microsecond=0)
-    
-    create_request = CreateAvailabilityRequest(
-        user_id=volunteer_user.id,
-        available_times=[TimeRange(start_time=start_time, end_time=end_time)],
+    templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=0,
+            start_time=dt_time(10, 0),
+            end_time=dt_time(11, 0),
+        )
+    ]
+    await availability_service.create_availability(
+        CreateAvailabilityRequest(user_id=volunteer_user.id, templates=templates)
     )
-    await availability_service.create_availability(create_request)
     
-    db_session.refresh(volunteer_user)
-    assert len(volunteer_user.availability) == 2
+    templates = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id).all()
+    assert len(templates) == 2
     
-    # Try to delete a time range that doesn't exist (14:00 to 15:00)
-    delete_start = tomorrow.replace(hour=14, minute=0, second=0, microsecond=0)
-    delete_end = tomorrow.replace(hour=15, minute=0, second=0, microsecond=0)
+    # Try to delete templates that don't exist (Tuesday 14:00 to 15:00)
+    delete_templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=1,  # Tuesday (doesn't exist)
+            start_time=dt_time(14, 0),
+            end_time=dt_time(15, 0),
+        )
+    ]
     
     delete_request = DeleteAvailabilityRequest(
         user_id=volunteer_user.id,
-        delete=[TimeRange(start_time=delete_start, end_time=delete_end)],
+        templates=delete_templates,
     )
     
     result = await availability_service.delete_availability(delete_request)
     
-    # Should delete 0 blocks since none exist in that range
+    # Should delete 0 templates since none exist
     assert result.deleted == 0
     
-    # Verify original blocks are still there
-    db_session.refresh(volunteer_user)
-    assert len(volunteer_user.availability) == 2
+    # Verify original templates are still there
+    remaining = db_session.query(AvailabilityTemplate).filter_by(
+        user_id=volunteer_user.id, is_active=True
+    ).all()
+    assert len(remaining) == 2
 
 
 @pytest.mark.asyncio
@@ -668,34 +658,42 @@ async def test_delete_all_availability(db_session, volunteer_user):
     availability_service = AvailabilityService(db_session)
     
     # Create availability
-    now = datetime.now(timezone.utc)
-    tomorrow = now + timedelta(days=1)
-    start_time = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
-    end_time = tomorrow.replace(hour=12, minute=0, second=0, microsecond=0)
-    
-    create_request = CreateAvailabilityRequest(
-        user_id=volunteer_user.id,
-        available_times=[TimeRange(start_time=start_time, end_time=end_time)],
+    templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=0,
+            start_time=dt_time(10, 0),
+            end_time=dt_time(12, 0),
+        )
+    ]
+    await availability_service.create_availability(
+        CreateAvailabilityRequest(user_id=volunteer_user.id, templates=templates)
     )
-    await availability_service.create_availability(create_request)
     
-    db_session.refresh(volunteer_user)
-    assert len(volunteer_user.availability) == 4
+    templates = db_session.query(AvailabilityTemplate).filter_by(user_id=volunteer_user.id).all()
+    assert len(templates) == 4
     
     # Delete all availability
+    delete_templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=0,
+            start_time=dt_time(10, 0),
+            end_time=dt_time(12, 0),
+        )
+    ]
     delete_request = DeleteAvailabilityRequest(
         user_id=volunteer_user.id,
-        delete=[TimeRange(start_time=start_time, end_time=end_time)],
+        templates=delete_templates,
     )
     
     result = await availability_service.delete_availability(delete_request)
     
     assert result.deleted == 4
     
-    # Verify all blocks are removed
-    db_session.refresh(volunteer_user)
-    assert len(volunteer_user.availability) == 0
-    # Note: result.availability might contain stale data before refresh, so we check the refreshed user instead
+    # Verify all templates are removed
+    remaining = db_session.query(AvailabilityTemplate).filter_by(
+        user_id=volunteer_user.id, is_active=True
+    ).all()
+    assert len(remaining) == 0
 
 
 @pytest.mark.asyncio
@@ -704,14 +702,17 @@ async def test_delete_availability_user_not_found(db_session):
     availability_service = AvailabilityService(db_session)
     
     fake_user_id = uuid4()
-    now = datetime.now(timezone.utc)
-    tomorrow = now + timedelta(days=1)
-    start_time = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
-    end_time = tomorrow.replace(hour=11, minute=0, second=0, microsecond=0)
+    delete_templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=0,
+            start_time=dt_time(10, 0),
+            end_time=dt_time(11, 0),
+        )
+    ]
     
     delete_request = DeleteAvailabilityRequest(
         user_id=fake_user_id,
-        delete=[TimeRange(start_time=start_time, end_time=end_time)],
+        templates=delete_templates,
     )
     
     with pytest.raises(Exception) as exc_info:
@@ -727,14 +728,17 @@ async def test_create_availability_user_not_found(db_session):
     availability_service = AvailabilityService(db_session)
     
     fake_user_id = uuid4()
-    now = datetime.now(timezone.utc)
-    tomorrow = now + timedelta(days=1)
-    start_time = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
-    end_time = tomorrow.replace(hour=11, minute=0, second=0, microsecond=0)
+    templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=0,
+            start_time=dt_time(10, 0),
+            end_time=dt_time(11, 0),
+        )
+    ]
     
     create_request = CreateAvailabilityRequest(
         user_id=fake_user_id,
-        available_times=[TimeRange(start_time=start_time, end_time=end_time)],
+        templates=templates,
     )
     
     with pytest.raises(Exception) as exc_info:
