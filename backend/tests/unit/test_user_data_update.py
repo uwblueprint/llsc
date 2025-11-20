@@ -21,11 +21,15 @@ from app.services.implementations.user_service import UserService
 
 # Test DB Configuration - Always require Postgres for full parity
 POSTGRES_DATABASE_URL = os.getenv("POSTGRES_TEST_DATABASE_URL")
+
 if not POSTGRES_DATABASE_URL:
-    raise RuntimeError(
-        "POSTGRES_TEST_DATABASE_URL is not set. Please export a Postgres URL, e.g. "
-        "postgresql+psycopg2://postgres:postgres@db:5432/llsc_test"
+    # Skip all tests in this file if Postgres isn't available
+    pytest.skip(
+        "POSTGRES_TEST_DATABASE_URL not set. "
+        "These tests require a Postgres database. Set POSTGRES_TEST_DATABASE_URL to run them.",
+        allow_module_level=True,
     )
+
 engine = create_engine(POSTGRES_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -175,6 +179,13 @@ async def test_update_simple_fields(db_session, test_user_with_data):
     # Verify other fields unchanged
     assert result.user_data.last_name == "Doe"
     assert result.user_data.date_of_birth == date(1990, 1, 1)
+
+    # Verify that User table was also updated (name sync)
+    db_session.refresh(user)
+    assert user.first_name == "Jane"
+    # Verify response top-level fields reflect the updated name
+    assert result.first_name == "Jane"
+    assert result.last_name == "Doe"  # last_name wasn't updated, so should remain "Doe"
 
 
 @pytest.mark.asyncio
@@ -740,3 +751,38 @@ async def test_create_availability_user_not_found(db_session):
 
     # The service currently raises 500 for user not found (could be improved to 404)
     assert exc_info.value.status_code == 500
+
+
+@pytest.mark.asyncio
+async def test_update_name_syncs_to_user_table(db_session, test_user_with_data):
+    """Test that updating first_name and last_name in UserData also updates User table"""
+    user, user_data = test_user_with_data
+    user_service = UserService(db_session)
+
+    # Verify initial state
+    assert user.first_name == "John"
+    assert user.last_name == "Doe"
+    assert user_data.first_name == "John"
+    assert user_data.last_name == "Doe"
+
+    # Update names via UserData
+    update_request = UserDataUpdateRequest(
+        first_name="Jane",
+        last_name="Smith",
+    )
+
+    result = await user_service.update_user_data_by_id(str(user.id), update_request)
+
+    # Verify UserData was updated
+    db_session.refresh(user_data)
+    assert user_data.first_name == "Jane"
+    assert user_data.last_name == "Smith"
+
+    # Verify User table was also updated (for consistency)
+    db_session.refresh(user)
+    assert user.first_name == "Jane"
+    assert user.last_name == "Smith"
+
+    # Verify response also reflects the updated names
+    assert result.first_name == "Jane"
+    assert result.last_name == "Smith"
