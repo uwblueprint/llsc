@@ -21,11 +21,15 @@ from app.services.implementations.match_service import MatchService
 
 # Test DB Configuration
 POSTGRES_DATABASE_URL = os.getenv("POSTGRES_TEST_DATABASE_URL")
+
 if not POSTGRES_DATABASE_URL:
-    raise RuntimeError(
-        "POSTGRES_TEST_DATABASE_URL is not set. Please export a Postgres URL, e.g. "
-        "postgresql+psycopg2://postgres:postgres@db:5432/llsc_test"
+    # Skip all tests in this file if Postgres isn't available
+    pytest.skip(
+        "POSTGRES_TEST_DATABASE_URL not set. "
+        "These tests require a Postgres database. Set POSTGRES_TEST_DATABASE_URL to run them.",
+        allow_module_level=True,
     )
+
 engine = create_engine(POSTGRES_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

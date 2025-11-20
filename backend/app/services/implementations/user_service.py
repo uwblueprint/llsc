@@ -409,6 +409,9 @@ class UserService(IUserService):
             for field in simple_fields:
                 if field in update_data:
                     setattr(user_data, field, update_data[field])
+                    # Sync first_name and last_name to User table for consistency
+                    if field in ("first_name", "last_name"):
+                        setattr(db_user, field, update_data[field])
 
             # Handle pronouns (array field)
             if "pronouns" in update_data:
