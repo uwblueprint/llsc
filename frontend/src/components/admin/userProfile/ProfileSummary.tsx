@@ -1,21 +1,52 @@
 import React from 'react';
-import {
-  Box,
-  Flex,
-  Heading,
-  Text,
-  Button,
-  VStack,
-  HStack,
-  IconButton,
-  Input,
-} from '@chakra-ui/react';
-import { FiEdit2, FiHeart } from 'react-icons/fi';
+import { Box, Flex, Heading, Text, VStack, HStack, IconButton, Input } from '@chakra-ui/react';
+import { FiEdit2, FiHeart, FiX, FiCheck } from 'react-icons/fi';
 import { COLORS } from '@/constants/colors';
 import { formatArray, capitalizeWords } from '@/utils/userProfileUtils';
 import { formatDateLong } from '@/utils/dateUtils';
 import { ProfileEditData } from '@/types/userProfileTypes';
 import { UserData } from '@/types/userTypes';
+import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
+import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown';
+
+// Options from intake forms
+const GENDER_IDENTITY_OPTIONS = [
+  'Male',
+  'Female',
+  'Non-binary',
+  'Transgender',
+  'Prefer not to answer',
+  'Self-describe',
+];
+
+const PRONOUNS_OPTIONS = [
+  'He/Him',
+  'She/Her',
+  'They/Them',
+  'Ze/Zir',
+  'Prefer not to answer',
+  'Self-describe',
+];
+
+const TIMEZONE_OPTIONS = ['NST', 'AST', 'EST', 'CST', 'MST', 'PST'];
+
+const MARITAL_STATUS_OPTIONS = ['Single', 'Married/Common Law', 'Divorced', 'Widowed'];
+
+const HAS_KIDS_OPTIONS = ['Yes', 'No', 'Prefer not to answer'];
+
+const ETHNIC_OPTIONS = [
+  'Black (including African and Caribbean descent)',
+  'Middle Eastern, Western or Central Asian',
+  'East Asian',
+  'South Asian',
+  'Southeast Asian',
+  'Indigenous person from Canada',
+  'Latin American',
+  'White',
+  'Mixed Ethnicity (Individuals who identify with more than one racial/ethnic or cultural group)',
+  'Prefer not to answer',
+  'Another background/Prefer to self-describe (please specify):',
+];
 
 interface ProfileSummaryProps {
   userData: UserData | null | undefined;
@@ -66,25 +97,28 @@ export function ProfileSummary({
           </IconButton>
         ) : (
           <HStack gap={2}>
-            <Button
+            <IconButton
+              aria-label="Cancel"
               size="sm"
               variant="ghost"
-              color={COLORS.veniceBlue}
+              color={COLORS.textSecondary}
               onClick={onCancel}
               disabled={isSaving}
+              _hover={{ bg: 'gray.100', color: COLORS.textPrimary }}
             >
-              Cancel
-            </Button>
-            <Button
+              <FiX />
+            </IconButton>
+            <IconButton
+              aria-label="Save"
               size="sm"
               bg={COLORS.teal}
               color="white"
               onClick={onSave}
-              loading={isSaving}
+              disabled={isSaving}
               _hover={{ bg: COLORS.tealDarker }}
             >
-              Save
-            </Button>
+              <FiCheck />
+            </IconButton>
           </HStack>
         )}
       </Flex>
@@ -102,6 +136,9 @@ export function ProfileSummary({
                 onChange={(e) => onEditDataChange({ ...editData, firstName: e.target.value })}
                 placeholder="First Name"
                 fontSize="sm"
+                border="1px solid"
+                borderColor={COLORS.grayBorder}
+                borderRadius="6px"
               />
               <Input
                 size="sm"
@@ -109,6 +146,9 @@ export function ProfileSummary({
                 onChange={(e) => onEditDataChange({ ...editData, lastName: e.target.value })}
                 placeholder="Last Name"
                 fontSize="sm"
+                border="1px solid"
+                borderColor={COLORS.grayBorder}
+                borderRadius="6px"
               />
             </HStack>
           ) : (
@@ -138,6 +178,9 @@ export function ProfileSummary({
               value={editData.dateOfBirth || ''}
               onChange={(e) => onEditDataChange({ ...editData, dateOfBirth: e.target.value })}
               fontSize="sm"
+              border="1px solid"
+              borderColor={COLORS.grayBorder}
+              borderRadius="6px"
             />
           ) : (
             <Text fontSize="sm" color={COLORS.veniceBlue}>
@@ -157,6 +200,9 @@ export function ProfileSummary({
               onChange={(e) => onEditDataChange({ ...editData, phone: e.target.value })}
               placeholder="Phone Number"
               fontSize="sm"
+              border="1px solid"
+              borderColor={COLORS.grayBorder}
+              borderRadius="6px"
             />
           ) : (
             <Text fontSize="sm" color={COLORS.veniceBlue}>
@@ -170,12 +216,13 @@ export function ProfileSummary({
             Gender
           </Text>
           {isEditing ? (
-            <Input
-              size="sm"
-              value={editData.genderIdentity || ''}
-              onChange={(e) => onEditDataChange({ ...editData, genderIdentity: e.target.value })}
-              placeholder="Gender"
-              fontSize="sm"
+            <SingleSelectDropdown
+              options={GENDER_IDENTITY_OPTIONS}
+              selectedValue={editData.genderIdentity || ''}
+              onSelectionChange={(value) =>
+                onEditDataChange({ ...editData, genderIdentity: value })
+              }
+              placeholder="Select gender"
             />
           ) : (
             <Text fontSize="sm" color={COLORS.veniceBlue}>
@@ -189,20 +236,11 @@ export function ProfileSummary({
             Pronouns
           </Text>
           {isEditing ? (
-            <Input
-              size="sm"
-              value={editData.pronouns?.join(', ') || ''}
-              onChange={(e) =>
-                onEditDataChange({
-                  ...editData,
-                  pronouns: e.target.value
-                    .split(',')
-                    .map((p) => p.trim())
-                    .filter(Boolean),
-                })
-              }
-              placeholder="Pronouns (comma-separated)"
-              fontSize="sm"
+            <MultiSelectDropdown
+              options={PRONOUNS_OPTIONS}
+              selectedValues={editData.pronouns || []}
+              onSelectionChange={(values) => onEditDataChange({ ...editData, pronouns: values })}
+              placeholder="Select pronouns"
             />
           ) : (
             <Text fontSize="sm" color={COLORS.veniceBlue}>
@@ -216,12 +254,11 @@ export function ProfileSummary({
             Time Zone
           </Text>
           {isEditing ? (
-            <Input
-              size="sm"
-              value={editData.timezone || ''}
-              onChange={(e) => onEditDataChange({ ...editData, timezone: e.target.value })}
-              placeholder="Time Zone"
-              fontSize="sm"
+            <SingleSelectDropdown
+              options={TIMEZONE_OPTIONS}
+              selectedValue={editData.timezone || ''}
+              onSelectionChange={(value) => onEditDataChange({ ...editData, timezone: value })}
+              placeholder="Select time zone"
             />
           ) : (
             <Text fontSize="sm" color={COLORS.veniceBlue}>
@@ -235,20 +272,11 @@ export function ProfileSummary({
             Ethnic or Cultural Group
           </Text>
           {isEditing ? (
-            <Input
-              size="sm"
-              value={editData.ethnicGroup?.join(', ') || ''}
-              onChange={(e) =>
-                onEditDataChange({
-                  ...editData,
-                  ethnicGroup: e.target.value
-                    .split(',')
-                    .map((g) => g.trim())
-                    .filter(Boolean),
-                })
-              }
-              placeholder="Ethnic or Cultural Group (comma-separated)"
-              fontSize="sm"
+            <MultiSelectDropdown
+              options={ETHNIC_OPTIONS}
+              selectedValues={editData.ethnicGroup || []}
+              onSelectionChange={(values) => onEditDataChange({ ...editData, ethnicGroup: values })}
+              placeholder="Select ethnic or cultural group"
             />
           ) : (
             <Text fontSize="sm" color={COLORS.veniceBlue}>
@@ -271,12 +299,11 @@ export function ProfileSummary({
             Marital Status
           </Text>
           {isEditing ? (
-            <Input
-              size="sm"
-              value={editData.maritalStatus || ''}
-              onChange={(e) => onEditDataChange({ ...editData, maritalStatus: e.target.value })}
-              placeholder="Marital Status"
-              fontSize="sm"
+            <SingleSelectDropdown
+              options={MARITAL_STATUS_OPTIONS}
+              selectedValue={editData.maritalStatus || ''}
+              onSelectionChange={(value) => onEditDataChange({ ...editData, maritalStatus: value })}
+              placeholder="Select marital status"
             />
           ) : (
             <Text fontSize="sm" color={COLORS.veniceBlue}>
@@ -290,12 +317,11 @@ export function ProfileSummary({
             Parental Status
           </Text>
           {isEditing ? (
-            <Input
-              size="sm"
-              value={editData.hasKids || ''}
-              onChange={(e) => onEditDataChange({ ...editData, hasKids: e.target.value })}
-              placeholder="Parental Status"
-              fontSize="sm"
+            <SingleSelectDropdown
+              options={HAS_KIDS_OPTIONS}
+              selectedValue={editData.hasKids || ''}
+              onSelectionChange={(value) => onEditDataChange({ ...editData, hasKids: value })}
+              placeholder="Select parental status"
             />
           ) : (
             <Text fontSize="sm" color={COLORS.veniceBlue}>
@@ -316,16 +342,16 @@ export function ProfileSummary({
                 </Text>
               </Flex>
               {isEditing ? (
-                <Input
-                  size="sm"
-                  value={editData.lovedOneGenderIdentity || ''}
-                  onChange={(e) =>
-                    onEditDataChange({ ...editData, lovedOneGenderIdentity: e.target.value })
-                  }
-                  placeholder="Loved One's Gender"
-                  fontSize="sm"
-                  ml={4}
-                />
+                <Box ml={4}>
+                  <SingleSelectDropdown
+                    options={GENDER_IDENTITY_OPTIONS}
+                    selectedValue={editData.lovedOneGenderIdentity || ''}
+                    onSelectionChange={(value) =>
+                      onEditDataChange({ ...editData, lovedOneGenderIdentity: value })
+                    }
+                    placeholder="Select loved one's gender"
+                  />
+                </Box>
               ) : (
                 <Text fontSize="sm" color={COLORS.veniceBlue} ml={4}>
                   {userData?.lovedOneGenderIdentity || 'N/A'}
@@ -347,6 +373,9 @@ export function ProfileSummary({
                   placeholder="Loved One's Age"
                   fontSize="sm"
                   ml={4}
+                  border="1px solid"
+                  borderColor={COLORS.grayBorder}
+                  borderRadius="6px"
                 />
               ) : (
                 <Text fontSize="sm" color={COLORS.veniceBlue} ml={4}>

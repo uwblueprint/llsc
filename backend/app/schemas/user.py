@@ -139,6 +139,7 @@ class UserResponse(BaseModel):
     role_id: int
     auth_id: str
     approved: bool
+    active: bool
     role: "RoleResponse"
     form_status: FormStatus
     user_data: Optional[UserDataResponse] = None

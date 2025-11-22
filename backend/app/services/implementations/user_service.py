@@ -5,9 +5,22 @@ from uuid import UUID
 import firebase_admin.auth
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.sql import func
 
 from app.interfaces.user_service import IUserService
-from app.models import Experience, FormStatus, Role, Treatment, User, UserData
+from app.models import (
+    AvailabilityTemplate,
+    Experience,
+    FormStatus,
+    FormSubmission,
+    Match,
+    RankingPreference,
+    Role,
+    Task,
+    Treatment,
+    User,
+    UserData,
+)
 from app.schemas.availability import AvailabilityTemplateSlot
 from app.schemas.user import (
     SignUpMethod,
@@ -104,13 +117,81 @@ class UserService(IUserService):
             raise HTTPException(status_code=500, detail=str(e))
 
     async def delete_user_by_id(self, user_id: str):
+        """
+        Delete a user and all related data.
+        This includes:
+        - UserData and its many-to-many relationships (treatments, experiences)
+        - VolunteerData
+        - AvailabilityTemplate records
+        - RankingPreference records
+        - FormSubmission records
+        - Soft-delete Match records (set deleted_at)
+        - Handle Task records (set participant_id/assignee_id to NULL or delete)
+        - Delete Firebase user
+        - Finally delete the User record
+        """
+        firebase_auth_id = None
         try:
             db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
             if not db_user:
                 raise HTTPException(status_code=404, detail="User not found")
 
+            # Store Firebase auth_id before deletion
+            firebase_auth_id = db_user.auth_id
+
+            # 1. Clear many-to-many relationships in UserData (treatments, experiences)
+            if db_user.user_data:
+                db_user.user_data.treatments.clear()
+                db_user.user_data.experiences.clear()
+                db_user.user_data.loved_one_treatments.clear()
+                db_user.user_data.loved_one_experiences.clear()
+
+            # 2. Delete UserData
+            if db_user.user_data:
+                self.db.delete(db_user.user_data)
+
+            # 3. Delete VolunteerData
+            if db_user.volunteer_data:
+                self.db.delete(db_user.volunteer_data)
+
+            # 4. Delete AvailabilityTemplate records
+            self.db.query(AvailabilityTemplate).filter(AvailabilityTemplate.user_id == db_user.id).delete()
+
+            # 5. Delete RankingPreference records
+            self.db.query(RankingPreference).filter(RankingPreference.user_id == db_user.id).delete()
+
+            # 6. Delete FormSubmission records
+            self.db.query(FormSubmission).filter(FormSubmission.user_id == db_user.id).delete()
+
+            # 7. Soft-delete Match records (set deleted_at timestamp)
+            self.db.query(Match).filter(
+                (Match.participant_id == db_user.id) | (Match.volunteer_id == db_user.id)
+            ).update({Match.deleted_at: func.now()}, synchronize_session=False)
+
+            # 8. Handle Task records - set participant_id and assignee_id to NULL
+            self.db.query(Task).filter(Task.participant_id == db_user.id).update(
+                {Task.participant_id: None}, synchronize_session=False
+            )
+            self.db.query(Task).filter(Task.assignee_id == db_user.id).update(
+                {Task.assignee_id: None}, synchronize_session=False
+            )
+
+            # 9. Delete the User record
             self.db.delete(db_user)
+
+            # Commit all database changes
             self.db.commit()
+
+            # 10. Delete Firebase user (after successful DB deletion)
+            if firebase_auth_id:
+                try:
+                    firebase_admin.auth.delete_user(firebase_auth_id)
+                    self.logger.info(f"Successfully deleted Firebase user {firebase_auth_id}")
+                except firebase_admin.auth.AuthError as firebase_error:
+                    # Log error but don't fail - DB deletion already succeeded
+                    self.logger.error(
+                        f"Failed to delete Firebase user {firebase_auth_id} after database deletion: {str(firebase_error)}"
+                    )
 
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid user ID format")
@@ -136,6 +217,23 @@ class UserService(IUserService):
         except Exception as e:
             self.db.rollback()
             self.logger.error(f"Error deactivating user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    async def reactivate_user_by_id(self, user_id: str):
+        try:
+            db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            db_user.active = True
+            self.db.commit()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error reactivating user {user_id}: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
     async def get_user_id_by_auth_id(self, auth_id: str) -> str:

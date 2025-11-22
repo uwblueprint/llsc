@@ -166,6 +166,7 @@ export default function AdminUserProfile() {
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
+            setUser={setUser}
           />
         ) : activeTab === 'forms' ? (
           <Box flex="1" p={8} bg="white">

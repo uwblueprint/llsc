@@ -72,6 +72,7 @@ export interface UserResponse {
   roleId: number;
   authId: string;
   approved: boolean;
+  active: boolean;
   formStatus: string;
   role: {
     id: number;

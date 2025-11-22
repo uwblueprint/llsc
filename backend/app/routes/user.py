@@ -127,10 +127,27 @@ async def delete_user(
 async def deactivate_user(
     user_id: str,
     user_service: UserService = Depends(get_user_service),
+    authorized: bool = has_roles([UserRole.ADMIN]),
 ):
     try:
         await user_service.soft_delete_user_by_id(user_id)
         return {"message": "User deactivated successfully"}
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# reactivate user
+@router.post("/{user_id}/reactivate")
+async def reactivate_user(
+    user_id: str,
+    user_service: UserService = Depends(get_user_service),
+    authorized: bool = has_roles([UserRole.ADMIN]),
+):
+    try:
+        await user_service.reactivate_user_by_id(user_id)
+        return {"message": "User reactivated successfully"}
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:

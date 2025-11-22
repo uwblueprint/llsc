@@ -606,3 +606,27 @@ export const deleteAvailability = async (
     })),
   };
 };
+
+/**
+ * Deactivate a user (soft delete)
+ */
+export const deactivateUser = async (userId: string): Promise<{ message: string }> => {
+  const response = await baseAPIClient.post<{ message: string }>(`/users/${userId}/deactivate`);
+  return response.data;
+};
+
+/**
+ * Reactivate a user
+ */
+export const reactivateUser = async (userId: string): Promise<{ message: string }> => {
+  const response = await baseAPIClient.post<{ message: string }>(`/users/${userId}/reactivate`);
+  return response.data;
+};
+
+/**
+ * Delete a user (permanent deletion)
+ */
+export const deleteUser = async (userId: string): Promise<{ message: string }> => {
+  const response = await baseAPIClient.delete<{ message: string }>(`/users/${userId}`);
+  return response.data;
+};
