@@ -16,6 +16,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { FiSearch, FiMenu, FiMail, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { TbSelector } from 'react-icons/tb';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
@@ -123,6 +124,7 @@ const getStatusColor = (step: string): { bg: string; color: string } => {
 };
 
 export default function Directory() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<'nameAsc' | 'nameDsc' | 'statusAsc' | 'statusDsc'>(
@@ -436,7 +438,15 @@ export default function Directory() {
                           lineHeight="1.362em"
                           color="#495D6C"
                         >
-                          {displayName}
+                          <Text
+                            as="span"
+                            textDecoration="underline"
+                            cursor="pointer"
+                            _hover={{ color: COLORS.veniceBlue }}
+                            onClick={() => router.push(`/admin/users/${user.id}`)}
+                          >
+                            {displayName}
+                          </Text>
                         </Table.Cell>
                         <Table.Cell py={1.5} verticalAlign="middle">
                           <Badge

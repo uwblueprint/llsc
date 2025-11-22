@@ -14,6 +14,3 @@ class TimeBlock(Base):
 
     # suggested matches
     suggested_matches = relationship("Match", secondary="suggested_times", back_populates="suggested_time_blocks")
-
-    # the availability that the timeblock is a part of for a given user
-    users = relationship("User", secondary="available_times", back_populates="availability")

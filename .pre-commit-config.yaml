@@ -1,0 +1,30 @@
+# .pre-commit-config.yaml
+# Root-level config to handle both frontend and backend linting/formatting
+
+default_language_version:
+  python: python3.12
+
+default_stages: [pre-commit, pre-push]
+
+repos:
+  # Backend: Ruff linting and formatting
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.6.7
+    hooks:
+      - id: ruff
+        args: [--fix, --line-length=120]
+        files: ^backend/
+      - id: ruff-format
+        args: [--line-length=120]
+        files: ^backend/
+
+  # Frontend: Prettier formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        files: ^frontend/.*\.(ts|tsx|js|jsx|json|css|md)$
+        exclude: ^frontend/(node_modules|\.next|out|build)/
+        types_or: [file]
+        additional_dependencies:
+          - prettier@3.6.2

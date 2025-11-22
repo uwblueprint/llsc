@@ -221,18 +221,20 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
               control={control}
               rules={{ required: 'Age is required' }}
               render={({ field }) => (
-                <Input
-                  {...field}
-                  placeholder="Age"
-                  fontFamily="system-ui, -apple-system, sans-serif"
-                  fontSize="14px"
-                  color={COLORS.veniceBlue}
-                  borderColor={errors.age ? 'red.500' : undefined}
-                  borderRadius="6px"
-                  h="40px"
-                  _placeholder={{ color: '#9ca3af' }}
-                  _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
-                />
+                <InputGroup>
+                  <Input
+                    {...field}
+                    placeholder="Age"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                    borderColor={errors.age ? 'red.500' : undefined}
+                    borderRadius="6px"
+                    h="40px"
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                  />
+                </InputGroup>
               )}
             />
           </FormField>

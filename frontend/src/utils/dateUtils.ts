@@ -35,6 +35,26 @@ export function formatDateShort(dateString: string): string {
 }
 
 /**
+ * Format a date to show full date (e.g., "February 26, 2024")
+ * @param dateString - ISO 8601 date string (YYYY-MM-DD) or datetime string
+ * @returns Formatted date string
+ */
+export function formatDateLong(dateString: string): string {
+  // For date-only strings (YYYY-MM-DD), parse as local date to avoid timezone issues
+  // For datetime strings, use as-is
+  let date: Date;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    // Date-only format: parse as local date
+    const [year, month, day] = dateString.split('-').map(Number);
+    date = new Date(year, month - 1, day);
+  } else {
+    // Datetime format: parse normally
+    date = new Date(dateString);
+  }
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+/**
  * Format a time to show in 12-hour format (e.g., "12:00PM")
  * @param dateString - ISO 8601 datetime string
  * @returns Formatted time string

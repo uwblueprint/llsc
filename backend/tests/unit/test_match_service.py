@@ -14,12 +14,14 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 import pytest
+import pytest_asyncio
 from fastapi import HTTPException
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.models import Match, MatchStatus, Role, TimeBlock, User
+from app.models import Match, MatchStatus, Role, TimeBlock, User, UserData
+from app.schemas.availability import AvailabilityTemplateSlot, CreateAvailabilityRequest
 from app.schemas.match import (
     MatchCreateRequest,
     MatchRequestNewVolunteersResponse,
@@ -27,6 +29,7 @@ from app.schemas.match import (
 )
 from app.schemas.time_block import TimeRange
 from app.schemas.user import UserRole
+from app.services.implementations.availability_service import AvailabilityService
 from app.services.implementations.match_service import MatchService
 
 # Check for Postgres test database (same pattern as test_user.py)
@@ -56,7 +59,7 @@ def db_session():
         # Clean up match-related data (be careful with FK constraints)
         session.execute(
             text(
-                "TRUNCATE TABLE suggested_times, available_times, matches, time_blocks, tasks RESTART IDENTITY CASCADE"
+                "TRUNCATE TABLE suggested_times, availability_templates, matches, time_blocks, tasks RESTART IDENTITY CASCADE"
             )
         )
         session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
@@ -77,8 +80,9 @@ def db_session():
                 except IntegrityError:
                     session.rollback()
 
-        # Seed match statuses if missing
-        existing_statuses = {s.id for s in session.query(MatchStatus).all()}
+        # Seed match statuses - always ensure they exist
+        existing_statuses = {s.name for s in session.query(MatchStatus).all()}
+        existing_status_ids = {s.id for s in session.query(MatchStatus).all()}
         seed_statuses = [
             MatchStatus(id=1, name="pending"),
             MatchStatus(id=2, name="confirmed"),
@@ -92,12 +96,15 @@ def db_session():
             MatchStatus(id=10, name="awaiting_volunteer_acceptance"),
         ]
         for status in seed_statuses:
-            if status.id not in existing_statuses:
-                try:
+            if status.name not in existing_statuses:
+                # If ID exists but name doesn't match, update it
+                if status.id in existing_status_ids:
+                    existing = session.query(MatchStatus).filter_by(id=status.id).first()
+                    if existing:
+                        existing.name = status.name
+                else:
                     session.add(status)
-                    session.commit()
-                except IntegrityError:
-                    session.rollback()
+        session.commit()  # Commit all statuses at once
 
         yield session
     finally:
@@ -169,61 +176,67 @@ def another_volunteer(db_session):
     return user
 
 
-@pytest.fixture
-def volunteer_with_availability(db_session, volunteer_user):
-    """Create volunteer with future availability on half-hour boundaries."""
-    now = datetime.now(timezone.utc)
-    tomorrow = now + timedelta(days=1)
-
-    # Create availability: tomorrow at 10:00, 10:30, 11:00, 11:30
-    times = [
-        tomorrow.replace(hour=10, minute=0, second=0, microsecond=0),
-        tomorrow.replace(hour=10, minute=30, second=0, microsecond=0),
-        tomorrow.replace(hour=11, minute=0, second=0, microsecond=0),
-        tomorrow.replace(hour=11, minute=30, second=0, microsecond=0),
-    ]
-
-    for time in times:
-        block = TimeBlock(start_time=time)
-        volunteer_user.availability.append(block)
-
+@pytest_asyncio.fixture
+async def volunteer_with_availability(db_session, volunteer_user):
+    """Create volunteer with availability templates."""
+    # Create user_data with EST timezone
+    user_data = UserData(
+        user_id=volunteer_user.id,
+        timezone="EST",
+    )
+    db_session.add(user_data)
     db_session.commit()
+    db_session.refresh(volunteer_user)
+
+    # Create availability templates: Monday 10:00-12:00 EST
+    availability_service = AvailabilityService(db_session)
+    templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=0,  # Monday
+            start_time=datetime(2000, 1, 1, 10, 0).time(),  # 10:00
+            end_time=datetime(2000, 1, 1, 12, 0).time(),  # 12:00
+        )
+    ]
+    await availability_service.create_availability(
+        CreateAvailabilityRequest(user_id=volunteer_user.id, templates=templates)
+    )
+
     db_session.refresh(volunteer_user)
     return volunteer_user
 
 
-@pytest.fixture
-def volunteer_with_mixed_availability(db_session, another_volunteer):
-    """Create volunteer with past times and non-half-hour times (should be filtered)."""
-    now = datetime.now(timezone.utc)
-    yesterday = now - timedelta(days=1)
-    tomorrow = now + timedelta(days=1)
-
-    times = [
-        # Past time (should be filtered)
-        yesterday.replace(hour=10, minute=0, second=0, microsecond=0),
-        # Non-half-hour (should be filtered)
-        tomorrow.replace(hour=10, minute=15, second=0, microsecond=0),
-        # Valid future times
-        tomorrow.replace(hour=14, minute=0, second=0, microsecond=0),
-        tomorrow.replace(hour=14, minute=30, second=0, microsecond=0),
-    ]
-
-    for time in times:
-        block = TimeBlock(start_time=time)
-        another_volunteer.availability.append(block)
-
+@pytest_asyncio.fixture
+async def volunteer_with_mixed_availability(db_session, another_volunteer):
+    """Create volunteer with availability templates."""
+    # Create user_data with EST timezone
+    user_data = UserData(
+        user_id=another_volunteer.id,
+        timezone="EST",
+    )
+    db_session.add(user_data)
     db_session.commit()
+    db_session.refresh(another_volunteer)
+
+    # Create availability templates: Tuesday 14:00-15:00 EST
+    availability_service = AvailabilityService(db_session)
+    templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=1,  # Tuesday
+            start_time=datetime(2000, 1, 1, 14, 0).time(),  # 14:00
+            end_time=datetime(2000, 1, 1, 15, 0).time(),  # 15:00
+        )
+    ]
+    await availability_service.create_availability(
+        CreateAvailabilityRequest(user_id=another_volunteer.id, templates=templates)
+    )
+
     db_session.refresh(another_volunteer)
     return another_volunteer
 
 
-@pytest.fixture
-def volunteer_with_alt_availability(db_session):
-    """Create a different volunteer with distinct availability."""
-    now = datetime.now(timezone.utc)
-    tomorrow = now + timedelta(days=2)
-
+@pytest_asyncio.fixture
+async def volunteer_with_alt_availability(db_session):
+    """Create a different volunteer with distinct availability templates."""
     volunteer = User(
         first_name="Alt",
         last_name="Volunteer",
@@ -234,12 +247,25 @@ def volunteer_with_alt_availability(db_session):
     db_session.add(volunteer)
     db_session.flush()
 
-    slots = [
-        tomorrow.replace(hour=9, minute=0, second=0, microsecond=0),
-        tomorrow.replace(hour=9, minute=30, second=0, microsecond=0),
+    # Create user_data with EST timezone
+    user_data = UserData(
+        user_id=volunteer.id,
+        timezone="EST",
+    )
+    db_session.add(user_data)
+    db_session.commit()
+    db_session.refresh(volunteer)
+
+    # Create availability templates: Wednesday 9:00-10:00 EST
+    availability_service = AvailabilityService(db_session)
+    templates = [
+        AvailabilityTemplateSlot(
+            day_of_week=2,  # Wednesday
+            start_time=datetime(2000, 1, 1, 9, 0).time(),  # 9:00
+            end_time=datetime(2000, 1, 1, 10, 0).time(),  # 10:00
+        )
     ]
-    for slot in slots:
-        volunteer.availability.append(TimeBlock(start_time=slot))
+    await availability_service.create_availability(CreateAvailabilityRequest(user_id=volunteer.id, templates=templates))
 
     db_session.commit()
     db_session.refresh(volunteer)
@@ -330,10 +356,12 @@ class TestCreateMatches:
 
             detail = await match_service.volunteer_accept_match(match_id, volunteer_with_availability.id)
             assert detail.match_status == "pending"
+            # Templates project to next week, so 10:00-12:00 Monday = 4 blocks per week = 4 blocks
             assert len(detail.suggested_time_blocks) == 4
 
             db_session.refresh(match)
             assert match.match_status.name == "pending"
+            # Templates project to next week, so 10:00-12:00 Monday = 4 blocks per week = 4 blocks
             assert len(match.suggested_time_blocks) == 4
 
             for block in match.suggested_time_blocks:
@@ -441,6 +469,7 @@ class TestCreateMatches:
             match = db_session.get(Match, match_id)
             assert match is not None
             assert match.match_status.name == "pending"
+            # Templates project to next week, so 10:00-12:00 Monday = 4 blocks per week = 4 blocks
             assert len(match.suggested_time_blocks) == 4
 
             for block in match.suggested_time_blocks:
@@ -1645,9 +1674,13 @@ class TestUpdateMatch:
             db_session.refresh(match)
             assert match.match_status.name == "pending"
 
-            starts = sorted(block.start_time for block in match.suggested_time_blocks)
-            expected = sorted([slot.start_time for slot in volunteer_with_alt_availability.availability])
-            assert starts == expected
+            # Verify suggested times were generated from templates
+            # Templates project to next week, so we should have some suggested times
+            assert len(match.suggested_time_blocks) > 0
+            # Verify all times are in UTC and on half-hour boundaries
+            for block in match.suggested_time_blocks:
+                assert block.start_time.tzinfo == timezone.utc
+                assert block.start_time.minute in {0, 30}
 
             db_session.commit()
         except Exception:

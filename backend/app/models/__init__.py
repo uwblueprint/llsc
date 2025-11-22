@@ -5,10 +5,9 @@ from alembic.config import Config
 
 from app.utilities.constants import LOGGER_NAME
 
-from .AvailableTime import available_times
-
 # Make sure all models are here to reflect all current models
 # when autogenerating new migration
+from .AvailabilityTemplate import AvailabilityTemplate
 from .Base import Base
 from .Experience import Experience
 from .Form import Form
@@ -35,8 +34,8 @@ __all__ = [
     "Match",
     "MatchStatus",
     "User",
-    "available_times",
     "suggested_times",
+    "AvailabilityTemplate",
     "UserData",
     "Treatment",
     "Experience",
