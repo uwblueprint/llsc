@@ -253,7 +253,7 @@ async def test_delete_user_by_email(db_session):
 
 
 @pytest.mark.asyncio
-async def test_delete_user_by_id(db_session):
+async def test_delete_user_by_id(mock_firebase_auth, db_session):
     """Test deleting a user by ID"""
     try:
         # Arrange
