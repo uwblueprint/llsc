@@ -3,6 +3,7 @@ from typing import List
 from uuid import UUID
 
 import firebase_admin.auth
+import firebase_admin.exceptions
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.sql import func
@@ -87,7 +88,7 @@ class UserService(IUserService):
             if firebase_user:
                 try:
                     firebase_admin.auth.delete_user(firebase_user.uid)
-                except firebase_admin.auth.AuthError as firebase_error:
+                except firebase_admin.exceptions.FirebaseError as firebase_error:
                     self.logger.error(
                         "Failed to delete Firebase user after database insertion failed"
                         f"Firebase UID: {firebase_user.uid}. "
@@ -187,7 +188,7 @@ class UserService(IUserService):
                 try:
                     firebase_admin.auth.delete_user(firebase_auth_id)
                     self.logger.info(f"Successfully deleted Firebase user {firebase_auth_id}")
-                except firebase_admin.auth.AuthError as firebase_error:
+                except firebase_admin.exceptions.FirebaseError as firebase_error:
                     # Log error but don't fail - DB deletion already succeeded
                     self.logger.error(
                         f"Failed to delete Firebase user {firebase_auth_id} after database deletion: {str(firebase_error)}"
