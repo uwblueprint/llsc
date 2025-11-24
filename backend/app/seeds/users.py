@@ -3,9 +3,16 @@
 import uuid
 from datetime import date
 
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
+from app.models.AvailabilityTemplate import AvailabilityTemplate
 from app.models.Experience import Experience
+from app.models.FormSubmission import FormSubmission
+from app.models.Match import Match
+from app.models.RankingPreference import RankingPreference
+from app.models.SuggestedTime import suggested_times
+from app.models.Task import Task
 from app.models.Treatment import Treatment
 from app.models.User import FormStatus, User
 from app.models.UserData import UserData
@@ -38,11 +45,11 @@ def seed_users(session: Session) -> None:
                 "has_kids": "Yes",
                 "diagnosis": "Acute Lymphoblastic Leukemia",
                 "date_of_diagnosis": date(2023, 8, 10),
-                "has_blood_cancer": "Yes",
-                "caring_for_someone": "No",
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
             },
             "treatments": [3, 6],  # Chemotherapy, Radiation
-            "experiences": [1, 4, 5],  # Brain Fog, Feeling Overwhelmed, Fatigue
+            "experiences": [1, 3, 4],  # Brain Fog, Feeling Overwhelmed, Fatigue
         },
         {
             "role": "participant",
@@ -63,11 +70,11 @@ def seed_users(session: Session) -> None:
                 "has_kids": "No",
                 "diagnosis": "Chronic Lymphocytic Leukemia",
                 "date_of_diagnosis": date(2024, 1, 5),
-                "has_blood_cancer": "Yes",
-                "caring_for_someone": "No",
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
             },
             "treatments": [2, 14],  # Watch and Wait, BTK Inhibitors
-            "experiences": [11, 12],  # Anxiety/Depression, PTSD
+            "experiences": [10, 11],  # Anxiety/Depression, PTSD
         },
         {
             "role": "participant",
@@ -86,8 +93,8 @@ def seed_users(session: Session) -> None:
                 "ethnic_group": ["Hispanic/Latino"],
                 "marital_status": "Married/Common Law",
                 "has_kids": "Yes",
-                "has_blood_cancer": "No",
-                "caring_for_someone": "Yes",
+                "has_blood_cancer": "no",
+                "caring_for_someone": "yes",
                 "loved_one_gender_identity": "Man",
                 "loved_one_age": "55",
                 "loved_one_diagnosis": "Multiple Myeloma",
@@ -99,6 +106,8 @@ def seed_users(session: Session) -> None:
                 ExperienceId.FEELING_OVERWHELMED,
                 ExperienceId.SPEAKING_TO_FAMILY,
             ],
+            "loved_one_treatments": [3, 10],  # Chemotherapy, Autologous Stem Cell Transplant
+            "loved_one_experiences": [3, 4, 10],  # Feeling Overwhelmed, Fatigue, Anxiety/Depression
         },
         # Volunteers
         {
@@ -120,8 +129,8 @@ def seed_users(session: Session) -> None:
                 "has_kids": "Yes",
                 "diagnosis": "Acute Lymphoblastic Leukemia",
                 "date_of_diagnosis": date(2018, 4, 20),  # Survivor
-                "has_blood_cancer": "Yes",
-                "caring_for_someone": "No",
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
             },
             "treatments": [
                 TreatmentId.CHEMOTHERAPY,
@@ -154,11 +163,11 @@ def seed_users(session: Session) -> None:
                 "has_kids": "Yes",  # Same as Sarah
                 "diagnosis": "Acute Lymphoblastic Leukemia",  # Same diagnosis as Sarah!
                 "date_of_diagnosis": date(2020, 8, 15),  # Survivor
-                "has_blood_cancer": "Yes",
-                "caring_for_someone": "No",
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
             },
             "treatments": [3, 6],  # Chemotherapy, Radiation (matching Sarah's preferences)
-            "experiences": [1, 4, 5],  # Brain Fog, Feeling Overwhelmed, Fatigue (same as Sarah!)
+            "experiences": [1, 3, 4],  # Brain Fog, Feeling Overwhelmed, Fatigue (same as Sarah!)
         },
         {
             "role": "volunteer",
@@ -179,11 +188,11 @@ def seed_users(session: Session) -> None:
                 "has_kids": "No",
                 "diagnosis": "Hodgkin Lymphoma",
                 "date_of_diagnosis": date(2020, 2, 14),
-                "has_blood_cancer": "Yes",
-                "caring_for_someone": "No",
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
             },
             "treatments": [3, 6],  # Chemotherapy, Radiation
-            "experiences": [11, 12, 8],  # Anxiety/Depression, PTSD, Returning to work
+            "experiences": [10, 11, 7],  # Anxiety/Depression, PTSD, Returning to work
         },
         # High-matching volunteers for Sarah Johnson
         {
@@ -205,11 +214,11 @@ def seed_users(session: Session) -> None:
                 "has_kids": "Yes",  # Same as Sarah
                 "diagnosis": "Acute Lymphoblastic Leukemia",  # Same diagnosis as Sarah!
                 "date_of_diagnosis": date(2019, 5, 10),  # Survivor
-                "has_blood_cancer": "Yes",
-                "caring_for_someone": "No",
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
             },
             "treatments": [3, 6],  # Chemotherapy, Radiation (matching Sarah's preferences)
-            "experiences": [1, 4, 5],  # Brain Fog, Feeling Overwhelmed, Fatigue (same as Sarah!)
+            "experiences": [1, 3, 4],  # Brain Fog, Feeling Overwhelmed, Fatigue (same as Sarah!)
         },
         {
             "role": "volunteer",
@@ -230,11 +239,11 @@ def seed_users(session: Session) -> None:
                 "has_kids": "Yes",  # Same as Sarah
                 "diagnosis": "Acute Lymphoblastic Leukemia",  # Same diagnosis as Sarah!
                 "date_of_diagnosis": date(2021, 3, 18),  # Survivor
-                "has_blood_cancer": "Yes",
-                "caring_for_someone": "No",
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
             },
             "treatments": [3, 6],  # Chemotherapy, Radiation (matching Sarah's preferences)
-            "experiences": [1, 4, 5, 11],  # Brain Fog, Feeling Overwhelmed, Fatigue, Anxiety/Depression
+            "experiences": [1, 3, 4, 10],  # Brain Fog, Feeling Overwhelmed, Fatigue, Anxiety/Depression
         },
         {
             "role": "volunteer",
@@ -255,8 +264,8 @@ def seed_users(session: Session) -> None:
                 "has_kids": "Yes",  # Same as Sarah
                 "diagnosis": "Acute Lymphoblastic Leukemia",  # Same diagnosis as Sarah!
                 "date_of_diagnosis": date(2018, 9, 25),  # Survivor
-                "has_blood_cancer": "Yes",
-                "caring_for_someone": "No",
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
             },
             "treatments": [3, 6, 7],  # Chemotherapy, Radiation, Maintenance Chemo
             "experiences": [1, 4, 5],  # Brain Fog, Feeling Overwhelmed, Fatigue (same as Sarah!)
@@ -279,8 +288,8 @@ def seed_users(session: Session) -> None:
                 "ethnic_group": ["White/Caucasian"],
                 "marital_status": "Married/Common Law",
                 "has_kids": "Yes",
-                "has_blood_cancer": "No",  # Not a cancer patient herself
-                "caring_for_someone": "Yes",  # Is a caregiver
+                "has_blood_cancer": "no",  # Not a cancer patient herself
+                "caring_for_someone": "yes",  # Is a caregiver
                 "loved_one_gender_identity": "Woman",
                 "loved_one_age": "45",
                 "loved_one_diagnosis": "Breast Cancer",
@@ -292,6 +301,8 @@ def seed_users(session: Session) -> None:
                 ExperienceId.FEELING_OVERWHELMED,
                 ExperienceId.ANXIETY_DEPRESSION,
             ],
+            "loved_one_treatments": [3, 6],  # Chemotherapy, Radiation
+            "loved_one_experiences": [3, 4],  # Feeling Overwhelmed, Fatigue
         },
     ]
 
@@ -304,8 +315,54 @@ def seed_users(session: Session) -> None:
         # Check if user already exists
         existing_user = session.query(User).filter_by(email=user_info["user_data"]["email"]).first()
         if existing_user:
-            print(f"User already exists: {user_info['user_data']['email']}")
-            continue
+            print(f"User already exists, overwriting: {user_info['user_data']['email']}")
+            user_id = existing_user.id
+
+            # Manually delete all related data first (since cascade delete may not be configured)
+            # Delete ranking preferences
+            session.query(RankingPreference).filter(RankingPreference.user_id == user_id).delete()
+
+            # Get matches that need to be deleted (to delete suggested_times first)
+            matches_to_delete = (
+                session.query(Match).filter((Match.participant_id == user_id) | (Match.volunteer_id == user_id)).all()
+            )
+
+            # Delete suggested_times for these matches first (must be done before deleting matches)
+            # Use raw SQL to delete from suggested_times table to avoid relationship issues
+            match_ids = [match.id for match in matches_to_delete]
+            if match_ids:
+                session.execute(delete(suggested_times).where(suggested_times.c.match_id.in_(match_ids)))
+                session.flush()  # Ensure suggested_times deletions are processed
+
+            # Now delete the matches (after suggested_times are cleared)
+            for match in matches_to_delete:
+                session.delete(match)
+
+            # Delete form submissions
+            session.query(FormSubmission).filter(FormSubmission.user_id == user_id).delete()
+
+            # Delete tasks (as participant or assignee)
+            session.query(Task).filter((Task.participant_id == user_id) | (Task.assignee_id == user_id)).delete()
+
+            # Delete user_data and its relationships
+            if existing_user.user_data:
+                # Clear many-to-many relationships first
+                existing_user.user_data.treatments.clear()
+                existing_user.user_data.experiences.clear()
+                existing_user.user_data.loved_one_treatments.clear()
+                existing_user.user_data.loved_one_experiences.clear()
+                session.delete(existing_user.user_data)
+
+            # Delete volunteer_data
+            if existing_user.volunteer_data:
+                session.delete(existing_user.volunteer_data)
+
+            # Clear availability templates
+            session.query(AvailabilityTemplate).filter_by(user_id=existing_user.id).delete()
+
+            # Now delete the user
+            session.delete(existing_user)
+            session.flush()  # Ensure deletion is processed before creating new user
 
         # Create user
         user = User(
@@ -325,6 +382,8 @@ def seed_users(session: Session) -> None:
         # Create user data
         user_data = UserData(
             user_id=user.id,
+            first_name=user_info["user_data"]["first_name"],
+            last_name=user_info["user_data"]["last_name"],
             **{
                 k: v
                 for k, v in user_info["user_data"].items()
@@ -332,16 +391,31 @@ def seed_users(session: Session) -> None:
             },
         )
         session.add(user_data)
+        session.flush()  # Ensure user_data has an ID before assigning relationships
 
         # Add treatments if they exist
-        if user_info["treatments"]:
+        if user_info.get("treatments"):
             treatments = session.query(Treatment).filter(Treatment.id.in_(user_info["treatments"])).all()
             user_data.treatments = treatments
 
         # Add experiences if they exist
-        if user_info["experiences"]:
+        if user_info.get("experiences"):
             experiences = session.query(Experience).filter(Experience.id.in_(user_info["experiences"])).all()
             user_data.experiences = experiences
+
+        # Add loved one treatments if they exist
+        if user_info.get("loved_one_treatments"):
+            loved_one_treatments = (
+                session.query(Treatment).filter(Treatment.id.in_(user_info["loved_one_treatments"])).all()
+            )
+            user_data.loved_one_treatments = loved_one_treatments
+
+        # Add loved one experiences if they exist
+        if user_info.get("loved_one_experiences"):
+            loved_one_experiences = (
+                session.query(Experience).filter(Experience.id.in_(user_info["loved_one_experiences"])).all()
+            )
+            user_data.loved_one_experiences = loved_one_experiences
 
         # Create volunteer_data entry for volunteers with experience text
         if user_info["role"] == "volunteer":

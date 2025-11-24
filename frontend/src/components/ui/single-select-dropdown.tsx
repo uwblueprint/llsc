@@ -9,6 +9,7 @@ interface SingleSelectDropdownProps {
   placeholder: string;
   error?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
+  allowClear?: boolean; // If false, prevents clearing the selection
 }
 
 export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
@@ -18,6 +19,7 @@ export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
   placeholder,
   error,
   onOpenChange,
+  allowClear = true,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -110,27 +112,29 @@ export const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
               >
                 {selectedValue}
               </Text>
-              <button
-                type="button"
-                onClick={handleRemove}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: COLORS.teal,
-                  fontSize: '14px',
-                  lineHeight: '1',
-                  width: '16px',
-                  height: '16px',
-                }}
-                aria-label="Remove selection"
-              >
-                ×
-              </button>
+              {allowClear && (
+                <button
+                  type="button"
+                  onClick={handleRemove}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: COLORS.teal,
+                    fontSize: '14px',
+                    lineHeight: '1',
+                    width: '16px',
+                    height: '16px',
+                  }}
+                  aria-label="Remove selection"
+                >
+                  ×
+                </button>
+              )}
             </Box>
           ) : (
             <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px" color="#9ca3af">

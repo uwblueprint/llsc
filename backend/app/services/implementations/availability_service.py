@@ -1,12 +1,14 @@
 import logging
-from datetime import timedelta
+from datetime import time as dt_time
+from typing import List
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models import TimeBlock, User, available_times
+from app.models import AvailabilityTemplate, User
 from app.schemas.availability import (
     AvailabilityEntity,
+    AvailabilityTemplateSlot,
     CreateAvailabilityRequest,
     CreateAvailabilityResponse,
     DeleteAvailabilityRequest,
@@ -22,14 +24,26 @@ class AvailabilityService:
 
     async def get_availability(self, req: GetAvailabilityRequest) -> AvailabilityEntity:
         """
-        Takes a user_id and outputs all time_blocks in a user's Availability
+        Takes a user_id and returns availability templates.
         """
         try:
             user_id = req.user_id
-            user = self.db.query(User).filter_by(id=user_id).one()
-            validated_data = AvailabilityEntity.model_validate(
-                {"user_id": user_id, "available_times": user.availability}
-            )
+            # Verify user exists
+            self.db.query(User).filter_by(id=user_id).one()
+
+            # Get templates
+            templates = self.db.query(AvailabilityTemplate).filter_by(user_id=user_id, is_active=True).all()
+
+            # Convert to response format
+            template_slots: List[AvailabilityTemplateSlot] = []
+            for template in templates:
+                template_slots.append(
+                    AvailabilityTemplateSlot(
+                        day_of_week=template.day_of_week, start_time=template.start_time, end_time=template.end_time
+                    )
+                )
+
+            validated_data = AvailabilityEntity.model_validate({"user_id": user_id, "templates": template_slots})
             return validated_data
 
         except Exception as e:
@@ -38,40 +52,67 @@ class AvailabilityService:
 
     async def create_availability(self, availability: CreateAvailabilityRequest) -> CreateAvailabilityResponse:
         """
-        Takes a user_id and a range of desired times.
-        Creates 30 minute time blocks spaced 30 minutes apart for the user's Availability.
-        Existing TimeBlocks in add will be silently ignored.
+        Takes a user_id and template slots (day_of_week + time ranges).
+        Converts these to AvailabilityTemplate records.
+        Replaces all existing templates for the user.
         """
         added = 0
         try:
             user_id = availability.user_id
-            user = self.db.query(User).filter_by(id=user_id).one()
-            # get user's existing times and create a set
-            existing_start_times = {tb.start_time for tb in user.availability}
+            # Verify user exists
+            self.db.query(User).filter_by(id=user_id).one()
 
-            for time_range in availability.available_times:
-                # time format looks like: 2025-03-17 09:30:00
-                # modify based on the format
-                start_time = time_range.start_time
-                end_time = time_range.end_time
+            # Delete all existing templates for this user
+            self.db.query(AvailabilityTemplate).filter_by(user_id=user_id).delete()
 
-                # create timeblocks (0.5 hr) with 30 min spacing
-                current_start_time = start_time
-                while current_start_time < end_time:
-                    self.logger.error(current_start_time)
-                    # check if TimeBlock exists
-                    if current_start_time not in existing_start_times:
-                        time_block = TimeBlock(start_time=current_start_time)
-                        user.availability.append(time_block)
+            # Track templates we've seen to avoid duplicates
+            seen_templates = set()
+
+            for template_slot in availability.templates:
+                # Validate day_of_week
+                if not (0 <= template_slot.day_of_week <= 6):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Invalid day_of_week: {template_slot.day_of_week}. Must be 0-6 (Monday-Sunday)",
+                    )
+
+                # Validate time range
+                if template_slot.end_time <= template_slot.start_time:
+                    raise HTTPException(status_code=400, detail="end_time must be after start_time")
+
+                # Create template for each 30-minute block in the range
+                current_time = template_slot.start_time
+                end_time = template_slot.end_time
+
+                while current_time < end_time:
+                    # Calculate next 30-minute increment
+                    next_time = self._add_minutes(current_time, 30)
+                    if next_time > end_time:
+                        next_time = end_time
+
+                    template_key = (template_slot.day_of_week, current_time)
+
+                    if template_key not in seen_templates:
+                        template = AvailabilityTemplate(
+                            user_id=user_id,
+                            day_of_week=template_slot.day_of_week,
+                            start_time=current_time,
+                            end_time=next_time,
+                            is_active=True,
+                        )
+                        self.db.add(template)
+                        seen_templates.add(template_key)
                         added += 1
 
-                    # update current time by 30 minutes for the next block
-                    current_start_time += timedelta(hours=0.5)
+                    current_time = next_time
 
             self.db.flush()
             validated_data = CreateAvailabilityResponse.model_validate({"user_id": user_id, "added": added})
             self.db.commit()
             return validated_data
+        except HTTPException:
+            self.db.rollback()
+            raise
         except Exception as e:
             self.db.rollback()
             self.logger.error(f"Error creating availability: {str(e)}")
@@ -79,37 +120,58 @@ class AvailabilityService:
 
     async def delete_availability(self, req: DeleteAvailabilityRequest) -> DeleteAvailabilityResponse:
         """
-        Takes a DeleteAvailabilityRequest:
-        - delete: TimeBlocks in Availability that should be deleted
-
-        Non-existent TimeBlocks in delete will be silently ignored.
+        Takes a DeleteAvailabilityRequest with template slots.
+        Deletes matching AvailabilityTemplate records.
+        Non-existent templates will be silently ignored.
         """
         deleted = 0
 
         try:
-            user: User = self.db.query(User).filter(User.id == req.user_id).one()
+            user_id = req.user_id
+            # Verify user exists
+            self.db.query(User).filter(User.id == user_id).one()
 
-            # delete
-            for time_range in req.delete:
-                curr_start = time_range.start_time
-                while curr_start < time_range.end_time:
-                    block = (
-                        self.db.query(TimeBlock)
-                        .join(available_times, TimeBlock.id == available_times.c.time_block_id)
-                        .filter(available_times.c.user_id == user.id, TimeBlock.start_time == curr_start)
-                        .first()
-                    )
+            # Collect templates to delete
+            templates_to_delete = set()
 
-                    if block:
-                        self.db.delete(block)
-                        deleted += 1
+            for template_slot in req.templates:
+                # Validate day_of_week
+                if not (0 <= template_slot.day_of_week <= 6):
+                    self.logger.warning(f"Skipping invalid day_of_week: {template_slot.day_of_week}")
+                    continue
 
-                    curr_start += timedelta(hours=0.5)
+                # Find all templates in this range
+                current_time = template_slot.start_time
+                end_time = template_slot.end_time
+
+                while current_time < end_time:
+                    templates_to_delete.add((template_slot.day_of_week, current_time))
+                    current_time = self._add_minutes(current_time, 30)
+
+            # Delete matching templates
+            for day_of_week, time_val in templates_to_delete:
+                deleted_count = (
+                    self.db.query(AvailabilityTemplate)
+                    .filter_by(user_id=user_id, day_of_week=day_of_week, start_time=time_val, is_active=True)
+                    .delete()
+                )
+                deleted += deleted_count
 
             self.db.flush()
 
+            # Get remaining templates for response
+            templates = self.db.query(AvailabilityTemplate).filter_by(user_id=user_id, is_active=True).all()
+
+            remaining_slots: List[AvailabilityTemplateSlot] = []
+            for template in templates:
+                remaining_slots.append(
+                    AvailabilityTemplateSlot(
+                        day_of_week=template.day_of_week, start_time=template.start_time, end_time=template.end_time
+                    )
+                )
+
             response = DeleteAvailabilityResponse.model_validate(
-                {"user_id": req.user_id, "deleted": deleted, "availability": user.availability}
+                {"user_id": req.user_id, "deleted": deleted, "templates": remaining_slots}
             )
 
             self.db.commit()
@@ -119,3 +181,14 @@ class AvailabilityService:
             self.db.rollback()
             self.logger.error(f"Error updating availability for user {req.user_id}: {e}")
             raise HTTPException(status_code=500, detail="Failed to update availability")
+
+    @staticmethod
+    def _add_minutes(time_val: dt_time, minutes: int) -> dt_time:
+        """Add minutes to a time object, handling overflow."""
+        total_minutes = time_val.hour * 60 + time_val.minute + minutes
+        hours = total_minutes // 60
+        mins = total_minutes % 60
+        if hours >= 24:
+            hours = 23
+            mins = 59
+        return dt_time(hours, mins, time_val.second, time_val.microsecond)

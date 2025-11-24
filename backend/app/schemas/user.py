@@ -9,6 +9,10 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
+from .availability import AvailabilityTemplateSlot
+from .user_data import UserDataResponse
+from .volunteer_data import VolunteerDataResponse
+
 # TODO:
 # confirm complexity rules for fields (such as password)
 
@@ -135,8 +139,12 @@ class UserResponse(BaseModel):
     role_id: int
     auth_id: str
     approved: bool
+    active: bool
     role: "RoleResponse"
     form_status: FormStatus
+    user_data: Optional[UserDataResponse] = None
+    volunteer_data: Optional[VolunteerDataResponse] = None
+    availability: List[AvailabilityTemplateSlot] = []
 
     model_config = ConfigDict(from_attributes=True)
 

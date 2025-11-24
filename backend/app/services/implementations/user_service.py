@@ -3,11 +3,26 @@ from typing import List
 from uuid import UUID
 
 import firebase_admin.auth
+import firebase_admin.exceptions
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.sql import func
 
 from app.interfaces.user_service import IUserService
-from app.models import FormStatus, Role, User
+from app.models import (
+    AvailabilityTemplate,
+    Experience,
+    FormStatus,
+    FormSubmission,
+    Match,
+    RankingPreference,
+    Role,
+    Task,
+    Treatment,
+    User,
+    UserData,
+)
+from app.schemas.availability import AvailabilityTemplateSlot
 from app.schemas.user import (
     SignUpMethod,
     UserCreateRequest,
@@ -16,6 +31,7 @@ from app.schemas.user import (
     UserRole,
     UserUpdateRequest,
 )
+from app.schemas.user_data import UserDataUpdateRequest
 from app.utilities.constants import LOGGER_NAME
 
 
@@ -72,7 +88,7 @@ class UserService(IUserService):
             if firebase_user:
                 try:
                     firebase_admin.auth.delete_user(firebase_user.uid)
-                except firebase_admin.auth.AuthError as firebase_error:
+                except firebase_admin.exceptions.FirebaseError as firebase_error:
                     self.logger.error(
                         "Failed to delete Firebase user after database insertion failed"
                         f"Firebase UID: {firebase_user.uid}. "
@@ -102,13 +118,81 @@ class UserService(IUserService):
             raise HTTPException(status_code=500, detail=str(e))
 
     async def delete_user_by_id(self, user_id: str):
+        """
+        Delete a user and all related data.
+        This includes:
+        - UserData and its many-to-many relationships (treatments, experiences)
+        - VolunteerData
+        - AvailabilityTemplate records
+        - RankingPreference records
+        - FormSubmission records
+        - Soft-delete Match records (set deleted_at)
+        - Handle Task records (set participant_id/assignee_id to NULL or delete)
+        - Delete Firebase user
+        - Finally delete the User record
+        """
+        firebase_auth_id = None
         try:
             db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
             if not db_user:
                 raise HTTPException(status_code=404, detail="User not found")
 
+            # Store Firebase auth_id before deletion
+            firebase_auth_id = db_user.auth_id
+
+            # 1. Clear many-to-many relationships in UserData (treatments, experiences)
+            if db_user.user_data:
+                db_user.user_data.treatments.clear()
+                db_user.user_data.experiences.clear()
+                db_user.user_data.loved_one_treatments.clear()
+                db_user.user_data.loved_one_experiences.clear()
+
+            # 2. Delete UserData
+            if db_user.user_data:
+                self.db.delete(db_user.user_data)
+
+            # 3. Delete VolunteerData
+            if db_user.volunteer_data:
+                self.db.delete(db_user.volunteer_data)
+
+            # 4. Delete AvailabilityTemplate records
+            self.db.query(AvailabilityTemplate).filter(AvailabilityTemplate.user_id == db_user.id).delete()
+
+            # 5. Delete RankingPreference records
+            self.db.query(RankingPreference).filter(RankingPreference.user_id == db_user.id).delete()
+
+            # 6. Delete FormSubmission records
+            self.db.query(FormSubmission).filter(FormSubmission.user_id == db_user.id).delete()
+
+            # 7. Soft-delete Match records (set deleted_at timestamp)
+            self.db.query(Match).filter(
+                (Match.participant_id == db_user.id) | (Match.volunteer_id == db_user.id)
+            ).update({Match.deleted_at: func.now()}, synchronize_session=False)
+
+            # 8. Handle Task records - set participant_id and assignee_id to NULL
+            self.db.query(Task).filter(Task.participant_id == db_user.id).update(
+                {Task.participant_id: None}, synchronize_session=False
+            )
+            self.db.query(Task).filter(Task.assignee_id == db_user.id).update(
+                {Task.assignee_id: None}, synchronize_session=False
+            )
+
+            # 9. Delete the User record
             self.db.delete(db_user)
+
+            # Commit all database changes
             self.db.commit()
+
+            # 10. Delete Firebase user (after successful DB deletion)
+            if firebase_auth_id:
+                try:
+                    firebase_admin.auth.delete_user(firebase_auth_id)
+                    self.logger.info(f"Successfully deleted Firebase user {firebase_auth_id}")
+                except firebase_admin.exceptions.FirebaseError as firebase_error:
+                    # Log error but don't fail - DB deletion already succeeded
+                    self.logger.error(
+                        f"Failed to delete Firebase user {firebase_auth_id} after database deletion: {str(firebase_error)}"
+                    )
 
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid user ID format")
@@ -136,6 +220,23 @@ class UserService(IUserService):
             self.logger.error(f"Error deactivating user {user_id}: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
+    async def reactivate_user_by_id(self, user_id: str):
+        try:
+            db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            db_user.active = True
+            self.db.commit()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error reactivating user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+
     async def get_user_id_by_auth_id(self, auth_id: str) -> str:
         """Get user ID for a user by their Firebase auth_id"""
         user = self.db.query(User).filter(User.auth_id == auth_id).first()
@@ -151,10 +252,43 @@ class UserService(IUserService):
 
     async def get_user_by_id(self, user_id: str) -> UserResponse:
         try:
-            user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
+            user = (
+                self.db.query(User)
+                .options(
+                    joinedload(User.role),
+                    joinedload(User.user_data).joinedload(UserData.treatments),
+                    joinedload(User.user_data).joinedload(UserData.experiences),
+                    joinedload(User.user_data).joinedload(UserData.loved_one_treatments),
+                    joinedload(User.user_data).joinedload(UserData.loved_one_experiences),
+                    joinedload(User.volunteer_data),
+                    joinedload(User.availability_templates),
+                )
+                .filter(User.id == UUID(user_id))
+                .first()
+            )
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
-            return UserResponse.model_validate(user)
+
+            # Convert templates to AvailabilityTemplateSlot for UserResponse
+            availability_templates = []
+            for template in user.availability_templates:
+                if template.is_active:
+                    availability_templates.append(
+                        AvailabilityTemplateSlot(
+                            day_of_week=template.day_of_week, start_time=template.start_time, end_time=template.end_time
+                        )
+                    )
+
+            # Create a temporary user object with availability for validation
+            user_dict = {
+                **{c.name: getattr(user, c.name) for c in user.__table__.columns},
+                "availability": availability_templates,
+                "role": user.role,
+                "user_data": user.user_data,
+                "volunteer_data": user.volunteer_data,
+            }
+
+            return UserResponse.model_validate(user_dict)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid user ID format")
         except HTTPException:
@@ -180,8 +314,42 @@ class UserService(IUserService):
     async def get_users(self) -> List[UserResponse]:
         try:
             # Filter users to only include participants and volunteers (role_id 1 and 2)
-            users = self.db.query(User).join(Role).filter(User.role_id.in_([1, 2])).all()
-            return [UserResponse.model_validate(user) for user in users]
+            users = (
+                self.db.query(User)
+                .options(
+                    joinedload(User.role),
+                    joinedload(User.user_data),
+                    joinedload(User.volunteer_data),
+                    joinedload(User.availability_templates),
+                )
+                .filter(User.role_id.in_([1, 2]))
+                .all()
+            )
+
+            # Convert templates to AvailabilityTemplateSlot for each user
+            user_responses = []
+            for user in users:
+                availability_templates = []
+                for template in user.availability_templates:
+                    if template.is_active:
+                        availability_templates.append(
+                            AvailabilityTemplateSlot(
+                                day_of_week=template.day_of_week,
+                                start_time=template.start_time,
+                                end_time=template.end_time,
+                            )
+                        )
+
+                user_dict = {
+                    **{c.name: getattr(user, c.name) for c in user.__table__.columns},
+                    "availability": availability_templates,
+                    "role": user.role,
+                    "user_data": user.user_data,
+                    "volunteer_data": user.volunteer_data,
+                }
+                user_responses.append(UserResponse.model_validate(user_dict))
+
+            return user_responses
         except Exception as e:
             self.logger.error(f"Error getting users: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
@@ -189,8 +357,40 @@ class UserService(IUserService):
     async def get_admins(self) -> List[UserResponse]:
         try:
             # Get only admin users (role_id 3)
-            users = self.db.query(User).join(Role).filter(User.role_id == 3).all()
-            return [UserResponse.model_validate(user) for user in users]
+            users = (
+                self.db.query(User)
+                .options(
+                    joinedload(User.role),
+                    joinedload(User.availability_templates),
+                )
+                .filter(User.role_id == 3)
+                .all()
+            )
+
+            # Convert templates to AvailabilityTemplateSlot for each admin (though admins typically don't have availability)
+            user_responses = []
+            for user in users:
+                availability_templates = []
+                for template in user.availability_templates:
+                    if template.is_active:
+                        availability_templates.append(
+                            AvailabilityTemplateSlot(
+                                day_of_week=template.day_of_week,
+                                start_time=template.start_time,
+                                end_time=template.end_time,
+                            )
+                        )
+
+                user_dict = {
+                    **{c.name: getattr(user, c.name) for c in user.__table__.columns},
+                    "availability": availability_templates,
+                    "role": user.role,
+                    "user_data": user.user_data,
+                    "volunteer_data": user.volunteer_data,
+                }
+                user_responses.append(UserResponse.model_validate(user_dict))
+
+            return user_responses
         except Exception as e:
             self.logger.error(f"Error retrieving admin users: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
@@ -220,9 +420,36 @@ class UserService(IUserService):
             self.db.commit()
             self.db.refresh(db_user)
 
-            # return user with role information
-            updated_user = self.db.query(User).join(Role).filter(User.id == UUID(user_id)).first()
-            return UserResponse.model_validate(updated_user)
+            # return user with role information and availability
+            updated_user = (
+                self.db.query(User)
+                .options(
+                    joinedload(User.role),
+                    joinedload(User.availability_templates),
+                )
+                .filter(User.id == UUID(user_id))
+                .first()
+            )
+
+            # Convert templates to AvailabilityTemplateSlot for UserResponse
+            availability_templates = []
+            for template in updated_user.availability_templates:
+                if template.is_active:
+                    availability_templates.append(
+                        AvailabilityTemplateSlot(
+                            day_of_week=template.day_of_week, start_time=template.start_time, end_time=template.end_time
+                        )
+                    )
+
+            user_dict = {
+                **{c.name: getattr(updated_user, c.name) for c in updated_user.__table__.columns},
+                "availability": availability_templates,
+                "role": updated_user.role,
+                "user_data": updated_user.user_data,
+                "volunteer_data": updated_user.volunteer_data,
+            }
+
+            return UserResponse.model_validate(user_dict)
 
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid user ID format")
@@ -231,4 +458,153 @@ class UserService(IUserService):
         except Exception as e:
             self.db.rollback()
             self.logger.error(f"Error updating user {user_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    async def update_user_data_by_id(self, user_id: str, user_data_update: UserDataUpdateRequest) -> UserResponse:
+        """
+        Update user_data fields for a user. Handles partial updates including
+        treatments and experiences (many-to-many relationships).
+        """
+        try:
+            db_user = self.db.query(User).filter(User.id == UUID(user_id)).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            # Get or create UserData
+            user_data = self.db.query(UserData).filter(UserData.user_id == UUID(user_id)).first()
+            if not user_data:
+                user_data = UserData(user_id=UUID(user_id))
+                self.db.add(user_data)
+                self.db.flush()
+
+            update_data = user_data_update.model_dump(exclude_unset=True)
+
+            # Update simple fields (personal info, demographics, cancer experience)
+            simple_fields = [
+                # Personal Information
+                "first_name",
+                "last_name",
+                "date_of_birth",
+                "phone",
+                "city",
+                "province",
+                "postal_code",
+                # Demographics
+                "gender_identity",
+                "marital_status",
+                "has_kids",
+                "timezone",
+                # Cancer Experience
+                "diagnosis",
+                "date_of_diagnosis",
+                "additional_info",
+                # Loved One Demographics
+                "loved_one_gender_identity",
+                "loved_one_age",
+                # Loved One Cancer Experience
+                "loved_one_diagnosis",
+                "loved_one_date_of_diagnosis",
+            ]
+            for field in simple_fields:
+                if field in update_data:
+                    setattr(user_data, field, update_data[field])
+                    # Sync first_name and last_name to User table for consistency
+                    if field in ("first_name", "last_name"):
+                        setattr(db_user, field, update_data[field])
+
+            # Handle pronouns (array field)
+            if "pronouns" in update_data:
+                user_data.pronouns = update_data["pronouns"]
+
+            # Handle ethnic_group (array field)
+            if "ethnic_group" in update_data:
+                user_data.ethnic_group = update_data["ethnic_group"]
+
+            # Handle treatments (many-to-many)
+            if "treatments" in update_data:
+                user_data.treatments.clear()
+                if update_data["treatments"]:
+                    for treatment_name in update_data["treatments"]:
+                        if treatment_name:
+                            treatment = self.db.query(Treatment).filter(Treatment.name == treatment_name).first()
+                            if treatment:
+                                user_data.treatments.append(treatment)
+
+            # Handle experiences (many-to-many)
+            if "experiences" in update_data:
+                user_data.experiences.clear()
+                if update_data["experiences"]:
+                    for experience_name in update_data["experiences"]:
+                        if experience_name:
+                            experience = self.db.query(Experience).filter(Experience.name == experience_name).first()
+                            if experience:
+                                user_data.experiences.append(experience)
+
+            # Handle loved one treatments (many-to-many)
+            if "loved_one_treatments" in update_data:
+                user_data.loved_one_treatments.clear()
+                if update_data["loved_one_treatments"]:
+                    for treatment_name in update_data["loved_one_treatments"]:
+                        if treatment_name:
+                            treatment = self.db.query(Treatment).filter(Treatment.name == treatment_name).first()
+                            if treatment:
+                                user_data.loved_one_treatments.append(treatment)
+
+            # Handle loved one experiences (many-to-many)
+            if "loved_one_experiences" in update_data:
+                user_data.loved_one_experiences.clear()
+                if update_data["loved_one_experiences"]:
+                    for experience_name in update_data["loved_one_experiences"]:
+                        if experience_name:
+                            experience = self.db.query(Experience).filter(Experience.name == experience_name).first()
+                            if experience:
+                                user_data.loved_one_experiences.append(experience)
+
+            self.db.commit()
+            self.db.refresh(db_user)
+
+            # Return updated user with all relationships loaded
+            updated_user = (
+                self.db.query(User)
+                .options(
+                    joinedload(User.role),
+                    joinedload(User.user_data).joinedload(UserData.treatments),
+                    joinedload(User.user_data).joinedload(UserData.experiences),
+                    joinedload(User.user_data).joinedload(UserData.loved_one_treatments),
+                    joinedload(User.user_data).joinedload(UserData.loved_one_experiences),
+                    joinedload(User.volunteer_data),
+                    joinedload(User.availability_templates),
+                )
+                .filter(User.id == UUID(user_id))
+                .first()
+            )
+
+            # Convert templates to AvailabilityTemplateSlot for UserResponse (same as get_user_by_id)
+            availability_templates = []
+            for template in updated_user.availability_templates:
+                if template.is_active:
+                    availability_templates.append(
+                        AvailabilityTemplateSlot(
+                            day_of_week=template.day_of_week, start_time=template.start_time, end_time=template.end_time
+                        )
+                    )
+
+            # Create a temporary user object with availability for validation
+            user_dict = {
+                **{c.name: getattr(updated_user, c.name) for c in updated_user.__table__.columns},
+                "availability": availability_templates,
+                "role": updated_user.role,
+                "user_data": updated_user.user_data,
+                "volunteer_data": updated_user.volunteer_data,
+            }
+
+            return UserResponse.model_validate(user_dict)
+
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.db.rollback()
+            self.logger.error(f"Error updating user_data for user {user_id}: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
