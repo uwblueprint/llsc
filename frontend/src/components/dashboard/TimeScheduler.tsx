@@ -5,8 +5,6 @@ import {
   VStack
 } from '@chakra-ui/react';
 import type { TimeSlot, TimeSchedulerProps } from './types';
-import { useAvailability } from '@/hooks/useAvailability';
-import type { TimeBlockEntity } from '@/types/AvailabilityTypes';
 
 const days = ['Mon', 'Tues', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const daysFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -15,71 +13,18 @@ const hours = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
 const TimeScheduler: React.FC<TimeSchedulerProps> = ({
   showAvailability = false,
   onTimeSlotsChange,
-  prepopulateFromAPI = false,
   initialTimeSlots = [],
   readOnly = false
 }) => {
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>(initialTimeSlots);
   const [isDragging, setIsDragging] = useState(false);
   const [dragValue, setDragValue] = useState<boolean | null>(null);
-  const { getAvailability, loading } = useAvailability();
-
-  // Convert TimeBlockEntity from API to TimeSlot format
-  const convertTimeBlocksToTimeSlots = (timeBlocks: TimeBlockEntity[]): TimeSlot[] => {
-    const timeSlots: TimeSlot[] = [];
-
-    timeBlocks.forEach(block => {
-      const date = new Date(block.start_time);
-      const dayIndex = date.getDay();
-      const hour = date.getHours();
-
-      // Map day index to full day name
-      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const day = dayNames[dayIndex];
-
-      const timeStr = `${hour}:00 - ${hour + 1}:00`;
-
-      timeSlots.push({
-        day,
-        time: timeStr,
-        selected: true
-      });
-    });
-
-    return timeSlots;
-  };
-
-  // Load availability from API on mount if prepopulateFromAPI is true
-  useEffect(() => {
-    const loadAvailability = async () => {
-      if (prepopulateFromAPI) {
-        const availability = await getAvailability();
-        if (availability && availability.available_times) {
-          const timeSlots = convertTimeBlocksToTimeSlots(availability.available_times);
-          setSelectedTimeSlots(timeSlots);
-          if (onTimeSlotsChange) {
-            onTimeSlotsChange(timeSlots);
-          }
-        }
-      }
-    };
-
-    loadAvailability();
-  }, [prepopulateFromAPI]);
 
   // Update selectedTimeSlots when initialTimeSlots prop changes
+  // This makes the component fully controlled by the parent
   useEffect(() => {
-    if (initialTimeSlots.length > 0) {
-      setSelectedTimeSlots(initialTimeSlots);
-    }
+    setSelectedTimeSlots(initialTimeSlots);
   }, [initialTimeSlots]);
-
-  // Notify parent when selectedTimeSlots change
-  useEffect(() => {
-    if (onTimeSlotsChange) {
-      onTimeSlotsChange(selectedTimeSlots);
-    }
-  }, [selectedTimeSlots, onTimeSlotsChange]);
 
   const handleTimeSlotToggle = (day: string, hour: number) => {
     const timeStr = `${hour}:00 - ${hour + 1}:00`;
@@ -87,10 +32,18 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
       slot => slot.day === day && slot.time === timeStr
     );
 
+    let newSlots: TimeSlot[];
     if (existingSlotIndex >= 0) {
-      setSelectedTimeSlots(prev => prev.filter((_, index) => index !== existingSlotIndex));
+      newSlots = selectedTimeSlots.filter((_, index) => index !== existingSlotIndex);
     } else {
-      setSelectedTimeSlots(prev => [...prev, { day, time: timeStr, selected: true }]);
+      newSlots = [...selectedTimeSlots, { day, time: timeStr, selected: true }];
+    }
+
+    setSelectedTimeSlots(newSlots);
+
+    // Notify parent of the change
+    if (onTimeSlotsChange) {
+      onTimeSlotsChange(newSlots);
     }
   };
 

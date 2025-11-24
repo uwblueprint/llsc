@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import TimeScheduler from '@/components/dashboard/TimeScheduler';
-import type { TimeSlot, TimeSchedulerRef } from '@/components/dashboard/types';
+import type { TimeSlot } from '@/components/dashboard/types';
 import { useAvailability } from '@/hooks/useAvailability';
 import {
   Box,
@@ -26,7 +26,6 @@ const EditProfile: React.FC = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [savingAvailability, setSavingAvailability] = useState(false);
-  const timeSchedulerRef = useRef<TimeSchedulerRef>(null);
 
   // Personal details state for profile
   const [personalDetails, setPersonalDetails] = useState({
@@ -46,6 +45,12 @@ const EditProfile: React.FC = () => {
     treatments: [] as string[],
     experiences: [] as string[]
   });
+
+  // Loved one details state
+  const [lovedOneDetails, setLovedOneDetails] = useState<{
+    birthday: string;
+    gender: string;
+  } | null>(null);
 
   // Helper function to convert TimeBlocks back to TimeSlots for the scheduler
   const convertTimeBlocksToTimeSlots = (timeBlocks: TimeBlockResponse[]): TimeSlot[] => {
@@ -151,6 +156,17 @@ const EditProfile: React.FC = () => {
             experiences: userData.experiences || []
           });
 
+          // Populate loved one details if caring for someone
+          if (userData.caringForSomeone) {
+            const lovedOneBirthday = userData.lovedOneAge || 'Not provided';
+            const lovedOneGender = userData.lovedOneGenderIdentity || 'Not provided';
+
+            setLovedOneDetails({
+              birthday: lovedOneBirthday,
+              gender: lovedOneGender
+            });
+          }
+
           // Convert and populate availability
           if (userData.availability && userData.availability.length > 0) {
             const timeSlots = convertTimeBlocksToTimeSlots(userData.availability);
@@ -198,6 +214,9 @@ const EditProfile: React.FC = () => {
       updateData.gender_identity = value;
     } else if (field === 'pronouns') {
       updateData.pronouns = value.split(',').map(p => p.trim());
+    } else if (field === 'lovedOneBirthday') {
+      // Loved one's age/birthday - store as is since backend expects lovedOneAge as string
+      updateData.loved_one_age = value;
     }
 
     const result = await updateUserData(updateData);
@@ -235,9 +254,8 @@ const EditProfile: React.FC = () => {
   };
 
   const handleClearAvailability = () => {
-    console.log('🗑️ handleClearAvailability called');
-    // Call clear method on TimeScheduler via ref
-    timeSchedulerRef.current?.clear();
+    // Clear the time slots state - TimeScheduler will update automatically
+    setProfileTimeSlots([]);
   };
 
   const handleCancelEdit = () => {
@@ -396,6 +414,8 @@ const EditProfile: React.FC = () => {
                   <PersonalDetails
                     personalDetails={personalDetails}
                     setPersonalDetails={setPersonalDetails}
+                    lovedOneDetails={lovedOneDetails}
+                    setLovedOneDetails={setLovedOneDetails}
                     onSave={handleSavePersonalDetail}
                   />
                   <BloodCancerExperience
@@ -490,7 +510,6 @@ const EditProfile: React.FC = () => {
 
                     <Box h="800px" w="100%" mr={0}>
                       <TimeScheduler
-                        ref={timeSchedulerRef}
                         showAvailability={true}
                         onTimeSlotsChange={handleTimeSlotsChange}
                         initialTimeSlots={profileTimeSlots}

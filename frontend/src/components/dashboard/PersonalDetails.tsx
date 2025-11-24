@@ -26,6 +26,10 @@ interface PersonalDetailsProps {
     timezone: string;
     overview: string;
   };
+  lovedOneDetails?: {
+    birthday: string;
+    gender: string;
+  } | null;
   setPersonalDetails: React.Dispatch<React.SetStateAction<{
     name: string;
     email: string;
@@ -35,12 +39,18 @@ interface PersonalDetailsProps {
     timezone: string;
     overview: string;
   }>>;
+  setLovedOneDetails?: React.Dispatch<React.SetStateAction<{
+    birthday: string;
+    gender: string;
+  } | null>>;
   onSave?: (field: string, value: string) => Promise<void>;
 }
 
 const PersonalDetails: React.FC<PersonalDetailsProps> = ({
   personalDetails,
+  lovedOneDetails,
   setPersonalDetails,
+  setLovedOneDetails,
   onSave,
 }) => {
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -62,6 +72,9 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
         break;
       case 'birthday':
         validation = validateBirthday(value, 18); // Require at least 18 years old
+        break;
+      case 'lovedOneBirthday':
+        validation = validateBirthday(value, 0); // No age requirement for loved one
         break;
       case 'pronouns':
         validation = validatePronouns(value);
@@ -87,7 +100,12 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
   };
 
   const handleBlur = (fieldName: string) => {
-    const value = personalDetails[fieldName as keyof typeof personalDetails];
+    let value;
+    if (fieldName === 'lovedOneBirthday') {
+      value = lovedOneDetails?.birthday || '';
+    } else {
+      value = personalDetails[fieldName as keyof typeof personalDetails];
+    }
     validateField(fieldName, value);
   };
 
@@ -97,7 +115,12 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
       return;
     }
 
-    const value = personalDetails[editingField as keyof typeof personalDetails];
+    let value;
+    if (editingField === 'lovedOneBirthday') {
+      value = lovedOneDetails?.birthday || '';
+    } else {
+      value = personalDetails[editingField as keyof typeof personalDetails];
+    }
 
     // Validate before saving
     if (!validateField(editingField, value)) {
@@ -301,6 +324,73 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
           </Box>
         )}
       </Box>
+
+      {/* Loved One Section */}
+      {lovedOneDetails && (
+        <>
+          <Box
+            mt={12}
+            mb={8}
+            borderBottom="1px solid"
+            borderColor="#E5E7EB"
+          />
+
+          <Heading
+            fontSize="1.625rem"
+            fontWeight={600}
+            lineHeight="40px"
+            letterSpacing="0%"
+            color="#1D3448"
+            fontFamily="'Open Sans', sans-serif"
+            mb={8}
+          >
+            Your Loved One's Personal Details
+          </Heading>
+
+          <Flex gap="6.5%" mt="32px" align="start">
+            <VStack gap={8} flex="1" align="stretch">
+              <ProfileTextInput
+                label="Your Loved One's Birthday"
+                value={lovedOneDetails.birthday}
+                onChange={(e) => setLovedOneDetails && setLovedOneDetails(prev => prev ? ({ ...prev, birthday: e.target.value }) : null)}
+                onFocus={() => handleInputFocus('lovedOneBirthday')}
+                onBlur={() => handleBlur('lovedOneBirthday')}
+                error={errors.lovedOneBirthday}
+                placeholder="DD/MM/YYYY"
+              />
+              {editingField === 'lovedOneBirthday' && (
+                <Box mt={2} display="flex" justifyContent="flex-end">
+                  <Button
+                    onClick={handleSave}
+                    bg="#056067"
+                    color="white"
+                    px={4}
+                    py={1}
+                    borderRadius="6px"
+                    fontFamily="'Open Sans', sans-serif"
+                    fontWeight={600}
+                    fontSize="0.875rem"
+                    _hover={{ bg: "#044d52" }}
+                    _active={{ bg: "#033e42" }}
+                    isDisabled={saving}
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </Button>
+                </Box>
+              )}
+            </VStack>
+
+            <VStack gap={8} flex="1" align="stretch">
+              <ProfileDropdown
+                label="Your Loved One's Gender"
+                value={lovedOneDetails.gender}
+                onChange={(e) => setLovedOneDetails && setLovedOneDetails(prev => prev ? ({ ...prev, gender: e.target.value }) : null)}
+                options={GENDER_DROPDOWN_OPTIONS}
+              />
+            </VStack>
+          </Flex>
+        </>
+      )}
     </Box>
   );
 };

@@ -9,38 +9,46 @@ import { useRouter } from 'next/router';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
 import ProfileCard from '@/components/dashboard/ProfileCard';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
+import { useAvailability } from '@/hooks/useAvailability';
 
 const VolunteerDashboardPage: React.FC = () => {
   const router = useRouter();
   const [userName, setUserName] = useState('');
   const [matchedParticipants, setMatchedParticipants] = useState([]);
+  const { getAvailability } = useAvailability();
 
   useEffect(() => {
-    // Get current user name
-    const user = getCurrentUser();
-    if (user) {
-      const firstName = user.firstName || '';
-      setUserName(firstName);
-    }
+    const checkAvailabilityAndLoadData = async () => {
+      // Get current user name
+      const user = getCurrentUser();
+      if (user) {
+        const firstName = user.firstName || '';
+        setUserName(firstName);
+      }
 
-    // TODO: Check if user has set availability, if not redirect to schedule page
-    const hasSetAvailability = false; // Replace with actual check from API
-    if (!hasSetAvailability) {
-      router.push('/volunteer/schedule');
-      return;
-    }
+      // Check if user has set availability, if not redirect to schedule page
+      const availability = await getAvailability();
+      const hasSetAvailability = availability && availability.available_times && availability.available_times.length > 0;
 
-    // TODO: Fetch matched participants from API
-    // const fetchMatches = async () => {
-    //   try {
-    //     const response = await baseAPIClient.get('/matching/my-matches');
-    //     setMatchedParticipants(response.data.matches);
-    //   } catch (error) {
-    //     console.error('Error fetching matches:', error);
-    //   }
-    // };
-    // fetchMatches();
-  }, [router]);
+      if (!hasSetAvailability) {
+        router.push('/volunteer/schedule');
+        return;
+      }
+
+      // TODO: Fetch matched participants from API
+      // const fetchMatches = async () => {
+      //   try {
+      //     const response = await baseAPIClient.get('/matching/my-matches');
+      //     setMatchedParticipants(response.data.matches);
+      //   } catch (error) {
+      //     console.error('Error fetching matches:', error);
+      //   }
+      // };
+      // fetchMatches();
+    };
+
+    checkAvailabilityAndLoadData();
+  }, [router, getAvailability]);
 
   return (
     <VolunteerDashboardLayout>

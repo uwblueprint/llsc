@@ -7,7 +7,6 @@ export interface TimeSlot {
 export interface TimeSchedulerProps {
   showAvailability?: boolean;
   onTimeSlotsChange?: (timeSlots: TimeSlot[]) => void;
-  prepopulateFromAPI?: boolean;
   initialTimeSlots?: TimeSlot[];
   readOnly?: boolean;
 }

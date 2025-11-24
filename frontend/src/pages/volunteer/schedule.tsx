@@ -176,7 +176,6 @@ const SchedulePage: React.FC = () => {
             <TimeScheduler
               showAvailability={false}
               onTimeSlotsChange={handleTimeSlotsChange}
-              prepopulateFromAPI={false}
             />
           </Box>
 
