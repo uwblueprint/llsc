@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Heading, Text, Button, VStack, HStack, Input, Textarea } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
+import { InputGroup } from '@/components/ui/input-group';
 import { COLORS, VALIDATION } from '@/constants/form';
 
 interface VolunteerReferencesFormData {
@@ -127,22 +128,24 @@ export function VolunteerReferencesForm({
                     control={control}
                     rules={{ required: 'Full name is required' }}
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="John Doe"
-                        fontFamily="system-ui, -apple-system, sans-serif"
-                        fontSize="14px"
-                        color={COLORS.veniceBlue}
-                        borderColor={errors.reference1?.fullName ? 'red.500' : undefined}
-                        borderRadius="6px"
-                        h="40px"
-                        px={3}
-                        _placeholder={{ color: '#9ca3af' }}
-                        _focus={{
-                          borderColor: COLORS.teal,
-                          boxShadow: `0 0 0 3px ${COLORS.teal}20`,
-                        }}
-                      />
+                      <InputGroup>
+                        <Input
+                          {...field}
+                          placeholder="John Doe"
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                          fontSize="14px"
+                          color={COLORS.veniceBlue}
+                          borderColor={errors.reference1?.fullName ? 'red.500' : undefined}
+                          borderRadius="6px"
+                          h="40px"
+                          px={3}
+                          _placeholder={{ color: '#9ca3af' }}
+                          _focus={{
+                            borderColor: COLORS.teal,
+                            boxShadow: `0 0 0 3px ${COLORS.teal}20`,
+                          }}
+                        />
+                      </InputGroup>
                     )}
                   />
                   {errors.reference1?.fullName && (
@@ -173,23 +176,25 @@ export function VolunteerReferencesForm({
                       },
                     }}
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="john.doe@gmail.com"
-                        type="email"
-                        fontFamily="system-ui, -apple-system, sans-serif"
-                        fontSize="14px"
-                        color={COLORS.veniceBlue}
-                        borderColor={errors.reference1?.email ? 'red.500' : undefined}
-                        borderRadius="6px"
-                        h="40px"
-                        px={3}
-                        _placeholder={{ color: '#9ca3af' }}
-                        _focus={{
-                          borderColor: COLORS.teal,
-                          boxShadow: `0 0 0 3px ${COLORS.teal}20`,
-                        }}
-                      />
+                      <InputGroup>
+                        <Input
+                          {...field}
+                          placeholder="john.doe@gmail.com"
+                          type="email"
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                          fontSize="14px"
+                          color={COLORS.veniceBlue}
+                          borderColor={errors.reference1?.email ? 'red.500' : undefined}
+                          borderRadius="6px"
+                          h="40px"
+                          px={3}
+                          _placeholder={{ color: '#9ca3af' }}
+                          _focus={{
+                            borderColor: COLORS.teal,
+                            boxShadow: `0 0 0 3px ${COLORS.teal}20`,
+                          }}
+                        />
+                      </InputGroup>
                     )}
                   />
                   {errors.reference1?.email && (
@@ -220,22 +225,24 @@ export function VolunteerReferencesForm({
                       },
                     }}
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="###-###-####"
-                        fontFamily="system-ui, -apple-system, sans-serif"
-                        fontSize="14px"
-                        color={COLORS.veniceBlue}
-                        borderColor={errors.reference1?.phoneNumber ? 'red.500' : undefined}
-                        borderRadius="6px"
-                        h="40px"
-                        px={3}
-                        _placeholder={{ color: '#9ca3af' }}
-                        _focus={{
-                          borderColor: COLORS.teal,
-                          boxShadow: `0 0 0 3px ${COLORS.teal}20`,
-                        }}
-                      />
+                      <InputGroup>
+                        <Input
+                          {...field}
+                          placeholder="###-###-####"
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                          fontSize="14px"
+                          color={COLORS.veniceBlue}
+                          borderColor={errors.reference1?.phoneNumber ? 'red.500' : undefined}
+                          borderRadius="6px"
+                          h="40px"
+                          px={3}
+                          _placeholder={{ color: '#9ca3af' }}
+                          _focus={{
+                            borderColor: COLORS.teal,
+                            boxShadow: `0 0 0 3px ${COLORS.teal}20`,
+                          }}
+                        />
+                      </InputGroup>
                     )}
                   />
                   {errors.reference1?.phoneNumber && (
@@ -278,22 +285,24 @@ export function VolunteerReferencesForm({
                     control={control}
                     rules={{ required: 'Full name is required' }}
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="John Doe"
-                        fontFamily="system-ui, -apple-system, sans-serif"
-                        fontSize="14px"
-                        color={COLORS.veniceBlue}
-                        borderColor={errors.reference2?.fullName ? 'red.500' : undefined}
-                        borderRadius="6px"
-                        h="40px"
-                        px={3}
-                        _placeholder={{ color: '#9ca3af' }}
-                        _focus={{
-                          borderColor: COLORS.teal,
-                          boxShadow: `0 0 0 3px ${COLORS.teal}20`,
-                        }}
-                      />
+                      <InputGroup>
+                        <Input
+                          {...field}
+                          placeholder="John Doe"
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                          fontSize="14px"
+                          color={COLORS.veniceBlue}
+                          borderColor={errors.reference2?.fullName ? 'red.500' : undefined}
+                          borderRadius="6px"
+                          h="40px"
+                          px={3}
+                          _placeholder={{ color: '#9ca3af' }}
+                          _focus={{
+                            borderColor: COLORS.teal,
+                            boxShadow: `0 0 0 3px ${COLORS.teal}20`,
+                          }}
+                        />
+                      </InputGroup>
                     )}
                   />
                   {errors.reference2?.fullName && (
@@ -324,23 +333,25 @@ export function VolunteerReferencesForm({
                       },
                     }}
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="john.doe@gmail.com"
-                        type="email"
-                        fontFamily="system-ui, -apple-system, sans-serif"
-                        fontSize="14px"
-                        color={COLORS.veniceBlue}
-                        borderColor={errors.reference2?.email ? 'red.500' : undefined}
-                        borderRadius="6px"
-                        h="40px"
-                        px={3}
-                        _placeholder={{ color: '#9ca3af' }}
-                        _focus={{
-                          borderColor: COLORS.teal,
-                          boxShadow: `0 0 0 3px ${COLORS.teal}20`,
-                        }}
-                      />
+                      <InputGroup>
+                        <Input
+                          {...field}
+                          placeholder="john.doe@gmail.com"
+                          type="email"
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                          fontSize="14px"
+                          color={COLORS.veniceBlue}
+                          borderColor={errors.reference2?.email ? 'red.500' : undefined}
+                          borderRadius="6px"
+                          h="40px"
+                          px={3}
+                          _placeholder={{ color: '#9ca3af' }}
+                          _focus={{
+                            borderColor: COLORS.teal,
+                            boxShadow: `0 0 0 3px ${COLORS.teal}20`,
+                          }}
+                        />
+                      </InputGroup>
                     )}
                   />
                   {errors.reference2?.email && (
@@ -371,22 +382,24 @@ export function VolunteerReferencesForm({
                       },
                     }}
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="###-###-####"
-                        fontFamily="system-ui, -apple-system, sans-serif"
-                        fontSize="14px"
-                        color={COLORS.veniceBlue}
-                        borderColor={errors.reference2?.phoneNumber ? 'red.500' : undefined}
-                        borderRadius="6px"
-                        h="40px"
-                        px={3}
-                        _placeholder={{ color: '#9ca3af' }}
-                        _focus={{
-                          borderColor: COLORS.teal,
-                          boxShadow: `0 0 0 3px ${COLORS.teal}20`,
-                        }}
-                      />
+                      <InputGroup>
+                        <Input
+                          {...field}
+                          placeholder="###-###-####"
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                          fontSize="14px"
+                          color={COLORS.veniceBlue}
+                          borderColor={errors.reference2?.phoneNumber ? 'red.500' : undefined}
+                          borderRadius="6px"
+                          h="40px"
+                          px={3}
+                          _placeholder={{ color: '#9ca3af' }}
+                          _focus={{
+                            borderColor: COLORS.teal,
+                            boxShadow: `0 0 0 3px ${COLORS.teal}20`,
+                          }}
+                        />
+                      </InputGroup>
                     )}
                   />
                   {errors.reference2?.phoneNumber && (

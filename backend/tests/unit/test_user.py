@@ -20,10 +20,13 @@ from app.services.implementations.user_service import UserService
 
 # Test DB Configuration - Always require Postgres for full parity
 POSTGRES_DATABASE_URL = os.getenv("POSTGRES_TEST_DATABASE_URL")
+
 if not POSTGRES_DATABASE_URL:
-    raise RuntimeError(
-        "POSTGRES_DATABASE_URL is not set. Please export a Postgres URL, e.g. "
-        "postgresql+psycopg2://postgres:postgres@db:5432/llsc_test"
+    # Skip all tests in this file if Postgres isn't available
+    pytest.skip(
+        "POSTGRES_TEST_DATABASE_URL not set. "
+        "These tests require a Postgres database. Set POSTGRES_TEST_DATABASE_URL to run them.",
+        allow_module_level=True,
     )
 engine = create_engine(POSTGRES_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -87,7 +90,7 @@ def db_session():
         session.execute(
             text(
                 "TRUNCATE TABLE form_submissions, user_loved_one_experiences, user_loved_one_treatments, "
-                "user_experiences, user_treatments, available_times, matches, suggested_times, user_data, users "
+                "user_experiences, user_treatments, availability_templates, matches, suggested_times, user_data, users "
                 "RESTART IDENTITY CASCADE"
             )
         )
@@ -250,7 +253,7 @@ async def test_delete_user_by_email(db_session):
 
 
 @pytest.mark.asyncio
-async def test_delete_user_by_id(db_session):
+async def test_delete_user_by_id(mock_firebase_auth, db_session):
     """Test deleting a user by ID"""
     try:
         # Arrange
