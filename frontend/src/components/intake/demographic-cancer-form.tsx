@@ -133,6 +133,17 @@ const ETHNIC_OPTIONS = [
   'Another background/Prefer to self-describe (please specify):',
 ];
 
+const LANGUAGE_OPTIONS = ['English', 'Français'];
+
+// Helper to convert between display names and language codes
+const languageToCode = (language: string): string => {
+  return language === 'English' ? 'en' : language === 'Français' ? 'fr' : '';
+};
+
+const codeToLanguage = (code: string): string => {
+  return code === 'en' ? 'English' : code === 'fr' ? 'Français' : '';
+};
+
 export function DemographicCancerForm({
   formType,
   onNext,
@@ -479,11 +490,13 @@ export function DemographicCancerForm({
                   control={control}
                   rules={{ required: 'Please select your preferred language' }}
                   render={({ field }) => (
-                    <StyledSelect {...field} error={!!errors.preferredLanguage}>
-                      <option value="">Select language</option>
-                      <option value="en">English</option>
-                      <option value="fr">Français</option>
-                    </StyledSelect>
+                    <SingleSelectDropdown
+                      options={LANGUAGE_OPTIONS}
+                      selectedValue={codeToLanguage(field.value || '')}
+                      onSelectionChange={(language) => field.onChange(languageToCode(language))}
+                      placeholder="Preferred Language"
+                      error={!!errors.preferredLanguage}
+                    />
                   )}
                 />
               </FormField>
@@ -1062,11 +1075,13 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                   control={control}
                   rules={{ required: 'Please select your preferred language' }}
                   render={({ field }) => (
-                    <StyledSelect {...field} error={!!errors.preferredLanguage}>
-                      <option value="">Select language</option>
-                      <option value="en">English</option>
-                      <option value="fr">Français</option>
-                    </StyledSelect>
+                    <SingleSelectDropdown
+                      options={LANGUAGE_OPTIONS}
+                      selectedValue={codeToLanguage(field.value || '')}
+                      onSelectionChange={(language) => field.onChange(languageToCode(language))}
+                      placeholder="Preferred Language"
+                      error={!!errors.preferredLanguage}
+                    />
                   )}
                 />
               </FormField>
