@@ -197,7 +197,6 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                   control={control}
                   rules={{
                     validate: (value) => {
-                      if (!value) return 'Gender identity is required';
                       if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
                         return 'Please specify gender identity when selecting Self-describe';
                       }

@@ -419,7 +419,6 @@ export function DemographicCancerForm({
                   control={control}
                   rules={{
                     validate: (value) => {
-                      if (!value) return 'Gender identity is required';
                       if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
                         return 'Please specify your gender identity when selecting Self-describe';
                       }
@@ -472,9 +471,6 @@ export function DemographicCancerForm({
                   control={control}
                   rules={{
                     validate: (value) => {
-                      if (!value || value.length === 0) {
-                        return 'Please select at least one pronoun option';
-                      }
                       if (value.includes('Self-describe') && !pronounsCustom.trim()) {
                         return 'Please specify your pronouns when selecting Self-describe';
                       }
@@ -525,9 +521,6 @@ export function DemographicCancerForm({
                   control={control}
                   rules={{
                     validate: (value) => {
-                      if (!value || value.length === 0) {
-                        return 'Please select at least one ethnic or cultural group';
-                      }
                       if (value.includes('Self-describe') && !ethnicGroupCustom.trim()) {
                         return 'Please specify your ethnic or cultural group when selecting Self-describe';
                       }
@@ -575,7 +568,6 @@ export function DemographicCancerForm({
               <Controller
                 name="maritalStatus"
                 control={control}
-                rules={{ required: 'Marital status is required' }}
                 render={({ field }) => (
                   <StyledSelect {...field} error={!!errors.maritalStatus}>
                     <option value="">Marital Status</option>
@@ -595,7 +587,6 @@ export function DemographicCancerForm({
               <Controller
                 name="hasKids"
                 control={control}
-                rules={{ required: 'Please specify if you have kids' }}
                 render={({ field }) => (
                   <StyledSelect {...field} error={!!errors.hasKids}>
                     <option value="">Do you have kids?</option>
@@ -923,7 +914,6 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                   control={control}
                   rules={{
                     validate: (value) => {
-                      if (!value) return 'Gender identity is required';
                       if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
                         return 'Please specify your gender identity when selecting Self-describe';
                       }
@@ -976,9 +966,6 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                   control={control}
                   rules={{
                     validate: (value) => {
-                      if (!value || value.length === 0) {
-                        return 'Please select at least one pronoun option';
-                      }
                       if (value.includes('Self-describe') && !pronounsCustom.trim()) {
                         return 'Please specify your pronouns when selecting Self-describe';
                       }
@@ -1029,9 +1016,6 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                   control={control}
                   rules={{
                     validate: (value) => {
-                      if (!value || value.length === 0) {
-                        return 'Please select at least one ethnic or cultural group';
-                      }
                       if (value.includes('Self-describe') && !ethnicGroupCustom.trim()) {
                         return 'Please specify your ethnic or cultural group when selecting Self-describe';
                       }
@@ -1079,7 +1063,6 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
               <Controller
                 name="maritalStatus"
                 control={control}
-                rules={{ required: 'Marital status is required' }}
                 render={({ field }) => (
                   <StyledSelect {...field} error={!!errors.maritalStatus}>
                     <option value="">Marital Status</option>
@@ -1099,7 +1082,6 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
               <Controller
                 name="hasKids"
                 control={control}
-                rules={{ required: 'Please specify if you have kids' }}
                 render={({ field }) => (
                   <StyledSelect {...field} error={!!errors.hasKids}>
                     <option value="">Do you have kids?</option>
