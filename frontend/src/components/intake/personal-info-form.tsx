@@ -6,9 +6,10 @@ import { InputGroup } from '@/components/ui/input-group';
 import { FormField } from '@/components/ui/form-field';
 import { ExperienceTypeSection } from '@/components/intake/experience-type-section';
 import { COLORS, PROVINCES, VALIDATION, ExperienceData, PersonalData } from '@/constants/form';
-import { CustomRadio } from '@/components/CustomRadio';
+// import { CustomRadio } from '@/components/CustomRadio';
 import { useRouter } from 'next/router';
 import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface PersonalInfoFormData {
   hasBloodCancer: 'yes' | 'no' | '';
@@ -20,7 +21,17 @@ interface PersonalInfoFormData {
   postalCode: string;
   city: string;
   province: string;
-  hasCriminalRecord: 'yes' | 'no' | '';
+  eligibilityCriteria: {
+    age18OrOlder: boolean;
+    noCriminalRecord: boolean;
+    resideInCanada: boolean;
+    oneYearSinceTreatment: boolean;
+    hasBloodCancerOrCaregiver: boolean;
+    willingToParticipateIntake: boolean;
+    willingToAttendTraining: boolean;
+    accessToPhoneAndComputer: boolean;
+    comfortableSharingExperience: boolean;
+  };
 }
 
 interface PersonalInfoFormProps {
@@ -50,7 +61,17 @@ export function PersonalInfoForm({
       postalCode: '',
       city: '',
       province: '',
-      hasCriminalRecord: '',
+      eligibilityCriteria: {
+        age18OrOlder: false,
+        noCriminalRecord: false,
+        resideInCanada: false,
+        oneYearSinceTreatment: false,
+        hasBloodCancerOrCaregiver: false,
+        willingToParticipateIntake: false,
+        willingToAttendTraining: false,
+        accessToPhoneAndComputer: false,
+        comfortableSharingExperience: false,
+      },
     },
   });
 
@@ -60,11 +81,14 @@ export function PersonalInfoForm({
       return; // Form validation will show errors
     }
 
-    // Check if user has criminal record (only for volunteers)
-    if (formType === 'volunteer' && data.hasCriminalRecord === 'yes') {
-      // Redirect to rejection page
-      router.push('/rejection');
-      return;
+    // Validate all eligibility criteria are checked (only for volunteers)
+    if (formType === 'volunteer') {
+      const allChecked = Object.values(data.eligibilityCriteria).every(
+        (checked) => checked === true,
+      );
+      if (!allChecked) {
+        return; // Form validation will show errors
+      }
     }
 
     const experienceData: ExperienceData = {
@@ -336,55 +360,186 @@ export function PersonalInfoForm({
         </VStack>
       </Box>
 
-      {/* Criminal Record Section */}
+      {/* Eligibility Criteria Section */}
       {formType === 'volunteer' && (
         <Box mb={10}>
-          <Text
-            color={COLORS.veniceBlue}
+          <Heading
+            as="h2"
             fontFamily="system-ui, -apple-system, sans-serif"
-            fontWeight={500}
-            fontSize="14px"
-            mb={4}
+            fontWeight={600}
+            color={COLORS.veniceBlue}
+            fontSize="20px"
+            mb={3}
           >
-            Do you have a criminal record?
+            Eligibility Criteria
+          </Heading>
+          <Text
+            color={COLORS.fieldGray}
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontSize="15px"
+            mb={6}
+          >
+            Our volunteers are a valuable part of our organization and vital to this program. Before
+            continuing, please ensure you meet the criteria below.{' '}
+          </Text>
+          <Text
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontSize="14px"
+            color={COLORS.veniceBlue}
+            mb={3}
+            fontWeight={600}
+          >
+            Please review the criteria and check off all that apply. You must agree with all
+            statements to become a First Connections volunteer.
           </Text>
           <Controller
-            name="hasCriminalRecord"
+            name="eligibilityCriteria"
             control={control}
-            rules={{ required: formType === 'volunteer' ? 'This field is required' : false }}
+            rules={{
+              validate: (value) => {
+                if (formType === 'volunteer') {
+                  const allChecked = Object.values(value).every((checked) => checked === true);
+                  return allChecked || 'All eligibility criteria must be checked to continue';
+                }
+                return true;
+              },
+            }}
             render={({ field }) => (
-              <VStack align="start" gap={1}>
-                <CustomRadio
-                  name="hasCriminalRecord"
-                  value="yes"
-                  checked={field.value === 'yes'}
-                  onChange={(value) => field.onChange(value)}
+              <VStack align="start" gap={3}>
+                <Checkbox
+                  checked={field.value.age18OrOlder}
+                  onCheckedChange={(details) =>
+                    field.onChange({ ...field.value, age18OrOlder: details.checked })
+                  }
                 >
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
                   >
-                    Yes
+                    18 years of age or older
                   </Text>
-                </CustomRadio>
-                <CustomRadio
-                  name="hasCriminalRecord"
-                  value="no"
-                  checked={field.value === 'no'}
-                  onChange={(value) => field.onChange(value)}
+                </Checkbox>
+                <Checkbox
+                  checked={field.value.noCriminalRecord}
+                  onCheckedChange={(details) =>
+                    field.onChange({ ...field.value, noCriminalRecord: details.checked })
+                  }
                 >
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color={COLORS.veniceBlue}
                   >
-                    No
+                    No criminal record
                   </Text>
-                </CustomRadio>
-                {errors.hasCriminalRecord && (
+                </Checkbox>
+                <Checkbox
+                  checked={field.value.resideInCanada}
+                  onCheckedChange={(details) =>
+                    field.onChange({ ...field.value, resideInCanada: details.checked })
+                  }
+                >
+                  <Text
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                  >
+                    Reside in Canada
+                  </Text>
+                </Checkbox>
+                <Checkbox
+                  checked={field.value.oneYearSinceTreatment}
+                  onCheckedChange={(details) =>
+                    field.onChange({ ...field.value, oneYearSinceTreatment: details.checked })
+                  }
+                >
+                  <Text
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                  >
+                    It has been at least 1 year since yours or your loved one&apos;s blood cancer
+                    treatment. For people and their caregivers who are on active surveillance or
+                    daily medication, it has been at least 1 year since diagnosis.
+                  </Text>
+                </Checkbox>
+                <Checkbox
+                  checked={field.value.hasBloodCancerOrCaregiver}
+                  onCheckedChange={(details) =>
+                    field.onChange({ ...field.value, hasBloodCancerOrCaregiver: details.checked })
+                  }
+                >
+                  <Text
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                  >
+                    Have had a blood cancer, or is a caregiver of a loved one with a blood cancer
+                  </Text>
+                </Checkbox>
+                <Checkbox
+                  checked={field.value.willingToParticipateIntake}
+                  onCheckedChange={(details) =>
+                    field.onChange({ ...field.value, willingToParticipateIntake: details.checked })
+                  }
+                >
+                  <Text
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                  >
+                    Willing to participate in a pre-screening intake
+                  </Text>
+                </Checkbox>
+                <Checkbox
+                  checked={field.value.willingToAttendTraining}
+                  onCheckedChange={(details) =>
+                    field.onChange({ ...field.value, willingToAttendTraining: details.checked })
+                  }
+                >
+                  <Text
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                  >
+                    Willing to attend a virtual 3-hour peer support training
+                  </Text>
+                </Checkbox>
+                <Checkbox
+                  checked={field.value.accessToPhoneAndComputer}
+                  onCheckedChange={(details) =>
+                    field.onChange({ ...field.value, accessToPhoneAndComputer: details.checked })
+                  }
+                >
+                  <Text
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                  >
+                    Have access and comfortable using the phone and computer
+                  </Text>
+                </Checkbox>
+                <Checkbox
+                  checked={field.value.comfortableSharingExperience}
+                  onCheckedChange={(details) =>
+                    field.onChange({
+                      ...field.value,
+                      comfortableSharingExperience: details.checked,
+                    })
+                  }
+                >
+                  <Text
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                    fontSize="14px"
+                    color={COLORS.veniceBlue}
+                  >
+                    Comfortable sharing your personal blood cancer experience with others
+                  </Text>
+                </Checkbox>
+                {errors.eligibilityCriteria && (
                   <Text color="red.500" fontSize="12px" mt={1}>
-                    {errors.hasCriminalRecord.message}
+                    {errors.eligibilityCriteria.message}
                   </Text>
                 )}
               </VStack>
