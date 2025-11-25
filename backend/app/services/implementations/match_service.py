@@ -806,10 +806,11 @@ class MatchService:
             )
             volunteer_tz = timezone.utc
 
-        # Project templates onto the next week
-        projection_weeks = 1
+        # Project templates 8 days ahead (1 week + 1 day) to ensure we capture at least one future
+        # occurrence of each template day, even if today's times have already passed
+        projection_days = 8
 
-        for day_offset in range(projection_weeks * 7):
+        for day_offset in range(projection_days):
             # Calculate target date in UTC
             target_date_utc = now + timedelta(days=day_offset)
 
