@@ -228,18 +228,6 @@ export function DemographicCancerForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {/* Header */}
-      <Heading
-        as="h1"
-        fontFamily="system-ui, -apple-system, sans-serif"
-        fontWeight={600}
-        color={COLORS.veniceBlue}
-        fontSize="28px"
-        mb={8}
-      >
-        First Connection {formType === 'participant' ? 'Participant' : 'Volunteer'} Form
-      </Heading>
-
       {/* Progress Bar */}
       <Box mb={10}>
         <HStack gap={3}>
@@ -770,18 +758,6 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {/* Header */}
-      <Heading
-        as="h1"
-        fontFamily="system-ui, -apple-system, sans-serif"
-        fontWeight={600}
-        color={COLORS.veniceBlue}
-        fontSize="28px"
-        mb={8}
-      >
-        First Connection {formType === 'participant' ? 'Participant' : 'Volunteer'} Form
-      </Heading>
-
       {/* Progress Bar */}
       <Box mb={10}>
         <HStack gap={3}>

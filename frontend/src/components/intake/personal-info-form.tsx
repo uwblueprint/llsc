@@ -109,25 +109,8 @@ export function PersonalInfoForm({
     onSubmit(experienceData, personalData);
   };
 
-  const formTitle =
-    formType === 'participant'
-      ? 'First Connection Participant Form'
-      : 'First Connection Volunteer Form';
-
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
-      {/* Header */}
-      <Heading
-        as="h1"
-        fontFamily="system-ui, -apple-system, sans-serif"
-        fontWeight={600}
-        color={COLORS.veniceBlue}
-        fontSize="28px"
-        mb={8}
-      >
-        {formTitle}
-      </Heading>
-
       {/* Progress Bar */}
       <Box mb={10}>
         <HStack gap={3}>

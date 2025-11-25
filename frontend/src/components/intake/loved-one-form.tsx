@@ -112,18 +112,6 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
-      {/* Header */}
-      <Heading
-        as="h1"
-        fontFamily="system-ui, -apple-system, sans-serif"
-        fontWeight={600}
-        color={COLORS.veniceBlue}
-        fontSize="28px"
-        mb={8}
-      >
-        First Connection {formType === 'participant' ? 'Participant' : 'Volunteer'} Form
-      </Heading>
-
       {/* Progress Bar */}
       <Box mb={10}>
         <HStack gap={3}>
