@@ -22,9 +22,11 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
 
   // Update selectedTimeSlots when initialTimeSlots prop changes
   // This makes the component fully controlled by the parent
+  // Use JSON.stringify to avoid infinite loops from array reference changes
   useEffect(() => {
     setSelectedTimeSlots(initialTimeSlots);
-  }, [initialTimeSlots]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(initialTimeSlots)]);
 
   const handleTimeSlotToggle = (day: string, hour: number) => {
     const timeStr = `${hour}:00 - ${hour + 1}:00`;
@@ -123,6 +125,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
   };
 
   const handleMouseDown = (day: string, hour: number) => {
+    console.log('MouseDown:', day, hour, 'readOnly:', readOnly);
     const isSelected = isTimeSlotSelected(day, hour);
     setIsDragging(true);
     setDragValue(!isSelected);

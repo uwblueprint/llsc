@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TimeScheduler from '@/components/dashboard/TimeScheduler';
 import type { TimeSlot } from '@/components/dashboard/types';
-import { useAvailability } from '@/hooks/useAvailability';
 import {
   Box,
   Heading,
@@ -17,12 +16,11 @@ import BloodCancerExperience from '@/components/dashboard/BloodCancerExperience'
 import ActionButton from '@/components/dashboard/EditButton';
 import { COLORS } from '@/constants/form';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserData, updateUserData, TimeBlockResponse } from '@/APIClients/userDataAPIClient';
+import { getUserData, updateUserData, updateMyAvailability, AvailabilityTemplateResponse } from '@/APIClients/userDataAPIClient';
 
 const EditProfile: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
   const [isEditingAvailability, setIsEditingAvailability] = useState(false);
-  const { updateAvailability } = useAvailability();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [savingAvailability, setSavingAvailability] = useState(false);
@@ -52,34 +50,44 @@ const EditProfile: React.FC = () => {
     gender: string;
   } | null>(null);
 
-  // Helper function to convert TimeBlocks back to TimeSlots for the scheduler
-  const convertTimeBlocksToTimeSlots = (timeBlocks: TimeBlockResponse[]): TimeSlot[] => {
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  // Loved one cancer experience state
+  const [lovedOneCancerExperience, setLovedOneCancerExperience] = useState<{
+    diagnosis: string;
+    dateOfDiagnosis: string;
+    treatments: string[];
+    experiences: string[];
+  } | null>(null);
+
+  // Helper function to convert AvailabilityTemplates to TimeSlots for the scheduler
+  const convertTemplatesToTimeSlots = (templates: AvailabilityTemplateResponse[]): TimeSlot[] => {
+    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const timeSlots: TimeSlot[] = [];
-    const processedSlots = new Set<string>(); // Track processed slots to avoid duplicates
 
-    timeBlocks.forEach(block => {
-      const startDate = new Date(block.startTime);
-      const dayOfWeek = startDate.getDay();
-      const dayName = dayNames[dayOfWeek];
-      const hour = startDate.getHours();
+    templates.forEach(template => {
+      const dayName = dayNames[template.dayOfWeek];
 
-      // Create time slot for this hour (e.g., "9:00 - 10:00")
-      const timeStr = `${hour}:00 - ${hour + 1}:00`;
-      const slotKey = `${dayName}-${timeStr}`;
+      // Parse time strings (format: "HH:MM:SS")
+      const parseTime = (timeStr: string): { hour: number; minute: number } => {
+        const parts = timeStr.split(':');
+        return {
+          hour: parseInt(parts[0], 10),
+          minute: parseInt(parts[1], 10),
+        };
+      };
 
-      // Avoid duplicate slots (backend sends 30-min blocks, we need 1-hour slots)
-      if (!processedSlots.has(slotKey)) {
-        processedSlots.add(slotKey);
+      const startTime = parseTime(template.startTime);
+      const endTime = parseTime(template.endTime);
+
+      // Create hourly time slots (TimeScheduler works with 1-hour blocks)
+      for (let hour = startTime.hour; hour < endTime.hour; hour++) {
         timeSlots.push({
           day: dayName,
-          time: timeStr,
+          time: `${hour}:00 - ${hour + 1}:00`,
           selected: true
         });
       }
     });
 
-    console.log('Converted time blocks to slots:', timeSlots);
     return timeSlots;
   };
 
@@ -165,11 +173,19 @@ const EditProfile: React.FC = () => {
               birthday: lovedOneBirthday,
               gender: lovedOneGender
             });
+
+            // Populate loved one cancer experience
+            setLovedOneCancerExperience({
+              diagnosis: userData.lovedOneDiagnosis || 'Not provided',
+              dateOfDiagnosis: userData.lovedOneDateOfDiagnosis || 'Not provided',
+              treatments: userData.lovedOneTreatments || [],
+              experiences: userData.lovedOneExperiences || []
+            });
           }
 
           // Convert and populate availability
           if (userData.availability && userData.availability.length > 0) {
-            const timeSlots = convertTimeBlocksToTimeSlots(userData.availability);
+            const timeSlots = convertTemplatesToTimeSlots(userData.availability);
             setProfileTimeSlots(timeSlots);
           }
         }
@@ -245,6 +261,28 @@ const EditProfile: React.FC = () => {
     }
   };
 
+  // Save handler for loved one treatments
+  const handleSaveLovedOneTreatments = async () => {
+    if (!lovedOneCancerExperience) return;
+    const result = await updateUserData({
+      loved_one_treatments: lovedOneCancerExperience.treatments
+    });
+    if (!result) {
+      alert('Failed to save loved one treatments');
+    }
+  };
+
+  // Save handler for loved one experiences
+  const handleSaveLovedOneExperiences = async () => {
+    if (!lovedOneCancerExperience) return;
+    const result = await updateUserData({
+      loved_one_experiences: lovedOneCancerExperience.experiences
+    });
+    if (!result) {
+      alert('Failed to save loved one experiences');
+    }
+  };
+
   const handleBack = () => {
     router.back();
   };
@@ -263,16 +301,16 @@ const EditProfile: React.FC = () => {
   };
 
   const handleSaveAvailability = async () => {
-    // Convert TimeSlots to TimeRanges for API (same logic as schedule.tsx)
-    const convertToTimeRanges = (timeSlots: TimeSlot[]) => {
+    // Convert TimeSlots to AvailabilityTemplates for API
+    const convertToTemplates = (timeSlots: TimeSlot[]): AvailabilityTemplateResponse[] => {
       const dayToIndex: Record<string, number> = {
-        'Monday': 1,
-        'Tuesday': 2,
-        'Wednesday': 3,
-        'Thursday': 4,
-        'Friday': 5,
-        'Saturday': 6,
-        'Sunday': 0,
+        'Monday': 0,
+        'Tuesday': 1,
+        'Wednesday': 2,
+        'Thursday': 3,
+        'Friday': 4,
+        'Saturday': 5,
+        'Sunday': 6,
       };
 
       const slotsByDay = timeSlots.reduce((acc, slot) => {
@@ -283,7 +321,7 @@ const EditProfile: React.FC = () => {
         return acc;
       }, {} as Record<string, TimeSlot[]>);
 
-      const timeRanges: any[] = [];
+      const templates: AvailabilityTemplateResponse[] = [];
 
       Object.entries(slotsByDay).forEach(([day, slots]) => {
         const sortedSlots = slots.sort((a, b) => {
@@ -292,7 +330,7 @@ const EditProfile: React.FC = () => {
           return aHour - bHour;
         });
 
-        let rangeStart: string | null = null;
+        let rangeStart: number | null = null;
         let lastEndHour = -1;
 
         sortedSlots.forEach((slot, index) => {
@@ -301,61 +339,53 @@ const EditProfile: React.FC = () => {
           const endHour = parseInt(endTimeStr.split(':')[0]);
 
           if (rangeStart === null) {
-            rangeStart = startTimeStr;
+            rangeStart = startHour;
             lastEndHour = endHour;
           } else if (startHour === lastEndHour) {
             lastEndHour = endHour;
           } else {
-            timeRanges.push({
-              start_time: getNextDayOfWeek(dayToIndex[day], rangeStart),
-              end_time: getNextDayOfWeek(dayToIndex[day], `${lastEndHour}:00`),
+            templates.push({
+              dayOfWeek: dayToIndex[day],
+              startTime: `${rangeStart.toString().padStart(2, '0')}:00:00`,
+              endTime: `${lastEndHour.toString().padStart(2, '0')}:00:00`,
             });
-            rangeStart = startTimeStr;
+            rangeStart = startHour;
             lastEndHour = endHour;
           }
 
           if (index === sortedSlots.length - 1) {
-            timeRanges.push({
-              start_time: getNextDayOfWeek(dayToIndex[day], rangeStart!),
-              end_time: getNextDayOfWeek(dayToIndex[day], `${lastEndHour}:00`),
+            templates.push({
+              dayOfWeek: dayToIndex[day],
+              startTime: `${rangeStart!.toString().padStart(2, '0')}:00:00`,
+              endTime: `${lastEndHour.toString().padStart(2, '0')}:00:00`,
             });
           }
         });
       });
 
-      return timeRanges;
-    };
-
-    const getNextDayOfWeek = (dayOfWeek: number, timeStr: string): string => {
-      const [hour] = timeStr.split(':').map(Number);
-      const now = new Date();
-      const currentDay = now.getDay();
-
-      let daysUntilTarget = dayOfWeek - currentDay;
-      if (daysUntilTarget <= 0) {
-        daysUntilTarget += 7;
-      }
-
-      const targetDate = new Date(now);
-      targetDate.setDate(now.getDate() + daysUntilTarget);
-      targetDate.setHours(hour, 0, 0, 0);
-
-      return targetDate.toISOString();
+      return templates;
     };
 
     setSavingAvailability(true);
 
     try {
-      const availableTimes = convertToTimeRanges(profileTimeSlots);
-      console.log('Saving availability with time ranges:', availableTimes);
+      const templates = convertToTemplates(profileTimeSlots);
+      console.log('Saving availability templates:', templates);
 
-      const result = await updateAvailability(availableTimes);
+      const success = await updateMyAvailability(templates);
 
-      if (result) {
-        console.log('✅ Availability updated successfully:', result);
+      if (success) {
+        console.log('✅ Availability updated successfully');
         setIsEditingAvailability(false);
+
+        // Reload user data to refresh the display
+        const userData = await getUserData();
+        if (userData?.availability) {
+          const timeSlots = convertTemplatesToTimeSlots(userData.availability);
+          setProfileTimeSlots(timeSlots);
+        }
       } else {
-        console.error('❌ Failed to update availability - result was null/undefined');
+        console.error('❌ Failed to update availability');
         alert('Failed to save availability. Please try again.');
       }
     } catch (err) {
@@ -421,8 +451,12 @@ const EditProfile: React.FC = () => {
                   <BloodCancerExperience
                     cancerExperience={cancerExperience}
                     setCancerExperience={setCancerExperience}
+                    lovedOneCancerExperience={lovedOneCancerExperience}
+                    setLovedOneCancerExperience={setLovedOneCancerExperience}
                     onEditTreatments={handleSaveTreatments}
                     onEditExperiences={handleSaveExperiences}
+                    onEditLovedOneTreatments={handleSaveLovedOneTreatments}
+                    onEditLovedOneExperiences={handleSaveLovedOneExperiences}
                   />
                   <Box bg="white" p={0} mt="116px" w="100%" h="1000px">
                     <HStack justify="space-between" align="center" mb={0}>

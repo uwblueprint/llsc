@@ -4,6 +4,7 @@ import {
   Text,
   Textarea,
   Button,
+  Flex,
 } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 
@@ -20,6 +21,7 @@ interface ProfileTextInputProps {
   onFocus?: () => void;
   error?: string;
   onBlur?: () => void;
+  icon?: React.ReactNode;
 }
 
 const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
@@ -34,33 +36,39 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
   onFocus,
   error,
   onBlur,
+  icon,
 }) => {
   const styledLabel = (
     <Box>
-      <Box
-        w="100%"
+      <Flex
+        align="center"
+        gap={2}
         h="30px"
-        fontSize="1rem"
-        fontWeight={600}
-        lineHeight="30px"
-        letterSpacing="0%"
-        color="#1D3448"
-        fontFamily="'Open Sans', sans-serif"
         mb={2}
       >
-        {label}
-      </Box>
+        {icon && <Box display="flex" alignItems="center">{icon}</Box>}
+        <Box
+          fontSize="1rem"
+          fontWeight={600}
+          lineHeight="30px"
+          letterSpacing="0%"
+          color="#1D3448"
+          fontFamily="'Open Sans', sans-serif"
+        >
+          {label}
+        </Box>
+      </Flex>
       {helperText && (
-        <Text 
+        <Text
           w="580px"
           h="22px"
-          fontSize="16px" 
+          fontSize="16px"
           fontWeight={400}
           lineHeight="100%"
           letterSpacing="0%"
-          color="#495D6C" 
-          fontFamily="'Open Sans', sans-serif" 
-          mt={1} 
+          color="#495D6C"
+          fontFamily="'Open Sans', sans-serif"
+          mt={1}
           mb={2}
         >
           {helperText}

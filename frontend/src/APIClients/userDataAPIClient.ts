@@ -1,9 +1,10 @@
 import baseAPIClient from './baseAPIClient';
 import { getCurrentUserId, getAuthHeaders } from '../utils/AuthUtils';
 
-export interface TimeBlockResponse {
-    id: number;
-    startTime: string; // ISO datetime string (camelCase after conversion)
+export interface AvailabilityTemplateResponse {
+    dayOfWeek: number; // 0=Monday, 1=Tuesday, ..., 6=Sunday
+    startTime: string; // Time string in format "HH:MM:SS"
+    endTime: string; // Time string in format "HH:MM:SS"
 }
 
 export interface UserDataResponse {
@@ -45,7 +46,7 @@ export interface UserDataResponse {
     caringForSomeone?: boolean;
 
     // Availability
-    availability?: TimeBlockResponse[];
+    availability?: AvailabilityTemplateResponse[];
 }
 
 export interface FormSubmissionResponse {
@@ -98,5 +99,39 @@ export const updateUserData = async (userData: Partial<UserDataResponse>): Promi
     } catch (error) {
         console.error('Error updating user data:', error);
         return null;
+    }
+};
+
+// Update current user's availability
+export const updateMyAvailability = async (templates: AvailabilityTemplateResponse[]): Promise<boolean> => {
+    try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+            throw new Error('User not authenticated');
+        }
+
+        const headers = getAuthHeaders();
+
+        // Convert to backend format (camelCase to snake_case)
+        const backendTemplates = templates.map(t => ({
+            day_of_week: t.dayOfWeek,
+            start_time: t.startTime,
+            end_time: t.endTime,
+        }));
+
+        // Call the PUT /availability endpoint
+        await baseAPIClient.put(
+            `/availability`,
+            {
+                user_id: userId,
+                templates: backendTemplates,
+            },
+            { headers }
+        );
+
+        return true;
+    } catch (error) {
+        console.error('Error updating availability:', error);
+        return false;
     }
 };

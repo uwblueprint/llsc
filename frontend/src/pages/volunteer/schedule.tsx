@@ -12,29 +12,29 @@ import { useRouter } from 'next/router';
 import { BiArrowBack } from 'react-icons/bi';
 import TimeScheduler from '@/components/dashboard/TimeScheduler';
 import type { TimeSlot } from '@/components/dashboard/types';
-import { useAvailability } from '@/hooks/useAvailability';
-import type { TimeRange } from '@/types/AvailabilityTypes';
+import { createAvailability, AvailabilityTemplate } from '@/APIClients/authAPIClient';
+import { getCurrentUserId } from '@/utils/AuthUtils';
 
 const SchedulePage: React.FC = () => {
   const router = useRouter();
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([]);
   const [additionalInfo, setAdditionalInfo] = useState('');
-  const { createAvailability, loading, error } = useAvailability();
+  const [loading, setLoading] = useState(false);
 
   const handleTimeSlotsChange = (timeSlots: TimeSlot[]) => {
     setSelectedTimeSlots(timeSlots);
   };
 
-  // Convert TimeSlots to TimeRanges for API
-  const convertToTimeRanges = (timeSlots: TimeSlot[]): TimeRange[] => {
+  // Convert TimeSlots to AvailabilityTemplates for API (same logic as admin profile)
+  const convertToTemplates = (timeSlots: TimeSlot[]): AvailabilityTemplate[] => {
     const dayToIndex: Record<string, number> = {
-      'Monday': 1,
-      'Tuesday': 2,
-      'Wednesday': 3,
-      'Thursday': 4,
-      'Friday': 5,
-      'Saturday': 6,
-      'Sunday': 0,
+      'Monday': 0,
+      'Tuesday': 1,
+      'Wednesday': 2,
+      'Thursday': 3,
+      'Friday': 4,
+      'Saturday': 5,
+      'Sunday': 6,
     };
 
     // Group slots by day
@@ -46,9 +46,9 @@ const SchedulePage: React.FC = () => {
       return acc;
     }, {} as Record<string, TimeSlot[]>);
 
-    const timeRanges: TimeRange[] = [];
+    const templates: AvailabilityTemplate[] = [];
 
-    // For each day, sort slots and combine contiguous hours into ranges
+    // For each day, sort slots and combine contiguous hours into templates
     Object.entries(slotsByDay).forEach(([day, slots]) => {
       // Sort slots by start hour
       const sortedSlots = slots.sort((a, b) => {
@@ -74,9 +74,10 @@ const SchedulePage: React.FC = () => {
           lastEndHour = endHour;
         } else {
           // Non-contiguous, save current range and start new one
-          timeRanges.push({
-            start_time: getNextDayOfWeek(dayToIndex[day], rangeStart),
-            end_time: getNextDayOfWeek(dayToIndex[day], `${lastEndHour}:00`),
+          templates.push({
+            dayOfWeek: dayToIndex[day],
+            startTime: `${rangeStart}:00`,
+            endTime: `${lastEndHour}:00:00`,
           });
           rangeStart = startTimeStr;
           lastEndHour = endHour;
@@ -84,34 +85,16 @@ const SchedulePage: React.FC = () => {
 
         // If this is the last slot, save the range
         if (index === sortedSlots.length - 1) {
-          timeRanges.push({
-            start_time: getNextDayOfWeek(dayToIndex[day], rangeStart!),
-            end_time: getNextDayOfWeek(dayToIndex[day], `${lastEndHour}:00`),
+          templates.push({
+            dayOfWeek: dayToIndex[day],
+            startTime: `${rangeStart}:00`,
+            endTime: `${lastEndHour}:00:00`,
           });
         }
       });
     });
 
-    return timeRanges;
-  };
-
-  // Get the next occurrence of a day of the week as ISO string
-  const getNextDayOfWeek = (dayOfWeek: number, timeStr: string): string => {
-    const [hour] = timeStr.split(':').map(Number);
-    const now = new Date();
-    const currentDay = now.getDay();
-
-    // Calculate days until target day
-    let daysUntilTarget = dayOfWeek - currentDay;
-    if (daysUntilTarget <= 0) {
-      daysUntilTarget += 7; // Go to next week
-    }
-
-    const targetDate = new Date(now);
-    targetDate.setDate(now.getDate() + daysUntilTarget);
-    targetDate.setHours(hour, 0, 0, 0);
-
-    return targetDate.toISOString();
+    return templates;
   };
 
   const handleSend = async () => {
@@ -120,13 +103,30 @@ const SchedulePage: React.FC = () => {
       return;
     }
 
-    const timeRanges = convertToTimeRanges(selectedTimeSlots);
-    const result = await createAvailability(timeRanges);
+    setLoading(true);
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) {
+        alert('User not authenticated. Please log in again.');
+        return;
+      }
 
-    if (result) {
-      router.push('/volunteer/edit-profile');
-    } else {
-      alert(error || 'Failed to save availability. Please try again.');
+      const templates = convertToTemplates(selectedTimeSlots);
+      const result = await createAvailability({
+        userId,
+        templates,
+      });
+
+      if (result) {
+        router.push('/volunteer/edit-profile');
+      } else {
+        alert('Failed to save availability. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error saving availability:', error);
+      alert('Failed to save availability. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -176,6 +176,7 @@ const SchedulePage: React.FC = () => {
             <TimeScheduler
               showAvailability={false}
               onTimeSlotsChange={handleTimeSlotsChange}
+              readOnly={false}
             />
           </Box>
 

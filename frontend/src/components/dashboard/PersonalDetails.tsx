@@ -10,6 +10,7 @@ import {
   Textarea,
   Button,
 } from '@chakra-ui/react';
+import { FiHeart } from 'react-icons/fi';
 import ProfileTextInput from './ProfileTextInput';
 import ProfileDropdown from './ProfileDropdown';
 import ProfileHeader from './ProfileHeader';
@@ -357,6 +358,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 onBlur={() => handleBlur('lovedOneBirthday')}
                 error={errors.lovedOneBirthday}
                 placeholder="DD/MM/YYYY"
+                icon={<FiHeart size={14} color="#1D3448" />}
               />
               {editingField === 'lovedOneBirthday' && (
                 <Box mt={2} display="flex" justifyContent="flex-end">
@@ -386,6 +388,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 value={lovedOneDetails.gender}
                 onChange={(e) => setLovedOneDetails && setLovedOneDetails(prev => prev ? ({ ...prev, gender: e.target.value }) : null)}
                 options={GENDER_DROPDOWN_OPTIONS}
+                icon={<FiHeart size={14} color="#1D3448" />}
               />
             </VStack>
           </Flex>
