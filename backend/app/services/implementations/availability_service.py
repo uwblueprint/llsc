@@ -122,44 +122,66 @@ class AvailabilityService:
         """
         Completely replaces user's availability with the provided time slots.
         Deletes all existing availability first, then creates new ones.
+        Uses the same logic as create_availability.
         """
         try:
-            user: User = self.db.query(User).filter(User.id == req.user_id).one()
+            user_id = req.user_id
+            # Verify user exists
+            self.db.query(User).filter_by(id=user_id).one()
 
-            # Delete all existing availability for this user
-            existing_blocks = (
-                self.db.query(TimeBlock)
-                .join(available_times, TimeBlock.id == available_times.c.time_block_id)
-                .filter(available_times.c.user_id == user.id)
-                .all()
-            )
+            # Delete all existing templates for this user
+            self.db.query(AvailabilityTemplate).filter_by(user_id=user_id).delete()
 
-            for block in existing_blocks:
-                self.db.delete(block)
-
-            self.db.flush()
-
-            # Now create new availability
+            # Track templates we've seen to avoid duplicates
+            seen_templates = set()
             added = 0
-            for time_range in req.available_times:
-                start_time = time_range.start_time
-                end_time = time_range.end_time
 
-                # create timeblocks (0.5 hr) with 30 min spacing
-                current_start_time = start_time
-                while current_start_time < end_time:
-                    time_block = TimeBlock(start_time=current_start_time)
-                    user.availability.append(time_block)
-                    added += 1
+            for template_slot in req.templates:
+                # Validate day_of_week
+                if not (0 <= template_slot.day_of_week <= 6):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Invalid day_of_week: {template_slot.day_of_week}. Must be 0-6 (Monday-Sunday)",
+                    )
 
-                    # update current time by 30 minutes for the next block
-                    current_start_time += timedelta(hours=0.5)
+                # Validate time range
+                if template_slot.end_time <= template_slot.start_time:
+                    raise HTTPException(status_code=400, detail="end_time must be after start_time")
+
+                # Create template for each 30-minute block in the range
+                current_time = template_slot.start_time
+                end_time = template_slot.end_time
+
+                while current_time < end_time:
+                    # Calculate next 30-minute increment
+                    next_time = self._add_minutes(current_time, 30)
+                    if next_time > end_time:
+                        next_time = end_time
+
+                    template_key = (template_slot.day_of_week, current_time)
+
+                    if template_key not in seen_templates:
+                        template = AvailabilityTemplate(
+                            user_id=user_id,
+                            day_of_week=template_slot.day_of_week,
+                            start_time=current_time,
+                            end_time=next_time,
+                            is_active=True,
+                        )
+                        self.db.add(template)
+                        seen_templates.add(template_key)
+                        added += 1
+
+                    current_time = next_time
 
             self.db.flush()
-            validated_data = CreateAvailabilityResponse.model_validate({"user_id": req.user_id, "added": added})
+            validated_data = CreateAvailabilityResponse.model_validate({"user_id": user_id, "added": added})
             self.db.commit()
             return validated_data
 
+        except HTTPException:
+            self.db.rollback()
+            raise
         except Exception as e:
             self.db.rollback()
             self.logger.error(f"Error updating availability for user {req.user_id}: {e}")

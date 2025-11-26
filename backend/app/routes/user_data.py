@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.middleware.auth import has_roles
 from app.models import Experience, Treatment, User, UserData
+from app.schemas.availability import AvailabilityTemplateSlot
 from app.schemas.user import UserRole
 from app.utilities.db_utils import get_db
 
@@ -32,10 +33,11 @@ class ExperienceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class TimeBlockResponse(BaseModel):
-    """Response schema for a time block"""
-    id: int
-    start_time: str
+class AvailabilityTemplateResponse(BaseModel):
+    """Response schema for availability template"""
+    day_of_week: int  # 0=Monday, 1=Tuesday, ..., 6=Sunday
+    start_time: str  # Time string in format "HH:MM:SS"
+    end_time: str  # Time string in format "HH:MM:SS"
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -81,8 +83,8 @@ class UserDataResponse(BaseModel):
     has_blood_cancer: Optional[bool] = None
     caring_for_someone: Optional[bool] = None
 
-    # Availability (list of time blocks)
-    availability: List[TimeBlockResponse] = []
+    # Availability (list of availability templates)
+    availability: List[AvailabilityTemplateResponse] = []
 
 
 # ===== Endpoints =====
@@ -117,10 +119,15 @@ async def get_my_user_data(
         if not user_data:
             raise HTTPException(status_code=404, detail="User data not found")
 
-        # Get Availability (time blocks) for current user
-        availability_time_blocks = [
-            TimeBlockResponse(id=tb.id, start_time=tb.start_time.isoformat())
-            for tb in current_user.availability
+        # Get Availability templates for current user (only active ones)
+        availability_templates = [
+            AvailabilityTemplateResponse(
+                day_of_week=template.day_of_week,
+                start_time=template.start_time.isoformat(),
+                end_time=template.end_time.isoformat()
+            )
+            for template in current_user.availability_templates
+            if template.is_active
         ]
 
         # Build response with all fields and resolved relationships
@@ -162,7 +169,7 @@ async def get_my_user_data(
             has_blood_cancer=user_data.has_blood_cancer,
             caring_for_someone=user_data.caring_for_someone,
             # Availability
-            availability=availability_time_blocks,
+            availability=availability_templates,
         )
 
         return response
@@ -303,8 +310,14 @@ async def update_my_user_data(
         db.refresh(user_data)
 
         # Return updated data using the same logic as GET
-        availability_time_blocks = [
-            TimeBlockResponse(id=tb.id, start_time=tb.start_time.isoformat()) for tb in current_user.availability
+        availability_templates = [
+            AvailabilityTemplateResponse(
+                day_of_week=template.day_of_week,
+                start_time=template.start_time.isoformat(),
+                end_time=template.end_time.isoformat()
+            )
+            for template in current_user.availability_templates
+            if template.is_active
         ]
 
         response = UserDataResponse(
@@ -337,7 +350,7 @@ async def update_my_user_data(
             loved_one_experiences=[experience.name for experience in user_data.loved_one_experiences],
             has_blood_cancer=user_data.has_blood_cancer,
             caring_for_someone=user_data.caring_for_someone,
-            availability=availability_time_blocks,
+            availability=availability_templates,
         )
 
         return response
