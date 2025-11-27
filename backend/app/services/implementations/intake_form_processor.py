@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple
 
 from sqlalchemy.orm import Session
 
-from app.models import Experience, FormStatus, Treatment, User, UserData
+from app.models import Experience, FormStatus, Language, Treatment, User, UserData
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +86,8 @@ class IntakeFormProcessor:
 
             if "additional_info" in form_data:
                 user_data.additional_info = self._trim_text(form_data.get("additional_info"))
+            # Update language for owning user
+            owning_user.language = form_data.get("language", Language.ENGLISH)
 
             # Commit all changes
             self.db.commit()

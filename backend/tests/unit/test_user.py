@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from app.models import Role
-from app.models.User import FormStatus, User
+from app.models.User import FormStatus, Language, User
 from app.schemas.user import (
     SignUpMethod,
     UserCreateRequest,
@@ -144,6 +144,7 @@ async def test_create_user_service(mock_firebase_auth, db_session):
         assert created_user.role_id == 1
         assert created_user.auth_id == "test_firebase_uid"
         assert created_user.form_status == FormStatus.INTAKE_TODO
+        assert created_user.language == Language.ENGLISH
 
         # Assert database state
         db_user = db_session.query(User).filter_by(email="test@example.com").first()
@@ -151,6 +152,7 @@ async def test_create_user_service(mock_firebase_auth, db_session):
         assert db_user.auth_id == "test_firebase_uid"
         assert db_user.role_id == 1
         assert db_user.form_status == FormStatus.INTAKE_TODO
+        assert db_user.language == Language.ENGLISH
 
         db_session.commit()  # Commit successful test
     except Exception:
@@ -183,6 +185,7 @@ async def test_create_user_with_google(mock_firebase_auth, db_session):
         assert created_user.role_id == 1
         assert created_user.auth_id == "test_firebase_uid"
         assert created_user.form_status == FormStatus.INTAKE_TODO
+        assert created_user.language == Language.ENGLISH
 
         # Assert database state
         db_user = db_session.query(User).filter_by(email="google@example.com").first()
@@ -190,6 +193,7 @@ async def test_create_user_with_google(mock_firebase_auth, db_session):
         assert db_user.auth_id == "test_firebase_uid"
         assert db_user.role_id == 1
         assert db_user.form_status == FormStatus.INTAKE_TODO
+        assert db_user.language == Language.ENGLISH
 
         db_session.commit()  # Commit successful test
     except Exception:
@@ -213,10 +217,12 @@ async def test_create_admin_user_sets_completed_status(mock_firebase_auth, db_se
         created_user = await user_service.create_user(user_data)
 
         assert created_user.form_status == FormStatus.COMPLETED
+        assert created_user.language == Language.ENGLISH
 
         db_user = db_session.query(User).filter_by(email="admin@example.com").first()
         assert db_user is not None
         assert db_user.form_status == FormStatus.COMPLETED
+        assert db_user.language == Language.ENGLISH
 
         db_session.commit()
     except Exception:

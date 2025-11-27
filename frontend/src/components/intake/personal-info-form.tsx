@@ -11,6 +11,40 @@ import { useRouter } from 'next/router';
 import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
 import { Checkbox } from '@/components/ui/checkbox';
 
+// Reusable Select component to replace inline styling
+type StyledSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
+  children: React.ReactNode;
+  error?: boolean;
+};
+
+const StyledSelect = React.forwardRef<HTMLSelectElement, StyledSelectProps>(
+  ({ children, error, style, ...props }, ref) => (
+    <select
+      ref={ref}
+      {...props}
+      style={{
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontSize: '14px',
+        color: COLORS.veniceBlue,
+        borderColor: error ? '#ef4444' : '#d1d5db',
+        borderRadius: '6px',
+        height: '40px',
+        width: '100%',
+        padding: '0 12px',
+        border: '1px solid',
+        outline: 'none',
+        backgroundColor: 'white',
+        textAlign: 'left',
+        direction: 'ltr',
+        ...(style || {}),
+      }}
+    >
+      {children}
+    </select>
+  ),
+);
+StyledSelect.displayName = 'StyledSelect';
+
 interface PersonalInfoFormData {
   hasBloodCancer: 'yes' | 'no' | '';
   caringForSomeone: 'yes' | 'no' | '';
