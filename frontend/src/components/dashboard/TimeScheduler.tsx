@@ -193,12 +193,13 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
             fontWeight="normal"
             fontSize={["md", "lg"]}
             fontFamily="'Open Sans', sans-serif"
+            textAlign="center"
           >
             {day}
           </Box>
         ))}
         {showAvailability && (
-          <Box w="220px" />
+          <Box w="220px" ml={6} />
         )}
       </Box>
 

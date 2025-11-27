@@ -458,7 +458,7 @@ const EditProfile: React.FC = () => {
                     onEditLovedOneTreatments={handleSaveLovedOneTreatments}
                     onEditLovedOneExperiences={handleSaveLovedOneExperiences}
                   />
-                  <Box bg="white" p={0} mt="116px" w="100%" h="1000px">
+                  <Box bg="white" p={0} mt="116px" w="100%" h="1100px" pb={12}>
                     <HStack justify="space-between" align="center" mb={0}>
                       <Heading 
                         w="519px"
@@ -542,7 +542,7 @@ const EditProfile: React.FC = () => {
                       We require that availability be provided in sessions of at least 2 hours.
                     </Text>
 
-                    <Box h="800px" w="100%" mr={0}>
+                    <Box h="900px" w="100%" mr={0}>
                       <TimeScheduler
                         showAvailability={true}
                         onTimeSlotsChange={handleTimeSlotsChange}

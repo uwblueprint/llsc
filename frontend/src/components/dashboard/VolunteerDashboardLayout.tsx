@@ -9,7 +9,6 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 
-import { COLORS } from '@/constants/form';
 import { Avatar } from '@/components/ui/avatar';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
 
@@ -19,16 +18,12 @@ interface VolunteerDashboardLayoutProps {
 
 export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> = ({ children }) => {
   const [userName, setUserName] = useState('');
-  const [userInitials, setUserInitials] = useState('');
 
   useEffect(() => {
     const user = getCurrentUser();
     if (user) {
       const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
       setUserName(fullName || user.email);
-      
-      const initials = `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase();
-      setUserInitials(initials || user.email?.charAt(0).toUpperCase() || '?');
     }
   }, []);
   
@@ -83,17 +78,13 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
         overflow="visible"
       >
         {/* Logo */}
-        <Box mb={0} w="100%" display="flex" alignItems="center" justifyContent="center">
-          <Image 
-            src="/logo.png" 
-            alt="Leukemia & Lymphoma Society of Canada" 
-            width="220px"
-            height="150px"
+        <Box mb={0} w="100%" display="flex" alignItems="center" justifyContent="flex-start" pl={4}>
+          <Image
+            src="/llsc-logo.png"
+            alt="Leukemia & Lymphoma Society of Canada"
+            w="220px"
+            h="150px"
             objectFit="contain"
-            onError={(e) => {
-              console.log('Logo failed to load:', e);
-              e.currentTarget.style.display = 'none';
-            }}
           />
         </Box>
 

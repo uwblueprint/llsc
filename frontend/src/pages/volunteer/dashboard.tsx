@@ -5,34 +5,21 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { useRouter } from 'next/router';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
 import ProfileCard from '@/components/dashboard/ProfileCard';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
-import { useAvailability } from '@/hooks/useAvailability';
 
 const VolunteerDashboardPage: React.FC = () => {
-  const router = useRouter();
   const [userName, setUserName] = useState('');
   const [matchedParticipants, setMatchedParticipants] = useState([]);
-  const { getAvailability } = useAvailability();
 
   useEffect(() => {
-    const checkAvailabilityAndLoadData = async () => {
+    const loadData = async () => {
       // Get current user name
       const user = getCurrentUser();
       if (user) {
         const firstName = user.firstName || '';
         setUserName(firstName);
-      }
-
-      // Check if user has set availability, if not redirect to schedule page
-      const availability = await getAvailability();
-      const hasSetAvailability = availability && availability.available_times && availability.available_times.length > 0;
-
-      if (!hasSetAvailability) {
-        router.push('/volunteer/schedule');
-        return;
       }
 
       // TODO: Fetch matched participants from API
@@ -47,8 +34,8 @@ const VolunteerDashboardPage: React.FC = () => {
       // fetchMatches();
     };
 
-    checkAvailabilityAndLoadData();
-  }, [router, getAvailability]);
+    loadData();
+  }, []);
 
   return (
     <VolunteerDashboardLayout>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Heading,
   Text,
   HStack,
   Stack,
@@ -335,18 +334,6 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
             borderBottom="1px solid"
             borderColor="#E5E7EB"
           />
-
-          <Heading
-            fontSize="1.625rem"
-            fontWeight={600}
-            lineHeight="40px"
-            letterSpacing="0%"
-            color="#1D3448"
-            fontFamily="'Open Sans', sans-serif"
-            mb={8}
-          >
-            Your Loved One's Personal Details
-          </Heading>
 
           <Flex gap="6.5%" mt="32px" align="start">
             <VStack gap={8} flex="1" align="stretch">

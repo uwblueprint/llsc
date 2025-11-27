@@ -72,7 +72,6 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
   const [otherTreatment, setOtherTreatment] = useState('');
   const [otherExperience, setOtherExperience] = useState('');
   const [otherLovedOneTreatment, setOtherLovedOneTreatment] = useState('');
-  const [otherLovedOneExperience, setOtherLovedOneExperience] = useState('');
 
   const handleTreatmentToggle = (treatment: string) => {
     setCancerExperience(prev => ({
@@ -130,9 +129,12 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
 
   // Use treatment options directly (now includes "Other")
   const treatmentOptionsWithOther = TREATMENT_OPTIONS;
-  
-  // Create experience options with "Other" option  
+
+  // Create experience options with "Other" option for user's own experiences
   const experienceOptionsWithOther = [...EXPERIENCE_OPTIONS, 'Other'];
+
+  // For loved one experiences, use only the options from the database (no "Other")
+  const lovedOneExperienceOptions = [...EXPERIENCE_OPTIONS];
 
   return (
     <Box bg="white" p={0} mt="116px" minH="288px">
@@ -355,7 +357,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
 
       {/* Loved One's Blood Cancer Experience */}
       {lovedOneCancerExperience && (
-        <VStack gap={8} mt="116px" align="stretch">
+        <VStack gap={8} mt={12} align="stretch">
           <Box
             borderBottom="1px solid"
             borderColor="#E5E7EB"
@@ -617,46 +619,35 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                       You can select a <Text as="span" fontWeight={700}>maximum of 5</Text>.
                     </Text>
                   </Box>
-                  {experienceOptionsWithOther.map((experience) => {
+                  {lovedOneExperienceOptions.map((experience) => {
                     const isSelected = lovedOneCancerExperience.experiences.includes(experience);
                     const isDisabled = !isSelected && lovedOneCancerExperience.experiences.length >= 5;
 
                     return (
-                      <VStack key={experience} align="start" gap={2}>
-                        <HStack
-                          align="center"
-                          gap={2}
-                          cursor={isDisabled ? 'not-allowed' : 'pointer'}
-                          opacity={isDisabled ? 0.5 : 1}
-                          onClick={() => !isDisabled && handleLovedOneExperienceToggle(experience)}
+                      <HStack
+                        key={experience}
+                        align="center"
+                        gap={2}
+                        cursor={isDisabled ? 'not-allowed' : 'pointer'}
+                        opacity={isDisabled ? 0.5 : 1}
+                        onClick={() => !isDisabled && handleLovedOneExperienceToggle(experience)}
+                      >
+                        <Checkbox
+                          checked={isSelected}
+                          disabled={isDisabled}
+                          onChange={() => handleLovedOneExperienceToggle(experience)}
+                        />
+                        <Text
+                          fontSize="16px"
+                          fontWeight={400}
+                          lineHeight="100%"
+                          letterSpacing="0%"
+                          color="#495D6C"
+                          fontFamily="'Open Sans', sans-serif"
                         >
-                          <Checkbox
-                            checked={isSelected}
-                            disabled={isDisabled}
-                            onChange={() => handleLovedOneExperienceToggle(experience)}
-                          />
-                          <Text
-                            fontSize="16px"
-                            fontWeight={400}
-                            lineHeight="100%"
-                            letterSpacing="0%"
-                            color="#495D6C"
-                            fontFamily="'Open Sans', sans-serif"
-                          >
-                            {experience}
-                          </Text>
-                        </HStack>
-                        {experience === 'Other' && isSelected && (
-                          <Box ml={6}>
-                            <ProfileTextInput
-                              label=""
-                              value={otherLovedOneExperience}
-                              onChange={(e) => setOtherLovedOneExperience(e.target.value)}
-                              placeholder="Please specify..."
-                            />
-                          </Box>
-                        )}
-                      </VStack>
+                          {experience}
+                        </Text>
+                      </HStack>
                     );
                   })}
                 </VStack>
