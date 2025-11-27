@@ -13,8 +13,8 @@ const Badge: React.FC<BadgeProps> = ({
   icon,
   iconSrc,
   children,
-  bgColor = "#F5F5F5",
-  textColor = "#6B7280"
+  bgColor = "rgba(179, 206, 209, 0.3)",
+  textColor = "#056067"
 }) => {
   return (
     <Box

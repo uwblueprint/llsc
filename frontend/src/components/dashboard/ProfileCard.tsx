@@ -19,6 +19,7 @@ interface ProfileCardProps {
     timezone: string;
     diagnosis: string;
     treatments: string[];
+    experiences?: string[];
     initials: string;
   };
   time?: Date;
@@ -56,10 +57,10 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
           >
             {formatTime(time)}
           </Text>
-          <Box 
-            w="4px" 
-            h="314px" 
-            bg="#5F989D" 
+          <Box
+            w="4px"
+            h="371px"
+            bg="#5F989D"
             borderRadius="11px"
           />
         </HStack>
@@ -89,9 +90,9 @@ const ProfileCardContent: React.FC<{
   onViewContact?: () => void;
 }> = ({ participant, onScheduleCall, onViewContact }) => {
   return (
-    <Box 
+    <Box
       w="675px"
-      h="314px"
+      h="371px"
       border="1px solid #D5D7DA"
       borderRadius="8px"
       bg="white"
@@ -153,7 +154,7 @@ const ProfileCardContent: React.FC<{
 
         {/* Treatment Information - Left aligned to the box */}
         <Box mt={4}>
-          <Text 
+          <Text
             fontSize="1.125rem"
             fontWeight={600}
             color="#1D3448"
@@ -164,22 +165,46 @@ const ProfileCardContent: React.FC<{
           >
             Treatment Information
           </Text>
-          <HStack gap={4} wrap="wrap">
+          <HStack gap={2} wrap="wrap">
             {participant.treatments.map((treatment: string, index: number) => (
-              <Text 
+              <Badge
                 key={index}
-                fontSize="1rem"
-                fontWeight={400}
-                color="#495D6C"
-                fontFamily="'Open Sans', sans-serif"
-                lineHeight="100%"
-                letterSpacing="0%"
+                bgColor="#EEF4FF"
+                textColor="#3538CD"
               >
-                • {treatment}
-              </Text>
+                {treatment}
+              </Badge>
             ))}
           </HStack>
         </Box>
+
+        {/* Experience Information */}
+        {participant.experiences && participant.experiences.length > 0 && (
+          <Box mt={4}>
+            <Text
+              fontSize="1.125rem"
+              fontWeight={600}
+              color="#1D3448"
+              fontFamily="'Open Sans', sans-serif"
+              lineHeight="1.875rem"
+              letterSpacing="0%"
+              mb="16px"
+            >
+              Experience Information
+            </Text>
+            <HStack gap={2} wrap="wrap">
+              {participant.experiences.map((experience: string, index: number) => (
+                <Badge
+                  key={index}
+                  bgColor="#FDF2FA"
+                  textColor="#C11574"
+                >
+                  {experience}
+                </Badge>
+              ))}
+            </HStack>
+          </Box>
+        )}
       </VStack>
 
       {/* Action Button - Positioned at bottom */}
