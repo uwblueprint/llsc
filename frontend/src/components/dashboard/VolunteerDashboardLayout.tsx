@@ -11,6 +11,7 @@ import { useRouter } from 'next/router';
 
 import { Avatar } from '@/components/ui/avatar';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
+import EditProfileModal from './EditProfileModal';
 
 interface VolunteerDashboardLayoutProps {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ interface VolunteerDashboardLayoutProps {
 
 export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> = ({ children }) => {
   const [userName, setUserName] = useState('');
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -26,7 +28,11 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
       setUserName(fullName || user.email);
     }
   }, []);
-  
+
+  useEffect(() => {
+    console.log('isEditProfileOpen changed to:', isEditProfileOpen);
+  }, [isEditProfileOpen]);
+
   const router = useRouter();
   const currentPath = router.asPath;
 
@@ -45,15 +51,9 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
     },
     {
       icon: '/icons/calendar.png',
-      label: 'Match History',
-      path: '/volunteer/dashboard/match-history',
-      isActive: currentPath === '/volunteer/dashboard/match-history'
-    },
-    {
-      icon: '/icons/info.png',
-      label: 'FAQs',
-      path: '/volunteer/dashboard/faqs',
-      isActive: currentPath === '/volunteer/dashboard/faqs'
+      label: 'Contact',
+      path: '/volunteer/dashboard/contact',
+      isActive: currentPath === '/volunteer/dashboard/contact'
     }
   ];
 
@@ -133,7 +133,15 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
         top="80px"
         right="80px"
         cursor="pointer"
-        onClick={() => handleNavigation('/volunteer/dashboard/edit-profile')}
+        zIndex={10000}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Avatar clicked!');
+          setIsEditProfileOpen(true);
+        }}
+        _hover={{ opacity: 0.8 }}
+        transition="opacity 0.2s"
       >
         <Avatar
           name={userName}
@@ -150,6 +158,12 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
           {children}
         </Box>
       </Box>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+      />
     </Box>
   );
 };
