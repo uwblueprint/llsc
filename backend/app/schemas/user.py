@@ -50,6 +50,11 @@ class FormStatus(str, Enum):
     REJECTED = "rejected"
 
 
+class Language(str, Enum):
+    ENGLISH = "en"
+    FRENCH = "fr"
+
+
 class UserBase(BaseModel):
     """
     Base schema for user model with common attributes shared across schemas.
@@ -107,6 +112,7 @@ class UserUpdateRequest(BaseModel):
     role: Optional[UserRole] = None
     approved: Optional[bool] = None
     form_status: Optional[FormStatus] = None
+    language: Optional[Language] = None
 
 
 class UserCreateResponse(BaseModel):
@@ -122,6 +128,7 @@ class UserCreateResponse(BaseModel):
     auth_id: str
     approved: bool
     form_status: FormStatus
+    language: Language
 
     # from_attributes enables automatic mapping from SQLAlchemy model to Pydantic model
     model_config = ConfigDict(from_attributes=True)
@@ -145,6 +152,7 @@ class UserResponse(BaseModel):
     user_data: Optional[UserDataResponse] = None
     volunteer_data: Optional[VolunteerDataResponse] = None
     availability: List[AvailabilityTemplateSlot] = []
+    language: Language
 
     model_config = ConfigDict(from_attributes=True)
 

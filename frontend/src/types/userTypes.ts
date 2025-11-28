@@ -74,6 +74,7 @@ export interface UserResponse {
   approved: boolean;
   active: boolean;
   formStatus: string;
+  language: string;
   role: {
     id: number;
     name: string;
