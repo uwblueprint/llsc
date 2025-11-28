@@ -1,5 +1,5 @@
+from datetime import datetime as dt
 from typing import List, Optional
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict
@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from app.middleware.auth import has_roles
 from app.models import Experience, Treatment, User, UserData
-from app.schemas.availability import AvailabilityTemplateSlot
 from app.schemas.user import UserRole
 from app.utilities.db_utils import get_db
 
@@ -194,8 +193,6 @@ async def update_my_user_data(
     Handles both simple fields and many-to-many relationships (treatments, experiences).
     """
     try:
-        from datetime import datetime as dt
-
         # Get current user from auth middleware
         current_user_auth_id = request.state.user_id
         current_user = db.query(User).filter(User.auth_id == current_user_auth_id).first()
