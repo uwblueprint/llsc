@@ -29,10 +29,6 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
     }
   }, []);
 
-  useEffect(() => {
-    console.log('isEditProfileOpen changed to:', isEditProfileOpen);
-  }, [isEditProfileOpen]);
-
   const router = useRouter();
   const currentPath = router.asPath;
 
@@ -137,7 +133,6 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log('Avatar clicked!');
           setIsEditProfileOpen(true);
         }}
         _hover={{ opacity: 0.8 }}

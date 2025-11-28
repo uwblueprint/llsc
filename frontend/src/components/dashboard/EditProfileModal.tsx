@@ -370,8 +370,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
     }
   };
 
-  console.log('EditProfileModal render - isOpen:', isOpen, 'authLoading:', authLoading, 'loading:', loading);
-
   if (!isOpen) return null;
 
   // Show loading while auth initializes or data loads
