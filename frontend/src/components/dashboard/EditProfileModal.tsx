@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import TimeScheduler from '@/components/dashboard/TimeScheduler';
 import type { TimeSlot } from '@/components/dashboard/types';
-import {
-  Box,
-  Heading,
-  Text,
-  VStack,
-  HStack,
-  Button,
-  Image,
-} from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, HStack, Button, Image } from '@chakra-ui/react';
 import PersonalDetails from '@/components/dashboard/PersonalDetails';
 import BloodCancerExperience from '@/components/dashboard/BloodCancerExperience';
 import ActionButton from '@/components/dashboard/EditButton';
 import { COLORS } from '@/constants/form';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserData, updateUserData, updateMyAvailability, AvailabilityTemplateResponse } from '@/APIClients/userDataAPIClient';
+import {
+  getUserData,
+  updateUserData,
+  updateMyAvailability,
+  AvailabilityTemplateResponse,
+} from '@/APIClients/userDataAPIClient';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -36,7 +33,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
     gender: '',
     pronouns: '',
     timezone: 'Eastern Standard Time (EST)',
-    overview: ''
+    overview: '',
   });
 
   // Blood cancer experience state for profile
@@ -44,7 +41,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
     diagnosis: [] as string[],
     dateOfDiagnosis: '',
     treatments: [] as string[],
-    experiences: [] as string[]
+    experiences: [] as string[],
   });
 
   // Loved one details state
@@ -66,7 +63,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
     const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const timeSlots: TimeSlot[] = [];
 
-    templates.forEach(template => {
+    templates.forEach((template) => {
       const dayName = dayNames[template.dayOfWeek];
 
       // Parse time strings (format: "HH:MM:SS")
@@ -86,7 +83,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
         timeSlots.push({
           day: dayName,
           time: `${hour}:00 - ${hour + 1}:00`,
-          selected: true
+          selected: true,
         });
       }
     });
@@ -130,13 +127,16 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
           const formattedPronouns = userData.pronouns?.join(', ') || 'Not provided';
 
           setPersonalDetails({
-            name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || user?.email || 'Not provided',
+            name:
+              `${userData.firstName || ''} ${userData.lastName || ''}`.trim() ||
+              user?.email ||
+              'Not provided',
             email: userData.email || user?.email || 'Not provided',
             birthday: formattedBirthday,
             gender: userData.genderIdentity || 'Not provided',
             pronouns: formattedPronouns,
             timezone: 'Eastern Standard Time (EST)', // TODO: Add timezone field to backend
-            overview: 'Not provided' // TODO: Add overview field to backend
+            overview: 'Not provided', // TODO: Add overview field to backend
           });
 
           // Populate cancer experience
@@ -144,7 +144,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
             diagnosis: userData.diagnosis ? [userData.diagnosis] : [],
             dateOfDiagnosis: userData.dateOfDiagnosis || '',
             treatments: userData.treatments || [],
-            experiences: userData.experiences || []
+            experiences: userData.experiences || [],
           });
 
           // Populate loved one details if caring for someone
@@ -154,7 +154,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
 
             setLovedOneDetails({
               birthday: lovedOneBirthday,
-              gender: lovedOneGender
+              gender: lovedOneGender,
             });
 
             // Populate loved one cancer experience
@@ -162,7 +162,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
               diagnosis: userData.lovedOneDiagnosis || 'Not provided',
               dateOfDiagnosis: userData.lovedOneDateOfDiagnosis || 'Not provided',
               treatments: userData.lovedOneTreatments || [],
-              experiences: userData.lovedOneExperiences || []
+              experiences: userData.lovedOneExperiences || [],
             });
           }
 
@@ -211,7 +211,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
     } else if (field === 'gender') {
       updateData.gender_identity = value;
     } else if (field === 'pronouns') {
-      updateData.pronouns = value.split(',').map(p => p.trim());
+      updateData.pronouns = value.split(',').map((p) => p.trim());
     } else if (field === 'lovedOneBirthday') {
       // Loved one's age/birthday - store as is since backend expects lovedOneAge as string
       updateData.loved_one_age = value;
@@ -226,7 +226,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
   // Save handler for treatments
   const handleSaveTreatments = async () => {
     const result = await updateUserData({
-      treatments: cancerExperience.treatments
+      treatments: cancerExperience.treatments,
     });
     if (!result) {
       alert('Failed to save treatments');
@@ -236,7 +236,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
   // Save handler for experiences
   const handleSaveExperiences = async () => {
     const result = await updateUserData({
-      experiences: cancerExperience.experiences
+      experiences: cancerExperience.experiences,
     });
     if (!result) {
       alert('Failed to save experiences');
@@ -247,7 +247,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
   const handleSaveLovedOneTreatments = async () => {
     if (!lovedOneCancerExperience) return;
     const result = await updateUserData({
-      loved_one_treatments: lovedOneCancerExperience.treatments
+      loved_one_treatments: lovedOneCancerExperience.treatments,
     });
     if (!result) {
       alert('Failed to save loved one treatments');
@@ -258,7 +258,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
   const handleSaveLovedOneExperiences = async () => {
     if (!lovedOneCancerExperience) return;
     const result = await updateUserData({
-      loved_one_experiences: lovedOneCancerExperience.experiences
+      loved_one_experiences: lovedOneCancerExperience.experiences,
     });
     if (!result) {
       alert('Failed to save loved one experiences');
@@ -282,22 +282,25 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
     // Convert TimeSlots to AvailabilityTemplates for API
     const convertToTemplates = (timeSlots: TimeSlot[]): AvailabilityTemplateResponse[] => {
       const dayToIndex: Record<string, number> = {
-        'Monday': 0,
-        'Tuesday': 1,
-        'Wednesday': 2,
-        'Thursday': 3,
-        'Friday': 4,
-        'Saturday': 5,
-        'Sunday': 6,
+        Monday: 0,
+        Tuesday: 1,
+        Wednesday: 2,
+        Thursday: 3,
+        Friday: 4,
+        Saturday: 5,
+        Sunday: 6,
       };
 
-      const slotsByDay = timeSlots.reduce((acc, slot) => {
-        if (!acc[slot.day]) {
-          acc[slot.day] = [];
-        }
-        acc[slot.day].push(slot);
-        return acc;
-      }, {} as Record<string, TimeSlot[]>);
+      const slotsByDay = timeSlots.reduce(
+        (acc, slot) => {
+          if (!acc[slot.day]) {
+            acc[slot.day] = [];
+          }
+          acc[slot.day].push(slot);
+          return acc;
+        },
+        {} as Record<string, TimeSlot[]>,
+      );
 
       const templates: AvailabilityTemplateResponse[] = [];
 
@@ -385,7 +388,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
         zIndex={9999}
         overflowY="auto"
       >
-        <Box minH="100vh" bg="white" p={12} display="flex" justifyContent="center" alignItems="center">
+        <Box
+          minH="100vh"
+          bg="white"
+          p={12}
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+        >
           <Text fontSize="16px" color="#6B7280" fontFamily="'Open Sans', sans-serif">
             Loading...
           </Text>
@@ -464,9 +474,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                   Your availability
                 </Heading>
                 {!isEditingAvailability ? (
-                  <ActionButton onClick={handleEditAvailability}>
-                    Edit
-                  </ActionButton>
+                  <ActionButton onClick={handleEditAvailability}>Edit</ActionButton>
                 ) : (
                   <HStack gap={3}>
                     <Button
@@ -478,8 +486,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                       fontFamily="'Open Sans', sans-serif"
                       fontWeight={600}
                       fontSize="0.875rem"
-                      _hover={{ bg: "#991B1B" }}
-                      _active={{ bg: "#7F1D1D" }}
+                      _hover={{ bg: '#991B1B' }}
+                      _active={{ bg: '#7F1D1D' }}
                       onClick={handleClearAvailability}
                     >
                       Clear Availability
@@ -493,8 +501,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                       fontFamily="'Open Sans', sans-serif"
                       fontWeight={600}
                       fontSize="0.875rem"
-                      _hover={{ bg: "#4B5563" }}
-                      _active={{ bg: "#374151" }}
+                      _hover={{ bg: '#4B5563' }}
+                      _active={{ bg: '#374151' }}
                       onClick={handleCancelEdit}
                     >
                       Cancel
@@ -508,8 +516,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                       fontFamily="'Open Sans', sans-serif"
                       fontWeight={600}
                       fontSize="0.875rem"
-                      _hover={{ bg: "#044d52" }}
-                      _active={{ bg: "#033e42" }}
+                      _hover={{ bg: '#044d52' }}
+                      _active={{ bg: '#033e42' }}
                       onClick={handleSaveAvailability}
                       disabled={savingAvailability}
                     >

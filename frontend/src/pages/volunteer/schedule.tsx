@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Heading,
-  Text,
-  VStack,
-  HStack,
-  Button,
-  Textarea,
-} from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, HStack, Button, Textarea } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { BiArrowBack } from 'react-icons/bi';
 import TimeScheduler from '@/components/dashboard/TimeScheduler';
@@ -28,23 +20,26 @@ const SchedulePage: React.FC = () => {
   // Convert TimeSlots to AvailabilityTemplates for API (same logic as admin profile)
   const convertToTemplates = (timeSlots: TimeSlot[]): AvailabilityTemplate[] => {
     const dayToIndex: Record<string, number> = {
-      'Monday': 0,
-      'Tuesday': 1,
-      'Wednesday': 2,
-      'Thursday': 3,
-      'Friday': 4,
-      'Saturday': 5,
-      'Sunday': 6,
+      Monday: 0,
+      Tuesday: 1,
+      Wednesday: 2,
+      Thursday: 3,
+      Friday: 4,
+      Saturday: 5,
+      Sunday: 6,
     };
 
     // Group slots by day
-    const slotsByDay = timeSlots.reduce((acc, slot) => {
-      if (!acc[slot.day]) {
-        acc[slot.day] = [];
-      }
-      acc[slot.day].push(slot);
-      return acc;
-    }, {} as Record<string, TimeSlot[]>);
+    const slotsByDay = timeSlots.reduce(
+      (acc, slot) => {
+        if (!acc[slot.day]) {
+          acc[slot.day] = [];
+        }
+        acc[slot.day].push(slot);
+        return acc;
+      },
+      {} as Record<string, TimeSlot[]>,
+    );
 
     const templates: AvailabilityTemplate[] = [];
 
@@ -134,7 +129,7 @@ const SchedulePage: React.FC = () => {
     <Box minH="100vh" bg="white" p={12}>
       {/* Centered container with 70% width */}
       <Box w="70%" mx="auto" overflowX="hidden">
-        <VStack gap={0} align="stretch"  minW={0}>
+        <VStack gap={0} align="stretch" minW={0}>
           {/* Header and Text - Left Aligned */}
           <Box textAlign="left">
             <Heading
@@ -156,7 +151,9 @@ const SchedulePage: React.FC = () => {
                 letterSpacing="-1.5%"
                 lineHeight="100%"
               >
-                Drag to select all the times you will usually be available to meet with participants. We require that availability be provided in sessions of at least 2 hours.
+                Drag to select all the times you will usually be available to meet with
+                participants. We require that availability be provided in sessions of at least 2
+                hours.
               </Text>
               <Text
                 color="#1D3448"
@@ -191,7 +188,7 @@ const SchedulePage: React.FC = () => {
               borderRadius="md"
               px={8}
               py={2}
-              _hover={{ bg: "#044d4d" }}
+              _hover={{ bg: '#044d4d' }}
               onClick={handleSend}
               disabled={loading}
             >

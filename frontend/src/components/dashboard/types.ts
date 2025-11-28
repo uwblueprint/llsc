@@ -26,4 +26,4 @@ export interface TimeSlotProps {
   isSelected: boolean;
   onClick: () => void;
   isLastColumn?: boolean;
-} 
+}

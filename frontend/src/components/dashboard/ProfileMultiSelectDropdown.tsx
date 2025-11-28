@@ -1,11 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Button,
-} from '@chakra-ui/react';
+import { Box, VStack, HStack, Text, Button } from '@chakra-ui/react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface ProfileMultiSelectDropdownProps {
@@ -23,7 +17,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
   onChange,
   options,
   maxSelections = 3,
-  flex = "1",
+  flex = '1',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -32,19 +26,17 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
 
   const handleOptionToggle = (optionValue: string) => {
     const newValue = value.includes(optionValue)
-      ? value.filter(v => v !== optionValue)
+      ? value.filter((v) => v !== optionValue)
       : value.length < maxSelections
         ? [...value, optionValue]
         : value;
-    
+
     onChange(newValue);
   };
 
-
-
   const renderSelectedBadges = () => {
     if (value.length === 0) return null;
-    
+
     return (
       <Box ref={badgeContainerRef} display="flex" flexWrap="wrap" gap={2}>
         {value.map((selectedValue, index) => (
@@ -66,7 +58,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
             alignItems="center"
             title={selectedValue}
           >
-            <Text 
+            <Text
               fontSize="14px"
               fontWeight={400}
               lineHeight="1.2"
@@ -174,9 +166,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
           {value.length > 0 ? (
             renderSelectedBadges()
           ) : (
-            <Text color="#9CA3AF">
-              Select diagnoses...
-            </Text>
+            <Text color="#9CA3AF">Select diagnoses...</Text>
           )}
           <Box
             position="absolute"
@@ -185,9 +175,9 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
             transform="translateY(-50%)"
             pointerEvents="none"
           >
-            <img 
-              src="/icons/chevron-down.png" 
-              alt="dropdown arrow" 
+            <img
+              src="/icons/chevron-down.png"
+              alt="dropdown arrow"
               style={{ width: '24px', height: '24px' }}
             />
           </Box>
@@ -211,7 +201,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
               {options.map((option) => {
                 const isSelected = value.includes(option.value);
                 const isDisabled = !isSelected && value.length >= maxSelections;
-                
+
                 return (
                   <HStack
                     key={option.value}
@@ -231,7 +221,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
                       disabled={isDisabled}
                       onChange={() => handleOptionToggle(option.value)}
                     />
-                    <Text 
+                    <Text
                       w="329.5px"
                       h="24px"
                       fontSize="16px"
@@ -248,7 +238,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
                 );
               })}
             </VStack>
-            
+
             <Box px={4} pt={2} mt={2} borderTop="1px solid #E2E8F0">
               <Text fontSize="xs" color="#6B7280" fontFamily="'Open Sans', sans-serif">
                 You can select a maximum of {maxSelections}.
@@ -261,4 +251,4 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
   );
 };
 
-export default ProfileMultiSelectDropdown; 
+export default ProfileMultiSelectDropdown;

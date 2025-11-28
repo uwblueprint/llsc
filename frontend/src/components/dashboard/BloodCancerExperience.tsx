@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Heading,
-  Text,
-  VStack,
-  HStack,
-  Button,
-  Stack,
-  Flex,
-} from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, HStack, Button, Stack, Flex } from '@chakra-ui/react';
 import { FiHeart, FiInfo } from 'react-icons/fi';
 import ProfileTextInput from './ProfileTextInput';
 import ProfileDropdown from './ProfileDropdown';
@@ -21,7 +12,7 @@ import {
   DIAGNOSIS_DROPDOWN_OPTIONS,
   TREATMENT_OPTIONS,
   EXPERIENCE_OPTIONS,
-  COLORS
+  COLORS,
 } from '@/constants/form';
 
 interface BloodCancerExperienceProps {
@@ -31,24 +22,28 @@ interface BloodCancerExperienceProps {
     treatments: string[];
     experiences: string[];
   };
-  setCancerExperience: React.Dispatch<React.SetStateAction<{
-    diagnosis: string[];
-    dateOfDiagnosis: string;
-    treatments: string[];
-    experiences: string[];
-  }>>;
+  setCancerExperience: React.Dispatch<
+    React.SetStateAction<{
+      diagnosis: string[];
+      dateOfDiagnosis: string;
+      treatments: string[];
+      experiences: string[];
+    }>
+  >;
   lovedOneCancerExperience?: {
     diagnosis: string;
     dateOfDiagnosis: string;
     treatments: string[];
     experiences: string[];
   } | null;
-  setLovedOneCancerExperience?: React.Dispatch<React.SetStateAction<{
-    diagnosis: string;
-    dateOfDiagnosis: string;
-    treatments: string[];
-    experiences: string[];
-  } | null>>;
+  setLovedOneCancerExperience?: React.Dispatch<
+    React.SetStateAction<{
+      diagnosis: string;
+      dateOfDiagnosis: string;
+      treatments: string[];
+      experiences: string[];
+    } | null>
+  >;
   onEditTreatments: () => void;
   onEditExperiences: () => void;
   onEditLovedOneTreatments?: () => void;
@@ -74,39 +69,39 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
   const [otherLovedOneTreatment, setOtherLovedOneTreatment] = useState('');
 
   const handleTreatmentToggle = (treatment: string) => {
-    setCancerExperience(prev => ({
+    setCancerExperience((prev) => ({
       ...prev,
       treatments: prev.treatments.includes(treatment)
-        ? prev.treatments.filter(t => t !== treatment)
+        ? prev.treatments.filter((t) => t !== treatment)
         : prev.treatments.length < 2
           ? [...prev.treatments, treatment]
-          : prev.treatments
+          : prev.treatments,
     }));
   };
 
   const handleExperienceToggle = (experience: string) => {
-    setCancerExperience(prev => ({
+    setCancerExperience((prev) => ({
       ...prev,
       experiences: prev.experiences.includes(experience)
-        ? prev.experiences.filter(e => e !== experience)
+        ? prev.experiences.filter((e) => e !== experience)
         : prev.experiences.length < 5
           ? [...prev.experiences, experience]
-          : prev.experiences
+          : prev.experiences,
     }));
   };
 
   const handleLovedOneTreatmentToggle = (treatment: string) => {
     if (!lovedOneCancerExperience || !setLovedOneCancerExperience) return;
 
-    setLovedOneCancerExperience(prev => {
+    setLovedOneCancerExperience((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
         treatments: prev.treatments.includes(treatment)
-          ? prev.treatments.filter(t => t !== treatment)
+          ? prev.treatments.filter((t) => t !== treatment)
           : prev.treatments.length < 2
             ? [...prev.treatments, treatment]
-            : prev.treatments
+            : prev.treatments,
       };
     });
   };
@@ -114,15 +109,15 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
   const handleLovedOneExperienceToggle = (experience: string) => {
     if (!lovedOneCancerExperience || !setLovedOneCancerExperience) return;
 
-    setLovedOneCancerExperience(prev => {
+    setLovedOneCancerExperience((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
         experiences: prev.experiences.includes(experience)
-          ? prev.experiences.filter(e => e !== experience)
+          ? prev.experiences.filter((e) => e !== experience)
           : prev.experiences.length < 5
             ? [...prev.experiences, experience]
-            : prev.experiences
+            : prev.experiences,
       };
     });
   };
@@ -139,22 +134,26 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
   return (
     <Box bg="white" p={0} mt="116px" minH="288px">
       <ProfileHeader>Blood cancer experience information</ProfileHeader>
-      
+
       <VStack gap={8} mt="32px" align="stretch">
         <Flex gap="6.5%" align="start">
           <ProfileMultiSelectDropdown
             label="Your Diagnosis"
             value={cancerExperience.diagnosis}
-            onChange={(selectedValues) => setCancerExperience(prev => ({ ...prev, diagnosis: selectedValues }))}
+            onChange={(selectedValues) =>
+              setCancerExperience((prev) => ({ ...prev, diagnosis: selectedValues }))
+            }
             options={DIAGNOSIS_DROPDOWN_OPTIONS}
             maxSelections={3}
             flex="1"
           />
-          
+
           <ProfileTextInput
             label="Your Date of Diagnosis"
             value={cancerExperience.dateOfDiagnosis}
-            onChange={(e) => setCancerExperience(prev => ({ ...prev, dateOfDiagnosis: e.target.value }))}
+            onChange={(e) =>
+              setCancerExperience((prev) => ({ ...prev, dateOfDiagnosis: e.target.value }))
+            }
             placeholder="DD/MM/YYYY"
             flex="1"
           />
@@ -173,32 +172,38 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
               >
                 Treatments you have done
               </Box>
-              <ActionButton onClick={async () => {
-                if (isEditingTreatments) {
-                  await onEditTreatments();
-                }
-                setIsEditingTreatments(!isEditingTreatments);
-              }}>
+              <ActionButton
+                onClick={async () => {
+                  if (isEditingTreatments) {
+                    await onEditTreatments();
+                  }
+                  setIsEditingTreatments(!isEditingTreatments);
+                }}
+              >
                 {isEditingTreatments ? 'Save' : 'Edit'}
               </ActionButton>
             </HStack>
-            
+
             {isEditingTreatments ? (
               <VStack align="start" gap={3}>
                 <Box mb={3}>
-                  <Text 
+                  <Text
                     fontSize="14px"
                     color="#495D6C"
                     fontFamily="'Open Sans', sans-serif"
                     fontWeight={400}
                   >
-                    You can select a <Text as="span" fontWeight={700}>maximum of 2</Text>.
+                    You can select a{' '}
+                    <Text as="span" fontWeight={700}>
+                      maximum of 2
+                    </Text>
+                    .
                   </Text>
                 </Box>
                 {treatmentOptionsWithOther.map((treatment) => {
                   const isSelected = cancerExperience.treatments.includes(treatment);
                   const isDisabled = !isSelected && cancerExperience.treatments.length >= 2;
-                  
+
                   return (
                     <VStack key={treatment} align="start" gap={2}>
                       <HStack
@@ -213,7 +218,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                           disabled={isDisabled}
                           onChange={() => handleTreatmentToggle(treatment)}
                         />
-                        <Text 
+                        <Text
                           fontSize="16px"
                           fontWeight={400}
                           lineHeight="100%"
@@ -241,7 +246,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
             ) : (
               <VStack align="start" gap={2}>
                 {cancerExperience.treatments.map((treatment, index) => (
-                  <Text 
+                  <Text
                     key={index}
                     fontSize="16px"
                     fontWeight={400}
@@ -269,32 +274,38 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
               >
                 Experiences you had
               </Box>
-              <ActionButton onClick={async () => {
-                if (isEditingExperiences) {
-                  await onEditExperiences();
-                }
-                setIsEditingExperiences(!isEditingExperiences);
-              }}>
+              <ActionButton
+                onClick={async () => {
+                  if (isEditingExperiences) {
+                    await onEditExperiences();
+                  }
+                  setIsEditingExperiences(!isEditingExperiences);
+                }}
+              >
                 {isEditingExperiences ? 'Save' : 'Edit'}
               </ActionButton>
             </HStack>
-            
+
             {isEditingExperiences ? (
               <VStack align="start" gap={3}>
                 <Box mb={3}>
-                  <Text 
+                  <Text
                     fontSize="14px"
                     color="#495D6C"
                     fontFamily="'Open Sans', sans-serif"
                     fontWeight={400}
                   >
-                    You can select a <Text as="span" fontWeight={700}>maximum of 5</Text>.
+                    You can select a{' '}
+                    <Text as="span" fontWeight={700}>
+                      maximum of 5
+                    </Text>
+                    .
                   </Text>
                 </Box>
                 {experienceOptionsWithOther.map((experience) => {
                   const isSelected = cancerExperience.experiences.includes(experience);
                   const isDisabled = !isSelected && cancerExperience.experiences.length >= 5;
-                  
+
                   return (
                     <VStack key={experience} align="start" gap={2}>
                       <HStack
@@ -309,7 +320,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                           disabled={isDisabled}
                           onChange={() => handleExperienceToggle(experience)}
                         />
-                        <Text 
+                        <Text
                           fontSize="16px"
                           fontWeight={400}
                           lineHeight="100%"
@@ -337,7 +348,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
             ) : (
               <VStack align="start" gap={2}>
                 {cancerExperience.experiences.map((experience, index) => (
-                  <Text 
+                  <Text
                     key={index}
                     fontSize="16px"
                     fontWeight={400}
@@ -358,10 +369,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
       {/* Loved One's Blood Cancer Experience */}
       {lovedOneCancerExperience && (
         <VStack gap={8} mt={12} align="stretch">
-          <Box
-            borderBottom="1px solid"
-            borderColor="#E5E7EB"
-          />
+          <Box borderBottom="1px solid" borderColor="#E5E7EB" />
 
           <Flex gap="6.5%" align="start">
             <Box flex="1">
@@ -498,12 +506,14 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                     Treatments Loved One Has Done
                   </Box>
                 </Flex>
-                <ActionButton onClick={async () => {
-                  if (isEditingLovedOneTreatments && onEditLovedOneTreatments) {
-                    await onEditLovedOneTreatments();
-                  }
-                  setIsEditingLovedOneTreatments(!isEditingLovedOneTreatments);
-                }}>
+                <ActionButton
+                  onClick={async () => {
+                    if (isEditingLovedOneTreatments && onEditLovedOneTreatments) {
+                      await onEditLovedOneTreatments();
+                    }
+                    setIsEditingLovedOneTreatments(!isEditingLovedOneTreatments);
+                  }}
+                >
                   {isEditingLovedOneTreatments ? 'Save' : 'Edit'}
                 </ActionButton>
               </HStack>
@@ -517,12 +527,17 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                       fontFamily="'Open Sans', sans-serif"
                       fontWeight={400}
                     >
-                      You can select a <Text as="span" fontWeight={700}>maximum of 2</Text>.
+                      You can select a{' '}
+                      <Text as="span" fontWeight={700}>
+                        maximum of 2
+                      </Text>
+                      .
                     </Text>
                   </Box>
                   {treatmentOptionsWithOther.map((treatment) => {
                     const isSelected = lovedOneCancerExperience.treatments.includes(treatment);
-                    const isDisabled = !isSelected && lovedOneCancerExperience.treatments.length >= 2;
+                    const isDisabled =
+                      !isSelected && lovedOneCancerExperience.treatments.length >= 2;
 
                     return (
                       <VStack key={treatment} align="start" gap={2}>
@@ -597,12 +612,14 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                     Experiences Loved One Had
                   </Box>
                 </Flex>
-                <ActionButton onClick={async () => {
-                  if (isEditingLovedOneExperiences && onEditLovedOneExperiences) {
-                    await onEditLovedOneExperiences();
-                  }
-                  setIsEditingLovedOneExperiences(!isEditingLovedOneExperiences);
-                }}>
+                <ActionButton
+                  onClick={async () => {
+                    if (isEditingLovedOneExperiences && onEditLovedOneExperiences) {
+                      await onEditLovedOneExperiences();
+                    }
+                    setIsEditingLovedOneExperiences(!isEditingLovedOneExperiences);
+                  }}
+                >
                   {isEditingLovedOneExperiences ? 'Save' : 'Edit'}
                 </ActionButton>
               </HStack>
@@ -616,12 +633,17 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                       fontFamily="'Open Sans', sans-serif"
                       fontWeight={400}
                     >
-                      You can select a <Text as="span" fontWeight={700}>maximum of 5</Text>.
+                      You can select a{' '}
+                      <Text as="span" fontWeight={700}>
+                        maximum of 5
+                      </Text>
+                      .
                     </Text>
                   </Box>
                   {lovedOneExperienceOptions.map((experience) => {
                     const isSelected = lovedOneCancerExperience.experiences.includes(experience);
-                    const isDisabled = !isSelected && lovedOneCancerExperience.experiences.length >= 5;
+                    const isDisabled =
+                      !isSelected && lovedOneCancerExperience.experiences.length >= 5;
 
                     return (
                       <HStack
@@ -676,4 +698,4 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
   );
 };
 
-export default BloodCancerExperience; 
+export default BloodCancerExperience;

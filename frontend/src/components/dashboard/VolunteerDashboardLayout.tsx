@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Image,
-  Button,
-} from '@chakra-ui/react';
+import { Box, VStack, HStack, Text, Image, Button } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 
 import { Avatar } from '@/components/ui/avatar';
@@ -37,20 +30,20 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
       icon: '/icons/user-primary.png',
       label: 'Matches',
       path: '/volunteer/dashboard',
-      isActive: currentPath === '/volunteer/dashboard'
+      isActive: currentPath === '/volunteer/dashboard',
     },
     {
       icon: '/icons/phone-call.png',
       label: 'Scheduled Calls',
       path: '/volunteer/dashboard/scheduled-calls',
-      isActive: currentPath === '/volunteer/dashboard/scheduled-calls'
+      isActive: currentPath === '/volunteer/dashboard/scheduled-calls',
     },
     {
       icon: '/icons/calendar.png',
       label: 'Contact',
       path: '/volunteer/dashboard/contact',
-      isActive: currentPath === '/volunteer/dashboard/contact'
-    }
+      isActive: currentPath === '/volunteer/dashboard/contact',
+    },
   ];
 
   const handleNavigation = (path: string) => {
@@ -101,21 +94,14 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
               py="8px"
               borderRadius="6px"
               _hover={{
-                bg: item.isActive ? 'rgba(179, 206, 209, 0.3)' : '#F1F5F9'
+                bg: item.isActive ? 'rgba(179, 206, 209, 0.3)' : '#F1F5F9',
               }}
               _active={{
-                bg: item.isActive ? 'rgba(179, 206, 209, 0.3)' : '#E2E8F0'
+                bg: item.isActive ? 'rgba(179, 206, 209, 0.3)' : '#E2E8F0',
               }}
             >
               <HStack gap="8px" align="center">
-                {item.icon && (
-                  <Image 
-                    src={item.icon} 
-                    alt={item.label} 
-                    w="14px" 
-                    h="14px"
-                  />
-                )}
+                {item.icon && <Image src={item.icon} alt={item.label} w="14px" h="14px" />}
                 <Text>{item.label}</Text>
               </HStack>
             </Button>
@@ -148,18 +134,20 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
       </Box>
 
       {/* Main Content centered */}
-      <Box display="flex" justifyContent="center" w="100%" position="absolute" top="80px" left="0" right="0">
-        <Box w="711px">
-          {children}
-        </Box>
+      <Box
+        display="flex"
+        justifyContent="center"
+        w="100%"
+        position="absolute"
+        top="80px"
+        left="0"
+        right="0"
+      >
+        <Box w="711px">{children}</Box>
       </Box>
 
       {/* Edit Profile Modal */}
-      <EditProfileModal
-        isOpen={isEditProfileOpen}
-        onClose={() => setIsEditProfileOpen(false)}
-      />
+      <EditProfileModal isOpen={isEditProfileOpen} onClose={() => setIsEditProfileOpen(false)} />
     </Box>
   );
 };
-

@@ -25,16 +25,16 @@ const ActionButton: React.FC<ActionButtonProps> = ({ onClick, children }) => {
       gap="8px"
       boxShadow="0 1px 2px 0 rgba(0, 173, 18, 0.05)"
       _hover={{
-        bg: "#044d4d",
-        borderColor: "#044d4d"
+        bg: '#044d4d',
+        borderColor: '#044d4d',
       }}
       _active={{
-        bg: "#033d3d",
-        borderColor: "#033d3d"
+        bg: '#033d3d',
+        borderColor: '#033d3d',
       }}
       _focus={{
-        outline: "none",
-        boxShadow: "0 0 0 2px rgba(5, 96, 103, 0.2)"
+        outline: 'none',
+        boxShadow: '0 0 0 2px rgba(5, 96, 103, 0.2)',
       }}
     >
       {children}
@@ -42,4 +42,4 @@ const ActionButton: React.FC<ActionButtonProps> = ({ onClick, children }) => {
   );
 };
 
-export default ActionButton; 
+export default ActionButton;

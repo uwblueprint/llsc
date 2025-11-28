@@ -23,27 +23,27 @@ export const PROVINCES = [
   'Saskatchewan',
   'Northwest Territories',
   'Nunavut',
-  'Yukon'
+  'Yukon',
 ] as const;
 
 // Gender identity options
 export const GENDER_IDENTITY_OPTIONS = [
   'Male',
-  'Female', 
+  'Female',
   'Non-binary',
   'Transgender',
   'Prefer not to answer',
-  'Self-describe'
+  'Self-describe',
 ] as const;
 
 // Pronouns options
 export const PRONOUNS_OPTIONS = [
   'He/Him',
-  'She/Her', 
+  'She/Her',
   'They/Them',
   'Ze/Zir',
   'Prefer not to answer',
-  'Self-describe'
+  'Self-describe',
 ] as const;
 
 // Ethnic group options
@@ -61,7 +61,7 @@ export const ETHNIC_OPTIONS = [
   'West Asian',
   'White',
   'Prefer not to answer',
-  'Self-describe'
+  'Self-describe',
 ] as const;
 
 // Marital status options
@@ -72,7 +72,7 @@ export const MARITAL_STATUS_OPTIONS = [
   'Divorced',
   'Separated',
   'Widowed',
-  'Prefer not to answer'
+  'Prefer not to answer',
 ] as const;
 
 // Treatment options for blood cancer
@@ -121,28 +121,28 @@ export const DIAGNOSIS_OPTIONS = [
   'Chronic Myeloid Leukemia',
   'Hairy Cell Leukemia',
   'Myeloma/Multiple Myeloma',
-  'Hodgkin\'s Lymphoma',
-  'Indolent/Low Grade Non-Hodgkin\'s Lymphoma',
-  'Aggressive/High Grade Non-Hodgkin\'s Lymphoma',
+  "Hodgkin's Lymphoma",
+  "Indolent/Low Grade Non-Hodgkin's Lymphoma",
+  "Aggressive/High Grade Non-Hodgkin's Lymphoma",
   'Low Risk MDS',
   'High Risk MDS',
   'Myelofibrosis',
   'Essential Thrombocythemia',
   'Polycythemia Vera',
   'MPN unclassified',
-  'Low Grade/Indolent Non-Hodgkin\'s Lymphoma',
-  'High Grade/Aggressive Non-Hodgkin\'s Lymphoma',
+  "Low Grade/Indolent Non-Hodgkin's Lymphoma",
+  "High Grade/Aggressive Non-Hodgkin's Lymphoma",
 ] as const;
 
 // Convert arrays to dropdown options format
-export const DIAGNOSIS_DROPDOWN_OPTIONS = DIAGNOSIS_OPTIONS.map(option => ({
+export const DIAGNOSIS_DROPDOWN_OPTIONS = DIAGNOSIS_OPTIONS.map((option) => ({
   value: option,
-  label: option
+  label: option,
 }));
 
-export const GENDER_DROPDOWN_OPTIONS = GENDER_IDENTITY_OPTIONS.map(option => ({
+export const GENDER_DROPDOWN_OPTIONS = GENDER_IDENTITY_OPTIONS.map((option) => ({
   value: option,
-  label: option
+  label: option,
 }));
 
 // Timezone options (keeping existing ones)
@@ -178,7 +178,7 @@ export interface IntakeFormData {
     city: string;
     province: string;
   };
-  
+
   // User's Demographic Information
   demographics: {
     genderIdentity: string;
@@ -189,7 +189,7 @@ export interface IntakeFormData {
     hasKids: string;
     timezone: string;
   };
-  
+
   // User's Cancer Experience (if applicable)
   cancerExperience?: {
     diagnosis: string;
@@ -199,13 +199,13 @@ export interface IntakeFormData {
     otherTreatment?: string;
     otherExperience?: string;
   };
-  
+
   // User's Caregiver Experience (if applicable)
   caregiverExperience?: {
     experiences: string[];
     otherExperience?: string;
   };
-  
+
   // Loved One's Information (if applicable)
   lovedOne?: {
     demographics: {
@@ -295,4 +295,4 @@ export const INITIAL_INTAKE_FORM_DATA: IntakeFormData = {
     hasKids: '',
     timezone: '',
   },
-}; 
+};

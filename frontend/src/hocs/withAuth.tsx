@@ -22,7 +22,7 @@ import { Box, Text } from '@chakra-ui/react';
  */
 export const withAuth = <P extends object>(
   Component: React.ComponentType<P>,
-  redirectTo: string = '/login'
+  redirectTo: string = '/login',
 ) => {
   const ProtectedComponent: React.FC<P> = (props) => {
     const { user, loading } = useAuth();
@@ -38,14 +38,10 @@ export const withAuth = <P extends object>(
     // Show loading state while authentication is being verified
     if (loading) {
       return (
-        <Box
-          minH="100vh"
-          bg="white"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Text fontSize="lg" color="#495D6C">Loading...</Text>
+        <Box minH="100vh" bg="white" display="flex" justifyContent="center" alignItems="center">
+          <Text fontSize="lg" color="#495D6C">
+            Loading...
+          </Text>
         </Box>
       );
     }

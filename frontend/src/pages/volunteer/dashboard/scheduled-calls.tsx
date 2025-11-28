@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Heading,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Box, Heading, Text, VStack } from '@chakra-ui/react';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
 import ProfileCard from '@/components/dashboard/ProfileCard';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
@@ -65,7 +60,7 @@ const ScheduledCallsPage: React.FC = () => {
             treatments: participant.treatments || [],
             experiences: participant.experiences || [],
             initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
-            scheduledTime: match.scheduledTime ? new Date(match.scheduledTime) : undefined
+            scheduledTime: match.scheduledTime ? new Date(match.scheduledTime) : undefined,
           };
         });
 
@@ -115,8 +110,7 @@ const ScheduledCallsPage: React.FC = () => {
           >
             {scheduledCalls.length > 0
               ? `Your Scheduled Calls${userName ? `, ${userName}` : ''}`
-              : `No Scheduled Calls${userName ? `, ${userName}` : ''}`
-            }
+              : `No Scheduled Calls${userName ? `, ${userName}` : ''}`}
           </Heading>
 
           <Text
@@ -127,9 +121,8 @@ const ScheduledCallsPage: React.FC = () => {
             mb={8}
           >
             {scheduledCalls.length > 0
-              ? "Here are your upcoming calls with participants."
-              : "You don't have any scheduled calls yet. Check the Matches tab to schedule calls with your matched participants."
-            }
+              ? 'Here are your upcoming calls with participants.'
+              : "You don't have any scheduled calls yet. Check the Matches tab to schedule calls with your matched participants."}
           </Text>
 
           {scheduledCalls.length > 0 && (

@@ -7,7 +7,7 @@ interface ProfileHeaderProps {
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ children }) => {
   return (
-    <Heading 
+    <Heading
       w="519px"
       h="40px"
       fontSize="1.625rem"

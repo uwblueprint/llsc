@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Text,
-  HStack,
-  Stack,
-  VStack,
-  Flex,
-  Textarea,
-  Button,
-} from '@chakra-ui/react';
+import { Box, Text, HStack, Stack, VStack, Flex, Textarea, Button } from '@chakra-ui/react';
 import { FiHeart } from 'react-icons/fi';
 import ProfileTextInput from './ProfileTextInput';
 import ProfileDropdown from './ProfileDropdown';
@@ -30,19 +21,23 @@ interface PersonalDetailsProps {
     birthday: string;
     gender: string;
   } | null;
-  setPersonalDetails: React.Dispatch<React.SetStateAction<{
-    name: string;
-    email: string;
-    birthday: string;
-    gender: string;
-    pronouns: string;
-    timezone: string;
-    overview: string;
-  }>>;
-  setLovedOneDetails?: React.Dispatch<React.SetStateAction<{
-    birthday: string;
-    gender: string;
-  } | null>>;
+  setPersonalDetails: React.Dispatch<
+    React.SetStateAction<{
+      name: string;
+      email: string;
+      birthday: string;
+      gender: string;
+      pronouns: string;
+      timezone: string;
+      overview: string;
+    }>
+  >;
+  setLovedOneDetails?: React.Dispatch<
+    React.SetStateAction<{
+      birthday: string;
+      gender: string;
+    } | null>
+  >;
   onSave?: (field: string, value: string) => Promise<void>;
 }
 
@@ -60,7 +55,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
   const handleInputFocus = (fieldName: string) => {
     setEditingField(fieldName);
     // Clear error for this field when focused
-    setErrors(prev => ({ ...prev, [fieldName]: '' }));
+    setErrors((prev) => ({ ...prev, [fieldName]: '' }));
   };
 
   const validateField = (fieldName: string, value: string): boolean => {
@@ -81,7 +76,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
         break;
       case 'name':
         if (!value || !value.trim()) {
-          setErrors(prev => ({ ...prev, [fieldName]: 'Name is required' }));
+          setErrors((prev) => ({ ...prev, [fieldName]: 'Name is required' }));
           return false;
         }
         validation = { isValid: true };
@@ -91,11 +86,11 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
     }
 
     if (!validation.isValid) {
-      setErrors(prev => ({ ...prev, [fieldName]: validation.error || 'Invalid value' }));
+      setErrors((prev) => ({ ...prev, [fieldName]: validation.error || 'Invalid value' }));
       return false;
     }
 
-    setErrors(prev => ({ ...prev, [fieldName]: '' }));
+    setErrors((prev) => ({ ...prev, [fieldName]: '' }));
     return true;
   };
 
@@ -131,7 +126,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
     try {
       await onSave(editingField, value);
       setEditingField(null);
-      setErrors(prev => ({ ...prev, [editingField]: '' }));
+      setErrors((prev) => ({ ...prev, [editingField]: '' }));
     } catch (error) {
       console.error('Error saving field:', error);
       alert('Failed to save changes. Please try again.');
@@ -143,13 +138,13 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
   return (
     <Box bg="white" p={0} minH="556px">
       <ProfileHeader>Personal details</ProfileHeader>
-      
+
       <Flex gap="6.5%" mt="32px" align="start">
         <VStack gap={8} flex="1" align="stretch">
           <ProfileTextInput
             label="Name"
             value={personalDetails.name}
-            onChange={(e) => setPersonalDetails(prev => ({ ...prev, name: e.target.value }))}
+            onChange={(e) => setPersonalDetails((prev) => ({ ...prev, name: e.target.value }))}
             onFocus={() => handleInputFocus('name')}
             onBlur={() => handleBlur('name')}
             error={errors.name}
@@ -166,19 +161,19 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 fontFamily="'Open Sans', sans-serif"
                 fontWeight={600}
                 fontSize="0.875rem"
-                _hover={{ bg: "#044d52" }}
-                _active={{ bg: "#033e42" }}
+                _hover={{ bg: '#044d52' }}
+                _active={{ bg: '#033e42' }}
                 isDisabled={saving}
               >
                 {saving ? 'Saving...' : 'Save'}
               </Button>
             </Box>
           )}
-          
+
           <ProfileTextInput
             label="Birthday"
             value={personalDetails.birthday}
-            onChange={(e) => setPersonalDetails(prev => ({ ...prev, birthday: e.target.value }))}
+            onChange={(e) => setPersonalDetails((prev) => ({ ...prev, birthday: e.target.value }))}
             onFocus={() => handleInputFocus('birthday')}
             onBlur={() => handleBlur('birthday')}
             error={errors.birthday}
@@ -196,8 +191,8 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 fontFamily="'Open Sans', sans-serif"
                 fontWeight={600}
                 fontSize="0.875rem"
-                _hover={{ bg: "#044d52" }}
-                _active={{ bg: "#033e42" }}
+                _hover={{ bg: '#044d52' }}
+                _active={{ bg: '#033e42' }}
                 isDisabled={saving}
               >
                 {saving ? 'Saving...' : 'Save'}
@@ -208,7 +203,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
           <ProfileTextInput
             label="Pronouns"
             value={personalDetails.pronouns}
-            onChange={(e) => setPersonalDetails(prev => ({ ...prev, pronouns: e.target.value }))}
+            onChange={(e) => setPersonalDetails((prev) => ({ ...prev, pronouns: e.target.value }))}
             onFocus={() => handleInputFocus('pronouns')}
             onBlur={() => handleBlur('pronouns')}
             error={errors.pronouns}
@@ -225,22 +220,21 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 fontFamily="'Open Sans', sans-serif"
                 fontWeight={600}
                 fontSize="0.875rem"
-                _hover={{ bg: "#044d52" }}
-                _active={{ bg: "#033e42" }}
+                _hover={{ bg: '#044d52' }}
+                _active={{ bg: '#033e42' }}
                 isDisabled={saving}
               >
                 {saving ? 'Saving...' : 'Save'}
               </Button>
             </Box>
           )}
-
         </VStack>
 
         <VStack gap={8} flex="1" align="stretch">
           <ProfileTextInput
             label="Email Address"
             value={personalDetails.email}
-            onChange={(e) => setPersonalDetails(prev => ({ ...prev, email: e.target.value }))}
+            onChange={(e) => setPersonalDetails((prev) => ({ ...prev, email: e.target.value }))}
             onFocus={() => handleInputFocus('email')}
             onBlur={() => handleBlur('email')}
             error={errors.email}
@@ -257,38 +251,43 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 fontFamily="'Open Sans', sans-serif"
                 fontWeight={600}
                 fontSize="0.875rem"
-                _hover={{ bg: "#044d52" }}
-                _active={{ bg: "#033e42" }}
+                _hover={{ bg: '#044d52' }}
+                _active={{ bg: '#033e42' }}
                 isDisabled={saving}
               >
                 {saving ? 'Saving...' : 'Save'}
               </Button>
             </Box>
           )}
-          
+
           <ProfileDropdown
             label="Gender"
             value={personalDetails.gender}
-            onChange={(e) => setPersonalDetails(prev => ({ ...prev, gender: e.target.value }))}
+            onChange={(e) => setPersonalDetails((prev) => ({ ...prev, gender: e.target.value }))}
             options={GENDER_DROPDOWN_OPTIONS}
           />
 
           <ProfileDropdown
             label="Timezone"
             value={personalDetails.timezone}
-            onChange={(e) => setPersonalDetails(prev => ({ ...prev, timezone: e.target.value }))}
-            options={TIMEZONE_OPTIONS.map(option => ({
+            onChange={(e) => setPersonalDetails((prev) => ({ ...prev, timezone: e.target.value }))}
+            options={TIMEZONE_OPTIONS.map((option) => ({
               value: option.value,
               label: `${option.label} • ${new Date().toLocaleTimeString('en-US', {
-                timeZone: option.value === 'Eastern Standard Time (EST)' ? 'America/New_York' :
-                         option.value === 'Pacific Standard Time (PST)' ? 'America/Los_Angeles' :
-                         option.value === 'Central Standard Time (CST)' ? 'America/Chicago' :
-                         option.value === 'Mountain Standard Time (MST)' ? 'America/Denver' :
-                         'America/New_York',
+                timeZone:
+                  option.value === 'Eastern Standard Time (EST)'
+                    ? 'America/New_York'
+                    : option.value === 'Pacific Standard Time (PST)'
+                      ? 'America/Los_Angeles'
+                      : option.value === 'Central Standard Time (CST)'
+                        ? 'America/Chicago'
+                        : option.value === 'Mountain Standard Time (MST)'
+                          ? 'America/Denver'
+                          : 'America/New_York',
                 hour12: true,
                 hour: 'numeric',
-                minute: '2-digit'
-              })}`
+                minute: '2-digit',
+              })}`,
             }))}
           />
         </VStack>
@@ -298,7 +297,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
         <ProfileTextInput
           label="Overview"
           value={personalDetails.overview}
-          onChange={(e) => setPersonalDetails(prev => ({ ...prev, overview: e.target.value }))}
+          onChange={(e) => setPersonalDetails((prev) => ({ ...prev, overview: e.target.value }))}
           isTextarea={true}
           rows={2}
           helperText="Explain your story! Participants will be able to learn more about you."
@@ -316,8 +315,8 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
               fontFamily="'Open Sans', sans-serif"
               fontWeight={600}
               fontSize="0.875rem"
-              _hover={{ bg: "#044d52" }}
-              _active={{ bg: "#033e42" }}
+              _hover={{ bg: '#044d52' }}
+              _active={{ bg: '#033e42' }}
             >
               Save
             </Button>
@@ -328,19 +327,19 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
       {/* Loved One Section */}
       {lovedOneDetails && (
         <>
-          <Box
-            mt={12}
-            mb={8}
-            borderBottom="1px solid"
-            borderColor="#E5E7EB"
-          />
+          <Box mt={12} mb={8} borderBottom="1px solid" borderColor="#E5E7EB" />
 
           <Flex gap="6.5%" mt="32px" align="start">
             <VStack gap={8} flex="1" align="stretch">
               <ProfileTextInput
                 label="Your Loved One's Birthday"
                 value={lovedOneDetails.birthday}
-                onChange={(e) => setLovedOneDetails && setLovedOneDetails(prev => prev ? ({ ...prev, birthday: e.target.value }) : null)}
+                onChange={(e) =>
+                  setLovedOneDetails &&
+                  setLovedOneDetails((prev) =>
+                    prev ? { ...prev, birthday: e.target.value } : null,
+                  )
+                }
                 onFocus={() => handleInputFocus('lovedOneBirthday')}
                 onBlur={() => handleBlur('lovedOneBirthday')}
                 error={errors.lovedOneBirthday}
@@ -359,8 +358,8 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                     fontFamily="'Open Sans', sans-serif"
                     fontWeight={600}
                     fontSize="0.875rem"
-                    _hover={{ bg: "#044d52" }}
-                    _active={{ bg: "#033e42" }}
+                    _hover={{ bg: '#044d52' }}
+                    _active={{ bg: '#033e42' }}
                     isDisabled={saving}
                   >
                     {saving ? 'Saving...' : 'Save'}
@@ -373,7 +372,10 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
               <ProfileDropdown
                 label="Your Loved One's Gender"
                 value={lovedOneDetails.gender}
-                onChange={(e) => setLovedOneDetails && setLovedOneDetails(prev => prev ? ({ ...prev, gender: e.target.value }) : null)}
+                onChange={(e) =>
+                  setLovedOneDetails &&
+                  setLovedOneDetails((prev) => (prev ? { ...prev, gender: e.target.value } : null))
+                }
                 options={GENDER_DROPDOWN_OPTIONS}
                 icon={<FiHeart size={14} color="#1D3448" />}
               />

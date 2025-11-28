@@ -13,8 +13,8 @@ const Badge: React.FC<BadgeProps> = ({
   icon,
   iconSrc,
   children,
-  bgColor = "rgba(179, 206, 209, 0.3)",
-  textColor = "#056067"
+  bgColor = 'rgba(179, 206, 209, 0.3)',
+  textColor = '#056067',
 }) => {
   return (
     <Box
@@ -31,16 +31,9 @@ const Badge: React.FC<BadgeProps> = ({
     >
       <HStack gap="4px" align="center">
         {iconSrc ? (
-          <Image 
-            src={iconSrc} 
-            alt="" 
-            w="12px" 
-            h="12px" 
-          />
-        ) : icon && (
-          <Box fontSize="0.75rem">
-            {icon}
-          </Box>
+          <Image src={iconSrc} alt="" w="12px" h="12px" />
+        ) : (
+          icon && <Box fontSize="0.75rem">{icon}</Box>
         )}
         <Text
           fontSize="0.875rem"
@@ -57,4 +50,4 @@ const Badge: React.FC<BadgeProps> = ({
   );
 };
 
-export default Badge; 
+export default Badge;

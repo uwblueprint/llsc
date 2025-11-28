@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Heading,
-  Text,
-} from '@chakra-ui/react';
+import { Box, Heading, Text } from '@chakra-ui/react';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
 

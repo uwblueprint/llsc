@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Text,
-  VStack,
-  HStack,
-  Button,
-} from '@chakra-ui/react';
+import { Box, Text, VStack, HStack, Button } from '@chakra-ui/react';
 import { Avatar } from '@/components/ui/avatar';
 import Badge from './badge';
 import { COLORS } from '@/constants/form';
@@ -33,13 +27,13 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   time,
   showTimes = false,
   onScheduleCall,
-  onViewContact
+  onViewContact,
 }) => {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     });
   };
 
@@ -48,7 +42,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       <HStack gap="24px" align="start" w="100%">
         {/* Time with vertical line */}
         <HStack gap="24px" align="start">
-          <Text 
+          <Text
             fontSize="1rem"
             fontWeight={400}
             color="#6B7280"
@@ -57,16 +51,11 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
           >
             {formatTime(time)}
           </Text>
-          <Box
-            w="4px"
-            h="371px"
-            bg="#5F989D"
-            borderRadius="11px"
-          />
+          <Box w="4px" h="371px" bg="#5F989D" borderRadius="11px" />
         </HStack>
 
         {/* Card */}
-        <ProfileCardContent 
+        <ProfileCardContent
           participant={participant}
           onScheduleCall={onScheduleCall}
           onViewContact={onViewContact}
@@ -76,7 +65,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   }
 
   return (
-    <ProfileCardContent 
+    <ProfileCardContent
       participant={participant}
       onScheduleCall={onScheduleCall}
       onViewContact={onViewContact}
@@ -115,7 +104,7 @@ const ProfileCardContent: React.FC<{
           {/* Participant Info */}
           <VStack align="start" gap={2}>
             <HStack gap={2} align="center">
-              <Text 
+              <Text
                 fontSize="1.5rem"
                 fontWeight={600}
                 color="#1D3448"
@@ -125,7 +114,7 @@ const ProfileCardContent: React.FC<{
               >
                 {participant.name}
               </Text>
-              <Text 
+              <Text
                 fontSize="1rem"
                 fontWeight={400}
                 color="#495D6C"
@@ -139,15 +128,9 @@ const ProfileCardContent: React.FC<{
             </HStack>
 
             <HStack gap={2} align="center" wrap="wrap" mt="16px">
-              <Badge iconSrc="/icons/user-secondary.png">
-                Current Age: {participant.age}
-              </Badge>
-              <Badge iconSrc="/icons/clock-secondary.png">
-                Timezone: {participant.timezone}
-              </Badge>
-              <Badge iconSrc="/icons/activity-secondary.png">
-                {participant.diagnosis}
-              </Badge>
+              <Badge iconSrc="/icons/user-secondary.png">Current Age: {participant.age}</Badge>
+              <Badge iconSrc="/icons/clock-secondary.png">Timezone: {participant.timezone}</Badge>
+              <Badge iconSrc="/icons/activity-secondary.png">{participant.diagnosis}</Badge>
             </HStack>
           </VStack>
         </HStack>
@@ -167,11 +150,7 @@ const ProfileCardContent: React.FC<{
           </Text>
           <HStack gap={2} wrap="wrap">
             {participant.treatments.map((treatment: string, index: number) => (
-              <Badge
-                key={index}
-                bgColor="#EEF4FF"
-                textColor="#3538CD"
-              >
+              <Badge key={index} bgColor="#EEF4FF" textColor="#3538CD">
                 {treatment}
               </Badge>
             ))}
@@ -194,11 +173,7 @@ const ProfileCardContent: React.FC<{
             </Text>
             <HStack gap={2} wrap="wrap">
               {participant.experiences.map((experience: string, index: number) => (
-                <Badge
-                  key={index}
-                  bgColor="#FDF2FA"
-                  textColor="#C11574"
-                >
+                <Badge key={index} bgColor="#FDF2FA" textColor="#C11574">
                   {experience}
                 </Badge>
               ))}
@@ -221,10 +196,10 @@ const ProfileCardContent: React.FC<{
         py={3}
         borderRadius="6px"
         _hover={{
-          bg: "#056067"
+          bg: '#056067',
         }}
         _active={{
-          bg: "#044953"
+          bg: '#044953',
         }}
         onClick={onViewContact || onScheduleCall}
       >
@@ -234,4 +209,4 @@ const ProfileCardContent: React.FC<{
   );
 };
 
-export default ProfileCard; 
+export default ProfileCard;

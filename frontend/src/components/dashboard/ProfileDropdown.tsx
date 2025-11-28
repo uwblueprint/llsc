@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Flex,
-} from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 
 interface ProfileDropdownProps {
@@ -19,17 +16,16 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   value,
   onChange,
   options,
-  flex = "1",
+  flex = '1',
   icon,
 }) => {
   const styledLabel = (
-    <Flex
-      align="center"
-      gap={2}
-      h="30px"
-      mb={2}
-    >
-      {icon && <Box display="flex" alignItems="center">{icon}</Box>}
+    <Flex align="center" gap={2} h="30px" mb={2}>
+      {icon && (
+        <Box display="flex" alignItems="center">
+          {icon}
+        </Box>
+      )}
       <Box
         fontSize="1rem"
         fontWeight={600}
@@ -92,4 +88,4 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   );
 };
 
-export default ProfileDropdown; 
+export default ProfileDropdown;

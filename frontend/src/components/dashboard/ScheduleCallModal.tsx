@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Heading,
-  Text,
-  Button,
-  HStack,
-  Textarea,
-  Image,
-} from '@chakra-ui/react';
+import { Box, Heading, Text, Button, HStack, Textarea, Image } from '@chakra-ui/react';
 import TimeScheduler from './TimeScheduler';
 import type { TimeSlot } from './types';
-import { getUserData, updateMyAvailability, AvailabilityTemplateResponse } from '@/APIClients/userDataAPIClient';
+import {
+  getUserData,
+  updateMyAvailability,
+  AvailabilityTemplateResponse,
+} from '@/APIClients/userDataAPIClient';
 
 interface ScheduleCallModalProps {
   isOpen: boolean;
@@ -37,7 +33,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
     const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const timeSlots: TimeSlot[] = [];
 
-    templates.forEach(template => {
+    templates.forEach((template) => {
       const dayName = dayNames[template.dayOfWeek];
       const parseTime = (timeStr: string): { hour: number; minute: number } => {
         const parts = timeStr.split(':');
@@ -54,7 +50,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
         timeSlots.push({
           day: dayName,
           time: `${hour}:00 - ${hour + 1}:00`,
-          selected: true
+          selected: true,
         });
       }
     });
@@ -117,22 +113,25 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
   const handleSaveAvailability = async () => {
     const convertToTemplates = (timeSlots: TimeSlot[]): AvailabilityTemplateResponse[] => {
       const dayToIndex: Record<string, number> = {
-        'Monday': 0,
-        'Tuesday': 1,
-        'Wednesday': 2,
-        'Thursday': 3,
-        'Friday': 4,
-        'Saturday': 5,
-        'Sunday': 6,
+        Monday: 0,
+        Tuesday: 1,
+        Wednesday: 2,
+        Thursday: 3,
+        Friday: 4,
+        Saturday: 5,
+        Sunday: 6,
       };
 
-      const slotsByDay = timeSlots.reduce((acc, slot) => {
-        if (!acc[slot.day]) {
-          acc[slot.day] = [];
-        }
-        acc[slot.day].push(slot);
-        return acc;
-      }, {} as Record<string, TimeSlot[]>);
+      const slotsByDay = timeSlots.reduce(
+        (acc, slot) => {
+          if (!acc[slot.day]) {
+            acc[slot.day] = [];
+          }
+          acc[slot.day].push(slot);
+          return acc;
+        },
+        {} as Record<string, TimeSlot[]>,
+      );
 
       const templates: AvailabilityTemplateResponse[] = [];
 
@@ -241,7 +240,15 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
           </Heading>
 
           {loadingAvailability ? (
-            <Box h="700px" w="100%" minW={0} mt="49px" display="flex" alignItems="center" justifyContent="center">
+            <Box
+              h="700px"
+              w="100%"
+              minW={0}
+              mt="49px"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
               <Text fontSize="16px" color="#6B7280" fontFamily="'Open Sans', sans-serif">
                 Loading availability...
               </Text>
@@ -280,11 +287,11 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
                 borderRadius="9.11px"
                 p={4}
                 _focus={{
-                  borderColor: "#D9D9D9",
-                  boxShadow: "none"
+                  borderColor: '#D9D9D9',
+                  boxShadow: 'none',
                 }}
                 _hover={{
-                  borderColor: "#D9D9D9"
+                  borderColor: '#D9D9D9',
                 }}
               />
 
@@ -303,7 +310,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
                   color="#495D6C"
                   bg="#B3CED1"
                   boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
-                  _hover={{ bg: "#A0BFC2" }}
+                  _hover={{ bg: '#A0BFC2' }}
                 >
                   Edit General Availability
                 </Button>
@@ -317,7 +324,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
                   px={8}
                   py={2}
                   h="44px"
-                  _hover={{ bg: "#044d4d" }}
+                  _hover={{ bg: '#044d4d' }}
                   onClick={handleSend}
                 >
                   Send
@@ -335,7 +342,8 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
                 lineHeight="100%"
                 mb={6}
               >
-                Drag to select all the times you will usually be available to meet with participants.
+                Drag to select all the times you will usually be available to meet with
+                participants.
               </Text>
 
               <Box h="700px" w="100%" minW={0} mt="49px">
@@ -369,7 +377,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
                   px={8}
                   py={2}
                   h="44px"
-                  _hover={{ bg: "#044d4d" }}
+                  _hover={{ bg: '#044d4d' }}
                   onClick={handleSaveAvailability}
                   disabled={savingAvailability}
                 >

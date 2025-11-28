@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Text,
-  VStack
-} from '@chakra-ui/react';
+import { Box, Text, VStack } from '@chakra-ui/react';
 import type { TimeSlot, TimeSchedulerProps } from './types';
 
 const days = ['Mon', 'Tues', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -14,7 +10,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
   showAvailability = false,
   onTimeSlotsChange,
   initialTimeSlots = [],
-  readOnly = false
+  readOnly = false,
 }) => {
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>(initialTimeSlots);
   const [isDragging, setIsDragging] = useState(false);
@@ -25,13 +21,13 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
   // Use JSON.stringify to avoid infinite loops from array reference changes
   useEffect(() => {
     setSelectedTimeSlots(initialTimeSlots);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(initialTimeSlots)]);
 
   const handleTimeSlotToggle = (day: string, hour: number) => {
     const timeStr = `${hour}:00 - ${hour + 1}:00`;
     const existingSlotIndex = selectedTimeSlots.findIndex(
-      slot => slot.day === day && slot.time === timeStr
+      (slot) => slot.day === day && slot.time === timeStr,
     );
 
     let newSlots: TimeSlot[];
@@ -51,9 +47,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
 
   const isTimeSlotSelected = (day: string, hour: number) => {
     const timeStr = `${hour}:00 - ${hour + 1}:00`;
-    return selectedTimeSlots.some(
-      slot => slot.day === day && slot.time === timeStr
-    );
+    return selectedTimeSlots.some((slot) => slot.day === day && slot.time === timeStr);
   };
 
   const formatTime = (hour: number) => {
@@ -71,42 +65,44 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
     const [startTime, endTime] = timeSlot.split(' - ');
     const startHour = parseInt(startTime.split(':')[0]);
     const endHour = parseInt(endTime.split(':')[0]);
-    
+
     const formatHour = (hour: number) => {
       if (hour === 0) return 12;
       if (hour <= 12) return hour;
       return hour - 12;
     };
-    
+
     const getPeriod = (hour: number) => {
       return hour < 12 ? 'AM' : 'PM';
     };
-    
+
     const startFormatted = formatHour(startHour);
     const endFormatted = formatHour(endHour);
     const startPeriod = getPeriod(startHour);
     const endPeriod = getPeriod(endHour);
-    
+
     return `${startFormatted}${startPeriod} - ${endFormatted}${endPeriod}`;
   };
 
   const combineContiguousSlots = (timeSlots: string[]) => {
     if (timeSlots.length <= 1) return timeSlots;
-    
+
     // Parse and sort time slots
-    const parsedSlots = timeSlots.map(slot => {
-      const [startTime, endTime] = slot.split(' - ');
-      const startHour = parseInt(startTime.split(':')[0]);
-      const endHour = parseInt(endTime.split(':')[0]);
-      return { start: startHour, end: endHour, original: slot };
-    }).sort((a, b) => a.start - b.start);
-    
+    const parsedSlots = timeSlots
+      .map((slot) => {
+        const [startTime, endTime] = slot.split(' - ');
+        const startHour = parseInt(startTime.split(':')[0]);
+        const endHour = parseInt(endTime.split(':')[0]);
+        return { start: startHour, end: endHour, original: slot };
+      })
+      .sort((a, b) => a.start - b.start);
+
     const combined = [];
     let currentSlot = parsedSlots[0];
-    
+
     for (let i = 1; i < parsedSlots.length; i++) {
       const nextSlot = parsedSlots[i];
-      
+
       // Check if slots are contiguous
       if (currentSlot.end === nextSlot.start) {
         // Extend the current slot
@@ -117,10 +113,10 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
         currentSlot = nextSlot;
       }
     }
-    
+
     // Add the last slot
     combined.push(`${currentSlot.start}:00 - ${currentSlot.end}:00`);
-    
+
     return combined;
   };
 
@@ -147,34 +143,35 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
   };
 
   // Group time slots by day for availability display
-  const groupedSlots = selectedTimeSlots.reduce((acc, slot) => {
-    if (!acc[slot.day]) {
-      acc[slot.day] = [];
-    }
-    acc[slot.day].push(slot.time);
-    return acc;
-  }, {} as Record<string, string[]>);
+  const groupedSlots = selectedTimeSlots.reduce(
+    (acc, slot) => {
+      if (!acc[slot.day]) {
+        acc[slot.day] = [];
+      }
+      acc[slot.day].push(slot.time);
+      return acc;
+    },
+    {} as Record<string, string[]>,
+  );
 
   // Define the order of days
   const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  
+
   // Sort the grouped slots by day order
   const sortedDays = Object.keys(groupedSlots).sort((a, b) => {
     return dayOrder.indexOf(a) - dayOrder.indexOf(b);
   });
-
-
 
   const renderScheduleGrid = () => (
     <Box h="100%" w="100%" display="flex" flexDirection="column" overflow="hidden">
       {/* Header Row */}
       <Box display="flex" h="10%" maxW="100%">
         <Box
-          w={["16", "20", "24"]}
-          minW={["16", "20", "24"]}
+          w={['16', '20', '24']}
+          minW={['16', '20', '24']}
           color="gray.500"
           fontWeight="normal"
-          fontSize={["xs", "sm"]}
+          fontSize={['xs', 'sm']}
           fontFamily="'Open Sans', sans-serif"
           display="flex"
           alignItems="center"
@@ -182,7 +179,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
         >
           EST
         </Box>
-        {days.map(day => (
+        {days.map((day) => (
           <Box
             key={day}
             flex="1"
@@ -191,31 +188,29 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
             justifyContent="center"
             color="gray.600"
             fontWeight="normal"
-            fontSize={["md", "lg"]}
+            fontSize={['md', 'lg']}
             fontFamily="'Open Sans', sans-serif"
             textAlign="center"
           >
             {day}
           </Box>
         ))}
-        {showAvailability && (
-          <Box w="220px" ml={6} />
-        )}
+        {showAvailability && <Box w="220px" ml={6} />}
       </Box>
 
       {/* Time Grid with Availability List */}
       <Box flex="1" display="flex" flexDirection="row" maxW="100%">
         {/* Time Grid */}
         <Box flex="1" display="flex" flexDirection="column" maxW="100%">
-                     {hours.map(hour => (
-             <Box key={hour} display="flex" h="6.92%" maxW="100%">
+          {hours.map((hour) => (
+            <Box key={hour} display="flex" h="6.92%" maxW="100%">
               {/* Time Label */}
               <Box
-                w={["16", "20", "24"]}
-                minW={["16", "20", "24"]}
+                w={['16', '20', '24']}
+                minW={['16', '20', '24']}
                 color="gray.600"
                 fontWeight="normal"
-                fontSize={["xs", "sm"]}
+                fontSize={['xs', 'sm']}
                 fontFamily="'Open Sans', sans-serif"
                 display="flex"
                 alignItems="center"
@@ -229,17 +224,23 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
                 <Box
                   key={`${dayFull}-${hour}`}
                   flex="1"
-                  cursor={readOnly ? "default" : "pointer"}
-                  bg={isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" : "white"}
+                  cursor={readOnly ? 'default' : 'pointer'}
+                  bg={isTimeSlotSelected(dayFull, hour) ? 'rgba(255, 187, 138, 0.2)' : 'white'}
                   transition="background 0.2s"
                   borderTop="0.91px solid"
                   borderBottom="0.91px solid"
-                  borderLeft={dayIndex === 0 ? "0.91px solid" : "none"}
+                  borderLeft={dayIndex === 0 ? '0.91px solid' : 'none'}
                   borderRight="0.91px solid"
                   borderColor="#e3e3e3"
-                  _hover={readOnly ? {} : {
-                    bg: isTimeSlotSelected(dayFull, hour) ? "rgba(255, 187, 138, 0.2)" :"rgba(255, 187, 138, 0.1)"
-                  }}
+                  _hover={
+                    readOnly
+                      ? {}
+                      : {
+                          bg: isTimeSlotSelected(dayFull, hour)
+                            ? 'rgba(255, 187, 138, 0.2)'
+                            : 'rgba(255, 187, 138, 0.1)',
+                        }
+                  }
                   onMouseDown={readOnly ? undefined : () => handleMouseDown(dayFull, hour)}
                   onMouseEnter={readOnly ? undefined : () => handleMouseEnter(dayFull, hour)}
                   onMouseUp={readOnly ? undefined : handleMouseUp}
@@ -250,10 +251,10 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
             </Box>
           ))}
         </Box>
-        
-                 {/* Availability List - positioned alongside time grid */}
-         {showAvailability && (
-           <Box w="220px" pt={0} pb={4} px={3} ml={6} mr={0} alignSelf="flex-start">
+
+        {/* Availability List - positioned alongside time grid */}
+        {showAvailability && (
+          <Box w="220px" pt={0} pb={4} px={3} ml={6} mr={0} alignSelf="flex-start">
             <Text
               fontFamily="'Open Sans', sans-serif"
               fontWeight={600}
@@ -270,7 +271,13 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
 
             <VStack gap={3} align="stretch">
               {sortedDays.map((day) => (
-                <Box key={day} display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                <Box
+                  key={day}
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="flex-start"
+                  mb={2}
+                >
                   <Text
                     fontFamily="'Open Sans', sans-serif"
                     fontWeight={400}
@@ -328,9 +335,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
     </Box>
   );
 
-
-
   return renderScheduleGrid();
 };
 
-export default TimeScheduler; 
+export default TimeScheduler;

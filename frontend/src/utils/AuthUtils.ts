@@ -6,8 +6,8 @@ import { getLocalStorageObjProperty } from './LocalStorageUtils';
  * @returns The user ID or null if not found/authenticated
  */
 export const getCurrentUserId = (): string | null => {
-    const user = getLocalStorageObjProperty(AUTHENTICATED_USER_KEY, "user") as { id: string } | null;
-    return user?.id || null;
+  const user = getLocalStorageObjProperty(AUTHENTICATED_USER_KEY, 'user') as { id: string } | null;
+  return user?.id || null;
 };
 
 /**
@@ -15,7 +15,7 @@ export const getCurrentUserId = (): string | null => {
  * @returns The access token or null if not found/authenticated
  */
 export const getCurrentAccessToken = (): string | null => {
-    return getLocalStorageObjProperty(AUTHENTICATED_USER_KEY, "accessToken") as string;
+  return getLocalStorageObjProperty(AUTHENTICATED_USER_KEY, 'accessToken') as string;
 };
 
 /**
@@ -23,7 +23,7 @@ export const getCurrentAccessToken = (): string | null => {
  * @returns The refresh token or null if not found/authenticated
  */
 export const getCurrentRefreshToken = (): string | null => {
-    return getLocalStorageObjProperty(AUTHENTICATED_USER_KEY, "refreshToken") as string;
+  return getLocalStorageObjProperty(AUTHENTICATED_USER_KEY, 'refreshToken') as string;
 };
 
 /**
@@ -31,8 +31,8 @@ export const getCurrentRefreshToken = (): string | null => {
  * @returns True if user has a valid session (has access token), false otherwise
  */
 export const isAuthenticated = (): boolean => {
-    const accessToken = getCurrentAccessToken();
-    return !!accessToken;
+  const accessToken = getCurrentAccessToken();
+  return !!accessToken;
 };
 
 /**
@@ -40,12 +40,12 @@ export const isAuthenticated = (): boolean => {
  * @returns Object with Authorization header or empty object if not authenticated
  */
 export const getAuthHeaders = () => {
-    const accessToken = getCurrentAccessToken();
-    if (!accessToken) return {};
-    
-    return {
-        headers: {
-            Authorization: `Bearer ${accessToken}`
-        }
-    };
-}; 
+  const accessToken = getCurrentAccessToken();
+  if (!accessToken) return {};
+
+  return {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+};

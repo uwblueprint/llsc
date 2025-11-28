@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Text,
-  Textarea,
-  Button,
-  Flex,
-} from '@chakra-ui/react';
+import { Box, Text, Textarea, Button, Flex } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 
 interface ProfileTextInputProps {
@@ -31,7 +25,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
   placeholder,
   isTextarea = false,
   rows = 2,
-  flex = "1",
+  flex = '1',
   helperText,
   onFocus,
   error,
@@ -40,13 +34,12 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
 }) => {
   const styledLabel = (
     <Box>
-      <Flex
-        align="center"
-        gap={2}
-        h="30px"
-        mb={2}
-      >
-        {icon && <Box display="flex" alignItems="center">{icon}</Box>}
+      <Flex align="center" gap={2} h="30px" mb={2}>
+        {icon && (
+          <Box display="flex" alignItems="center">
+            {icon}
+          </Box>
+        )}
         <Box
           fontSize="1rem"
           fontWeight={600}
@@ -124,12 +117,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
           }}
         />
         {error && (
-          <Text
-            color="#EF4444"
-            fontSize="0.875rem"
-            mt={1}
-            fontFamily="'Open Sans', sans-serif"
-          >
+          <Text color="#EF4444" fontSize="0.875rem" mt={1} fontFamily="'Open Sans', sans-serif">
             {error}
           </Text>
         )}
@@ -162,12 +150,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
         }}
       />
       {error && (
-        <Text
-          color="#EF4444"
-          fontSize="0.875rem"
-          mt={1}
-          fontFamily="'Open Sans', sans-serif"
-        >
+        <Text color="#EF4444" fontSize="0.875rem" mt={1} fontFamily="'Open Sans', sans-serif">
           {error}
         </Text>
       )}
@@ -175,4 +158,4 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
   );
 };
 
-export default ProfileTextInput; 
+export default ProfileTextInput;

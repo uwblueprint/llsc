@@ -112,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     loading,
     signOut,
-    syncUser: () => firebaseUser ? syncUser(firebaseUser) : Promise.resolve(),
+    syncUser: () => (firebaseUser ? syncUser(firebaseUser) : Promise.resolve()),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

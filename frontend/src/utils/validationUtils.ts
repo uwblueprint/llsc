@@ -52,11 +52,7 @@ export const validateDate = (dateString: string): ValidationResult => {
 
   // Create date and check if it's valid
   const date = new Date(year, month - 1, day);
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
     return { isValid: false, error: 'Please enter a valid date' };
   }
 
@@ -135,7 +131,10 @@ export const validatePostalCode = (postalCode: string): ValidationResult => {
 /**
  * Validates that a field is not empty
  */
-export const validateRequired = (value: string, fieldName: string = 'This field'): ValidationResult => {
+export const validateRequired = (
+  value: string,
+  fieldName: string = 'This field',
+): ValidationResult => {
   if (!value || !value.trim()) {
     return { isValid: false, error: `${fieldName} is required` };
   }

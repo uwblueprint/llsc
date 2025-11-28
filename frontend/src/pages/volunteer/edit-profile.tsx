@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TimeScheduler from '@/components/dashboard/TimeScheduler';
 import type { TimeSlot } from '@/components/dashboard/types';
-import {
-  Box,
-  Heading,
-  Text,
-  VStack,
-  HStack,
-  Button,
-} from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, HStack, Button } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { BiArrowBack } from 'react-icons/bi';
 import PersonalDetails from '@/components/dashboard/PersonalDetails';
@@ -16,7 +9,12 @@ import BloodCancerExperience from '@/components/dashboard/BloodCancerExperience'
 import ActionButton from '@/components/dashboard/EditButton';
 import { COLORS } from '@/constants/form';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserData, updateUserData, updateMyAvailability, AvailabilityTemplateResponse } from '@/APIClients/userDataAPIClient';
+import {
+  getUserData,
+  updateUserData,
+  updateMyAvailability,
+  AvailabilityTemplateResponse,
+} from '@/APIClients/userDataAPIClient';
 
 const EditProfile: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -33,7 +31,7 @@ const EditProfile: React.FC = () => {
     gender: '',
     pronouns: '',
     timezone: 'Eastern Standard Time (EST)',
-    overview: ''
+    overview: '',
   });
 
   // Blood cancer experience state for profile
@@ -41,7 +39,7 @@ const EditProfile: React.FC = () => {
     diagnosis: [] as string[],
     dateOfDiagnosis: '',
     treatments: [] as string[],
-    experiences: [] as string[]
+    experiences: [] as string[],
   });
 
   // Loved one details state
@@ -63,7 +61,7 @@ const EditProfile: React.FC = () => {
     const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const timeSlots: TimeSlot[] = [];
 
-    templates.forEach(template => {
+    templates.forEach((template) => {
       const dayName = dayNames[template.dayOfWeek];
 
       // Parse time strings (format: "HH:MM:SS")
@@ -83,7 +81,7 @@ const EditProfile: React.FC = () => {
         timeSlots.push({
           day: dayName,
           time: `${hour}:00 - ${hour + 1}:00`,
-          selected: true
+          selected: true,
         });
       }
     });
@@ -139,13 +137,16 @@ const EditProfile: React.FC = () => {
           console.log('formattedPronouns:', formattedPronouns);
 
           setPersonalDetails({
-            name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || user?.email || 'Not provided',
+            name:
+              `${userData.firstName || ''} ${userData.lastName || ''}`.trim() ||
+              user?.email ||
+              'Not provided',
             email: userData.email || user?.email || 'Not provided',
             birthday: formattedBirthday,
             gender: userData.genderIdentity || 'Not provided',
             pronouns: formattedPronouns,
             timezone: 'Eastern Standard Time (EST)', // TODO: Add timezone field to backend
-            overview: 'Not provided' // TODO: Add overview field to backend
+            overview: 'Not provided', // TODO: Add overview field to backend
           });
 
           console.log('Personal details state set to:', {
@@ -153,7 +154,7 @@ const EditProfile: React.FC = () => {
             email: userData.email,
             birthday: formattedBirthday,
             gender: userData.genderIdentity,
-            pronouns: formattedPronouns
+            pronouns: formattedPronouns,
           });
 
           // Populate cancer experience
@@ -161,7 +162,7 @@ const EditProfile: React.FC = () => {
             diagnosis: userData.diagnosis ? [userData.diagnosis] : [],
             dateOfDiagnosis: userData.dateOfDiagnosis || '',
             treatments: userData.treatments || [],
-            experiences: userData.experiences || []
+            experiences: userData.experiences || [],
           });
 
           // Populate loved one details if caring for someone
@@ -171,7 +172,7 @@ const EditProfile: React.FC = () => {
 
             setLovedOneDetails({
               birthday: lovedOneBirthday,
-              gender: lovedOneGender
+              gender: lovedOneGender,
             });
 
             // Populate loved one cancer experience
@@ -179,7 +180,7 @@ const EditProfile: React.FC = () => {
               diagnosis: userData.lovedOneDiagnosis || 'Not provided',
               dateOfDiagnosis: userData.lovedOneDateOfDiagnosis || 'Not provided',
               treatments: userData.lovedOneTreatments || [],
-              experiences: userData.lovedOneExperiences || []
+              experiences: userData.lovedOneExperiences || [],
             });
           }
 
@@ -229,7 +230,7 @@ const EditProfile: React.FC = () => {
     } else if (field === 'gender') {
       updateData.gender_identity = value;
     } else if (field === 'pronouns') {
-      updateData.pronouns = value.split(',').map(p => p.trim());
+      updateData.pronouns = value.split(',').map((p) => p.trim());
     } else if (field === 'lovedOneBirthday') {
       // Loved one's age/birthday - store as is since backend expects lovedOneAge as string
       updateData.loved_one_age = value;
@@ -244,7 +245,7 @@ const EditProfile: React.FC = () => {
   // Save handler for treatments
   const handleSaveTreatments = async () => {
     const result = await updateUserData({
-      treatments: cancerExperience.treatments
+      treatments: cancerExperience.treatments,
     });
     if (!result) {
       alert('Failed to save treatments');
@@ -254,7 +255,7 @@ const EditProfile: React.FC = () => {
   // Save handler for experiences
   const handleSaveExperiences = async () => {
     const result = await updateUserData({
-      experiences: cancerExperience.experiences
+      experiences: cancerExperience.experiences,
     });
     if (!result) {
       alert('Failed to save experiences');
@@ -265,7 +266,7 @@ const EditProfile: React.FC = () => {
   const handleSaveLovedOneTreatments = async () => {
     if (!lovedOneCancerExperience) return;
     const result = await updateUserData({
-      loved_one_treatments: lovedOneCancerExperience.treatments
+      loved_one_treatments: lovedOneCancerExperience.treatments,
     });
     if (!result) {
       alert('Failed to save loved one treatments');
@@ -276,7 +277,7 @@ const EditProfile: React.FC = () => {
   const handleSaveLovedOneExperiences = async () => {
     if (!lovedOneCancerExperience) return;
     const result = await updateUserData({
-      loved_one_experiences: lovedOneCancerExperience.experiences
+      loved_one_experiences: lovedOneCancerExperience.experiences,
     });
     if (!result) {
       alert('Failed to save loved one experiences');
@@ -304,22 +305,25 @@ const EditProfile: React.FC = () => {
     // Convert TimeSlots to AvailabilityTemplates for API
     const convertToTemplates = (timeSlots: TimeSlot[]): AvailabilityTemplateResponse[] => {
       const dayToIndex: Record<string, number> = {
-        'Monday': 0,
-        'Tuesday': 1,
-        'Wednesday': 2,
-        'Thursday': 3,
-        'Friday': 4,
-        'Saturday': 5,
-        'Sunday': 6,
+        Monday: 0,
+        Tuesday: 1,
+        Wednesday: 2,
+        Thursday: 3,
+        Friday: 4,
+        Saturday: 5,
+        Sunday: 6,
       };
 
-      const slotsByDay = timeSlots.reduce((acc, slot) => {
-        if (!acc[slot.day]) {
-          acc[slot.day] = [];
-        }
-        acc[slot.day].push(slot);
-        return acc;
-      }, {} as Record<string, TimeSlot[]>);
+      const slotsByDay = timeSlots.reduce(
+        (acc, slot) => {
+          if (!acc[slot.day]) {
+            acc[slot.day] = [];
+          }
+          acc[slot.day].push(slot);
+          return acc;
+        },
+        {} as Record<string, TimeSlot[]>,
+      );
 
       const templates: AvailabilityTemplateResponse[] = [];
 
@@ -399,8 +403,17 @@ const EditProfile: React.FC = () => {
   // Show loading while auth initializes or data loads
   if (authLoading || loading) {
     return (
-      <Box minH="100vh" bg="white" py={6} display="flex" justifyContent="center" alignItems="center">
-        <Text fontSize="lg" color={COLORS.fieldGray}>Loading...</Text>
+      <Box
+        minH="100vh"
+        bg="white"
+        py={6}
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+      >
+        <Text fontSize="lg" color={COLORS.fieldGray}>
+          Loading...
+        </Text>
       </Box>
     );
   }
@@ -460,7 +473,7 @@ const EditProfile: React.FC = () => {
                   />
                   <Box bg="white" p={0} mt="116px" w="100%" h="1100px" pb={12}>
                     <HStack justify="space-between" align="center" mb={0}>
-                      <Heading 
+                      <Heading
                         w="519px"
                         h="40px"
                         fontSize="1.625rem"
@@ -474,9 +487,7 @@ const EditProfile: React.FC = () => {
                         Your availability
                       </Heading>
                       {!isEditingAvailability ? (
-                        <ActionButton onClick={handleEditAvailability}>
-                          Edit
-                        </ActionButton>
+                        <ActionButton onClick={handleEditAvailability}>Edit</ActionButton>
                       ) : (
                         <HStack gap={3}>
                           <Button
@@ -488,8 +499,8 @@ const EditProfile: React.FC = () => {
                             fontFamily="'Open Sans', sans-serif"
                             fontWeight={600}
                             fontSize="0.875rem"
-                            _hover={{ bg: "#991B1B" }}
-                            _active={{ bg: "#7F1D1D" }}
+                            _hover={{ bg: '#991B1B' }}
+                            _active={{ bg: '#7F1D1D' }}
                             onClick={handleClearAvailability}
                           >
                             Clear Availability
@@ -503,8 +514,8 @@ const EditProfile: React.FC = () => {
                             fontFamily="'Open Sans', sans-serif"
                             fontWeight={600}
                             fontSize="0.875rem"
-                            _hover={{ bg: "#4B5563" }}
-                            _active={{ bg: "#374151" }}
+                            _hover={{ bg: '#4B5563' }}
+                            _active={{ bg: '#374151' }}
                             onClick={handleCancelEdit}
                           >
                             Cancel
@@ -518,8 +529,8 @@ const EditProfile: React.FC = () => {
                             fontFamily="'Open Sans', sans-serif"
                             fontWeight={600}
                             fontSize="0.875rem"
-                            _hover={{ bg: "#044d52" }}
-                            _active={{ bg: "#033e42" }}
+                            _hover={{ bg: '#044d52' }}
+                            _active={{ bg: '#033e42' }}
                             onClick={handleSaveAvailability}
                             disabled={savingAvailability}
                           >
@@ -529,14 +540,14 @@ const EditProfile: React.FC = () => {
                       )}
                     </HStack>
 
-                    <Text 
-                      fontSize="1rem" 
+                    <Text
+                      fontSize="1rem"
                       fontWeight={400}
                       lineHeight="100%"
                       letterSpacing="0%"
-                      color="#495D6C" 
-                      mb={4} 
-                      mt={0} 
+                      color="#495D6C"
+                      mb={4}
+                      mt={0}
                       fontFamily="'Open Sans', sans-serif"
                     >
                       We require that availability be provided in sessions of at least 2 hours.
@@ -561,4 +572,4 @@ const EditProfile: React.FC = () => {
   );
 };
 
-export default EditProfile; 
+export default EditProfile;

@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Heading,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Box, Heading, Text, VStack } from '@chakra-ui/react';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
 import ProfileCard from '@/components/dashboard/ProfileCard';
 import ScheduleCallModal from '@/components/dashboard/ScheduleCallModal';
@@ -67,7 +62,7 @@ const VolunteerDashboardPage: React.FC = () => {
             diagnosis: participant.diagnosis || 'N/A',
             treatments: participant.treatments || [],
             experiences: participant.experiences || [],
-            initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?'
+            initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
           };
         });
 
@@ -117,8 +112,7 @@ const VolunteerDashboardPage: React.FC = () => {
           >
             {matchedParticipants.length > 0
               ? `Participants have matched with you, ${userName}!`
-              : `No New Matches${userName ? `, ${userName}` : ''}`
-            }
+              : `No New Matches${userName ? `, ${userName}` : ''}`}
           </Heading>
 
           <Text
@@ -129,9 +123,8 @@ const VolunteerDashboardPage: React.FC = () => {
             mb={8}
           >
             {matchedParticipants.length > 0
-              ? "Please schedule calls with your matches."
-              : "Keep an eye out on your inbox! We'll notify you when we match you with a participant."
-            }
+              ? 'Please schedule calls with your matches.'
+              : "Keep an eye out on your inbox! We'll notify you when we match you with a participant."}
           </Text>
 
           {matchedParticipants.length > 0 && (
