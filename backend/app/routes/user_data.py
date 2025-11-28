@@ -34,12 +34,11 @@ class ExperienceResponse(BaseModel):
 
 class AvailabilityTemplateResponse(BaseModel):
     """Response schema for availability template"""
+
     day_of_week: int  # 0=Monday, 1=Tuesday, ..., 6=Sunday
     start_time: str  # Time string in format "HH:MM:SS"
     end_time: str  # Time string in format "HH:MM:SS"
     model_config = ConfigDict(from_attributes=True)
-
-
 
 
 class UserDataResponse(BaseModel):
@@ -123,7 +122,7 @@ async def get_my_user_data(
             AvailabilityTemplateResponse(
                 day_of_week=template.day_of_week,
                 start_time=template.start_time.isoformat(),
-                end_time=template.end_time.isoformat()
+                end_time=template.end_time.isoformat(),
             )
             for template in current_user.availability_templates
             if template.is_active
@@ -158,9 +157,7 @@ async def get_my_user_data(
             loved_one_age=user_data.loved_one_age,
             loved_one_diagnosis=user_data.loved_one_diagnosis,
             loved_one_date_of_diagnosis=(
-                user_data.loved_one_date_of_diagnosis.isoformat()
-                if user_data.loved_one_date_of_diagnosis
-                else None
+                user_data.loved_one_date_of_diagnosis.isoformat() if user_data.loved_one_date_of_diagnosis else None
             ),
             loved_one_treatments=[treatment.name for treatment in user_data.loved_one_treatments],
             loved_one_experiences=[experience.name for experience in user_data.loved_one_experiences],
@@ -311,7 +308,7 @@ async def update_my_user_data(
             AvailabilityTemplateResponse(
                 day_of_week=template.day_of_week,
                 start_time=template.start_time.isoformat(),
-                end_time=template.end_time.isoformat()
+                end_time=template.end_time.isoformat(),
             )
             for template in current_user.availability_templates
             if template.is_active
