@@ -28,7 +28,7 @@ export default function WelcomePage() {
 
           if (role) {
             if (role === UserRole.ADMIN) {
-              await router.replace('/admin');
+              await router.replace('/admin/directory');
               return;
             }
 
@@ -61,7 +61,7 @@ export default function WelcomePage() {
     }
 
     if (role === UserRole.ADMIN) {
-      router.push('/admin');
+      router.push('/admin/directory');
       return;
     }
 
