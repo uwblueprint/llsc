@@ -2,12 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text, VStack } from '@chakra-ui/react';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
 import ProfileCard from '@/components/dashboard/ProfileCard';
-import ScheduleCallModal from '@/components/dashboard/ScheduleCallModal';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
 import baseAPIClient from '@/APIClients/baseAPIClient';
-import type { TimeSlot } from '@/components/dashboard/types';
 
-interface MatchedParticipant {
+interface ScheduledCall {
   id: number;
   name: string;
   pronouns: string;
@@ -17,14 +15,13 @@ interface MatchedParticipant {
   treatments: string[];
   experiences: string[];
   initials: string;
+  scheduledTime?: Date;
 }
 
-const VolunteerDashboardPage: React.FC = () => {
+const ScheduledCallsPage: React.FC = () => {
   const [userName, setUserName] = useState('');
-  const [matchedParticipants, setMatchedParticipants] = useState<MatchedParticipant[]>([]);
+  const [scheduledCalls, setScheduledCalls] = useState<ScheduledCall[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [selectedParticipant, setSelectedParticipant] = useState<MatchedParticipant | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -35,26 +32,26 @@ const VolunteerDashboardPage: React.FC = () => {
         setUserName(firstName);
       }
 
-      // Fetch matched participants from API
+      // Fetch scheduled calls from API
       try {
         const response = await baseAPIClient.get('/matches/volunteer/me');
         const matches = response.data.matches || [];
 
-        // Filter matches that need to be scheduled (pending or awaiting_volunteer_acceptance)
-        const matchesNeedingScheduling = matches.filter((match: any) => {
+        // Filter matches that are confirmed (scheduled)
+        const confirmedMatches = matches.filter((match: any) => {
           const status = match.matchStatus?.toLowerCase() || '';
-          return status === 'pending' || status === 'awaiting_volunteer_acceptance';
+          return status === 'confirmed';
         });
 
         // Transform API response to match ProfileCard format
-        const transformedMatches = matchesNeedingScheduling.map((match: any) => {
+        const transformedCalls = confirmedMatches.map((match: any) => {
           const participant = match.participant;
           const firstName = participant.firstName || '';
           const lastName = participant.lastName || '';
           const fullName = `${firstName} ${lastName}`.trim();
 
           return {
-            id: match.id, // Use match ID instead of participant UUID
+            id: match.id,
             name: fullName || participant.email,
             pronouns: participant.pronouns?.join('/') || '',
             age: participant.age || 0,
@@ -63,12 +60,13 @@ const VolunteerDashboardPage: React.FC = () => {
             treatments: participant.treatments || [],
             experiences: participant.experiences || [],
             initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
+            scheduledTime: match.scheduledTime ? new Date(match.scheduledTime) : undefined,
           };
         });
 
-        setMatchedParticipants(transformedMatches);
+        setScheduledCalls(transformedCalls);
       } catch (error) {
-        console.error('Error fetching matches:', error);
+        console.error('Error fetching scheduled calls:', error);
       } finally {
         setLoading(false);
       }
@@ -88,7 +86,7 @@ const VolunteerDashboardPage: React.FC = () => {
               fontFamily="'Open Sans', sans-serif"
               textAlign="left"
             >
-              Loading matches...
+              Loading scheduled calls...
             </Text>
           </Box>
         </Box>
@@ -110,9 +108,9 @@ const VolunteerDashboardPage: React.FC = () => {
             textAlign="left"
             mb={2}
           >
-            {matchedParticipants.length > 0
-              ? `Participants have matched with you, ${userName}!`
-              : `No New Matches${userName ? `, ${userName}` : ''}`}
+            {scheduledCalls.length > 0
+              ? `Your Scheduled Calls${userName ? `, ${userName}` : ''}`
+              : `No Scheduled Calls${userName ? `, ${userName}` : ''}`}
           </Heading>
 
           <Text
@@ -122,20 +120,22 @@ const VolunteerDashboardPage: React.FC = () => {
             textAlign="left"
             mb={8}
           >
-            {matchedParticipants.length > 0
-              ? 'Please schedule calls with your matches.'
-              : "Keep an eye out on your inbox! We'll notify you when we match you with a participant."}
+            {scheduledCalls.length > 0
+              ? 'Here are your upcoming calls with participants.'
+              : "You don't have any scheduled calls yet. Check the Matches tab to schedule calls with your matched participants."}
           </Text>
 
-          {matchedParticipants.length > 0 && (
+          {scheduledCalls.length > 0 && (
             <VStack gap={6} align="flex-start">
-              {matchedParticipants.map((participant) => (
+              {scheduledCalls.map((call) => (
                 <ProfileCard
-                  key={participant.id}
-                  participant={participant}
-                  onScheduleCall={() => {
-                    setSelectedParticipant(participant);
-                    setIsScheduleModalOpen(true);
+                  key={call.id}
+                  participant={call}
+                  time={call.scheduledTime}
+                  showTimes={!!call.scheduledTime}
+                  onViewContact={() => {
+                    // Handle view contact action
+                    console.log('View contact for', call.name);
                   }}
                 />
               ))}
@@ -143,28 +143,8 @@ const VolunteerDashboardPage: React.FC = () => {
           )}
         </Box>
       </Box>
-
-      {/* Schedule Call Modal */}
-      {selectedParticipant && (
-        <ScheduleCallModal
-          isOpen={isScheduleModalOpen}
-          onClose={() => {
-            setIsScheduleModalOpen(false);
-            setSelectedParticipant(null);
-          }}
-          participantName={selectedParticipant.name}
-          onSend={(timeSlots: TimeSlot[], additionalInfo: string) => {
-            // TODO: Send availability to participant
-            console.log('Sending availability to', selectedParticipant.name);
-            console.log('Time slots:', timeSlots);
-            console.log('Additional info:', additionalInfo);
-            setIsScheduleModalOpen(false);
-            setSelectedParticipant(null);
-          }}
-        />
-      )}
     </VolunteerDashboardLayout>
   );
 };
 
-export default VolunteerDashboardPage;
+export default ScheduledCallsPage;

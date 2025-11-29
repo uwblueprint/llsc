@@ -161,6 +161,9 @@ export const logout = async (): Promise<boolean> => {
 // Get current authenticated user from localStorage
 export const getCurrentUser = (): AuthenticatedUser => {
   try {
+    // Check if we're in a browser environment
+    if (globalThis.window === undefined) return null;
+
     const userDataString = localStorage.getItem(AUTHENTICATED_USER_KEY);
     if (!userDataString) return null;
 
