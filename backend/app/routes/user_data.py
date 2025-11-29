@@ -1,5 +1,6 @@
 from datetime import datetime as dt
 from typing import List, Optional
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict
@@ -405,3 +406,111 @@ async def update_my_user_data(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===== Admin Endpoints =====
+
+
+class AdminUserDataResponse(BaseModel):
+    """Detailed response for admin lookups."""
+
+    id: str
+    user_id: str
+    first_name: str | None
+    last_name: str | None
+    date_of_birth: str | None
+    email: str | None
+    phone: str | None
+    city: str | None
+    province: str | None
+    postal_code: str | None
+    gender_identity: str | None
+    pronouns: List[str] | None
+    ethnic_group: List[str] | None
+    marital_status: str | None
+    has_kids: str | None
+    diagnosis: str | None
+    date_of_diagnosis: str | None
+    other_ethnic_group: str | None
+    gender_identity_custom: str | None
+    has_blood_cancer: str | None
+    caring_for_someone: str | None
+    loved_one_gender_identity: str | None
+    loved_one_age: str | None
+    loved_one_diagnosis: str | None
+    loved_one_date_of_diagnosis: str | None
+    treatments: List[TreatmentResponse] = []
+    experiences: List[ExperienceResponse] = []
+    loved_one_treatments: List[TreatmentResponse] = []
+    loved_one_experiences: List[ExperienceResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+@router.get("/{user_id}", response_model=AdminUserDataResponse | None)
+async def get_user_data(
+    user_id: str,
+    db: Session = Depends(get_db),
+    authorized: bool = has_roles([UserRole.ADMIN]),
+):
+    """Get UserData for a specific user (admin only)."""
+    try:
+        user_uuid = UUID(user_id)
+        user_data = (
+            db.query(UserData)
+            .options(
+                joinedload(UserData.treatments),
+                joinedload(UserData.experiences),
+                joinedload(UserData.loved_one_treatments),
+                joinedload(UserData.loved_one_experiences),
+            )
+            .filter(UserData.user_id == user_uuid)
+            .first()
+        )
+
+        if not user_data:
+            return None
+
+        return AdminUserDataResponse(
+            id=str(user_data.id),
+            user_id=str(user_data.user_id),
+            first_name=user_data.first_name,
+            last_name=user_data.last_name,
+            date_of_birth=user_data.date_of_birth.isoformat() if user_data.date_of_birth else None,
+            email=user_data.email,
+            phone=user_data.phone,
+            city=user_data.city,
+            province=user_data.province,
+            postal_code=user_data.postal_code,
+            gender_identity=user_data.gender_identity,
+            pronouns=user_data.pronouns,
+            ethnic_group=user_data.ethnic_group,
+            marital_status=user_data.marital_status,
+            has_kids=user_data.has_kids,
+            diagnosis=user_data.diagnosis,
+            date_of_diagnosis=user_data.date_of_diagnosis.isoformat() if user_data.date_of_diagnosis else None,
+            other_ethnic_group=user_data.other_ethnic_group,
+            gender_identity_custom=user_data.gender_identity_custom,
+            has_blood_cancer=user_data.has_blood_cancer,
+            caring_for_someone=user_data.caring_for_someone,
+            loved_one_gender_identity=user_data.loved_one_gender_identity,
+            loved_one_age=user_data.loved_one_age,
+            loved_one_diagnosis=user_data.loved_one_diagnosis,
+            loved_one_date_of_diagnosis=(
+                user_data.loved_one_date_of_diagnosis.isoformat() if user_data.loved_one_date_of_diagnosis else None
+            ),
+            treatments=[TreatmentResponse.model_validate(t) for t in (user_data.treatments or [])],
+            experiences=[ExperienceResponse.model_validate(e) for e in (user_data.experiences or [])],
+            loved_one_treatments=[
+                TreatmentResponse.model_validate(t) for t in (user_data.loved_one_treatments or [])
+            ],
+            loved_one_experiences=[
+                ExperienceResponse.model_validate(e) for e in (user_data.loved_one_experiences or [])
+            ],
+        )
+
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid user ID format: {exc}") from exc
+    except Exception as exc:  # pragma: no cover - unexpected errors
+        print(f"Error in get_user_data: {type(exc).__name__}: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))

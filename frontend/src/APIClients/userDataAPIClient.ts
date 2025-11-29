@@ -138,3 +138,57 @@ export const updateMyAvailability = async (
     return false;
   }
 };
+
+export interface Treatment {
+  id: number;
+  name: string;
+}
+
+export interface Experience {
+  id: number;
+  name: string;
+}
+
+export interface AdminUserDataResponse {
+  id: string;
+  userId: string;
+  firstName: string | null;
+  lastName: string | null;
+  dateOfBirth: string | null;
+  email: string | null;
+  phone: string | null;
+  city: string | null;
+  province: string | null;
+  postalCode: string | null;
+  genderIdentity: string | null;
+  pronouns: string[] | null;
+  ethnicGroup: string[] | null;
+  maritalStatus: string | null;
+  hasKids: string | null;
+  diagnosis: string | null;
+  dateOfDiagnosis: string | null;
+  otherEthnicGroup: string | null;
+  genderIdentityCustom: string | null;
+  hasBloodCancer: string | null;
+  caringForSomeone: string | null;
+  lovedOneGenderIdentity: string | null;
+  lovedOneAge: string | null;
+  lovedOneDiagnosis: string | null;
+  lovedOneDateOfDiagnosis: string | null;
+  treatments: Treatment[];
+  experiences: Experience[];
+  lovedOneTreatments: Treatment[];
+  lovedOneExperiences: Experience[];
+}
+
+class AdminUserDataAPIClient {
+  /**
+   * Get UserData for a specific user (admin only)
+   */
+  async getUserData(userId: string): Promise<AdminUserDataResponse | null> {
+    const response = await baseAPIClient.get<AdminUserDataResponse>(`/user-data/${userId}`);
+    return response.data;
+  }
+}
+
+export const adminUserDataAPIClient = new AdminUserDataAPIClient();

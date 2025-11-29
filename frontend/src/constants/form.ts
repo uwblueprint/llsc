@@ -169,6 +169,7 @@ export interface IntakeFormData {
   hasBloodCancer: 'yes' | 'no' | '';
   caringForSomeone: 'yes' | 'no' | '';
   language: 'en' | 'fr';
+  caregiverRelationship?: string;
 
   // Personal Information
   personalInfo: {
@@ -280,6 +281,7 @@ export const INITIAL_INTAKE_FORM_DATA: IntakeFormData = {
   hasBloodCancer: '',
   caringForSomeone: '',
   language: 'en',
+  caregiverRelationship: '',
   personalInfo: {
     firstName: '',
     lastName: '',
@@ -297,4 +299,123 @@ export const INITIAL_INTAKE_FORM_DATA: IntakeFormData = {
     hasKids: '',
     timezone: '',
   },
+  cancerExperience: {
+    diagnosis: '',
+    dateOfDiagnosis: '',
+    treatments: [],
+    experiences: [],
+  },
+  caregiverExperience: {
+    experiences: [],
+  },
+  lovedOne: {
+    demographics: {
+      genderIdentity: '',
+      genderIdentityCustom: '',
+      age: '',
+    },
+    cancerExperience: {
+      diagnosis: '',
+      dateOfDiagnosis: '',
+      treatments: [],
+      experiences: [],
+    },
+  },
+  additionalInfo: '',
 };
+
+export const GENDER_IDENTITY_OPTIONS = [
+  'Male',
+  'Female',
+  'Non-binary',
+  'Transgender',
+  'Prefer not to answer',
+  'Self-describe',
+] as const;
+
+export const PRONOUNS_OPTIONS = [
+  'He/Him',
+  'She/Her',
+  'They/Them',
+  'Ze/Zir',
+  'Prefer not to answer',
+  'Self-describe',
+] as const;
+
+export const ETHNIC_GROUP_OPTIONS = [
+  'Black (including African and Caribbean descent)',
+  'Middle Eastern, Western or Central Asian',
+  'East Asian',
+  'South Asian',
+  'Southeast Asian',
+  'Indigenous person from Canada',
+  'Latin American',
+  'White',
+  'Mixed Ethnicity (identify with more than one group)',
+  'Prefer not to answer',
+  'Self-describe',
+] as const;
+
+export const TIMEZONE_OPTIONS = ['NST', 'AST', 'EST', 'CST', 'MST', 'PST'] as const;
+export const MARITAL_STATUS_OPTIONS = [
+  'Single',
+  'Married/Common Law',
+  'Divorced',
+  'Widowed',
+] as const;
+export const HAS_KIDS_OPTIONS = ['Yes', 'No', 'Prefer not to answer'] as const;
+
+export const CAREGIVER_RELATIONSHIP_OPTIONS = [
+  'A parent',
+  'A sibling',
+  'A child',
+  'A spouse/partner',
+  'A friend',
+] as const;
+
+export const DEFAULT_TREATMENTS = [
+  'Chemotherapy',
+  'Oral Chemotherapy',
+  'Radiation',
+  'Transfusions',
+  'Immunotherapy',
+  'Maintenance Chemotherapy',
+  'Palliative Care',
+  'Autologous Stem Cell Transplant',
+  'Allogeneic Stem Cell Transplant',
+  'Haplo Stem Cell Transplant',
+  'CAR-T',
+  'BTK Inhibitors',
+  'Watch and Wait / Active Surveillance',
+  'Unknown',
+];
+
+export const DEFAULT_EXPERIENCES = [
+  'Brain Fog',
+  'Communication Challenges',
+  'Feeling Overwhelmed',
+  'Fatigue',
+  'Fertility Issues',
+  'Graft vs Host',
+  'Returning to work or school after/during treatment',
+  'Speaking to your family or friends about the diagnosis',
+  'Relapse',
+  'Anxiety / Depression',
+  'PTSD',
+  'Caregiver Fatigue',
+  'Managing practical challenges',
+];
+
+export const DIAGNOSIS_OPTIONS = [
+  'Unknown',
+  'Acute Myeloid Leukemia',
+  'Acute Lymphoblastic Leukemia',
+  'Acute Promyelocytic Leukemia',
+  'Mixed Phenotype Leukemia',
+  'Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma',
+  'Chronic Myeloid Leukemia',
+  'Hairy Cell Leukemia',
+  'Myeloma/Multiple Myeloma',
+  "Hodgkin's Lymphoma",
+  "Indolent/Low Grade Non-Hodgkin's Lymphoma",
+] as const;

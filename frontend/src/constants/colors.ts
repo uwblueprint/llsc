@@ -3,7 +3,9 @@ export const veniceBlue = '#1D3448';
 export const tealBlue = '#5F989D'; // For drag overlay when not hovering
 export const lightGray = '#BBC2C8'; // For drag overlay when hovering
 export const gray700 = '#414651';
+export const gray500 = '#717680';
 export const gray300 = '#D5D7DA';
+export const gray100 = '#F5F5F5';
 export const textPrimary = '#495D6C';
 export const white = '#FFFFFF';
 export const black = '#000000';
@@ -61,9 +63,15 @@ export const teal = '#056067';
 export const tealDarker = '#044d52';
 export const bgPinkLight = 'rgba(232, 188, 189, 0.3)';
 export const red = '#A70000';
+export const redHover = '#8B0000';
+export const redDarker = '#8B0000';
 export const bgGrayLight = '#EEEEEC';
 export const bgYellowLight = '#F5E9E1';
 export const orange = '#8E4C20';
+
+// Form status badge colors
+export const bgBlueLight = '#EDF6FD';
+export const blue = '#2171AB';
 
 // Shadow constants
 export const shadow = {
@@ -80,7 +88,9 @@ export const COLORS = {
   tealBlue,
   lightGray,
   gray700,
+  gray500,
   gray300,
+  gray100,
   textPrimary,
   white,
   black,
@@ -104,8 +114,12 @@ export const COLORS = {
   tealDarker,
   bgPinkLight,
   red,
+  redHover,
+  redDarker,
   bgGrayLight,
   bgYellowLight,
   orange,
+  bgBlueLight,
+  blue,
   shadow,
 } as const;
