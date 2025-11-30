@@ -345,6 +345,9 @@ class MatchService:
             if acting_participant_id and match.participant_id != acting_participant_id:
                 raise HTTPException(status_code=403, detail="Cannot modify another participant's match")
 
+            self._set_match_status(match, "cancelled_by_participant")
+
+            # TODO: send particpant an email saying that the match has been cancelled
             # Soft-delete the match when cancelled (cleans up time blocks and sets deleted_at)
             self._delete_match(match)
 
