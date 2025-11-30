@@ -519,19 +519,21 @@ export const IntakeFormEditor: React.FC<IntakeFormEditorProps> = ({ initialAnswe
                 Who are you caring for?
               </Text>
               <VStack align="stretch" gap={1}>
-                {CAREGIVER_RELATIONSHIP_OPTIONS.map((option) => (
-                  <CustomRadio
-                    key={option}
-                    name="caregiverRelationship"
-                    value={option}
-                    checked={formData.caregiverRelationship === option}
-                    onChange={(value) => handleCaregiverRelationshipChange(value)}
-                  >
-                    <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px">
-                      {option}
-                    </Text>
-                  </CustomRadio>
-                ))}
+                {CAREGIVER_RELATIONSHIP_OPTIONS.map(
+                  (option: (typeof CAREGIVER_RELATIONSHIP_OPTIONS)[number]) => (
+                    <CustomRadio
+                      key={option}
+                      name="caregiverRelationship"
+                      value={option}
+                      checked={formData.caregiverRelationship === option}
+                      onChange={(value) => handleCaregiverRelationshipChange(value)}
+                    >
+                      <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px">
+                        {option}
+                      </Text>
+                    </CustomRadio>
+                  ),
+                )}
               </VStack>
             </Box>
           )}

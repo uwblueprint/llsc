@@ -3,8 +3,6 @@ import {
   IntakeFormData,
   INITIAL_INTAKE_FORM_DATA,
   GENDER_IDENTITY_OPTIONS,
-  DEFAULT_TREATMENTS,
-  DEFAULT_EXPERIENCES,
 } from '@/constants/form';
 import { AdminUserDataResponse } from '@/APIClients/userDataAPIClient';
 import { VolunteerDataResponse } from '@/APIClients/volunteerDataAPIClient';
@@ -45,8 +43,8 @@ export interface VolunteerFormAnswers extends IntakeFormData {
 export const DEFAULT_CANCER_EXPERIENCE = {
   diagnosis: '',
   dateOfDiagnosis: '',
-  treatments: [...DEFAULT_TREATMENTS],
-  experiences: [...DEFAULT_EXPERIENCES],
+  treatments: [],
+  experiences: [],
 };
 
 export const DEFAULT_LOVED_ONE = {
@@ -58,8 +56,8 @@ export const DEFAULT_LOVED_ONE = {
   cancerExperience: {
     diagnosis: '',
     dateOfDiagnosis: '',
-    treatments: [...DEFAULT_TREATMENTS],
-    experiences: [...DEFAULT_EXPERIENCES],
+    treatments: [],
+    experiences: [],
   },
 };
 

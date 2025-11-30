@@ -47,7 +47,7 @@ export const PRONOUNS_OPTIONS = [
 ] as const;
 
 // Ethnic group options
-export const ETHNIC_OPTIONS = [
+export const ETHNIC_GROUP_OPTIONS = [
   'Indigenous',
   'Arab',
   'Black',
@@ -64,6 +64,9 @@ export const ETHNIC_OPTIONS = [
   'Self-describe',
 ] as const;
 
+// Timezone string options
+export const TIMEZONE_OPTIONS = ['NST', 'AST', 'EST', 'CST', 'MST', 'PST'] as const;
+
 // Marital status options
 export const MARITAL_STATUS_OPTIONS = [
   'Single',
@@ -74,6 +77,8 @@ export const MARITAL_STATUS_OPTIONS = [
   'Widowed',
   'Prefer not to answer',
 ] as const;
+
+export const HAS_KIDS_OPTIONS = ['Yes', 'No', 'Prefer not to answer'] as const;
 
 // Treatment options for blood cancer
 export const TREATMENT_OPTIONS = [
@@ -110,6 +115,14 @@ export const EXPERIENCE_OPTIONS = [
   'PTSD',
 ] as const;
 
+export const CAREGIVER_RELATIONSHIP_OPTIONS = [
+  'A parent',
+  'A sibling',
+  'A child',
+  'A spouse/partner',
+  'A friend',
+] as const;
+
 // Diagnosis options for blood cancer
 export const DIAGNOSIS_OPTIONS = [
   'Unknown',
@@ -134,6 +147,9 @@ export const DIAGNOSIS_OPTIONS = [
   "High Grade/Aggressive Non-Hodgkin's Lymphoma",
 ] as const;
 
+export const DEFAULT_TREATMENTS = [...TREATMENT_OPTIONS];
+export const DEFAULT_EXPERIENCES = [...EXPERIENCE_OPTIONS];
+
 // Convert arrays to dropdown options format
 export const DIAGNOSIS_DROPDOWN_OPTIONS = DIAGNOSIS_OPTIONS.map((option) => ({
   value: option,
@@ -145,8 +161,8 @@ export const GENDER_DROPDOWN_OPTIONS = GENDER_IDENTITY_OPTIONS.map((option) => (
   label: option,
 }));
 
-// Timezone options (keeping existing ones)
-export const TIMEZONE_OPTIONS = [
+// Timezone dropdown preset options
+export const TIMEZONE_DROPDOWN_OPTIONS = [
   { value: 'Eastern Standard Time (EST)', label: 'Eastern Standard Time (EST)' },
   { value: 'Central Standard Time (CST)', label: 'Central Standard Time (CST)' },
   { value: 'Mountain Standard Time (MST)', label: 'Mountain Standard Time (MST)' },
@@ -293,6 +309,7 @@ export const INITIAL_INTAKE_FORM_DATA: IntakeFormData = {
     genderIdentity: '',
     pronouns: [],
     ethnicGroup: [],
+    preferredLanguage: '',
     maritalStatus: '',
     hasKids: '',
     timezone: '',
@@ -321,99 +338,3 @@ export const INITIAL_INTAKE_FORM_DATA: IntakeFormData = {
   },
   additionalInfo: '',
 };
-
-export const GENDER_IDENTITY_OPTIONS = [
-  'Male',
-  'Female',
-  'Non-binary',
-  'Transgender',
-  'Prefer not to answer',
-  'Self-describe',
-] as const;
-
-export const PRONOUNS_OPTIONS = [
-  'He/Him',
-  'She/Her',
-  'They/Them',
-  'Ze/Zir',
-  'Prefer not to answer',
-  'Self-describe',
-] as const;
-
-export const ETHNIC_GROUP_OPTIONS = [
-  'Black (including African and Caribbean descent)',
-  'Middle Eastern, Western or Central Asian',
-  'East Asian',
-  'South Asian',
-  'Southeast Asian',
-  'Indigenous person from Canada',
-  'Latin American',
-  'White',
-  'Mixed Ethnicity (identify with more than one group)',
-  'Prefer not to answer',
-  'Self-describe',
-] as const;
-
-export const TIMEZONE_OPTIONS = ['NST', 'AST', 'EST', 'CST', 'MST', 'PST'] as const;
-export const MARITAL_STATUS_OPTIONS = [
-  'Single',
-  'Married/Common Law',
-  'Divorced',
-  'Widowed',
-] as const;
-export const HAS_KIDS_OPTIONS = ['Yes', 'No', 'Prefer not to answer'] as const;
-
-export const CAREGIVER_RELATIONSHIP_OPTIONS = [
-  'A parent',
-  'A sibling',
-  'A child',
-  'A spouse/partner',
-  'A friend',
-] as const;
-
-export const DEFAULT_TREATMENTS = [
-  'Chemotherapy',
-  'Oral Chemotherapy',
-  'Radiation',
-  'Transfusions',
-  'Immunotherapy',
-  'Maintenance Chemotherapy',
-  'Palliative Care',
-  'Autologous Stem Cell Transplant',
-  'Allogeneic Stem Cell Transplant',
-  'Haplo Stem Cell Transplant',
-  'CAR-T',
-  'BTK Inhibitors',
-  'Watch and Wait / Active Surveillance',
-  'Unknown',
-];
-
-export const DEFAULT_EXPERIENCES = [
-  'Brain Fog',
-  'Communication Challenges',
-  'Feeling Overwhelmed',
-  'Fatigue',
-  'Fertility Issues',
-  'Graft vs Host',
-  'Returning to work or school after/during treatment',
-  'Speaking to your family or friends about the diagnosis',
-  'Relapse',
-  'Anxiety / Depression',
-  'PTSD',
-  'Caregiver Fatigue',
-  'Managing practical challenges',
-];
-
-export const DIAGNOSIS_OPTIONS = [
-  'Unknown',
-  'Acute Myeloid Leukemia',
-  'Acute Lymphoblastic Leukemia',
-  'Acute Promyelocytic Leukemia',
-  'Mixed Phenotype Leukemia',
-  'Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma',
-  'Chronic Myeloid Leukemia',
-  'Hairy Cell Leukemia',
-  'Myeloma/Multiple Myeloma',
-  "Hodgkin's Lymphoma",
-  "Indolent/Low Grade Non-Hodgkin's Lymphoma",
-] as const;
