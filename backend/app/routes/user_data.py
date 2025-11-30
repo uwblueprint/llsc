@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.middleware.auth import has_roles
 from app.models import Experience, Treatment, User, UserData
+from app.models.User import Language
 from app.schemas.user import UserRole
 from app.utilities.db_utils import get_db
 
@@ -304,8 +305,6 @@ async def update_my_user_data(
 
         # Update user language (stored on User model, not UserData)
         if "language" in update_data:
-            from ..models.User import Language
-
             try:
                 language_value = update_data["language"]
                 if language_value in ["en", "fr"]:
