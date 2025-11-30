@@ -486,8 +486,8 @@ export const ParticipantRankingFormEditor: React.FC<ParticipantRankingFormEditor
                       dropTargetIndex === index && draggedIndex !== null && draggedIndex !== index
                         ? '#dbeafe'
                         : draggedIndex === index
-                        ? '#e5e7eb'
-                        : '#f9fafb'
+                          ? '#e5e7eb'
+                          : '#f9fafb'
                     }
                     border={`1px solid ${
                       dropTargetIndex === index && draggedIndex !== null && draggedIndex !== index

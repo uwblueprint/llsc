@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.middleware.auth import has_roles
 from app.models import Experience, Form, FormSubmission, Treatment, User
@@ -264,7 +264,6 @@ async def get_form_submissions(
             query = query.filter(FormSubmission.form_id == form_id)
 
         # Execute query with eager loading of form relationship
-        from sqlalchemy.orm import joinedload
         submissions = query.options(joinedload(FormSubmission.form)).all()
 
         # Build response with form data included
@@ -281,13 +280,13 @@ async def get_form_submissions(
                     "name": s.form.name,
                     "version": s.form.version,
                     "type": s.form.type,
-                } if s.form else None,
+                }
+                if s.form
+                else None,
             }
             submission_responses.append(FormSubmissionResponse.model_validate(submission_dict))
 
-        return FormSubmissionListResponse(
-            submissions=submission_responses, total=len(submission_responses)
-        )
+        return FormSubmissionListResponse(submissions=submission_responses, total=len(submission_responses))
 
     except HTTPException:
         raise
@@ -309,7 +308,6 @@ async def get_form_submission(
     """
     try:
         # Get the submission with eager loading of form relationship
-        from sqlalchemy.orm import joinedload
         submission = (
             db.query(FormSubmission)
             .options(joinedload(FormSubmission.form))
@@ -343,7 +341,9 @@ async def get_form_submission(
                 "name": submission.form.name,
                 "version": submission.form.version,
                 "type": submission.form.type,
-            } if submission.form else None,
+            }
+            if submission.form
+            else None,
         }
 
         return FormSubmissionResponse.model_validate(submission_dict)

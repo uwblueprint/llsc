@@ -1,3 +1,5 @@
+"""Routes for accessing user data (UserData table)."""
+
 from datetime import datetime as dt
 from typing import List, Optional
 from uuid import UUID
@@ -95,6 +97,9 @@ class UserDataResponse(BaseModel):
 # ===== Endpoints =====
 
 
+# ===== Endpoints =====
+
+
 @router.get("/me", response_model=UserDataResponse)
 async def get_my_user_data(
     request: Request,
@@ -137,6 +142,7 @@ async def get_my_user_data(
             if template.is_active
         ]
 
+<<<<<<< HEAD
         # Get volunteer_data.experience if user is a volunteer
         volunteer_experience = None
         if current_user.volunteer_data:
@@ -359,6 +365,7 @@ async def update_my_user_data(
             if template.is_active
         ]
 
+<<<<<<< HEAD
         # Get volunteer_data.experience if user is a volunteer
         volunteer_experience = None
         if current_user.volunteer_data:
@@ -406,6 +413,7 @@ async def update_my_user_data(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+<<<<<<< HEAD
 
 
 # ===== Admin Endpoints =====
@@ -501,9 +509,7 @@ async def get_user_data(
             ),
             treatments=[TreatmentResponse.model_validate(t) for t in (user_data.treatments or [])],
             experiences=[ExperienceResponse.model_validate(e) for e in (user_data.experiences or [])],
-            loved_one_treatments=[
-                TreatmentResponse.model_validate(t) for t in (user_data.loved_one_treatments or [])
-            ],
+            loved_one_treatments=[TreatmentResponse.model_validate(t) for t in (user_data.loved_one_treatments or [])],
             loved_one_experiences=[
                 ExperienceResponse.model_validate(e) for e in (user_data.loved_one_experiences or [])
             ],

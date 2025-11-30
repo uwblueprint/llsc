@@ -79,4 +79,3 @@ export const GenderIdentityField: React.FC<GenderIdentityFieldProps> = ({
     </>
   );
 };
-

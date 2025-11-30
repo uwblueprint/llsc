@@ -22,4 +22,3 @@ export const LOVED_ONE_RANKING_LABELS = [
   'experience with Anxiety / Depression',
   'experience with Fertility Issues',
 ] as const;
-

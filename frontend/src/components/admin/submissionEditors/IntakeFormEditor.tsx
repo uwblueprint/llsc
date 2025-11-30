@@ -6,7 +6,7 @@ import {
   PROVINCES,
   PRONOUNS_OPTIONS,
   ETHNIC_GROUP_OPTIONS,
-  TIMEZONE_OPTIONS,
+  TIMEZONE_OPTIONS_ABBREVIATED,
   MARITAL_STATUS_OPTIONS,
   HAS_KIDS_OPTIONS,
   CAREGIVER_RELATIONSHIP_OPTIONS,
@@ -104,10 +104,10 @@ export const IntakeFormEditor: React.FC<IntakeFormEditorProps> = ({ initialAnswe
           hasCancer && isCaregiver
             ? 'both'
             : hasCancer
-            ? 'patient'
-            : isCaregiver
-            ? 'caregiver'
-            : 'patient';
+              ? 'patient'
+              : isCaregiver
+                ? 'caregiver'
+                : 'patient';
         const requests: Promise<{ data: IntakeOptionsResponse }>[] = [
           baseAPIClient.get<IntakeOptionsResponse>(`/intake/options?target=${selfTarget}`),
         ];
@@ -519,19 +519,21 @@ export const IntakeFormEditor: React.FC<IntakeFormEditorProps> = ({ initialAnswe
                 Who are you caring for?
               </Text>
               <VStack align="stretch" gap={1}>
-                {CAREGIVER_RELATIONSHIP_OPTIONS.map((option) => (
-                  <CustomRadio
-                    key={option}
-                    name="caregiverRelationship"
-                    value={option}
-                    checked={formData.caregiverRelationship === option}
-                    onChange={(value) => handleCaregiverRelationshipChange(value)}
-                  >
-                    <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px">
-                      {option}
-                    </Text>
-                  </CustomRadio>
-                ))}
+                {CAREGIVER_RELATIONSHIP_OPTIONS.map(
+                  (option: (typeof CAREGIVER_RELATIONSHIP_OPTIONS)[number]) => (
+                    <CustomRadio
+                      key={option}
+                      name="caregiverRelationship"
+                      value={option}
+                      checked={formData.caregiverRelationship === option}
+                      onChange={(value) => handleCaregiverRelationshipChange(value)}
+                    >
+                      <Text fontFamily="system-ui, -apple-system, sans-serif" fontSize="14px">
+                        {option}
+                      </Text>
+                    </CustomRadio>
+                  ),
+                )}
               </VStack>
             </Box>
           )}
@@ -771,7 +773,7 @@ export const IntakeFormEditor: React.FC<IntakeFormEditorProps> = ({ initialAnswe
             <Box flex="1" minW="260px">
               <FormField label="Timezone">
                 <SingleSelectDropdown
-                  options={[...TIMEZONE_OPTIONS]}
+                  options={[...TIMEZONE_OPTIONS_ABBREVIATED]}
                   selectedValue={formData.demographics.timezone || ''}
                   onSelectionChange={(value) => handleDemographicsScalarChange('timezone', value)}
                   placeholder="Timezone"

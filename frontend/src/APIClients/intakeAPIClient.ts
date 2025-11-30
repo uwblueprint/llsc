@@ -71,16 +71,14 @@ class IntakeAPIClient {
     submissionId: string,
     answers: Record<string, unknown>,
   ): Promise<FormSubmission> {
-    const response = await baseAPIClient.put<FormSubmission>(`/intake/submissions/${submissionId}`, {
-      answers,
-    });
+    const response = await baseAPIClient.put<FormSubmission>(
+      `/intake/submissions/${submissionId}`,
+      {
+        answers,
+      },
+    );
     return response.data;
   }
 }
 
 export const intakeAPIClient = new IntakeAPIClient();
-
-
-
-
-

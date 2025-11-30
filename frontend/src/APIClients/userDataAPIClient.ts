@@ -69,8 +69,8 @@ export const getUserData = async (): Promise<UserDataResponse | null> => {
       throw new Error('User not authenticated');
     }
 
-    const headers = getAuthHeaders();
-    const response = await baseAPIClient.get<UserDataResponse>(`/user-data/me`, { headers });
+    const authConfig = getAuthHeaders();
+    const response = await baseAPIClient.get<UserDataResponse>(`/user-data/me`, authConfig);
 
     return response.data;
   } catch (error) {
@@ -89,11 +89,9 @@ export const updateUserData = async (
       throw new Error('User not authenticated');
     }
 
-    const headers = getAuthHeaders();
-
     // Call the PUT /user-data/me endpoint
     const response = await baseAPIClient.put<UserDataResponse>(`/user-data/me`, userData, {
-      headers,
+      ...getAuthHeaders(),
     });
 
     return response.data;
@@ -113,8 +111,6 @@ export const updateMyAvailability = async (
       throw new Error('User not authenticated');
     }
 
-    const headers = getAuthHeaders();
-
     // Convert to backend format (camelCase to snake_case)
     const backendTemplates = templates.map((t) => ({
       day_of_week: t.dayOfWeek,
@@ -129,7 +125,7 @@ export const updateMyAvailability = async (
         user_id: userId,
         templates: backendTemplates,
       },
-      { headers },
+      getAuthHeaders(),
     );
 
     return true;
