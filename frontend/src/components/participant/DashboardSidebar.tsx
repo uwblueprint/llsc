@@ -1,93 +1,113 @@
-import { Box, Flex, Image, Text, VStack } from '@chakra-ui/react';
-import { FiMail, FiUser, FiLogOut } from 'react-icons/fi';
-import { Icon } from '@chakra-ui/react';
+import { Box, Button, HStack, Image, Text, VStack, Icon } from '@chakra-ui/react';
+import { useRouter } from 'next/router';
+import { FiLogOut } from 'react-icons/fi';
+import { logout } from '@/APIClients/authAPIClient';
 
-interface DashboardSidebarProps {
-  activeTab: 'matches' | 'contact';
-  onTabChange: (tab: 'matches' | 'contact') => void;
-}
+export function DashboardSidebar() {
+  const router = useRouter();
+  const currentPath = router.asPath;
 
-export function DashboardSidebar({ activeTab, onTabChange }: DashboardSidebarProps) {
   const navItems = [
-    { key: 'matches' as const, label: 'Matches', icon: FiUser },
-    { key: 'contact' as const, label: 'Contact', icon: FiMail },
+    {
+      label: 'Matches',
+      icon: '/icons/user-primary.png',
+      path: '/participant/dashboard',
+      isActive: currentPath === '/participant/dashboard',
+    },
+    {
+      label: 'Contact',
+      icon: '/icons/calendar.png',
+      path: '/participant/dashboard/contact',
+      isActive: currentPath === '/participant/dashboard/contact',
+    },
   ];
+
+  const handleNavigation = (path: string) => {
+    router.push(path);
+  };
+
+  const handleSignOut = async () => {
+    await logout();
+  };
 
   return (
     <Box
-      w={{ base: '100%', lg: '280px' }}
+      w={{ base: '100%', lg: '279px' }}
       flexShrink={0}
       bg="white"
-      border="1px solid"
-      borderColor="#E2E8F0"
-      borderRadius="lg"
-      p={6}
+      borderRadius="8px"
+      border="1px solid rgba(187, 194, 200, 0.5)"
+      p={2}
+      display="flex"
+      flexDirection="column"
+      overflow="visible"
     >
-      <VStack align="stretch" spacing={6}>
-        {/* Logo */}
-        <Box>
-          <Image
-            src="/llsc-logo.png"
-            alt="Leukemia & Lymphoma Society of Canada"
-            maxW="140px"
-            objectFit="contain"
-          />
-        </Box>
+      {/* Logo */}
+      <Box mb={0} w="100%" display="flex" alignItems="center" justifyContent="flex-start" pl={4}>
+        <Image
+          src="/llsc-logo.png"
+          alt="Leukemia & Lymphoma Society of Canada"
+          w="220px"
+          h="150px"
+          objectFit="contain"
+        />
+      </Box>
 
-        {/* Navigation - single light grey panel */}
-        <Box
-          bg="#F3F5F6"
-          border="1px solid"
-          borderColor="#E2E8EB"
-          borderRadius="lg"
-          overflow="hidden"
+      {/* Navigation */}
+      <VStack align="stretch" gap="8px" flex={1}>
+        {navItems.map((item) => (
+          <Button
+            key={item.path}
+            onClick={() => handleNavigation(item.path)}
+            bg={item.isActive ? 'rgba(179, 206, 209, 0.3)' : 'transparent'}
+            color={item.isActive ? '#1D3448' : '#6B7280'}
+            fontWeight={item.isActive ? 600 : 400}
+            fontSize="14px"
+            fontFamily="'Open Sans', sans-serif"
+            justifyContent="flex-start"
+            h="50px"
+            px="12px"
+            py="8px"
+            borderRadius="6px"
+            _hover={{
+              bg: item.isActive ? 'rgba(179, 206, 209, 0.3)' : '#F1F5F9',
+            }}
+            _active={{
+              bg: item.isActive ? 'rgba(179, 206, 209, 0.3)' : '#E2E8F0',
+            }}
+          >
+            <HStack gap="8px" align="center">
+              {item.icon && <Image src={item.icon} alt={item.label} w="14px" h="14px" />}
+              <Text>{item.label}</Text>
+            </HStack>
+          </Button>
+        ))}
+
+        {/* Sign Out */}
+        <Button
+          onClick={handleSignOut}
+          bg="transparent"
+          color="#6B7280"
+          fontWeight={400}
+          fontSize="14px"
+          fontFamily="'Open Sans', sans-serif"
+          justifyContent="flex-start"
+          h="50px"
+          px="12px"
+          py="8px"
+          borderRadius="6px"
+          _hover={{
+            bg: '#F1F5F9',
+          }}
+          _active={{
+            bg: '#E2E8F0',
+          }}
         >
-          <VStack align="stretch" spacing={0}>
-            {navItems.map((item) => {
-              const isActive = item.key === activeTab;
-
-              return (
-                <Flex
-                  key={item.key}
-                  align="center"
-                  gap={3}
-                  px={5}
-                  py={3}
-                  role="button"
-                  cursor="pointer"
-                  bg={isActive ? '#B3CED14D' : 'transparent'}
-                  color={isActive ? '#3538CD' : '#697380'}
-                  _hover={{
-                    bg: isActive ? '#B3CED14D' : '#E5E7EB',
-                  }}
-                  onClick={() => onTabChange(item.key)}
-                >
-                  <Icon as={item.icon} boxSize={4} />
-                  <Text fontWeight={isActive ? '600' : '500'} fontSize="sm">
-                    {item.label}
-                  </Text>
-                </Flex>
-              );
-            })}
-
-            {/* Sign Out - in same panel */}
-            <Flex
-              align="center"
-              gap={3}
-              px={5}
-              py={3}
-              color="#697380"
-              cursor="pointer"
-              fontWeight="500"
-              _hover={{
-                bg: '#E5E7EB',
-              }}
-            >
-              <Icon as={FiLogOut} boxSize={4} />
-              <Text fontSize="sm">Sign Out</Text>
-            </Flex>
-          </VStack>
-        </Box>
+          <HStack gap="8px" align="center">
+            <Icon as={FiLogOut} w="14px" h="14px" />
+            <Text>Sign Out</Text>
+          </HStack>
+        </Button>
       </VStack>
     </Box>
   );

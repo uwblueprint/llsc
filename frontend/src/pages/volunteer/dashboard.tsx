@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text, VStack } from '@chakra-ui/react';
+import { ProtectedPage } from '@/components/auth/ProtectedPage';
+import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
 import ProfileCard from '@/components/dashboard/ProfileCard';
 import ScheduleCallModal from '@/components/dashboard/ScheduleCallModal';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
 import baseAPIClient from '@/APIClients/baseAPIClient';
+import { FormStatus, UserRole } from '@/types/authTypes';
 import type { TimeSlot } from '@/components/dashboard/types';
 
 interface MatchedParticipant {
@@ -40,10 +43,10 @@ const VolunteerDashboardPage: React.FC = () => {
         const response = await baseAPIClient.get('/matches/volunteer/me');
         const matches = response.data.matches || [];
 
-        // Filter matches that need to be scheduled (pending or awaiting_volunteer_acceptance)
+        // Filter matches that need to be scheduled (only awaiting_volunteer_acceptance)
         const matchesNeedingScheduling = matches.filter((match: any) => {
           const status = match.matchStatus?.toLowerCase() || '';
-          return status === 'pending' || status === 'awaiting_volunteer_acceptance';
+          return status === 'awaiting_volunteer_acceptance';
         });
 
         // Transform API response to match ProfileCard format
@@ -79,9 +82,9 @@ const VolunteerDashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <VolunteerDashboardLayout>
-        <Box display="flex" justifyContent="center" w="100%">
-          <Box w="711px">
+      <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
+        <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
+          <VolunteerDashboardLayout>
             <Text
               fontSize="16px"
               color="#6B7280"
@@ -90,16 +93,16 @@ const VolunteerDashboardPage: React.FC = () => {
             >
               Loading matches...
             </Text>
-          </Box>
-        </Box>
-      </VolunteerDashboardLayout>
+          </VolunteerDashboardLayout>
+        </FormStatusGuard>
+      </ProtectedPage>
     );
   }
 
   return (
-    <VolunteerDashboardLayout>
-      <Box display="flex" justifyContent="center" w="100%">
-        <Box w="711px">
+    <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
+      <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
+        <VolunteerDashboardLayout>
           <Heading
             fontSize="2.25rem"
             fontWeight={600}
@@ -141,29 +144,41 @@ const VolunteerDashboardPage: React.FC = () => {
               ))}
             </VStack>
           )}
-        </Box>
-      </Box>
 
-      {/* Schedule Call Modal */}
-      {selectedParticipant && (
-        <ScheduleCallModal
-          isOpen={isScheduleModalOpen}
-          onClose={() => {
-            setIsScheduleModalOpen(false);
-            setSelectedParticipant(null);
-          }}
-          participantName={selectedParticipant.name}
-          onSend={(timeSlots: TimeSlot[], additionalInfo: string) => {
-            // TODO: Send availability to participant
-            console.log('Sending availability to', selectedParticipant.name);
-            console.log('Time slots:', timeSlots);
-            console.log('Additional info:', additionalInfo);
-            setIsScheduleModalOpen(false);
-            setSelectedParticipant(null);
-          }}
-        />
-      )}
-    </VolunteerDashboardLayout>
+          {/* Schedule Call Modal */}
+          {selectedParticipant && (
+            <ScheduleCallModal
+              isOpen={isScheduleModalOpen}
+              onClose={() => {
+                setIsScheduleModalOpen(false);
+                setSelectedParticipant(null);
+              }}
+              participantName={selectedParticipant.name}
+              onSend={async (timeSlots: TimeSlot[], additionalInfo: string) => {
+                try {
+                  // Accept the match - this will attach the volunteer's availability templates as suggested times
+                  await baseAPIClient.post(`/matches/${selectedParticipant.id}/accept-volunteer`);
+
+                  console.log('Successfully sent availability to', selectedParticipant.name);
+
+                  // Remove the participant from the list since they've been accepted
+                  setMatchedParticipants((prev) =>
+                    prev.filter((p) => p.id !== selectedParticipant.id),
+                  );
+
+                  setIsScheduleModalOpen(false);
+                  setSelectedParticipant(null);
+                } catch (error) {
+                  console.error('Error accepting match:', error);
+                  // TODO: Show error message to user
+                  alert('Failed to send availability. Please try again.');
+                }
+              }}
+            />
+          )}
+        </VolunteerDashboardLayout>
+      </FormStatusGuard>
+    </ProtectedPage>
   );
 };
 

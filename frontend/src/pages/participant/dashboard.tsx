@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import {
   Box,
   Button,
@@ -19,26 +20,40 @@ import { VolunteerCard } from '@/components/participant/VolunteerCard';
 import { ConfirmedMatchCard } from '@/components/participant/ConfirmedMatchCard';
 import { RequestNewMatchesModal } from '@/components/participant/RequestNewMatchesModal';
 import { RequestConfirmationModal } from '@/components/participant/RequestConfirmationModal';
+import { ViewContactDetailsModal } from '@/components/participant/ViewContactDetailsModal';
+import { CancelCallConfirmationModal } from '@/components/participant/CancelCallConfirmationModal';
+import { CancelCallSuccessModal } from '@/components/participant/CancelCallSuccessModal';
+import ParticipantEditProfileModal from '@/components/participant/ParticipantEditProfileModal';
+import { Avatar } from '@/components/ui/avatar';
 import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClient';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
 import { AuthenticatedUser, FormStatus, UserRole } from '@/types/authTypes';
 import { Match } from '@/types/matchTypes';
 
 export default function ParticipantDashboardPage() {
+  const router = useRouter();
   const [matches, setMatches] = useState<Match[]>([]);
   const [confirmedMatches, setConfirmedMatches] = useState<Match[]>([]);
-  const [completedMatches, setCompletedMatches] = useState<Match[]>([]);
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'matches' | 'contact'>('matches');
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [isViewContactModalOpen, setIsViewContactModalOpen] = useState(false);
+  const [isCancelCallConfirmationOpen, setIsCancelCallConfirmationOpen] = useState(false);
+  const [isCancelCallSuccessOpen, setIsCancelCallSuccessOpen] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [matchToCancel, setMatchToCancel] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [requestMessage, setRequestMessage] = useState('');
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
   const userName = user?.firstName || 'there';
+  const userFullName = user
+    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email
+    : '';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -58,11 +73,9 @@ export default function ParticipantDashboardPage() {
         (match) => match.matchStatus === 'pending' || match.matchStatus === 'requesting_new_times',
       );
       const confirmed = data.matches.filter((match) => match.matchStatus === 'confirmed');
-      const completed = data.matches.filter((match) => match.matchStatus === 'completed');
 
       setMatches(pendingMatches);
       setConfirmedMatches(confirmed);
-      setCompletedMatches(completed);
       setHasPendingRequest(data.hasPendingRequest || false);
     } catch (err) {
       console.error('Error loading matches:', err);
@@ -87,18 +100,55 @@ export default function ParticipantDashboardPage() {
   };
 
   const handleSchedule = (matchId: number) => {
-    console.log('Schedule flow not implemented yet for match:', matchId);
-    // TODO: Implement schedule flow
+    router.push(`/participant/schedule/${matchId}`);
   };
 
   const handleCancelCall = (matchId: number) => {
-    console.log('Cancel call flow not implemented yet for match:', matchId);
-    // TODO: Implement cancel call flow
+    setMatchToCancel(matchId);
+    setIsCancelCallConfirmationOpen(true);
+  };
+
+  const handleConfirmCancelCall = async () => {
+    if (!matchToCancel) return;
+
+    try {
+      setIsCancelling(true);
+      await participantMatchAPIClient.cancelMatch(matchToCancel);
+      setIsCancelCallConfirmationOpen(false);
+      setIsCancelCallSuccessOpen(true);
+      setMatchToCancel(null);
+      // Reload matches to reflect the cancellation
+      await loadMatches();
+    } catch (err) {
+      console.error('Error cancelling match:', err);
+      const errorMessage =
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response &&
+        typeof err.response === 'object' &&
+        err.response !== null &&
+        'data' in err.response &&
+        err.response.data &&
+        typeof err.response.data === 'object' &&
+        err.response.data !== null &&
+        'detail' in err.response.data
+          ? String((err.response as { data: { detail: unknown } }).data.detail)
+          : 'Failed to cancel call. Please try again.';
+      setError(errorMessage);
+      setIsCancelCallConfirmationOpen(false);
+      setMatchToCancel(null);
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   const handleViewContactDetails = (matchId: number) => {
-    console.log('View contact details flow not implemented yet for match:', matchId);
-    // TODO: Implement view contact details flow
+    const match = confirmedMatches.find((m) => m.id === matchId);
+    if (match) {
+      setSelectedMatch(match);
+      setIsViewContactModalOpen(true);
+    }
   };
 
   const handleRequestNewMatchesClick = () => {
@@ -165,8 +215,9 @@ export default function ParticipantDashboardPage() {
       );
     }
 
-    // Show completed matches screen - inline form for requesting new matches
-    if (completedMatches.length > 0 && confirmedMatches.length === 0 && matches.length === 0) {
+    // Show request new matches screen when there are no active matches
+    // This includes: completed matches, cancelled matches, or brand new users
+    if (confirmedMatches.length === 0 && matches.length === 0) {
       return (
         <VStack align="stretch" gap={6}>
           {/* Additional Notes Section */}
@@ -235,20 +286,6 @@ export default function ParticipantDashboardPage() {
       );
     }
 
-    // Show pending matches (not yet scheduled)
-    if (matches.length === 0) {
-      return (
-        <Box bg="white" borderRadius="lg" p={8} textAlign="center" boxShadow="sm">
-          <Heading size="lg" color="gray.800" mb={3}>
-            No matches yet
-          </Heading>
-          <Text color="gray.600">
-            We&apos;re working on finding volunteers for you. Check back soon!
-          </Text>
-        </Box>
-      );
-    }
-
     return (
       <VStack align="stretch" gap={6}>
         {matches.map((match) => (
@@ -282,17 +319,6 @@ export default function ParticipantDashboardPage() {
     );
   };
 
-  const renderContactTab = () => {
-    return (
-      <Box bg="white" borderRadius="lg" p={8} textAlign="center" boxShadow="sm">
-        <Heading size="lg" color="gray.800" mb={3}>
-          Contact
-        </Heading>
-        <Text color="gray.600">Schedule a call with a volunteer to unlock contact details.</Text>
-      </Box>
-    );
-  };
-
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
@@ -303,12 +329,12 @@ export default function ParticipantDashboardPage() {
               align="flex-start"
               gap={{ base: 8, lg: 12 }}
             >
-              <DashboardSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+              <DashboardSidebar />
 
               <Box flex={1} w="full">
                 <VStack align="stretch" gap={6}>
-                  {/* Header - Show different headers based on state */}
-                  {hasPendingRequest && activeTab === 'matches' ? (
+                  {/* Header */}
+                  {hasPendingRequest ? (
                     <Flex justify="space-between" align="flex-start">
                       <Box flex={1}>
                         <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
@@ -321,23 +347,24 @@ export default function ParticipantDashboardPage() {
                       {/* User Avatar in top right */}
                       {user && (
                         <Box
-                          w="48px"
-                          h="48px"
-                          bg="#4A5568"
-                          borderRadius="full"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
                           flexShrink={0}
                           ml={4}
+                          cursor="pointer"
+                          onClick={() => setIsEditProfileOpen(true)}
+                          _hover={{ opacity: 0.8 }}
+                          transition="opacity 0.2s"
                         >
-                          <Text fontSize="md" fontWeight="medium" color="white">
-                            {`${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()}
-                          </Text>
+                          <Avatar
+                            name={userFullName}
+                            size="lg"
+                            bg="rgba(179, 206, 209, 0.3)"
+                            color="#056067"
+                            fontWeight={500}
+                          />
                         </Box>
                       )}
                     </Flex>
-                  ) : confirmedMatches.length > 0 && activeTab === 'matches' ? (
+                  ) : confirmedMatches.length > 0 ? (
                     <Flex justify="space-between" align="flex-start">
                       <Box flex={1}>
                         <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
@@ -351,26 +378,24 @@ export default function ParticipantDashboardPage() {
                       {/* User Avatar in top right */}
                       {user && (
                         <Box
-                          w="48px"
-                          h="48px"
-                          bg="#4A5568"
-                          borderRadius="full"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
                           flexShrink={0}
                           ml={4}
+                          cursor="pointer"
+                          onClick={() => setIsEditProfileOpen(true)}
+                          _hover={{ opacity: 0.8 }}
+                          transition="opacity 0.2s"
                         >
-                          <Text fontSize="md" fontWeight="medium" color="white">
-                            {`${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()}
-                          </Text>
+                          <Avatar
+                            name={userFullName}
+                            size="lg"
+                            bg="rgba(179, 206, 209, 0.3)"
+                            color="#056067"
+                            fontWeight={500}
+                          />
                         </Box>
                       )}
                     </Flex>
-                  ) : completedMatches.length > 0 &&
-                    confirmedMatches.length === 0 &&
-                    matches.length === 0 &&
-                    activeTab === 'matches' ? (
+                  ) : confirmedMatches.length === 0 && matches.length === 0 ? (
                     <Flex justify="space-between" align="flex-start">
                       <Box flex={1}>
                         <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
@@ -384,19 +409,20 @@ export default function ParticipantDashboardPage() {
                       {/* User Avatar in top right */}
                       {user && (
                         <Box
-                          w="48px"
-                          h="48px"
-                          bg="#4A5568"
-                          borderRadius="full"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
                           flexShrink={0}
                           ml={4}
+                          cursor="pointer"
+                          onClick={() => setIsEditProfileOpen(true)}
+                          _hover={{ opacity: 0.8 }}
+                          transition="opacity 0.2s"
                         >
-                          <Text fontSize="md" fontWeight="medium" color="white">
-                            {`${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()}
-                          </Text>
+                          <Avatar
+                            name={userFullName}
+                            size="lg"
+                            bg="rgba(179, 206, 209, 0.3)"
+                            color="#056067"
+                            fontWeight={500}
+                          />
                         </Box>
                       )}
                     </Flex>
@@ -413,26 +439,27 @@ export default function ParticipantDashboardPage() {
                       {/* User Avatar in top right */}
                       {user && (
                         <Box
-                          w="48px"
-                          h="48px"
-                          bg="#4A5568"
-                          borderRadius="full"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
                           flexShrink={0}
                           ml={4}
+                          cursor="pointer"
+                          onClick={() => setIsEditProfileOpen(true)}
+                          _hover={{ opacity: 0.8 }}
+                          transition="opacity 0.2s"
                         >
-                          <Text fontSize="md" fontWeight="medium" color="white">
-                            {`${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()}
-                          </Text>
+                          <Avatar
+                            name={userFullName}
+                            size="lg"
+                            bg="rgba(179, 206, 209, 0.3)"
+                            color="#056067"
+                            fontWeight={500}
+                          />
                         </Box>
                       )}
                     </Flex>
                   )}
 
                   {/* Content */}
-                  {activeTab === 'matches' ? renderMatchesTab() : renderContactTab()}
+                  {renderMatchesTab()}
                 </VStack>
               </Box>
             </Flex>
@@ -449,6 +476,33 @@ export default function ParticipantDashboardPage() {
         <RequestConfirmationModal
           isOpen={isConfirmationModalOpen}
           onClose={handleConfirmationClose}
+        />
+        <ViewContactDetailsModal
+          isOpen={isViewContactModalOpen}
+          match={selectedMatch}
+          onClose={() => {
+            setIsViewContactModalOpen(false);
+            setSelectedMatch(null);
+          }}
+        />
+        <CancelCallConfirmationModal
+          isOpen={isCancelCallConfirmationOpen}
+          onClose={() => {
+            setIsCancelCallConfirmationOpen(false);
+            setMatchToCancel(null);
+          }}
+          onConfirm={handleConfirmCancelCall}
+          isCancelling={isCancelling}
+        />
+        <CancelCallSuccessModal
+          isOpen={isCancelCallSuccessOpen}
+          onClose={() => {
+            setIsCancelCallSuccessOpen(false);
+          }}
+        />
+        <ParticipantEditProfileModal
+          isOpen={isEditProfileOpen}
+          onClose={() => setIsEditProfileOpen(false)}
         />
       </FormStatusGuard>
     </ProtectedPage>

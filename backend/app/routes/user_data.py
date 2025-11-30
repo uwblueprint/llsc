@@ -62,6 +62,7 @@ class UserDataResponse(BaseModel):
     has_kids: Optional[str] = None
     other_ethnic_group: Optional[str] = None
     gender_identity_custom: Optional[str] = None
+    timezone: Optional[str] = None
 
     # Cancer Experience
     diagnosis: Optional[str] = None
@@ -147,6 +148,7 @@ async def get_my_user_data(
             has_kids=user_data.has_kids,
             other_ethnic_group=user_data.other_ethnic_group,
             gender_identity_custom=user_data.gender_identity_custom,
+            timezone=user_data.timezone,
             # Cancer Experience
             diagnosis=user_data.diagnosis,
             date_of_diagnosis=user_data.date_of_diagnosis.isoformat() if user_data.date_of_diagnosis else None,
@@ -300,6 +302,21 @@ async def update_my_user_data(
                 if experience:
                     user_data.loved_one_experiences.append(experience)
 
+        # Update user language (stored on User model, not UserData)
+        if "language" in update_data:
+            from ..models.User import Language
+
+            try:
+                language_value = update_data["language"]
+                if language_value in ["en", "fr"]:
+                    current_user.language = Language(language_value)
+            except (ValueError, AttributeError):
+                pass  # Invalid language value, skip
+
+        # Update user timezone (stored on UserData model)
+        if "timezone" in update_data:
+            user_data.timezone = update_data["timezone"]
+
         db.commit()
         db.refresh(user_data)
 
@@ -330,6 +347,7 @@ async def update_my_user_data(
             has_kids=user_data.has_kids,
             other_ethnic_group=user_data.other_ethnic_group,
             gender_identity_custom=user_data.gender_identity_custom,
+            timezone=user_data.timezone,
             diagnosis=user_data.diagnosis,
             date_of_diagnosis=user_data.date_of_diagnosis.isoformat() if user_data.date_of_diagnosis else None,
             treatments=[treatment.name for treatment in user_data.treatments],
