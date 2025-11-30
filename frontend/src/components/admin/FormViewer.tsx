@@ -282,8 +282,8 @@ export function FormViewer({ submission, userData, volunteerData }: FormViewerPr
               {caringForSomeone === 'yes'
                 ? 'Yes'
                 : caringForSomeone === 'no'
-                ? 'No'
-                : 'Not answered'}
+                  ? 'No'
+                  : 'Not answered'}
             </ChakraText>
           </Box>
         </Flex>
@@ -379,8 +379,8 @@ export function FormViewer({ submission, userData, volunteerData }: FormViewerPr
                 {hasCriminalRecord === 'yes'
                   ? 'Yes'
                   : hasCriminalRecord === 'no'
-                  ? 'No'
-                  : 'Not answered'}
+                    ? 'No'
+                    : 'Not answered'}
               </ChakraText>
             </Box>
           )}

@@ -191,10 +191,9 @@ export const buildLegacyRankingOptions = (
       entry.label ||
       `legacy-${entry.kind || 'quality'}-${index}`;
     const scope = (entry.scope === 'loved_one' ? 'loved_one' : 'self') as 'self' | 'loved_one';
-    const kind =
-      (entry.kind === 'experience' || entry.kind === 'treatment'
-        ? entry.kind
-        : 'quality') as 'quality' | 'experience' | 'treatment';
+    const kind = (
+      entry.kind === 'experience' || entry.kind === 'treatment' ? entry.kind : 'quality'
+    ) as 'quality' | 'experience' | 'treatment';
     const shortLabel = buildQualitySummaryLabel(entry.label || key);
 
     return {
@@ -207,10 +206,7 @@ export const buildLegacyRankingOptions = (
   });
 };
 
-const parseRankingEntries = (
-  value: unknown,
-  fallbackLabels: string[],
-): RankingEntry[] => {
+const parseRankingEntries = (value: unknown, fallbackLabels: string[]): RankingEntry[] => {
   if (Array.isArray(value)) {
     const normalized = value
       .map((item, idx) => {
@@ -308,4 +304,3 @@ export const normalizeParticipantRankingAnswers = (
       undefined,
   };
 };
-
