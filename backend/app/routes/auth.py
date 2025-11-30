@@ -63,14 +63,19 @@ async def logout(
     request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(security),
     auth_service: AuthService = Depends(get_auth_service),
+    user_service: UserService = Depends(get_user_service),
 ):
     try:
-        user_id = request.state.user_id
-        if not user_id:
+        auth_id = request.state.user_id  # This is actually the Firebase auth_id
+        if not auth_id:
             raise HTTPException(status_code=401, detail="Authentication required")
 
+        # Convert Firebase auth_id to database user_id (UUID)
+        user_id = await user_service.get_user_id_by_auth_id(auth_id)
         auth_service.revoke_tokens(user_id)
         return {"message": "Successfully logged out"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

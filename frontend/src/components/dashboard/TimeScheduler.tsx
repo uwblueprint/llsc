@@ -11,6 +11,8 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
   onTimeSlotsChange,
   initialTimeSlots = [],
   readOnly = false,
+  visibleDays,
+  selectedDaysDates,
 }) => {
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>(initialTimeSlots);
   const [isDragging, setIsDragging] = useState(false);
@@ -162,6 +164,34 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
     return dayOrder.indexOf(a) - dayOrder.indexOf(b);
   });
 
+  // Filter days if visibleDays prop is provided
+  const getVisibleDays = () => {
+    if (visibleDays && visibleDays.length > 0) {
+      // Map full day names to abbreviated day names
+      const dayNameMap: { [key: string]: string } = {
+        Monday: 'Mon',
+        Tuesday: 'Tues',
+        Wednesday: 'Wed',
+        Thursday: 'Thu',
+        Friday: 'Fri',
+        Saturday: 'Sat',
+        Sunday: 'Sun',
+      };
+      return visibleDays.map((fullDay) => dayNameMap[fullDay] || fullDay);
+    }
+    return days;
+  };
+
+  const getVisibleDaysFull = () => {
+    if (visibleDays && visibleDays.length > 0) {
+      return visibleDays;
+    }
+    return daysFull;
+  };
+
+  const filteredDays = getVisibleDays();
+  const filteredDaysFull = getVisibleDaysFull();
+
   const renderScheduleGrid = () => (
     <Box h="100%" w="100%" display="flex" flexDirection="column" overflow="hidden">
       {/* Header Row */}
@@ -179,22 +209,32 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
         >
           EST
         </Box>
-        {days.map((day) => (
-          <Box
-            key={day}
-            flex="1"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            color="gray.600"
-            fontWeight="normal"
-            fontSize={['md', 'lg']}
-            fontFamily="'Open Sans', sans-serif"
-            textAlign="center"
-          >
-            {day}
-          </Box>
-        ))}
+        {filteredDays.map((day, index) => {
+          // Format day header with date if we have selected days dates
+          const dayHeader =
+            visibleDays &&
+            visibleDays.length > 0 &&
+            selectedDaysDates &&
+            selectedDaysDates.length > index
+              ? `${day}, ${selectedDaysDates[index].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+              : day;
+          return (
+            <Box
+              key={day}
+              flex="1"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              color="gray.600"
+              fontWeight="normal"
+              fontSize={['md', 'lg']}
+              fontFamily="'Open Sans', sans-serif"
+              textAlign="center"
+            >
+              {dayHeader}
+            </Box>
+          );
+        })}
         {showAvailability && <Box w="220px" ml={6} />}
       </Box>
 
@@ -220,7 +260,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
               </Box>
 
               {/* Day Cells */}
-              {daysFull.map((dayFull, dayIndex) => (
+              {filteredDaysFull.map((dayFull, dayIndex) => (
                 <Box
                   key={`${dayFull}-${hour}`}
                   flex="1"

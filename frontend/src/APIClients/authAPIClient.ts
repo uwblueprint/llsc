@@ -1,3 +1,4 @@
+import { signOut as firebaseSignOut } from 'firebase/auth';
 import {
   AuthenticatedUser,
   UserCreateResponse,
@@ -149,12 +150,20 @@ export const logout = async (): Promise<boolean> => {
   const bearerToken = `Bearer ${getLocalStorageObjProperty(AUTHENTICATED_USER_KEY, 'accessToken')}`;
 
   try {
+    // Call backend to revoke tokens
     await baseAPIClient.post('/auth/logout', {}, { headers: { Authorization: bearerToken } });
-    localStorage.removeItem(AUTHENTICATED_USER_KEY);
     return true;
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error('Backend logout error:', error);
     return false;
+  } finally {
+    // Always clear localStorage and sign out from Firebase regardless of backend API success/failure
+    localStorage.removeItem(AUTHENTICATED_USER_KEY);
+    try {
+      await firebaseSignOut(auth);
+    } catch (firebaseError) {
+      console.error('Firebase sign out error:', firebaseError);
+    }
   }
 };
 

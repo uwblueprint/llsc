@@ -5,7 +5,6 @@ import { Box, Heading, Text, VStack, HStack, Button, Image } from '@chakra-ui/re
 import PersonalDetails from '@/components/dashboard/PersonalDetails';
 import BloodCancerExperience from '@/components/dashboard/BloodCancerExperience';
 import ActionButton from '@/components/dashboard/EditButton';
-import { COLORS } from '@/constants/form';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   getUserData,
@@ -24,9 +23,19 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
   const [isEditingAvailability, setIsEditingAvailability] = useState(false);
   const [loading, setLoading] = useState(true);
   const [savingAvailability, setSavingAvailability] = useState(false);
+  const [hasBloodCancer, setHasBloodCancer] = useState(false);
 
   // Personal details state for profile
-  const [personalDetails, setPersonalDetails] = useState({
+  const [personalDetails, setPersonalDetails] = useState<{
+    name: string;
+    email: string;
+    birthday: string;
+    gender: string;
+    pronouns: string;
+    timezone: string;
+    overview: string;
+    preferredLanguage?: string;
+  }>({
     name: '',
     email: '',
     birthday: '',
@@ -125,6 +134,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
           // Populate personal details (using camelCase after axios conversion)
           const formattedBirthday = formatDate(userData.dateOfBirth);
           const formattedPronouns = userData.pronouns?.join(', ') || 'Not provided';
+          const userLanguage = user?.language || undefined;
 
           setPersonalDetails({
             name:
@@ -137,15 +147,29 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
             pronouns: formattedPronouns,
             timezone: 'Eastern Standard Time (EST)', // TODO: Add timezone field to backend
             overview: 'Not provided', // TODO: Add overview field to backend
+            preferredLanguage:
+              userLanguage === 'fr' ? 'fr' : userLanguage === 'en' ? 'en' : undefined,
           });
 
-          // Populate cancer experience
-          setCancerExperience({
-            diagnosis: userData.diagnosis ? [userData.diagnosis] : [],
-            dateOfDiagnosis: userData.dateOfDiagnosis || '',
-            treatments: userData.treatments || [],
-            experiences: userData.experiences || [],
-          });
+          // Determine if user has blood cancer
+          const hasBloodCancerValue = userData.hasBloodCancer;
+          const userHasBloodCancer =
+            hasBloodCancerValue === true ||
+            (hasBloodCancerValue !== undefined &&
+              hasBloodCancerValue !== null &&
+              String(hasBloodCancerValue).toLowerCase() === 'yes');
+
+          setHasBloodCancer(userHasBloodCancer);
+
+          // Populate cancer experience (only if user has cancer)
+          if (userHasBloodCancer) {
+            setCancerExperience({
+              diagnosis: userData.diagnosis ? [userData.diagnosis] : [],
+              dateOfDiagnosis: userData.dateOfDiagnosis || '',
+              treatments: userData.treatments || [],
+              experiences: userData.experiences || [],
+            });
+          }
 
           // Populate loved one details if caring for someone
           if (userData.caringForSomeone) {
@@ -191,7 +215,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
 
   // Save handler for PersonalDetails
   const handleSavePersonalDetail = async (field: string, value: string) => {
-    const updateData: Partial<any> = {};
+    const updateData: Partial<Record<string, unknown>> = {};
 
     // Map frontend field names to backend snake_case (axios will convert to camelCase on send)
     if (field === 'name') {
@@ -212,6 +236,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       updateData.gender_identity = value;
     } else if (field === 'pronouns') {
       updateData.pronouns = value.split(',').map((p) => p.trim());
+    } else if (field === 'timezone') {
+      updateData.timezone = value;
+    } else if (field === 'preferredLanguage') {
+      updateData.language = value; // Backend expects 'language' field
     } else if (field === 'lovedOneBirthday') {
       // Loved one's age/birthday - store as is since backend expects lovedOneAge as string
       updateData.loved_one_age = value;
@@ -247,7 +275,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
   const handleSaveLovedOneTreatments = async () => {
     if (!lovedOneCancerExperience) return;
     const result = await updateUserData({
-      loved_one_treatments: lovedOneCancerExperience.treatments,
+      lovedOneTreatments: lovedOneCancerExperience.treatments,
     });
     if (!result) {
       alert('Failed to save loved one treatments');
@@ -258,7 +286,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
   const handleSaveLovedOneExperiences = async () => {
     if (!lovedOneCancerExperience) return;
     const result = await updateUserData({
-      loved_one_experiences: lovedOneCancerExperience.experiences,
+      lovedOneExperiences: lovedOneCancerExperience.experiences,
     });
     if (!result) {
       alert('Failed to save loved one experiences');
@@ -447,6 +475,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
               lovedOneDetails={lovedOneDetails}
               setLovedOneDetails={setLovedOneDetails}
               onSave={handleSavePersonalDetail}
+              isVolunteer={true}
             />
             <BloodCancerExperience
               cancerExperience={cancerExperience}
@@ -457,6 +486,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
               onEditExperiences={handleSaveExperiences}
               onEditLovedOneTreatments={handleSaveLovedOneTreatments}
               onEditLovedOneExperiences={handleSaveLovedOneExperiences}
+              hasBloodCancer={hasBloodCancer}
             />
             <Box bg="white" p={0} mt="116px" w="100%" pb={12}>
               <HStack justify="space-between" align="center" mb={0}>
