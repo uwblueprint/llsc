@@ -17,14 +17,7 @@ export function IntakeHeader({ title }: IntakeHeaderProps) {
   };
 
   return (
-    <Flex
-      w="full"
-      maxW="1200px"
-      justify="space-between"
-      align="center"
-      mb={8}
-      px={4}
-    >
+    <Flex w="full" maxW="1200px" justify="space-between" align="center" mb={8} px={4}>
       <Text
         fontFamily="system-ui, -apple-system, sans-serif"
         fontWeight={600}
