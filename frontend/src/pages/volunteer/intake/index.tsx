@@ -10,6 +10,7 @@ import {
 } from '@/components/intake/demographic-cancer-form';
 import { LovedOneForm } from '@/components/intake/loved-one-form';
 import { AdditionalInfoForm } from '@/components/intake/additional-info-form';
+import { IntakeHeader } from '@/components/intake/IntakeHeader';
 import {
   COLORS,
   IntakeFormData,
@@ -245,9 +246,12 @@ export default function VolunteerIntakePage() {
           bg={COLORS.lightGray}
           justify="center"
           py={12}
+          direction="column"
+          align="center"
           overflow="visible"
           pb={hasDropdownOpen ? '30vh' : 12}
         >
+          <IntakeHeader title="First Connection Volunteer Form" />
           <Box
             w="full"
             maxW="1200px"
