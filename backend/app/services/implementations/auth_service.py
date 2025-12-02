@@ -72,8 +72,54 @@ class AuthService(IAuthService):
             # Don't raise exception for security reasons - don't reveal if email exists
             return
 
-    def send_email_verification_link(self, email: str) -> None:
+    def send_email_verification_link(self, email: str, language: str = None) -> None:
         try:
+            # Get user's first name if available
+            # Try Firebase first (for display_name), then fall back to database
+            first_name = None
+            try:
+                # Try to get from Firebase user (display_name)
+                try:
+                    firebase_user = firebase_admin.auth.get_user_by_email(email)
+                    if firebase_user and firebase_user.display_name:
+                        # Extract first name from display_name (e.g., "John Doe" -> "John")
+                        display_name = firebase_user.display_name.strip()
+                        first_name = display_name.split()[0] if display_name else None
+                        if first_name:
+                            self.logger.info(f"Found first name '{first_name}' from Firebase display_name for user {email}")
+                    else:
+                        self.logger.debug(f"Firebase user exists but display_name is None for {email}")
+                except Exception as firebase_error:
+                    self.logger.debug(f"Could not get Firebase user for {email}: {str(firebase_error)}")
+
+                # Fall back to database if Firebase didn't have display_name
+                if not first_name:
+                    try:
+                        user = self.user_service.get_user_by_email(email)
+                        if user and user.first_name and user.first_name.strip():
+                            first_name = user.first_name.strip()
+                            self.logger.info(f"Found first name '{first_name}' from database for user {email}")
+                        else:
+                            self.logger.debug(f"No first name found in database for user {email}")
+                    except Exception as db_error:
+                        self.logger.debug(f"Could not get user from database for {email}: {str(db_error)}")
+            except Exception as e:
+                # If we can't get the user, continue without first name
+                self.logger.debug(f"Could not retrieve user for email {email}: {str(e)}")
+                pass
+
+            # Normalize and validate language
+            # If not provided, check environment variable, otherwise default to English
+            if not language:
+                import os
+                language = os.getenv("EMAIL_LANGUAGE", "en").lower()
+            else:
+                language = language.lower()
+
+            # Only allow 'en' or 'fr', default to 'en' for anything else
+            if language not in ["en", "fr"]:
+                language = "en"
+
             # Use Firebase Admin SDK to generate email verification link
             action_code_settings = firebase_admin.auth.ActionCodeSettings(
                 url="http://localhost:3000/action",  # URL to redirect after verification
@@ -84,7 +130,7 @@ class AuthService(IAuthService):
             verification_link = firebase_admin.auth.generate_email_verification_link(email, action_code_settings)
 
             # Send the verification email via SES (works with any email address)
-            email_sent = self.ses_email_service.send_verification_email(email, verification_link)
+            email_sent = self.ses_email_service.send_verification_email(email, verification_link, first_name, language)
 
             if email_sent:
                 self.logger.info(f"Email verification sent successfully to {email}")

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -117,12 +117,29 @@ async def verify_email(email: str, auth_service: AuthService = Depends(get_auth_
 
 
 @router.post("/send-email-verification/{email}")
-async def send_email_verification(email: str, auth_service: AuthService = Depends(get_auth_service)):
+async def send_email_verification(
+    email: str,
+    language: str = Query("en", description="Language code: 'en' for English, 'fr' for French"),
+    auth_service: AuthService = Depends(get_auth_service),
+):
     try:
-        auth_service.send_email_verification_link(email)
+        # Normalize and validate language
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"  # Default to English if invalid
+
+        # Log for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Sending email verification to {email} with language: {language}")
+
+        auth_service.send_email_verification_link(email, language)
         return Response(status_code=204)
-    except Exception:
-        # Don't reveal if email exists or not for security reasons
+    except Exception as e:
+        # Log error but don't reveal if email exists or not for security reasons
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error sending email verification: {str(e)}")
         # Always return success even if email doesn't exist
         return Response(status_code=204)
 

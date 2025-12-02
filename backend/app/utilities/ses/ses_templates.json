@@ -6,10 +6,16 @@
     "TextPart": "app/utilities/ses/template_files/test.txt"
   },
   {
-    "HtmlPart": "app/utilities/ses/template_files/email_verification.html",
+    "HtmlPart": "app/utilities/ses/template_files/email_verification_en.html",
     "SubjectPart": "Verify Your Email Address",
-    "TemplateName": "EmailVerification",
-    "TextPart": "app/utilities/ses/template_files/email_verification.txt"
+    "TemplateName": "EmailVerificationEn",
+    "TextPart": "app/utilities/ses/template_files/email_verification_en.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/email_verification_fr.html",
+    "SubjectPart": "Vérifiez votre adresse courriel",
+    "TemplateName": "EmailVerificationFr",
+    "TextPart": "app/utilities/ses/template_files/email_verification_fr.txt"
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/password_reset.html",
