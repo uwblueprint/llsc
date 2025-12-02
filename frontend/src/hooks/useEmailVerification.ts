@@ -12,8 +12,29 @@ export const useEmailVerification = () => {
     setSuccess(false);
 
     try {
+      // Get browser language from navigator - check all languages in preference order
+      let detectedLang = 'en';
+
+      // Check navigator.languages array first (user's preferred languages in order)
+      if (navigator.languages && navigator.languages.length > 0) {
+        for (const lang of navigator.languages) {
+          const langCode = lang.split('-')[0].toLowerCase();
+          if (langCode === 'fr') {
+            detectedLang = 'fr';
+            break;
+          } else if (langCode === 'en') {
+            detectedLang = 'en';
+            // Continue checking in case French comes later
+          }
+        }
+      } else if (navigator.language) {
+        // Fallback to navigator.language
+        const langCode = navigator.language.split('-')[0].toLowerCase();
+        detectedLang = langCode === 'fr' ? 'fr' : 'en';
+      }
+
       await baseAPIClient.post(
-        `/auth/send-email-verification/${encodeURIComponent(email)}`,
+        `/auth/send-email-verification/${encodeURIComponent(email)}?language=${detectedLang}`,
         {},
         {
           withCredentials: true,
