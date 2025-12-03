@@ -86,7 +86,9 @@ class AuthService(IAuthService):
                         display_name = firebase_user.display_name.strip()
                         first_name = display_name.split()[0] if display_name else None
                         if first_name:
-                            self.logger.info(f"Found first name '{first_name}' from Firebase display_name for user {email}")
+                            self.logger.info(
+                                f"Found first name '{first_name}' from Firebase display_name for user {email}"
+                            )
                     else:
                         self.logger.debug(f"Firebase user exists but display_name is None for {email}")
                 except Exception as firebase_error:
@@ -112,6 +114,7 @@ class AuthService(IAuthService):
             # If not provided, check environment variable, otherwise default to English
             if not language:
                 import os
+
                 language = os.getenv("EMAIL_LANGUAGE", "en").lower()
             else:
                 language = language.lower()

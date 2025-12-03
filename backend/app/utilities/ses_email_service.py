@@ -16,7 +16,9 @@ class SESEmailService:
         self.aws_access_key = os.getenv("AWS_ACCESS_KEY")
         self.aws_secret_key = os.getenv("AWS_SECRET_KEY")
         self.source_email_en = os.getenv("SES_SOURCE_EMAIL", "FirstConnections@bloodcancers.ca")
-        self.source_email_fr = os.getenv("SES_SOURCE_EMAIL_FR", os.getenv("SES_SOURCE_EMAIL", "FirstConnections@bloodcancers.ca"))
+        self.source_email_fr = os.getenv(
+            "SES_SOURCE_EMAIL_FR", os.getenv("SES_SOURCE_EMAIL", "FirstConnections@bloodcancers.ca")
+        )
 
         # Use English source email as default for backwards compatibility
         self.source_email = self.source_email_en
@@ -57,7 +59,9 @@ class SESEmailService:
                 self.logger.error(f"Failed to verify email {email}: {error_code}")
                 return False
 
-    def send_templated_email(self, to_email: str, template_name: str, template_data: Dict[str, Any], source_email: str = None) -> bool:
+    def send_templated_email(
+        self, to_email: str, template_name: str, template_data: Dict[str, Any], source_email: str = None
+    ) -> bool:
         """
         Send a templated email using SES
 
@@ -109,7 +113,9 @@ class SESEmailService:
             self.logger.error(f"Unexpected error sending email to {to_email}: {str(e)}")
             return False
 
-    def send_verification_email(self, to_email: str, verification_link: str, first_name: str = None, language: str = "en") -> bool:
+    def send_verification_email(
+        self, to_email: str, verification_link: str, first_name: str = None, language: str = "en"
+    ) -> bool:
         """
         Send email verification email
 
@@ -131,10 +137,7 @@ class SESEmailService:
         # Use appropriate source email based on language
         source_email = self.source_email_en if language == "en" else self.source_email_fr
 
-        template_data = {
-            "verification_link": verification_link,
-            "first_name": first_name if first_name else "there"
-        }
+        template_data = {"verification_link": verification_link, "first_name": first_name if first_name else "there"}
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 

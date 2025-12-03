@@ -130,6 +130,7 @@ async def send_email_verification(
 
         # Log for debugging
         import logging
+
         logger = logging.getLogger(__name__)
         logger.info(f"Sending email verification to {email} with language: {language}")
 
@@ -138,6 +139,7 @@ async def send_email_verification(
     except Exception as e:
         # Log error but don't reveal if email exists or not for security reasons
         import logging
+
         logger = logging.getLogger(__name__)
         logger.error(f"Error sending email verification: {str(e)}")
         # Always return success even if email doesn't exist
