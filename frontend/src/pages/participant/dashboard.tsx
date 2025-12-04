@@ -261,6 +261,7 @@ export default function ParticipantDashboardPage() {
               onClick={() => handleSubmitRequest(requestMessage.trim() || undefined)}
               loading={isSubmitting}
               loadingText="Submitting..."
+              disabled={isSubmitting}
               px={6}
             >
               Submit Request

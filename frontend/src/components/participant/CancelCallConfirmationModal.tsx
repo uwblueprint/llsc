@@ -113,7 +113,7 @@ export function CancelCallConfirmationModal({
               py={2.5}
               borderRadius="8px"
               onClick={onConfirm}
-              isLoading={isCancelling}
+              loading={isCancelling}
               loadingText="Cancelling..."
               disabled={isCancelling}
               _hover={{

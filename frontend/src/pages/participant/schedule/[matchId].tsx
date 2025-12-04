@@ -458,7 +458,7 @@ function ConfirmationModal({
               py={2.5}
               borderRadius="8px"
               onClick={onConfirm}
-              isLoading={isSubmitting}
+              loading={isSubmitting}
               _hover={{
                 bg: '#044d52',
               }}
