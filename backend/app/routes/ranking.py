@@ -155,9 +155,7 @@ async def get_ranking_preferences(
 
             if item_id is not None and name:
                 result.append(
-                    PreferenceItemWithName(
-                        kind=pref.kind, id=item_id, scope=pref.scope, rank=pref.rank, name=name
-                    )
+                    PreferenceItemWithName(kind=pref.kind, id=item_id, scope=pref.scope, rank=pref.rank, name=name)
                 )
 
         return result
