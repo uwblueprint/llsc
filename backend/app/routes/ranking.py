@@ -1,18 +1,16 @@
 from typing import List
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.middleware.auth import has_roles
+from app.models import Experience, Quality, Treatment, User
+from app.models.RankingPreference import RankingPreference
 from app.schemas.user import UserRole
 from app.services.implementations.ranking_service import RankingService
 from app.utilities.db_utils import get_db
-
-from uuid import UUID
-from app.models import User
-from app.models.RankingPreference import RankingPreference
-from app.models import Quality, Treatment, Experience
 
 
 class StaticQualityOption(BaseModel):

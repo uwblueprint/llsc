@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session, contains_eager, joinedload
+from sqlalchemy.orm import Session, joinedload
 
 from app.interfaces.matching_service import IMatchingService
 from app.models.Experience import Experience
@@ -149,7 +149,7 @@ class MatchingService(IMatchingService):
                 if not volunteer_data:
                     continue
                 score = self._calculate_match_score(participant_data, volunteer_data, participant_preferences)
-                
+
                 # Calculate age from date_of_birth
                 age = None
                 if volunteer_data.date_of_birth:
