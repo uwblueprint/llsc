@@ -251,30 +251,9 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
             label="Email Address"
             value={personalDetails.email}
             onChange={(e) => setPersonalDetails((prev) => ({ ...prev, email: e.target.value }))}
-            onFocus={() => handleInputFocus('email')}
-            onBlur={() => handleBlur('email')}
+            readOnly={true}
             error={errors.email}
           />
-          {editingField === 'email' && (
-            <Box mt={2} display="flex" justifyContent="flex-end">
-              <Button
-                onClick={handleSave}
-                bg="#056067"
-                color="white"
-                px={4}
-                py={1}
-                borderRadius="6px"
-                fontFamily="'Open Sans', sans-serif"
-                fontWeight={600}
-                fontSize="0.875rem"
-                _hover={{ bg: '#044d52' }}
-                _active={{ bg: '#033e42' }}
-                disabled={saving}
-              >
-                {saving ? 'Saving...' : 'Save'}
-              </Button>
-            </Box>
-          )}
 
           <ProfileDropdown
             label="Gender"

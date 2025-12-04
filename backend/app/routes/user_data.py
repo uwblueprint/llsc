@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.middleware.auth import has_roles
 from app.models import Experience, Treatment, User, UserData
@@ -86,6 +86,9 @@ class UserDataResponse(BaseModel):
     # Availability (list of availability templates)
     availability: List[AvailabilityTemplateResponse] = []
 
+    # Volunteer Data (for volunteers)
+    volunteer_experience: Optional[str] = None
+
 
 # ===== Endpoints =====
 
@@ -108,7 +111,9 @@ async def get_my_user_data(
     try:
         # Get current user from auth middleware
         current_user_auth_id = request.state.user_id
-        current_user = db.query(User).filter(User.auth_id == current_user_auth_id).first()
+        current_user = (
+            db.query(User).options(joinedload(User.volunteer_data)).filter(User.auth_id == current_user_auth_id).first()
+        )
 
         if not current_user:
             raise HTTPException(status_code=401, detail="User not found")
@@ -129,6 +134,11 @@ async def get_my_user_data(
             for template in current_user.availability_templates
             if template.is_active
         ]
+
+        # Get volunteer_data.experience if user is a volunteer
+        volunteer_experience = None
+        if current_user.volunteer_data:
+            volunteer_experience = current_user.volunteer_data.experience
 
         # Build response with all fields and resolved relationships
         response = UserDataResponse(
@@ -169,6 +179,8 @@ async def get_my_user_data(
             caring_for_someone=user_data.caring_for_someone,
             # Availability
             availability=availability_templates,
+            # Volunteer Data
+            volunteer_experience=volunteer_experience,
         )
 
         return response
@@ -195,7 +207,9 @@ async def update_my_user_data(
     try:
         # Get current user from auth middleware
         current_user_auth_id = request.state.user_id
-        current_user = db.query(User).filter(User.auth_id == current_user_auth_id).first()
+        current_user = (
+            db.query(User).options(joinedload(User.volunteer_data)).filter(User.auth_id == current_user_auth_id).first()
+        )
 
         if not current_user:
             raise HTTPException(status_code=401, detail="User not found")
@@ -316,6 +330,21 @@ async def update_my_user_data(
         if "timezone" in update_data:
             user_data.timezone = update_data["timezone"]
 
+        # Handle volunteer_experience update if provided
+        if "volunteer_experience" in update_data:
+            from app.models.VolunteerData import VolunteerData
+
+            volunteer_data = db.query(VolunteerData).filter(VolunteerData.user_id == current_user.id).first()
+            if volunteer_data:
+                volunteer_data.experience = update_data["volunteer_experience"]
+            else:
+                # Create volunteer_data if it doesn't exist
+                volunteer_data = VolunteerData(
+                    user_id=current_user.id,
+                    experience=update_data["volunteer_experience"],
+                )
+                db.add(volunteer_data)
+
         db.commit()
         db.refresh(user_data)
 
@@ -329,6 +358,11 @@ async def update_my_user_data(
             for template in current_user.availability_templates
             if template.is_active
         ]
+
+        # Get volunteer_data.experience if user is a volunteer
+        volunteer_experience = None
+        if current_user.volunteer_data:
+            volunteer_experience = current_user.volunteer_data.experience
 
         response = UserDataResponse(
             first_name=user_data.first_name,
@@ -362,6 +396,7 @@ async def update_my_user_data(
             has_blood_cancer=user_data.has_blood_cancer,
             caring_for_someone=user_data.caring_for_someone,
             availability=availability_templates,
+            volunteer_experience=volunteer_experience,
         )
 
         return response

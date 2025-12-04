@@ -170,8 +170,6 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
       const [firstName, ...lastNameParts] = value.split(' ');
       updateData.first_name = firstName || '';
       updateData.last_name = lastNameParts.join(' ') || '';
-    } else if (field === 'email') {
-      updateData.email = value;
     } else if (field === 'birthday') {
       // Convert DD/MM/YYYY to YYYY-MM-DD for backend
       try {

@@ -12,6 +12,7 @@ import {
   updateMyAvailability,
   AvailabilityTemplateResponse,
 } from '@/APIClients/userDataAPIClient';
+import { extractTimezoneAbbreviation, getTimezoneDisplayName } from '@/utils/timezoneUtils';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -41,7 +42,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
     birthday: '',
     gender: '',
     pronouns: '',
-    timezone: 'Eastern Standard Time (EST)',
+    timezone: 'EST',
     overview: '',
   });
 
@@ -145,8 +146,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
             birthday: formattedBirthday,
             gender: userData.genderIdentity || 'Not provided',
             pronouns: formattedPronouns,
-            timezone: 'Eastern Standard Time (EST)', // TODO: Add timezone field to backend
-            overview: 'Not provided', // TODO: Add overview field to backend
+            timezone: userData.timezone ? getTimezoneDisplayName(userData.timezone) : 'EST',
+            overview:
+              userData.volunteerExperience && userData.volunteerExperience.trim()
+                ? userData.volunteerExperience
+                : 'Not provided',
             preferredLanguage:
               userLanguage === 'fr' ? 'fr' : userLanguage === 'en' ? 'en' : undefined,
           });
@@ -222,8 +226,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       const [firstName, ...lastNameParts] = value.split(' ');
       updateData.first_name = firstName || '';
       updateData.last_name = lastNameParts.join(' ') || '';
-    } else if (field === 'email') {
-      updateData.email = value;
     } else if (field === 'birthday') {
       // Convert DD/MM/YYYY to YYYY-MM-DD for backend
       try {
@@ -236,8 +238,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       updateData.gender_identity = value;
     } else if (field === 'pronouns') {
       updateData.pronouns = value.split(',').map((p) => p.trim());
+    } else if (field === 'overview') {
+      updateData.volunteer_experience = value;
     } else if (field === 'timezone') {
-      updateData.timezone = value;
+      // Extract abbreviation from full name (e.g., "Eastern Standard Time (EST)" -> "EST")
+      updateData.timezone = extractTimezoneAbbreviation(value);
     } else if (field === 'preferredLanguage') {
       updateData.language = value; // Backend expects 'language' field
     } else if (field === 'lovedOneBirthday') {
