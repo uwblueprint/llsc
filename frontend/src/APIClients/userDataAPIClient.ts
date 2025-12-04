@@ -26,6 +26,7 @@ export interface UserDataResponse {
   hasKids?: string;
   otherEthnicGroup?: string;
   genderIdentityCustom?: string;
+  timezone?: string;
 
   // Cancer Experience
   diagnosis?: string;
@@ -47,6 +48,9 @@ export interface UserDataResponse {
 
   // Availability
   availability?: AvailabilityTemplateResponse[];
+
+  // Volunteer Data (for volunteers)
+  volunteerExperience?: string;
 }
 
 export interface FormSubmissionResponse {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text, VStack, HStack, Button } from '@chakra-ui/react';
 import { Avatar } from '@/components/ui/avatar';
-import Badge from './badge';
+import Badge from './Badge';
 import { COLORS } from '@/constants/form';
 
 interface ProfileCardProps {

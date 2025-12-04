@@ -9,6 +9,8 @@ interface ProfileDropdownProps {
   options: readonly { readonly value: string; readonly label: string }[];
   flex?: string;
   icon?: React.ReactNode;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
@@ -18,6 +20,8 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   options,
   flex = '1',
   icon,
+  onFocus,
+  onBlur,
 }) => {
   const styledLabel = (
     <Flex align="center" gap={2} h="30px" mb={2}>
@@ -72,10 +76,12 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         onFocus={(e) => {
           e.target.style.borderColor = '#319795';
           e.target.style.boxShadow = '0 0 0 2px rgba(49, 151, 149, 0.2)';
+          onFocus?.();
         }}
         onBlur={(e) => {
           e.target.style.borderColor = '#D5D7DA';
           e.target.style.boxShadow = 'none';
+          onBlur?.();
         }}
       >
         {options.map((option) => (

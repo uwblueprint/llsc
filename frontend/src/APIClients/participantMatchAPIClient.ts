@@ -30,4 +30,46 @@ export const participantMatchAPIClient = {
     });
     return response.data;
   },
+
+  /**
+   * Schedule a match by selecting a time block
+   * @param matchId The match ID
+   * @param timeBlockId The selected time block ID
+   * @returns Updated match details
+   */
+  scheduleMatch: async (matchId: number, timeBlockId: number): Promise<void> => {
+    const response = await baseAPIClient.post(`/matches/${matchId}/schedule`, {
+      timeBlockId,
+    });
+    return response.data;
+  },
+
+  /**
+   * Cancel a match as a participant
+   * @param matchId The match ID
+   * @returns Updated match details
+   */
+  cancelMatch: async (matchId: number): Promise<void> => {
+    const response = await baseAPIClient.post(`/matches/${matchId}/cancel`);
+    return response.data;
+  },
+
+  /**
+   * Request new times for a match
+   * @param matchId The match ID
+   * @param timeRanges Array of time ranges (start_time and end_time)
+   * @returns Updated match details
+   */
+  requestNewTimes: async (
+    matchId: number,
+    timeRanges: Array<{ startTime: string; endTime: string }>,
+  ): Promise<void> => {
+    const response = await baseAPIClient.post(`/matches/${matchId}/request-new-times`, {
+      suggestedNewTimes: timeRanges.map((range) => ({
+        start_time: range.startTime,
+        end_time: range.endTime,
+      })),
+    });
+    return response.data;
+  },
 };

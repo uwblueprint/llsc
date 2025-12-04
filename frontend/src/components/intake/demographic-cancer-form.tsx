@@ -565,167 +565,172 @@ export function DemographicCancerForm({
         </VStack>
       </Box>
 
-      {/* Cancer Experience Section */}
-      <Box mb={10}>
-        <Heading
-          as="h2"
-          fontFamily="system-ui, -apple-system, sans-serif"
-          fontWeight={600}
-          color={COLORS.veniceBlue}
-          fontSize="20px"
-          mb={3}
-        >
-          Your Cancer Experience
-        </Heading>
+      {/* Cancer Experience Section - Only show if user has blood cancer */}
+      {hasBloodCancer === 'yes' && (
+        <Box mb={10}>
+          <Heading
+            as="h2"
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontWeight={600}
+            color={COLORS.veniceBlue}
+            fontSize="20px"
+            mb={3}
+          >
+            Your Cancer Experience
+          </Heading>
 
-        <Text
-          fontFamily="system-ui, -apple-system, sans-serif"
-          fontSize="14px"
-          color={COLORS.fieldGray}
-          mb={6}
-        >
-          {formType === 'volunteer'
-            ? 'This information can also be taken into account when matching you with a service user.'
-            : 'This information can also be taken into account when matching you with a volunteer.'}
-        </Text>
+          <Text
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontSize="14px"
+            color={COLORS.fieldGray}
+            mb={6}
+          >
+            {formType === 'volunteer'
+              ? 'This information can also be taken into account when matching you with a service user.'
+              : 'This information can also be taken into account when matching you with a volunteer.'}
+          </Text>
 
-        <VStack gap={6}>
-          {/* Diagnosis and Date */}
-          <HStack gap={4} w="full">
-            <FormField label="Your Diagnosis" error={errors.diagnosis?.message} flex="1">
-              <Controller
-                name="diagnosis"
-                control={control}
-                rules={{ required: 'Diagnosis is required' }}
-                render={({ field }) => (
-                  <SingleSelectDropdown
-                    options={DIAGNOSIS_OPTIONS}
-                    selectedValue={field.value || ''}
-                    onSelectionChange={field.onChange}
-                    placeholder="Select your diagnosis"
-                    error={!!errors.diagnosis}
-                  />
-                )}
-              />
-            </FormField>
-
-            <FormField
-              label="Your Date of Diagnosis"
-              error={errors.dateOfDiagnosis?.message}
-              flex="1"
-            >
-              <Controller
-                name="dateOfDiagnosis"
-                control={control}
-                rules={{
-                  required: 'Date of diagnosis is required',
-                  pattern: {
-                    value: VALIDATION.DATE,
-                    message: 'Please enter a valid date (DD/MM/YYYY)',
-                  },
-                }}
-                render={({ field }) => (
-                  <InputGroup>
-                    <Input
-                      {...field}
-                      placeholder="DD/MM/YYYY"
-                      fontFamily="system-ui, -apple-system, sans-serif"
-                      fontSize="14px"
-                      color={COLORS.veniceBlue}
-                      borderColor={errors.dateOfDiagnosis ? 'red.500' : undefined}
-                      borderRadius="6px"
-                      h="40px"
-                      _placeholder={{ color: '#9ca3af' }}
-                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+          <VStack gap={6}>
+            {/* Diagnosis and Date */}
+            <HStack gap={4} w="full">
+              <FormField label="Your Diagnosis" error={errors.diagnosis?.message} flex="1">
+                <Controller
+                  name="diagnosis"
+                  control={control}
+                  rules={{ required: 'Diagnosis is required' }}
+                  render={({ field }) => (
+                    <SingleSelectDropdown
+                      options={DIAGNOSIS_OPTIONS}
+                      selectedValue={field.value || ''}
+                      onSelectionChange={field.onChange}
+                      placeholder="Select your diagnosis"
+                      error={!!errors.diagnosis}
                     />
-                  </InputGroup>
-                )}
-              />
-            </FormField>
-          </HStack>
+                  )}
+                />
+              </FormField>
 
-          {/* Treatment and Experience Sections Side by Side */}
-          <HStack gap={8} w="full" align="start">
-            {/* Treatment Section */}
-            <Box flex="1">
-              <Text
-                fontFamily="system-ui, -apple-system, sans-serif"
-                fontWeight={500}
-                fontSize="14px"
-                color={COLORS.veniceBlue}
-                mb={2}
+              <FormField
+                label="Your Date of Diagnosis"
+                error={errors.dateOfDiagnosis?.message}
+                flex="1"
               >
-                Which of the following treatments have you done?
-              </Text>
-              <Text
-                fontFamily="system-ui, -apple-system, sans-serif"
-                fontSize="12px"
-                color={COLORS.fieldGray}
-                mb={4}
-              >
-                You can select a maximum of 2.
-              </Text>
+                <Controller
+                  name="dateOfDiagnosis"
+                  control={control}
+                  rules={{
+                    required: 'Date of diagnosis is required',
+                    pattern: {
+                      value: VALIDATION.DATE,
+                      message: 'Please enter a valid date (DD/MM/YYYY)',
+                    },
+                  }}
+                  render={({ field }) => (
+                    <InputGroup>
+                      <Input
+                        {...field}
+                        placeholder="DD/MM/YYYY"
+                        fontFamily="system-ui, -apple-system, sans-serif"
+                        fontSize="14px"
+                        color={COLORS.veniceBlue}
+                        borderColor={errors.dateOfDiagnosis ? 'red.500' : undefined}
+                        borderRadius="6px"
+                        h="40px"
+                        _placeholder={{ color: '#9ca3af' }}
+                        _focus={{
+                          borderColor: COLORS.teal,
+                          boxShadow: `0 0 0 3px ${COLORS.teal}20`,
+                        }}
+                      />
+                    </InputGroup>
+                  )}
+                />
+              </FormField>
+            </HStack>
 
-              <Controller
-                name="treatments"
-                control={control}
-                render={({ field }) => (
-                  <CheckboxGroup
-                    options={treatmentOptions}
-                    selectedValues={field.value || []}
-                    onValueChange={field.onChange}
-                    maxSelections={2}
-                  />
-                )}
-              />
-              {errors.treatments && (
-                <Text color="red.500" fontSize="12px" mt={2}>
-                  {errors.treatments.message}
+            {/* Treatment and Experience Sections Side by Side */}
+            <HStack gap={8} w="full" align="start">
+              {/* Treatment Section */}
+              <Box flex="1">
+                <Text
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  fontWeight={500}
+                  fontSize="14px"
+                  color={COLORS.veniceBlue}
+                  mb={2}
+                >
+                  Which of the following treatments have you done?
                 </Text>
-              )}
-            </Box>
-
-            {/* Experience Section */}
-            <Box flex="1">
-              <Text
-                fontFamily="system-ui, -apple-system, sans-serif"
-                fontWeight={500}
-                fontSize="14px"
-                color={COLORS.veniceBlue}
-                mb={2}
-              >
-                Which of the following do you have experience with?
-              </Text>
-              <Text
-                fontFamily="system-ui, -apple-system, sans-serif"
-                fontSize="12px"
-                color={COLORS.fieldGray}
-                mb={4}
-              >
-                You can select a maximum of 5.
-              </Text>
-
-              <Controller
-                name="experiences"
-                control={control}
-                render={({ field }) => (
-                  <CheckboxGroup
-                    options={experienceOptions}
-                    selectedValues={field.value || []}
-                    onValueChange={field.onChange}
-                    maxSelections={5}
-                  />
-                )}
-              />
-              {errors.experiences && (
-                <Text color="red.500" fontSize="12px" mt={2}>
-                  {errors.experiences.message}
+                <Text
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  fontSize="12px"
+                  color={COLORS.fieldGray}
+                  mb={4}
+                >
+                  You can select a maximum of 2.
                 </Text>
-              )}
-            </Box>
-          </HStack>
-        </VStack>
-      </Box>
+
+                <Controller
+                  name="treatments"
+                  control={control}
+                  render={({ field }) => (
+                    <CheckboxGroup
+                      options={treatmentOptions}
+                      selectedValues={field.value || []}
+                      onValueChange={field.onChange}
+                      maxSelections={2}
+                    />
+                  )}
+                />
+                {errors.treatments && (
+                  <Text color="red.500" fontSize="12px" mt={2}>
+                    {errors.treatments.message}
+                  </Text>
+                )}
+              </Box>
+
+              {/* Experience Section */}
+              <Box flex="1">
+                <Text
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  fontWeight={500}
+                  fontSize="14px"
+                  color={COLORS.veniceBlue}
+                  mb={2}
+                >
+                  Which of the following do you have experience with?
+                </Text>
+                <Text
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  fontSize="12px"
+                  color={COLORS.fieldGray}
+                  mb={4}
+                >
+                  You can select a maximum of 5.
+                </Text>
+
+                <Controller
+                  name="experiences"
+                  control={control}
+                  render={({ field }) => (
+                    <CheckboxGroup
+                      options={experienceOptions}
+                      selectedValues={field.value || []}
+                      onValueChange={field.onChange}
+                      maxSelections={5}
+                    />
+                  )}
+                />
+                {errors.experiences && (
+                  <Text color="red.500" fontSize="12px" mt={2}>
+                    {errors.experiences.message}
+                  </Text>
+                )}
+              </Box>
+            </HStack>
+          </VStack>
+        </Box>
+      )}
 
       {/* Submit Button */}
       <Box w="full" display="flex" justifyContent="flex-end">

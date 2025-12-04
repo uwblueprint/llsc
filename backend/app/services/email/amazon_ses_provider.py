@@ -82,4 +82,5 @@ def get_email_service_provider() -> IEmailServiceProvider:
         aws_secret_key=os.getenv("AWS_SECRET_KEY"),
         region=os.getenv("AWS_REGION"),
         source_email=os.getenv("SES_SOURCE_EMAIL"),
+        is_sandbox=os.getenv("IS_SANDBOX", "True").lower() == "true",
     )

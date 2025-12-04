@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Heading, Text, VStack } from '@chakra-ui/react';
+import { Heading, Text, VStack } from '@chakra-ui/react';
+import { ProtectedPage } from '@/components/auth/ProtectedPage';
+import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
 import ProfileCard from '@/components/dashboard/ProfileCard';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
 import baseAPIClient from '@/APIClients/baseAPIClient';
+import { FormStatus, UserRole } from '@/types/authTypes';
 
 interface ScheduledCall {
   id: number;
@@ -77,9 +80,9 @@ const ScheduledCallsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <VolunteerDashboardLayout>
-        <Box display="flex" justifyContent="center" w="100%">
-          <Box w="711px">
+      <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
+        <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
+          <VolunteerDashboardLayout>
             <Text
               fontSize="16px"
               color="#6B7280"
@@ -88,16 +91,16 @@ const ScheduledCallsPage: React.FC = () => {
             >
               Loading scheduled calls...
             </Text>
-          </Box>
-        </Box>
-      </VolunteerDashboardLayout>
+          </VolunteerDashboardLayout>
+        </FormStatusGuard>
+      </ProtectedPage>
     );
   }
 
   return (
-    <VolunteerDashboardLayout>
-      <Box display="flex" justifyContent="center" w="100%">
-        <Box w="711px">
+    <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
+      <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
+        <VolunteerDashboardLayout>
           <Heading
             fontSize="2.25rem"
             fontWeight={600}
@@ -141,9 +144,9 @@ const ScheduledCallsPage: React.FC = () => {
               ))}
             </VStack>
           )}
-        </Box>
-      </Box>
-    </VolunteerDashboardLayout>
+        </VolunteerDashboardLayout>
+      </FormStatusGuard>
+    </ProtectedPage>
   );
 };
 
