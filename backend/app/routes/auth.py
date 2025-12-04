@@ -22,6 +22,7 @@ async def register_user(user: UserCreateRequest, user_service: UserService = Dep
         "umairmhundekar@gmail.com",
         "yash@kotharigroup.com",
         "evan.beiduo.wu@gmail.com",
+        "richardbai@uwblueprint.org"
     ]
     if user.role == UserRole.ADMIN:
         if user.email not in allowed_Admins:
