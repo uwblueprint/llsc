@@ -127,12 +127,26 @@ export function MatchesContent({ participantId }: MatchesContentProps) {
   const allSelected = matches.length > 0 && selectedVolunteerIds.size === matches.length;
 
   return (
-    <Box p={0} bg="white" display="flex" flexDirection="column" alignItems="center" w="100%" px={8} py={8} overflowY="hidden">
+    <Box
+      p={0}
+      bg="white"
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      w="100%"
+      px={8}
+      py={8}
+      overflowY="hidden"
+    >
       {/* Cards Row - Above Table */}
       <HStack align="flex-start" gap={10} mb={10} justify="center" w="100%">
         {/* Profile Summary Card - Left */}
         <Box flexShrink={0} w="640px" minW="640px" maxW="640px">
-          <ProfileSummaryCard userData={user?.userData} userEmail={user?.email} userId={participantId} />
+          <ProfileSummaryCard
+            userData={user?.userData}
+            userEmail={user?.email}
+            userId={participantId}
+          />
         </Box>
 
         {/* Notes Modal - Right */}
@@ -174,11 +188,7 @@ export function MatchesContent({ participantId }: MatchesContentProps) {
           >
             <HStack gap={4} align="center" h="44px">
               <Box minW="16px">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={handleSelectAll}
-                  size="sm"
-                />
+                <Checkbox checked={allSelected} onCheckedChange={handleSelectAll} size="sm" />
               </Box>
               <HStack gap={0} flex={1} justify="space-between" align="center" w="full">
                 <Text fontSize="sm" fontWeight={400} color="#414651" w="150px">
@@ -237,7 +247,13 @@ export function MatchesContent({ participantId }: MatchesContentProps) {
                             size="sm"
                           />
                         </Box>
-                        <HStack gap={0} flex={1} justify="space-between" align="flex-start" w="full">
+                        <HStack
+                          gap={0}
+                          flex={1}
+                          justify="space-between"
+                          align="flex-start"
+                          w="full"
+                        >
                           {/* Volunteer Name */}
                           <Box w="150px">
                             <Text fontSize="sm" fontWeight={400} color="#414651">
@@ -262,7 +278,12 @@ export function MatchesContent({ participantId }: MatchesContentProps) {
                           {/* Diagnosis */}
                           <Box w="180px">
                             <VStack align="start" gap={0}>
-                              <Text fontSize="sm" fontWeight={400} color="#414651" lineHeight="1.2em">
+                              <Text
+                                fontSize="sm"
+                                fontWeight={400}
+                                color="#414651"
+                                lineHeight="1.2em"
+                              >
                                 {match.diagnosis || 'N/A'}
                               </Text>
                             </VStack>
@@ -315,7 +336,9 @@ export function MatchesContent({ participantId }: MatchesContentProps) {
                               <HStack gap={2} flexWrap="wrap">
                                 {match.experiences.slice(0, 2).map((experience, idx) => {
                                   const truncatedExperience =
-                                    experience.length > 20 ? `${experience.substring(0, 20)}...` : experience;
+                                    experience.length > 20
+                                      ? `${experience.substring(0, 20)}...`
+                                      : experience;
                                   return (
                                     <Badge
                                       key={idx}

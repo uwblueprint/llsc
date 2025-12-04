@@ -104,4 +104,3 @@ export function NotesModal({ participantId, participantName }: NotesModalProps) 
     </Box>
   );
 }
-

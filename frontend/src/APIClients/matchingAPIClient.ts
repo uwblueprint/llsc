@@ -28,8 +28,9 @@ export const matchingAPIClient = {
    * @returns List of volunteer matches with full details and scores
    */
   getAdminMatches: async (participantId: string): Promise<AdminMatchesResponse> => {
-    const response = await baseAPIClient.get<AdminMatchesResponse>(`/matching/admin/${participantId}`);
+    const response = await baseAPIClient.get<AdminMatchesResponse>(
+      `/matching/admin/${participantId}`,
+    );
     return response.data;
   },
 };
-

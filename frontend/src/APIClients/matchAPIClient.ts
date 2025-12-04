@@ -35,4 +35,3 @@ export const matchAPIClient = {
     return response.data;
   },
 };
-

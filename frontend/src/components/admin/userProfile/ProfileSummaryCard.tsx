@@ -196,4 +196,3 @@ export function ProfileSummaryCard({ userData, userEmail, userId }: ProfileSumma
     </Box>
   );
 }
-

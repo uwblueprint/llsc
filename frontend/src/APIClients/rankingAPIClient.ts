@@ -19,11 +19,16 @@ export const rankingAPIClient = {
    * @param target Target role ('patient' or 'caregiver')
    * @returns List of ranking preferences
    */
-  getPreferences: async (userId: string, target: 'patient' | 'caregiver'): Promise<RankingPreference[]> => {
-    const response = await baseAPIClient.get<RankingPreference[]>(`/ranking/preferences/${userId}`, {
-      params: { target },
-    });
+  getPreferences: async (
+    userId: string,
+    target: 'patient' | 'caregiver',
+  ): Promise<RankingPreference[]> => {
+    const response = await baseAPIClient.get<RankingPreference[]>(
+      `/ranking/preferences/${userId}`,
+      {
+        params: { target },
+      },
+    );
     return response.data;
   },
 };
-
