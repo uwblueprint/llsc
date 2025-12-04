@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.middleware.auth import has_roles
 from app.models import Experience, Treatment, User, UserData
 from app.models.User import Language
+from app.models.VolunteerData import VolunteerData
 from app.schemas.user import UserRole
 from app.utilities.db_utils import get_db
 
@@ -332,8 +333,6 @@ async def update_my_user_data(
 
         # Handle volunteer_experience update if provided
         if "volunteer_experience" in update_data:
-            from app.models.VolunteerData import VolunteerData
-
             volunteer_data = db.query(VolunteerData).filter(VolunteerData.user_id == current_user.id).first()
             if volunteer_data:
                 volunteer_data.experience = update_data["volunteer_experience"]
