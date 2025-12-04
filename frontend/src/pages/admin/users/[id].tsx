@@ -14,6 +14,7 @@ import { ProfileNavigation } from '@/components/admin/userProfile/ProfileNavigat
 import { SuccessMessage } from '@/components/admin/userProfile/SuccessMessage';
 import { ProfileSummary } from '@/components/admin/userProfile/ProfileSummary';
 import { ProfileContent } from '@/components/admin/userProfile/ProfileContent';
+import { MatchesContent } from '@/components/admin/userProfile/MatchesContent';
 import { SaveMessage } from '@/types/userProfileTypes';
 
 export default function AdminUserProfile() {
@@ -173,9 +174,13 @@ export default function AdminUserProfile() {
             <Text>Forms content coming soon...</Text>
           </Box>
         ) : activeTab === 'matches' ? (
-          <Box flex="1" p={8} bg="white">
-            <Text>Matches content coming soon...</Text>
-          </Box>
+          role === UserRole.PARTICIPANT ? (
+            <MatchesContent participantId={id} />
+          ) : (
+            <Box flex="1" p={8} bg="white">
+              <Text>Matches are only available for participants.</Text>
+            </Box>
+          )
         ) : null}
       </Flex>
     </ProtectedPage>

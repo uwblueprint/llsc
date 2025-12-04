@@ -11,6 +11,7 @@ export interface BackendTask {
   endDate: string | null; // ISO datetime string
   createdAt: string;
   updatedAt: string;
+  description: string | null;
 }
 
 export interface TaskListResponse {
