@@ -147,6 +147,8 @@ export const GENDER_DROPDOWN_OPTIONS = GENDER_IDENTITY_OPTIONS.map((option) => (
 
 // Timezone options (keeping existing ones)
 export const TIMEZONE_OPTIONS = [
+  { value: 'Newfoundland Standard Time (NST)', label: 'Newfoundland Standard Time (NST)' },
+  { value: 'Atlantic Standard Time (AST)', label: 'Atlantic Standard Time (AST)' },
   { value: 'Eastern Standard Time (EST)', label: 'Eastern Standard Time (EST)' },
   { value: 'Central Standard Time (CST)', label: 'Central Standard Time (CST)' },
   { value: 'Mountain Standard Time (MST)', label: 'Mountain Standard Time (MST)' },

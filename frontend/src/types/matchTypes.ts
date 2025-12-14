@@ -12,6 +12,7 @@ export interface VolunteerSummary {
   firstName: string | null;
   lastName: string | null;
   email: string;
+  phone: string | null;
   pronouns: string[] | null;
   diagnosis: string | null;
   age: number | null;
