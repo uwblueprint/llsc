@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
@@ -129,8 +131,6 @@ async def send_email_verification(
             language = "en"  # Default to English if invalid
 
         # Log for debugging
-        import logging
-
         logger = logging.getLogger(__name__)
         logger.info(f"Sending email verification to {email} with language: {language}")
 
@@ -138,8 +138,6 @@ async def send_email_verification(
         return Response(status_code=204)
     except Exception as e:
         # Log error but don't reveal if email exists or not for security reasons
-        import logging
-
         logger = logging.getLogger(__name__)
         logger.error(f"Error sending email verification: {str(e)}")
         # Always return success even if email doesn't exist

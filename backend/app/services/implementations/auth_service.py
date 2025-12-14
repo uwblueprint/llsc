@@ -1,4 +1,5 @@
 import logging
+import os
 
 import firebase_admin.auth
 from fastapi import HTTPException
@@ -113,8 +114,6 @@ class AuthService(IAuthService):
             # Normalize and validate language
             # If not provided, check environment variable, otherwise default to English
             if not language:
-                import os
-
                 language = os.getenv("EMAIL_LANGUAGE", "en").lower()
             else:
                 language = language.lower()
