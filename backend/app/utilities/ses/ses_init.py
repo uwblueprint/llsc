@@ -31,8 +31,8 @@ def load_file_content(file_path: str) -> str:
         return ""
 
 
-# Function to create SES template
-def create_ses_template(template_metadata, ses_client):
+# Function to create or update SES template
+def create_or_update_ses_template(template_metadata, ses_client, force_update=False):
     name = template_metadata["TemplateName"]
     try:
         text_part = load_file_content(template_metadata["TextPart"])
@@ -47,17 +47,29 @@ def create_ses_template(template_metadata, ses_client):
             "TextPart": text_part,
             "HtmlPart": html_part,
         }
-        ses_client.create_template(Template=template)
-        print(f"SES template '{name}' created successfully!")
+
+        # Check if template exists
+        try:
+            ses_client.get_template(TemplateName=name)
+            # Template exists, update it
+            if force_update:
+                ses_client.update_template(Template=template)
+                print(f"SES template '{name}' updated successfully!")
+            else:
+                print(f"SES template '{name}' already exists. Use force_update=True to update.")
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "TemplateDoesNotExist":
+                # Template doesn't exist, create it
+                ses_client.create_template(Template=template)
+                print(f"SES template '{name}' created successfully!")
+            else:
+                raise
     except ClientError as e:
-        if e.response["Error"]["Code"] == "TemplateAlreadyExists":
-            print(f"SES template '{name}' already exists.")
-        else:
-            print(f"An error occurred while creating the SES template: {e}")
+        print(f"An error occurred while processing SES template '{name}': {e}")
 
 
 # Ensure SES templates are available at app startup
-def ensure_ses_templates():
+def ensure_ses_templates(force_update=False):
     templates_metadata = load_templates_metadata(TEMPLATES_FILE)
     aws_region = os.getenv("AWS_REGION")
     aws_access_key = os.getenv("AWS_ACCESS_KEY")
@@ -75,14 +87,4 @@ def ensure_ses_templates():
     )
 
     for template_metadata in templates_metadata:
-        name = template_metadata["TemplateName"]
-        try:
-            # Check if the template exists
-            ses_client.get_template(TemplateName=name)
-            print(f"SES template '{name}' already exists.")
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "TemplateDoesNotExist":
-                print(f"SES template '{name}' does not exist. Creating template...")
-                create_ses_template(template_metadata, ses_client)
-            else:
-                print(f"An error occurred while checking the SES template: {e}")
+        create_or_update_ses_template(template_metadata, ses_client, force_update=force_update)
