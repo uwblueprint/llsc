@@ -34,12 +34,12 @@ const statusColors = {
 };
 
 const FORM_IDS = {
-  FIRST_CONNECTION_VOLUNTEER: '12345678-1234-1234-1234-123456789012',
+  FIRST_CONNECTION_PARTICIPANT: '12345678-1234-1234-1234-123456789012',
+  FIRST_CONNECTION_VOLUNTEER: '12345678-1234-1234-1234-123456789013',
+  RANKING: '12345678-1234-1234-1234-123456789014',
   SECONDARY_APPLICATION: '12345678-1234-1234-1234-123456789015',
-  BECOME_PARTICIPANT: '12345678-1234-1234-1234-123456789014',
-  FIRST_CONNECTION_PARTICIPANT: '12345678-1234-1234-1234-123456789016',
-  RANKING: '12345678-1234-1234-1234-123456789017',
-  BECOME_VOLUNTEER: '12345678-1234-1234-1234-123456789018',
+  BECOME_PARTICIPANT: '12345678-1234-1234-1234-123456789016',
+  BECOME_VOLUNTEER: '12345678-1234-1234-1234-123456789017',
 } as const;
 
 const CREATE_FORM_BUTTON_COLOR = '#056067';
@@ -151,8 +151,8 @@ export default function AdminUserProfile() {
           showCreateButton: false,
         },
         {
-          heading: 'First Connection Form: Become a Volunteer',
-          formNames: ['First Connection Form: Become a Volunteer'],
+          heading: 'Become a Volunteer Form',
+          formNames: ['Become a Volunteer Form'],
           formId: FORM_IDS.BECOME_VOLUNTEER,
           showCreateButton: true,
         },
@@ -173,8 +173,8 @@ export default function AdminUserProfile() {
         showCreateButton: false,
       },
       {
-        heading: 'First Connection Form: Become a Participant',
-        formNames: ['First Connection Form: Become a Participant'],
+        heading: 'Become a Participant Form',
+        formNames: ['Become a Participant Form'],
         formId: FORM_IDS.BECOME_PARTICIPANT,
         showCreateButton: true,
       },

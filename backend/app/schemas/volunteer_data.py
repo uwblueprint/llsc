@@ -50,15 +50,17 @@ class VolunteerDataUpdateRequest(BaseModel):
 
 class VolunteerDataResponse(BaseModel):
     """
-    Response schema for volunteer data
+    Response schema for volunteer data.
+    Note: id and submitted_at may be None when returning a pending submission
+    (VolunteerData is only created when admin approves the form).
     """
 
-    id: UUID
+    id: Optional[UUID] = None
     user_id: Optional[UUID]
     experience: Optional[str]
     references_json: Optional[str]
     additional_comments: Optional[str]
-    submitted_at: datetime
+    submitted_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 

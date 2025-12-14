@@ -9,8 +9,9 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.middleware.auth import has_roles
 from app.models import Experience, Form, FormSubmission, Treatment, User
+from app.models.User import FormStatus, Language
 from app.schemas.user import UserRole
-from app.services.implementations.intake_form_processor import IntakeFormProcessor
+from app.services.implementations.form_processor import FormProcessor
 from app.utilities.db_utils import get_db
 
 # ===== Schemas =====
@@ -54,6 +55,7 @@ class FormSubmissionResponse(BaseModel):
     user_id: UUID
     submitted_at: datetime
     answers: dict
+    status: Literal["pending_approval", "approved", "rejected"]
     form: Optional[FormResponse] = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -157,7 +159,10 @@ async def create_form_submission(
                 )
 
             # Map formType to form name
-            form_name_mapping = {"participant": "Participant Intake Form", "volunteer": "Volunteer Intake Form"}
+            form_name_mapping = {
+                "participant": "First Connection Participant Form",
+                "volunteer": "First Connection Volunteer Form",
+            }
 
             form_name = form_name_mapping.get(effective_form_type)
             if not form_name:
@@ -190,32 +195,66 @@ async def create_form_submission(
             if current_user.role.name == "participant" and effective_form_type != "participant":
                 raise HTTPException(status_code=403, detail="Participants can only submit the participant intake form")
 
-        # Create the raw form submission record
+        # Create the raw form submission record with pending status
         db_submission = FormSubmission(
             form_id=form_id,
             user_id=target_user.id,
             answers=submission.answers,
+            status="pending_approval",
         )
 
         db.add(db_submission)
         db.flush()  # Get the submission ID without committing
 
-        # Process intake forms into structured tables when appropriate
-        should_process_intake = (
-            form
-            and form.type == "intake"
-            and isinstance(submission.answers, dict)
-            and submission.answers.get("personal_info")
-        )
-        if should_process_intake:
-            processor = IntakeFormProcessor(db)
-            processor.process_form_submission(user_id=str(target_user.id), form_data=submission.answers)
+        # For intake forms: Update essential fields on User and set form_status
+        # Full processing to UserData happens on admin approval
+        if form and form.type == "intake" and isinstance(submission.answers, dict):
+            personal_info = submission.answers.get("personal_info", {})
+
+            # Update essential fields on User record
+            if personal_info.get("first_name"):
+                target_user.first_name = personal_info["first_name"]
+            if personal_info.get("last_name"):
+                target_user.last_name = personal_info["last_name"]
+
+            # Update language if provided in demographics
+            demographics = submission.answers.get("demographics", {})
+            preferred_language = demographics.get("preferred_language")
+            if preferred_language:
+                if preferred_language.lower() in ["en", "english"]:
+                    target_user.language = Language.ENGLISH
+                elif preferred_language.lower() in ["fr", "french"]:
+                    target_user.language = Language.FRENCH
+
+            # Update form_status to indicate intake was submitted (pending approval)
+            target_user.form_status = FormStatus.INTAKE_SUBMITTED
+
+        # NOTE: IntakeFormProcessor is NOT called here anymore.
+        # Full processing happens when admin approves the form.
 
         # Commit everything together
         db.commit()
         db.refresh(db_submission)
 
-        return FormSubmissionResponse.model_validate(db_submission)
+        # Build response dict
+        response_dict = {
+            "id": db_submission.id,
+            "form_id": db_submission.form_id,
+            "user_id": db_submission.user_id,
+            "submitted_at": db_submission.submitted_at,
+            "answers": db_submission.answers,
+            "status": db_submission.status,
+            "form": {
+                "id": form.id,
+                "name": form.name,
+                "version": form.version,
+                "type": form.type,
+            }
+            if form
+            else None,
+        }
+
+        return FormSubmissionResponse.model_validate(response_dict)
 
     except HTTPException:
         raise
@@ -275,6 +314,7 @@ async def get_form_submissions(
                 "user_id": s.user_id,
                 "submitted_at": s.submitted_at,
                 "answers": s.answers,
+                "status": s.status,
                 "form": {
                     "id": s.form.id,
                     "name": s.form.name,
@@ -336,6 +376,7 @@ async def get_form_submission(
             "user_id": submission.user_id,
             "submitted_at": submission.submitted_at,
             "answers": submission.answers,
+            "status": submission.status,
             "form": {
                 "id": submission.form.id,
                 "name": submission.form.name,
@@ -360,22 +401,23 @@ async def update_form_submission(
     update_data: FormSubmissionUpdate,
     request: Request,
     db: Session = Depends(get_db),
-    authorized: bool = has_roles([UserRole.ADMIN, UserRole.PARTICIPANT, UserRole.VOLUNTEER]),
+    authorized: bool = has_roles([UserRole.ADMIN]),  # Only admins can edit
 ):
     """
-    Update a form submission.
+    Update a form submission (admin only).
 
-    Users can only update their own submissions unless they are admin.
+    Admins can edit pending_approval and rejected forms, but not approved forms.
     """
     try:
-        # Get the submission
+        # Get the submission with form relationship
         submission = db.query(FormSubmission).filter(FormSubmission.id == submission_id).first()
 
         if not submission:
             raise HTTPException(status_code=404, detail="Form submission not found")
 
-        # Check access permissions
-        await ensure_owner_or_admin(request, db, submission.user_id)
+        # Cannot edit approved forms
+        if submission.status == "approved":
+            raise HTTPException(status_code=400, detail="Cannot edit approved forms")
 
         # Update the submission
         submission.answers = update_data.answers
@@ -383,7 +425,18 @@ async def update_form_submission(
         db.commit()
         db.refresh(submission)
 
-        return FormSubmissionResponse.model_validate(submission)
+        # Build response dict
+        response_dict = {
+            "id": submission.id,
+            "form_id": submission.form_id,
+            "user_id": submission.user_id,
+            "submitted_at": submission.submitted_at,
+            "answers": submission.answers,
+            "status": submission.status,
+            "form": None,
+        }
+
+        return FormSubmissionResponse.model_validate(response_dict)
 
     except HTTPException:
         raise
@@ -419,6 +472,131 @@ async def delete_form_submission(
         db.commit()
 
         return {"message": "Form submission deleted successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===== Approval Workflow Endpoints =====
+
+
+@router.post("/submissions/{submission_id}/approve")
+async def approve_form_submission(
+    submission_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    authorized: bool = has_roles([UserRole.ADMIN]),
+):
+    """
+    Approve a form submission and process it into specialized tables.
+
+    Only pending_approval forms can be approved.
+    Processing is done based on form type (intake, ranking, secondary).
+    """
+    try:
+        # Get the submission with form relationship
+        submission = db.query(FormSubmission).filter(FormSubmission.id == submission_id).first()
+
+        if not submission:
+            raise HTTPException(status_code=404, detail="Form submission not found")
+
+        if submission.status != "pending_approval":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Can only approve pending forms. Current status: {submission.status}",
+            )
+
+        # Eagerly load the form relationship for processing
+        if not submission.form:
+            raise HTTPException(status_code=500, detail="Form submission has no associated form")
+
+        # Process the submission using FormProcessor
+        processor = FormProcessor(db)
+        processor.process_approved_submission(submission)
+
+        # Update status to approved
+        submission.status = "approved"
+        db.commit()
+
+        return {"status": "approved", "message": "Form approved and processed successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to process form: {str(e)}")
+
+
+@router.post("/submissions/{submission_id}/reject")
+async def reject_form_submission(
+    submission_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    authorized: bool = has_roles([UserRole.ADMIN]),
+):
+    """
+    Reject a form submission.
+
+    Only pending_approval forms can be rejected.
+    """
+    try:
+        submission = db.query(FormSubmission).filter(FormSubmission.id == submission_id).first()
+
+        if not submission:
+            raise HTTPException(status_code=404, detail="Form submission not found")
+
+        if submission.status != "pending_approval":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Can only reject pending forms. Current status: {submission.status}",
+            )
+
+        # Update status
+        submission.status = "rejected"
+        db.commit()
+
+        return {"status": "rejected", "message": "Form rejected successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/submissions/{submission_id}/resubmit")
+async def resubmit_form_submission(
+    submission_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    authorized: bool = has_roles([UserRole.ADMIN]),
+):
+    """
+    Resubmit a rejected form (admin changes status back to pending_approval).
+
+    Only rejected forms can be resubmitted.
+    Use this after editing a rejected form to put it back in the review queue.
+    """
+    try:
+        submission = db.query(FormSubmission).filter(FormSubmission.id == submission_id).first()
+
+        if not submission:
+            raise HTTPException(status_code=404, detail="Form submission not found")
+
+        if submission.status != "rejected":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Can only resubmit rejected forms. Current status: {submission.status}",
+            )
+
+        # Update status back to pending
+        submission.status = "pending_approval"
+        db.commit()
+
+        return {"status": "pending_approval", "message": "Form resubmitted for approval"}
 
     except HTTPException:
         raise

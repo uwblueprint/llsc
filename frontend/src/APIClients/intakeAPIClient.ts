@@ -1,11 +1,14 @@
 import baseAPIClient from './baseAPIClient';
 
+export type FormSubmissionStatus = 'pending_approval' | 'approved' | 'rejected';
+
 export interface FormSubmission {
   id: string;
   formId: string;
   userId: string;
   submittedAt: string;
   answers: Record<string, unknown>;
+  status: FormSubmissionStatus;
   form?: {
     id: string;
     name: string;
@@ -65,7 +68,7 @@ class IntakeAPIClient {
   }
 
   /**
-   * Update an existing form submission
+   * Update an existing form submission (admin only, pending/rejected forms)
    */
   async updateFormSubmission(
     submissionId: string,
@@ -76,6 +79,38 @@ class IntakeAPIClient {
       {
         answers,
       },
+    );
+    return response.data;
+  }
+
+  /**
+   * Approve a pending form submission (admin only)
+   * Processes the form data into specialized tables
+   */
+  async approveFormSubmission(submissionId: string): Promise<{ status: string; message: string }> {
+    const response = await baseAPIClient.post<{ status: string; message: string }>(
+      `/intake/submissions/${submissionId}/approve`,
+    );
+    return response.data;
+  }
+
+  /**
+   * Reject a pending form submission (admin only)
+   */
+  async rejectFormSubmission(submissionId: string): Promise<{ status: string; message: string }> {
+    const response = await baseAPIClient.post<{ status: string; message: string }>(
+      `/intake/submissions/${submissionId}/reject`,
+    );
+    return response.data;
+  }
+
+  /**
+   * Resubmit a rejected form (admin only)
+   * Changes status from rejected back to pending_approval
+   */
+  async resubmitFormSubmission(submissionId: string): Promise<{ status: string; message: string }> {
+    const response = await baseAPIClient.post<{ status: string; message: string }>(
+      `/intake/submissions/${submissionId}/resubmit`,
     );
     return response.data;
   }

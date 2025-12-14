@@ -6,7 +6,8 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.interfaces.volunteer_data_service import IVolunteerDataService
-from app.models.User import FormStatus, User
+from app.models import Form, FormSubmission
+from app.models.User import User
 from app.models.VolunteerData import VolunteerData
 from app.schemas.volunteer_data import (
     VolunteerDataCreateRequest,
@@ -22,46 +23,109 @@ class VolunteerDataService(IVolunteerDataService):
         self.logger = logging.getLogger(LOGGER_NAME("volunteer_data_service"))
 
     async def create_volunteer_data(self, volunteer_data: VolunteerDataCreateRequest) -> VolunteerDataResponse:
+        """
+        Create a form_submission for secondary application with pending_approval status.
+        NOTE: VolunteerData is NOT created here - it's created when admin approves the form.
+        Returns a placeholder response with the submitted data.
+        """
         try:
             user_id = volunteer_data.user_id
-            user = None
 
-            # Check if volunteer data already exists for this user
-            if user_id is not None:
-                existing_data = self.db.query(VolunteerData).filter(VolunteerData.user_id == user_id).first()
-                if existing_data:
-                    raise HTTPException(status_code=409, detail="Volunteer data already exists for this user")
+            if user_id is None:
+                raise HTTPException(status_code=400, detail="user_id is required")
 
-                user = self.db.query(User).filter(User.id == user_id).first()
-                if not user:
-                    raise HTTPException(status_code=404, detail="User not found")
+            user = self.db.query(User).filter(User.id == user_id).first()
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
 
-            # Create new volunteer data entry
-            db_volunteer_data = VolunteerData(
+            # NOTE: We no longer create VolunteerData here.
+            # That happens when admin approves the form submission.
+
+            # NOTE: We no longer update user.form_status here.
+            # That happens when admin approves the form submission.
+
+            # Create form_submission record for secondary application form
+            secondary_app_form = (
+                self.db.query(Form)
+                .filter(
+                    Form.type == "secondary",
+                    Form.name == "Secondary Application Form",
+                )
+                .first()
+            )
+            if not secondary_app_form:
+                raise HTTPException(status_code=500, detail="Secondary Application Form not found in database")
+
+            # Check if submission already exists
+            existing_submission = (
+                self.db.query(FormSubmission)
+                .filter(FormSubmission.user_id == user_id, FormSubmission.form_id == secondary_app_form.id)
+                .first()
+            )
+
+            # Build answers dict from volunteer data
+            answers = {
+                "experience": volunteer_data.experience,
+                "references_json": volunteer_data.references_json,
+                "additional_comments": volunteer_data.additional_comments,
+            }
+
+            if existing_submission:
+                # Update existing submission and reset to pending
+                existing_submission.answers = answers
+                existing_submission.status = "pending_approval"
+            else:
+                # Create new submission with pending status
+                new_submission = FormSubmission(
+                    form_id=secondary_app_form.id,
+                    user_id=user_id,
+                    answers=answers,
+                    status="pending_approval",
+                )
+                self.db.add(new_submission)
+
+            self.db.commit()
+
+            # Return placeholder response (no actual VolunteerData created yet)
+            # The id will be None since we haven't created the record
+            return VolunteerDataResponse(
+                id=None,
                 user_id=user_id,
                 experience=volunteer_data.experience,
                 references_json=volunteer_data.references_json,
                 additional_comments=volunteer_data.additional_comments,
             )
 
-            self.db.add(db_volunteer_data)
-
-            # Update the user's form_status if we have a user
-            if user_id and user and user.form_status == FormStatus.SECONDARY_APPLICATION_TODO:
-                # Update to SECONDARY_APPLICATION_SUBMITTED when volunteer submits secondary application
-                user.form_status = FormStatus.SECONDARY_APPLICATION_SUBMITTED
-
-            self.db.commit()
-            self.db.refresh(db_volunteer_data)
-
-            return VolunteerDataResponse.model_validate(db_volunteer_data)
-
         except HTTPException:
             raise
         except Exception as e:
             self.db.rollback()
-            self.logger.error(f"Error creating volunteer data: {str(e)}")
+            self.logger.error(f"Error creating volunteer data submission: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
+
+    def process_volunteer_data(self, user_id: UUID, answers: dict) -> VolunteerData:
+        """
+        Internal method to actually create VolunteerData record.
+        Called by FormProcessor when admin approves a secondary application form.
+        """
+        # Check if volunteer data already exists for this user
+        existing_data = self.db.query(VolunteerData).filter(VolunteerData.user_id == user_id).first()
+        if existing_data:
+            # Update existing record
+            existing_data.experience = answers.get("experience")
+            existing_data.references_json = answers.get("references_json")
+            existing_data.additional_comments = answers.get("additional_comments")
+            return existing_data
+
+        # Create new volunteer data entry
+        db_volunteer_data = VolunteerData(
+            user_id=user_id,
+            experience=answers.get("experience"),
+            references_json=answers.get("references_json"),
+            additional_comments=answers.get("additional_comments"),
+        )
+        self.db.add(db_volunteer_data)
+        return db_volunteer_data
 
     async def get_volunteer_data_by_id(self, volunteer_data_id: str) -> VolunteerDataResponse:
         try:

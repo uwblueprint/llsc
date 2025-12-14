@@ -2,8 +2,7 @@ from typing import Dict, List
 
 from sqlalchemy.orm import Session
 
-from app.models import FormStatus, Quality, User, UserData
-from app.models.RankingPreference import RankingPreference
+from app.models import Form, FormSubmission, Quality, User, UserData
 
 
 class RankingService:
@@ -149,19 +148,21 @@ class RankingService:
             "caring_for_someone": data.caring_for_someone,
         }
 
-    # Preferences persistence
+    # Preferences persistence - creates form_submission with pending_approval status
+    # Actual processing to ranking_preferences happens when admin approves
     def save_preferences(self, user_auth_id: str, target: str, items: List[Dict]) -> None:
         user = self.db.query(User).filter(User.auth_id == user_auth_id).first()
         if not user:
             raise ValueError("User not found")
 
-        # Validate and normalize
-        normalized: List[RankingPreference] = []
+        # Validate input (fail fast - don't create submission if data is invalid)
         if len(items) > 5:
             raise ValueError("A maximum of 5 ranking items is allowed")
 
         seen_ranks: set[int] = set()
         seen_keys: set[tuple] = set()
+        validated_items = []
+
         for item in items:
             kind = item.get("kind")
             scope = item.get("scope")
@@ -185,31 +186,51 @@ class RankingService:
                 raise ValueError("duplicate item in payload")
             seen_keys.add(key)
 
-            pref = RankingPreference(
-                user_id=user.id,
-                target_role=target,
-                kind=kind,
-                quality_id=item_id if kind == "quality" else None,
-                treatment_id=item_id if kind == "treatment" else None,
-                experience_id=item_id if kind == "experience" else None,
-                scope=scope,
-                rank=rank,
+            validated_items.append(
+                {
+                    "kind": kind,
+                    "id": item_id,
+                    "scope": scope,
+                    "rank": rank,
+                }
             )
-            normalized.append(pref)
 
-        # Overwrite strategy: delete existing rows for (user, target), then bulk insert
-        (
-            self.db.query(RankingPreference)
-            .filter(RankingPreference.user_id == user.id, RankingPreference.target_role == target)
-            .delete(synchronize_session=False)
+        # NOTE: We no longer process to ranking_preferences here.
+        # That happens when admin approves the form submission.
+
+        # NOTE: We no longer update user.form_status here.
+        # That happens when admin approves the form submission.
+
+        # Create or update form_submission record for ranking form
+        ranking_form = self.db.query(Form).filter(Form.type == "ranking", Form.name == "Ranking Form").first()
+        if not ranking_form:
+            raise ValueError("Ranking Form not found in database")
+
+        # Check if submission already exists
+        existing_submission = (
+            self.db.query(FormSubmission)
+            .filter(FormSubmission.user_id == user.id, FormSubmission.form_id == ranking_form.id)
+            .first()
         )
-        if normalized:
-            self.db.bulk_save_objects(normalized)
 
-        if user.form_status in (
-            FormStatus.RANKING_TODO,
-            FormStatus.RANKING_SUBMITTED,
-        ):
-            user.form_status = FormStatus.RANKING_SUBMITTED
+        # Build answers dict from validated preferences
+        answers = {
+            "target": target,
+            "preferences": validated_items,
+        }
+
+        if existing_submission:
+            # Update existing submission and reset to pending
+            existing_submission.answers = answers
+            existing_submission.status = "pending_approval"
+        else:
+            # Create new submission with pending status
+            new_submission = FormSubmission(
+                form_id=ranking_form.id,
+                user_id=user.id,
+                answers=answers,
+                status="pending_approval",
+            )
+            self.db.add(new_submission)
 
         self.db.commit()

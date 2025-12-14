@@ -11,7 +11,7 @@ from .AvailabilityTemplate import AvailabilityTemplate
 from .Base import Base
 from .Experience import Experience
 from .Form import Form
-from .FormSubmission import FormSubmission
+from .FormSubmission import FormSubmission, FormSubmissionStatus
 from .Match import Match
 from .MatchStatus import MatchStatus
 from .Quality import Quality
@@ -43,6 +43,7 @@ __all__ = [
     "RankingPreference",
     "Form",
     "FormSubmission",
+    "FormSubmissionStatus",
     "FormStatus",
     "Language",
     "Task",
