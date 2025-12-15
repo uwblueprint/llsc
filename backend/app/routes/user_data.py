@@ -142,7 +142,6 @@ async def get_my_user_data(
             if template.is_active
         ]
 
-<<<<<<< HEAD
         # Get volunteer_data.experience if user is a volunteer
         volunteer_experience = None
         if current_user.volunteer_data:
@@ -365,7 +364,6 @@ async def update_my_user_data(
             if template.is_active
         ]
 
-<<<<<<< HEAD
         # Get volunteer_data.experience if user is a volunteer
         volunteer_experience = None
         if current_user.volunteer_data:
@@ -413,7 +411,6 @@ async def update_my_user_data(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-<<<<<<< HEAD
 
 
 # ===== Admin Endpoints =====

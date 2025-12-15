@@ -30,7 +30,7 @@ import {
   PROVINCES,
   PRONOUNS_OPTIONS,
   ETHNIC_GROUP_OPTIONS,
-  TIMEZONE_OPTIONS,
+  TIMEZONE_OPTIONS_ABBREVIATED,
   MARITAL_STATUS_OPTIONS,
   HAS_KIDS_OPTIONS,
   DIAGNOSIS_OPTIONS,
@@ -831,7 +831,7 @@ export function AdminIntakeFormView({ initialData, formType, onChange }: AdminIn
                     control={control}
                     render={({ field }) => (
                       <SingleSelectDropdown
-                        options={[...TIMEZONE_OPTIONS]}
+                        options={TIMEZONE_OPTIONS_ABBREVIATED as string[]}
                         selectedValue={field.value}
                         onSelectionChange={field.onChange}
                         placeholder="Select timezone"
