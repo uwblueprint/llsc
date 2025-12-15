@@ -420,12 +420,20 @@ async def update_form_submission(
         if not submission:
             raise HTTPException(status_code=404, detail="Form submission not found")
 
-        # Cannot edit approved forms
-        if submission.status == "approved":
-            raise HTTPException(status_code=400, detail="Cannot edit approved forms")
-
         # Update the submission
         submission.answers = update_data.answers
+
+        # If form is approved, re-process it to update specialized tables
+        if submission.status == "approved":
+            # Get the user for processing
+            user = db.query(User).filter(User.id == submission.user_id).first()
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            # Re-process the form (processors are idempotent)
+            processor = FormProcessor(db)
+            processor.process_approved_submission(submission)
+            # Note: Don't change user.form_status - they're already past this step
 
         db.commit()
         db.refresh(submission)

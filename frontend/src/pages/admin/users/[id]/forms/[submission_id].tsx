@@ -249,6 +249,11 @@ export default function FormViewPage() {
     intakePrefilledAnswers,
   ]);
 
+  // Memoize the conversion to prevent unnecessary re-renders
+  const convertedIntakeData = useMemo(() => {
+    return intakePrefilledAnswers ? convertToAdminIntakeFormData(intakePrefilledAnswers) : null;
+  }, [intakePrefilledAnswers]);
+
   const [pendingAnswers, setPendingAnswers] = useState<EditableAnswers | null>(null);
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
 
@@ -276,6 +281,67 @@ export default function FormViewPage() {
       setHasPendingChanges(dirty);
     },
     [],
+  );
+
+  // Memoized onChange for AdminIntakeFormView to prevent unnecessary re-renders
+  const handleIntakeFormChange = useCallback(
+    (data: any, hasChanges: boolean) => {
+      if (!intakePrefilledAnswers) return;
+
+      // Convert back to VolunteerFormAnswers format for compatibility
+      const converted: VolunteerFormAnswers = {
+        ...intakePrefilledAnswers,
+        hasBloodCancer: data.hasBloodCancer,
+        caringForSomeone: data.caringForSomeone,
+        personalInfo: {
+          ...intakePrefilledAnswers.personalInfo,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          dateOfBirth: data.dateOfBirth,
+          phoneNumber: data.phoneNumber,
+          postalCode: data.postalCode,
+          city: data.city,
+          province: data.province,
+        },
+        demographics: {
+          ...intakePrefilledAnswers.demographics,
+          genderIdentity: data.genderIdentity,
+          pronouns: data.pronouns,
+          ethnicGroup: data.ethnicGroup,
+          preferredLanguage: data.preferredLanguage,
+          maritalStatus: data.maritalStatus,
+          hasKids: data.hasKids,
+          timezone: data.timezone,
+        },
+        cancerExperience: {
+          diagnosis: data.diagnosis || '',
+          dateOfDiagnosis: data.dateOfDiagnosis || '',
+          treatments: data.treatments || [],
+          experiences: data.experiences || [],
+        },
+        caregiverExperience: {
+          experiences: data.caregiverExperiences || [],
+        },
+        lovedOne: data.lovedOne
+          ? {
+              demographics: {
+                genderIdentity: data.lovedOne.genderIdentity,
+                genderIdentityCustom: data.lovedOne.genderIdentityCustom,
+                age: data.lovedOne.age,
+              },
+              cancerExperience: {
+                diagnosis: data.lovedOne.diagnosis,
+                dateOfDiagnosis: data.lovedOne.dateOfDiagnosis,
+                treatments: data.lovedOne.treatments,
+                experiences: data.lovedOne.experiences,
+              },
+            }
+          : intakePrefilledAnswers.lovedOne,
+        additionalInfo: data.additionalInfo || '',
+      };
+      handleVolunteerEditorChange(converted, hasChanges);
+    },
+    [intakePrefilledAnswers, handleVolunteerEditorChange],
   );
 
   const canSaveForm = hasPendingChanges && !!pendingAnswers && !isSavingForm;
@@ -407,64 +473,11 @@ export default function FormViewPage() {
             </Flex>
           )
         ) : usesUnifiedIntakeEditor ? (
-          intakePrefilledAnswers ? (
+          convertedIntakeData ? (
             <AdminIntakeFormView
-              initialData={convertToAdminIntakeFormData(intakePrefilledAnswers)}
+              initialData={convertedIntakeData}
               formType={answersRecord.formType === 'volunteer' ? 'volunteer' : 'participant'}
-              onChange={(data, hasChanges) => {
-                // Convert back to VolunteerFormAnswers format for compatibility
-                const converted: VolunteerFormAnswers = {
-                  ...intakePrefilledAnswers,
-                  hasBloodCancer: data.hasBloodCancer,
-                  caringForSomeone: data.caringForSomeone,
-                  personalInfo: {
-                    ...intakePrefilledAnswers.personalInfo,
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    dateOfBirth: data.dateOfBirth,
-                    phoneNumber: data.phoneNumber,
-                    postalCode: data.postalCode,
-                    city: data.city,
-                    province: data.province,
-                  },
-                  demographics: {
-                    ...intakePrefilledAnswers.demographics,
-                    genderIdentity: data.genderIdentity,
-                    pronouns: data.pronouns,
-                    ethnicGroup: data.ethnicGroup,
-                    preferredLanguage: data.preferredLanguage,
-                    maritalStatus: data.maritalStatus,
-                    hasKids: data.hasKids,
-                    timezone: data.timezone,
-                  },
-                  cancerExperience: {
-                    diagnosis: data.diagnosis || '',
-                    dateOfDiagnosis: data.dateOfDiagnosis || '',
-                    treatments: data.treatments || [],
-                    experiences: data.experiences || [],
-                  },
-                  caregiverExperience: {
-                    experiences: data.caregiverExperiences || [],
-                  },
-                  lovedOne: data.lovedOne
-                    ? {
-                        demographics: {
-                          genderIdentity: data.lovedOne.genderIdentity,
-                          genderIdentityCustom: data.lovedOne.genderIdentityCustom,
-                          age: data.lovedOne.age,
-                        },
-                        cancerExperience: {
-                          diagnosis: data.lovedOne.diagnosis,
-                          dateOfDiagnosis: data.lovedOne.dateOfDiagnosis,
-                          treatments: data.lovedOne.treatments,
-                          experiences: data.lovedOne.experiences,
-                        },
-                      }
-                    : intakePrefilledAnswers.lovedOne,
-                  additionalInfo: data.additionalInfo || '',
-                };
-                handleVolunteerEditorChange(converted, hasChanges);
-              }}
+              onChange={handleIntakeFormChange}
             />
           ) : (
             <Flex justify="center" py="60px">
@@ -555,14 +568,12 @@ export default function FormViewPage() {
           {/* Save Button - For all forms */}
           <Button
             onClick={handlePrimarySave}
-            disabled={!canSaveForm || isSavingForm || isSubmissionApproved}
-            bg={canSaveForm && !isSavingForm && !isSubmissionApproved ? '#101828' : '#EAECF5'}
-            color={canSaveForm && !isSavingForm && !isSubmissionApproved ? '#FFFFFF' : '#475467'}
+            disabled={!canSaveForm || isSavingForm}
+            bg={canSaveForm && !isSavingForm ? '#101828' : '#EAECF5'}
+            color={canSaveForm && !isSavingForm ? '#FFFFFF' : '#475467'}
             borderRadius="8px"
             border="1px solid"
-            borderColor={
-              canSaveForm && !isSavingForm && !isSubmissionApproved ? '#101828' : '#D0D5DD'
-            }
+            borderColor={canSaveForm && !isSavingForm ? '#101828' : '#D0D5DD'}
             px="18px"
             py="12px"
             h="auto"

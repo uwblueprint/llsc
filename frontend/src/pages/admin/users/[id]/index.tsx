@@ -152,7 +152,7 @@ export default function AdminUserProfile() {
           heading: 'Ranking Form',
           formNames: ['Ranking Form'],
           formId: FORM_IDS.RANKING,
-          showCreateButton: false,
+          showCreateButton: true,
         },
         {
           heading: 'Become a Volunteer Form',
@@ -224,13 +224,27 @@ export default function AdminUserProfile() {
 
       try {
         setCreatingFormId(formId);
+
+        // Prepare initial answers based on form type
+        let initialAnswers: Record<string, unknown> = {
+          status: 'pending-approval',
+          createdByAdmin: true,
+        };
+
+        // For ranking forms, provide proper initial structure
+        if (formId === FORM_IDS.RANKING) {
+          initialAnswers = {
+            target: 'patient', // Default to patient, admin can change this
+            preferences: [],
+            status: 'pending-approval',
+            createdByAdmin: true,
+          };
+        }
+
         await intakeAPIClient.createFormSubmission({
           formId,
           userId: id,
-          answers: {
-            status: 'pending-approval',
-            createdByAdmin: true,
-          },
+          answers: initialAnswers,
         });
         setFormsError(null);
         setSaveMessage({
