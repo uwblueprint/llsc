@@ -37,6 +37,14 @@ export interface ParticipantRankingAnswers {
   isCaregiverVolunteerFlow?: boolean;
   participantType?: 'cancerPatient' | 'caregiver' | string;
   additionalNotes?: string;
+  // Backend format fields (for form submission)
+  target?: 'patient' | 'caregiver';
+  preferences?: Array<{
+    kind: string;
+    id: number;
+    scope: string;
+    rank: number;
+  }>;
 }
 
 const ensureStringArray = (value: unknown): string[] => {
@@ -225,20 +233,25 @@ const parseRankingEntries = (value: unknown, fallbackLabels: string[]): RankingE
               : typeof rankValue === 'string' && !Number.isNaN(Number(rankValue))
                 ? Number(rankValue)
                 : idx + 1;
-          return {
+          const entry: RankingEntry = {
             label,
             rank: numericRank,
-            scope,
-            kind,
           };
+          if (scope !== undefined) {
+            entry.scope = scope;
+          }
+          if (kind !== undefined) {
+            entry.kind = kind;
+          }
+          return entry;
         }
         return null;
       })
-      .filter((entry): entry is RankingEntry => Boolean(entry));
+      .filter((entry): entry is RankingEntry => entry !== null);
 
     if (normalized.length) {
       return normalized
-        .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+        .sort((a, b) => a.rank - b.rank)
         .map((entry, index) => ({
           ...entry,
           rank: index + 1,
@@ -260,6 +273,9 @@ export const normalizeParticipantRankingAnswers = (
       ? (raw as Record<string, unknown>)
       : ({} as Record<string, unknown>);
 
+  // Check for backend preferences format first
+  const backendPreferences = Array.isArray(source['preferences']) ? source['preferences'] : null;
+
   const selectedQualities =
     ensureStringArray(source['selectedQualities']) ||
     ensureStringArray(source['selected_qualities']);
@@ -276,14 +292,33 @@ export const normalizeParticipantRankingAnswers = (
   const rankedPreferences =
     rankingEntries.length > 0 ? rankingEntries.map((entry) => entry.label) : rankedPreferencesInput;
 
+  // Build rankings from preferences if available
+  let rankings: RankingEntry[] = [];
+  if (backendPreferences && backendPreferences.length > 0) {
+    // Convert backend preferences to ranking entries
+    // Note: We don't have labels yet, those will be populated when options are fetched
+    rankings = (
+      backendPreferences as Array<{ id: number; kind: string; rank: number; scope: string }>
+    )
+      .map((pref) => ({
+        label: `${pref.kind}-${pref.id}`, // Placeholder label
+        rank: pref.rank,
+        scope: pref.scope,
+        kind: pref.kind,
+      }))
+      .sort((a, b) => a.rank - b.rank);
+  } else if (rankingEntries.length > 0) {
+    rankings = rankingEntries;
+  } else {
+    rankings = rankedPreferences.map((label, index) => ({ label, rank: index + 1 }));
+  }
+
   return {
     status:
       typeof source['status'] === 'string' ? (source['status'] as string) : 'pending-approval',
     selectedQualities,
     rankedPreferences,
-    rankings: rankingEntries.length
-      ? rankingEntries
-      : rankedPreferences.map((label, index) => ({ label, rank: index + 1 })),
+    rankings,
     volunteerType:
       (typeof source['volunteerType'] === 'string' && (source['volunteerType'] as string)) ||
       (typeof source['volunteer_type'] === 'string' && (source['volunteer_type'] as string)) ||
@@ -302,5 +337,11 @@ export const normalizeParticipantRankingAnswers = (
       (typeof source['additionalNotes'] === 'string' && (source['additionalNotes'] as string)) ||
       (typeof source['additional_notes'] === 'string' && (source['additional_notes'] as string)) ||
       undefined,
+    target:
+      (typeof source['target'] === 'string' && (source['target'] as 'patient' | 'caregiver')) ||
+      undefined,
+    preferences: backendPreferences as
+      | Array<{ kind: string; id: number; scope: string; rank: number }>
+      | undefined,
   };
 };

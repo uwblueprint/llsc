@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.interfaces.volunteer_data_service import IVolunteerDataService
 from app.models import Form, FormSubmission
-from app.models.User import User
+from app.models.User import FormStatus, User
 from app.models.VolunteerData import VolunteerData
 from app.schemas.volunteer_data import (
     VolunteerDataCreateRequest,
@@ -41,8 +41,9 @@ class VolunteerDataService(IVolunteerDataService):
             # NOTE: We no longer create VolunteerData here.
             # That happens when admin approves the form submission.
 
-            # NOTE: We no longer update user.form_status here.
-            # That happens when admin approves the form submission.
+            # Update user form_status to SECONDARY_APPLICATION_SUBMITTED when they submit
+            if user.form_status == FormStatus.SECONDARY_APPLICATION_TODO:
+                user.form_status = FormStatus.SECONDARY_APPLICATION_SUBMITTED
 
             # Create form_submission record for secondary application form
             secondary_app_form = (

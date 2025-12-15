@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple
 
 from sqlalchemy.orm import Session
 
-from app.models import Experience, FormStatus, Language, Treatment, User, UserData
+from app.models import Experience, Language, Treatment, User, UserData
 
 logger = logging.getLogger(__name__)
 
@@ -77,12 +77,9 @@ class IntakeFormProcessor:
             if not user_data.email and owning_user.email:
                 user_data.email = owning_user.email
 
-            # Update form status for the owning user without regressing progress
-            if owning_user.form_status in {
-                FormStatus.INTAKE_TODO,
-                FormStatus.INTAKE_SUBMITTED,
-            }:
-                owning_user.form_status = FormStatus.INTAKE_SUBMITTED
+            # Note: form_status will be updated by FormProcessor after approval
+            # to set RANKING_TODO or SECONDARY_APPLICATION_TODO based on form type
+            # We don't update it here to avoid conflicts
 
             if "additional_info" in form_data:
                 user_data.additional_info = self._trim_text(form_data.get("additional_info"))

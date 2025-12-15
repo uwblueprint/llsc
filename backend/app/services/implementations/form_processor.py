@@ -67,6 +67,25 @@ class FormProcessor:
         )
         # IntakeFormProcessor updates form_status internally
 
+        # After processing, set next step based on participant/volunteer
+        # Determine if this is a participant or volunteer form
+        form_name = submission.form.name if submission.form else ""
+        is_participant = "Participant" in form_name
+        is_volunteer = "Volunteer" in form_name
+
+        # Fallback: check user's role if form name doesn't indicate type
+        if not is_participant and not is_volunteer:
+            if user.role and user.role.name == "participant":
+                is_participant = True
+            elif user.role and user.role.name == "volunteer":
+                is_volunteer = True
+
+        # Update form_status to next step
+        if is_participant:
+            user.form_status = FormStatus.RANKING_TODO
+        elif is_volunteer:
+            user.form_status = FormStatus.SECONDARY_APPLICATION_TODO
+
     def _process_ranking_form(self, submission: FormSubmission, user: User) -> None:
         """Process ranking form - creates RankingPreference records."""
         answers = submission.answers
@@ -101,9 +120,9 @@ class FormProcessor:
             )
             self.db.add(ranking_pref)
 
-        # Update form_status
+        # Update form_status to completed after ranking form is approved
         if user.form_status in (FormStatus.RANKING_TODO, FormStatus.RANKING_SUBMITTED):
-            user.form_status = FormStatus.RANKING_SUBMITTED
+            user.form_status = FormStatus.COMPLETED
 
     def _process_secondary_form(self, submission: FormSubmission, user: User) -> None:
         """Process secondary application form - creates VolunteerData."""
@@ -113,9 +132,9 @@ class FormProcessor:
             answers=submission.answers,
         )
 
-        # Update form_status
-        if user.form_status == FormStatus.SECONDARY_APPLICATION_TODO:
-            user.form_status = FormStatus.SECONDARY_APPLICATION_SUBMITTED
+        # Update form_status to completed after secondary application is approved
+        if user.form_status in (FormStatus.SECONDARY_APPLICATION_TODO, FormStatus.SECONDARY_APPLICATION_SUBMITTED):
+            user.form_status = FormStatus.COMPLETED
 
     def _process_role_change_form(self, submission: FormSubmission, user: User, form_type: str) -> None:
         """

@@ -143,30 +143,111 @@ export const cloneDefaultLovedOne = (): VolunteerFormAnswers['lovedOne'] => ({
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
+const getFirstString = (record: Record<string, unknown>, keys: string[]): string | undefined => {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === 'string') {
+      return value;
+    }
+  }
+  return undefined;
+};
+
+const normalizeReference = (reference: unknown): VolunteerReference | undefined => {
+  if (!isRecord(reference)) {
+    return undefined;
+  }
+
+  const fullNameValue = getFirstString(reference, ['fullName', 'full_name', 'name']);
+  const emailValue = getFirstString(reference, ['email', 'emailAddress']);
+  const phoneNumberValue = getFirstString(reference, ['phoneNumber', 'phone_number', 'phone']);
+
+  if (!fullNameValue && !emailValue && !phoneNumberValue) {
+    return undefined;
+  }
+
+  return {
+    fullName: typeof fullNameValue === 'string' ? fullNameValue : '',
+    email: typeof emailValue === 'string' ? emailValue : '',
+    phoneNumber: typeof phoneNumberValue === 'string' ? phoneNumberValue : '',
+  };
+};
+
+const mergeAdditionalInfo = (
+  base: VolunteerReferences | null,
+  additionalInfo: string | undefined,
+): VolunteerReferences | null => {
+  if (!base) {
+    return null;
+  }
+
+  return {
+    reference1: base.reference1,
+    reference2: base.reference2,
+    additionalInfo: base.additionalInfo || additionalInfo || '',
+  };
+};
+
 export const parseVolunteerReferences = (raw: unknown): VolunteerReferences | null => {
   if (!raw) return null;
 
   try {
-    const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    if (!isRecord(data)) return null;
+    if (typeof raw === 'string') {
+      return parseVolunteerReferences(JSON.parse(raw));
+    }
 
-    const normalizeReference = (reference: unknown): VolunteerReference | undefined => {
-      if (!isRecord(reference)) return undefined;
+    if (Array.isArray(raw)) {
+      const [first, second] = raw;
+      const reference1 = normalizeReference(first);
+      const reference2 = normalizeReference(second);
 
-      const fullNameValue = reference.fullName ?? reference.full_name;
-      const phoneNumberValue = reference.phoneNumber ?? reference.phone_number;
+      if (!reference1 && !reference2) {
+        return null;
+      }
 
       return {
-        fullName: typeof fullNameValue === 'string' ? fullNameValue : '',
-        email: typeof reference.email === 'string' ? reference.email : '',
-        phoneNumber: typeof phoneNumberValue === 'string' ? phoneNumberValue : '',
+        reference1,
+        reference2,
+        additionalInfo: '',
       };
-    };
+    }
 
-    const reference1 = normalizeReference(data.reference1 ?? data.reference_1);
-    const reference2 = normalizeReference(data.reference2 ?? data.reference_2);
+    if (!isRecord(raw)) {
+      return null;
+    }
+
+    // Handle nested `references` arrays/objects
+    if (Array.isArray(raw.references)) {
+      const parsed = parseVolunteerReferences(raw.references);
+      const additionalInfoValue =
+        typeof raw.additionalInfo === 'string'
+          ? raw.additionalInfo
+          : typeof raw.additional_info === 'string'
+            ? raw.additional_info
+            : typeof raw.additionalComments === 'string'
+              ? raw.additionalComments
+              : typeof raw.additional_comments === 'string'
+                ? raw.additional_comments
+                : undefined;
+      return mergeAdditionalInfo(parsed, additionalInfoValue);
+    }
+
+    const reference1 = normalizeReference(
+      raw.reference1 ?? raw.reference_1 ?? raw.ref1 ?? raw.referenceOne,
+    );
+    const reference2 = normalizeReference(
+      raw.reference2 ?? raw.reference_2 ?? raw.ref2 ?? raw.referenceTwo,
+    );
+
     const additionalInfoValue =
-      data.additionalInfo ?? data.additional_info ?? data.additionalComments;
+      raw.additionalInfo ??
+      raw.additional_info ??
+      raw.additionalComments ??
+      raw.additional_comments;
+
+    if (!reference1 && !reference2 && typeof additionalInfoValue !== 'string') {
+      return null;
+    }
 
     return {
       reference1,
@@ -189,11 +270,49 @@ export const normalizeYesNo = (value?: string | null): 'yes' | 'no' | '' => {
 export const normalizeIntakeAnswers = (
   answers: Partial<VolunteerFormAnswers> = {},
 ): VolunteerFormAnswers => {
+  const rawSource =
+    answers && typeof answers === 'object' ? (answers as Record<string, unknown>) : {};
+
+  const pickString = (...keys: string[]): string | undefined => {
+    for (const key of keys) {
+      const value = rawSource[key];
+      if (typeof value === 'string' && value.trim().length > 0) {
+        return value;
+      }
+    }
+    return undefined;
+  };
+
+  const parsedVolunteerReferences =
+    parseVolunteerReferences(answers.volunteerReferences) ||
+    parseVolunteerReferences(rawSource['volunteerReferences']) ||
+    parseVolunteerReferences(rawSource['references']) ||
+    parseVolunteerReferences(rawSource['referencesJson']) ||
+    parseVolunteerReferences(rawSource['references_json']) ||
+    parseVolunteerReferences(rawSource['referencesJSON']);
+
+  const fallbackExperience = pickString('experience');
+  const fallbackAdditionalInfo = pickString('additionalComments', 'additional_comments');
+
+  const normalizeStatusValue = (): string => {
+    const statusValue =
+      (typeof answers.status === 'string' && answers.status.length > 0
+        ? answers.status
+        : pickString('status')) || 'pending_approval';
+    if (statusValue === 'pending-approval') {
+      return 'pending_approval';
+    }
+    return statusValue;
+  };
+
+  const resolvedVolunteerReferences =
+    parsedVolunteerReferences || answers.volunteerReferences || undefined;
+
   const normalized: VolunteerFormAnswers = {
     ...INITIAL_INTAKE_FORM_DATA,
     ...answers,
     formType: 'volunteer',
-    status: answers.status || 'pending-approval',
+    status: normalizeStatusValue(),
     hasCriminalRecord: answers.hasCriminalRecord || '',
     caregiverRelationship: answers.caregiverRelationship || '',
     personalInfo: {
@@ -228,13 +347,18 @@ export const normalizeIntakeAnswers = (
       },
     },
     additionalInfo: answers.additionalInfo || '',
-    volunteerExperience: answers.volunteerExperience || '',
+    volunteerExperience: answers.volunteerExperience || fallbackExperience || '',
     volunteerReferences: {
-      reference1: { ...(answers.volunteerReferences?.reference1 || {}) },
-      reference2: { ...(answers.volunteerReferences?.reference2 || {}) },
-      additionalInfo: answers.volunteerReferences?.additionalInfo || '',
+      reference1: { ...(resolvedVolunteerReferences?.reference1 || {}) },
+      reference2: { ...(resolvedVolunteerReferences?.reference2 || {}) },
+      additionalInfo:
+        resolvedVolunteerReferences?.additionalInfo ||
+        answers.volunteerReferences?.additionalInfo ||
+        fallbackAdditionalInfo ||
+        '',
     },
-    volunteerAdditionalComments: answers.volunteerAdditionalComments || '',
+    volunteerAdditionalComments:
+      answers.volunteerAdditionalComments || fallbackAdditionalInfo || '',
   };
 
   const legacySource =
@@ -411,5 +535,55 @@ export const applyLegacyFallbacks = (
         ? base.cancerExperience.experiences
         : getStringArray('experiences'),
     },
+  };
+};
+
+/**
+ * Convert VolunteerFormAnswers to AdminIntakeFormData format
+ * This transforms the nested structure from buildPrefilledIntakeAnswers
+ * into the flat structure expected by AdminIntakeFormView
+ */
+export const convertToAdminIntakeFormData = (answers: VolunteerFormAnswers) => {
+  return {
+    hasBloodCancer: answers.hasBloodCancer,
+    caringForSomeone: answers.caringForSomeone,
+    firstName: answers.personalInfo.firstName,
+    lastName: answers.personalInfo.lastName,
+    dateOfBirth: answers.personalInfo.dateOfBirth,
+    phoneNumber: answers.personalInfo.phoneNumber,
+    postalCode: answers.personalInfo.postalCode,
+    city: answers.personalInfo.city,
+    province: answers.personalInfo.province,
+    genderIdentity: answers.demographics.genderIdentity,
+    pronouns: answers.demographics.pronouns,
+    ethnicGroup: answers.demographics.ethnicGroup,
+    preferredLanguage: (() => {
+      const lang = answers.demographics.preferredLanguage || answers.language || 'English';
+      // Convert "en"/"fr" to "English"/"Français" for display
+      const lower = lang.toLowerCase();
+      if (lower === 'en' || lower === 'english') return 'English';
+      if (lower === 'fr' || lower === 'french' || lower === 'français') return 'Français';
+      return lang;
+    })(),
+    maritalStatus: answers.demographics.maritalStatus,
+    hasKids: answers.demographics.hasKids,
+    timezone: answers.demographics.timezone,
+    diagnosis: answers.cancerExperience?.diagnosis,
+    dateOfDiagnosis: answers.cancerExperience?.dateOfDiagnosis,
+    treatments: answers.cancerExperience?.treatments,
+    experiences: answers.cancerExperience?.experiences,
+    caregiverExperiences: answers.caregiverExperience?.experiences,
+    lovedOne: answers.lovedOne
+      ? {
+          genderIdentity: answers.lovedOne.demographics?.genderIdentity || '',
+          genderIdentityCustom: answers.lovedOne.demographics?.genderIdentityCustom,
+          age: answers.lovedOne.demographics?.age || '',
+          diagnosis: answers.lovedOne.cancerExperience?.diagnosis || '',
+          dateOfDiagnosis: answers.lovedOne.cancerExperience?.dateOfDiagnosis || '',
+          treatments: answers.lovedOne.cancerExperience?.treatments || [],
+          experiences: answers.lovedOne.cancerExperience?.experiences || [],
+        }
+      : undefined,
+    additionalInfo: answers.additionalInfo,
   };
 };

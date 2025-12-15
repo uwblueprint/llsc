@@ -409,8 +409,13 @@ async def update_form_submission(
     Admins can edit pending_approval and rejected forms, but not approved forms.
     """
     try:
-        # Get the submission with form relationship
-        submission = db.query(FormSubmission).filter(FormSubmission.id == submission_id).first()
+        # Get the submission with eager loading of form relationship
+        submission = (
+            db.query(FormSubmission)
+            .options(joinedload(FormSubmission.form))
+            .filter(FormSubmission.id == submission_id)
+            .first()
+        )
 
         if not submission:
             raise HTTPException(status_code=404, detail="Form submission not found")
@@ -425,7 +430,7 @@ async def update_form_submission(
         db.commit()
         db.refresh(submission)
 
-        # Build response dict
+        # Build response dict with form data included
         response_dict = {
             "id": submission.id,
             "form_id": submission.form_id,
@@ -433,7 +438,14 @@ async def update_form_submission(
             "submitted_at": submission.submitted_at,
             "answers": submission.answers,
             "status": submission.status,
-            "form": None,
+            "form": {
+                "id": submission.form.id,
+                "name": submission.form.name,
+                "version": submission.form.version,
+                "type": submission.form.type,
+            }
+            if submission.form
+            else None,
         }
 
         return FormSubmissionResponse.model_validate(response_dict)

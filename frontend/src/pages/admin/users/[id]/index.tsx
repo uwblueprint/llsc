@@ -19,6 +19,10 @@ import { SaveMessage } from '@/types/userProfileTypes';
 import { intakeAPIClient, FormSubmission } from '@/APIClients/intakeAPIClient';
 
 const statusColors = {
+  pending_approval: {
+    bg: COLORS.bgBlueLight,
+    text: COLORS.blue,
+  },
   'pending-approval': {
     bg: COLORS.bgBlueLight,
     text: COLORS.blue,
@@ -295,15 +299,14 @@ export default function AdminUserProfile() {
   }
 
   const getFormStatus = (submission: FormSubmission): string => {
-    const answers = submission.answers;
-    const statusValue =
-      answers && typeof answers['status'] === 'string' ? (answers['status'] as string) : null;
-    return statusValue || 'approved';
+    // Use the status field directly from the submission (from database column)
+    return submission.status || 'pending_approval';
   };
 
   const getStatusLabel = (status: string) => {
     const statusMap: Record<string, string> = {
-      'pending-approval': 'Pending Approval',
+      pending_approval: 'Pending Approval',
+      'pending-approval': 'Pending Approval', // Legacy support
       approved: 'Form Approved',
       rejected: 'Rejected',
     };

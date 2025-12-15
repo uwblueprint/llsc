@@ -3,6 +3,7 @@ from typing import Dict, List
 from sqlalchemy.orm import Session
 
 from app.models import Form, FormSubmission, Quality, User, UserData
+from app.models.User import FormStatus
 
 
 class RankingService:
@@ -14,6 +15,16 @@ class RankingService:
         if not user:
             return None
         return self.db.query(UserData).filter(UserData.user_id == user.id).first()
+
+    def _load_user_and_data_by_user_id(self, user_id: str) -> UserData | None:
+        """Load UserData by user_id (UUID string) for admin use."""
+        from uuid import UUID
+
+        try:
+            user_uuid = UUID(user_id)
+        except ValueError:
+            return None
+        return self.db.query(UserData).filter(UserData.user_id == user_uuid).first()
 
     def _infer_case(self, data: UserData) -> Dict[str, bool]:
         has_cancer = (data.has_blood_cancer or "").lower() == "yes"
@@ -87,14 +98,18 @@ class RankingService:
                     {"kind": "experience", "id": e.id, "name": getattr(e, "name", str(e.id)), "scope": scope}
                 )
 
-        if target == "patient":
-            if case["patient"]:
-                add_txs(data.treatments or [], "self")
-                add_exps(data.experiences or [], "self")
-            else:
-                add_txs(data.loved_one_treatments or [], "loved_one")
-                add_exps(data.loved_one_experiences or [], "loved_one")
-        else:  # caregiver target
+        # Show treatments/experiences based on the user's case (their actual situation)
+        # regardless of which target (patient/caregiver) they're ranking for
+        if case["patient"]:
+            # Patient only: show self treatments/experiences only
+            add_txs(data.treatments or [], "self")
+            add_exps(data.experiences or [], "self")
+        elif case["caregiver_without_cancer"]:
+            # Caregiver without cancer: show loved_one treatments/experiences only
+            add_txs(data.loved_one_treatments or [], "loved_one")
+            add_exps(data.loved_one_experiences or [], "loved_one")
+        elif case["caregiver_with_cancer"]:
+            # Caregiver with cancer: show BOTH self and loved_one treatments/experiences
             add_txs(data.treatments or [], "self")
             add_exps(data.experiences or [], "self")
             add_txs(data.loved_one_treatments or [], "loved_one")
@@ -114,6 +129,22 @@ class RankingService:
 
     def get_options(self, user_auth_id: str, target: str) -> Dict:
         data = self._load_user_and_data(user_auth_id)
+        if not data:
+            # Return just static qualities if no data
+            dummy_case = {"patient": False, "caregiver_with_cancer": False, "caregiver_without_cancer": False}
+            return {
+                "static_qualities": self._static_qualities(UserData(), target, dummy_case),
+                "dynamic_options": [],
+            }
+        case = self._infer_case(data)
+        return {
+            "static_qualities": self._static_qualities(data, target, case),
+            "dynamic_options": self._dynamic_options(data, target, case),
+        }
+
+    def get_options_for_user_id(self, user_id: str, target: str) -> Dict:
+        """Get ranking options for a specific user_id (for admin use)."""
+        data = self._load_user_and_data_by_user_id(user_id)
         if not data:
             # Return just static qualities if no data
             dummy_case = {"patient": False, "caregiver_with_cancer": False, "caregiver_without_cancer": False}
@@ -198,8 +229,9 @@ class RankingService:
         # NOTE: We no longer process to ranking_preferences here.
         # That happens when admin approves the form submission.
 
-        # NOTE: We no longer update user.form_status here.
-        # That happens when admin approves the form submission.
+        # Update user form_status to RANKING_SUBMITTED when they submit
+        if user.form_status == FormStatus.RANKING_TODO:
+            user.form_status = FormStatus.RANKING_SUBMITTED
 
         # Create or update form_submission record for ranking form
         ranking_form = self.db.query(Form).filter(Form.type == "ranking", Form.name == "Ranking Form").first()

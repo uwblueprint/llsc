@@ -8,20 +8,35 @@ import { volunteerDataAPIClient, VolunteerDataResponse } from '@/APIClients/volu
 import { Text as ChakraText } from '@chakra-ui/react';
 import { COLORS as UI_COLORS } from '@/constants/colors';
 import { FormViewer } from '@/components/admin/FormViewer';
-import { buildPrefilledIntakeAnswers, VolunteerFormAnswers } from '@/utils/adminFormHelpers/intake';
+import {
+  buildPrefilledIntakeAnswers,
+  VolunteerFormAnswers,
+  convertToAdminIntakeFormData,
+} from '@/utils/adminFormHelpers/intake';
 import {
   normalizeParticipantRankingAnswers,
   ParticipantRankingAnswers,
 } from '@/utils/adminFormHelpers/ranking';
-import { IntakeFormEditor } from '@/components/admin/submissionEditors/IntakeFormEditor';
-import { SecondaryApplicationFormEditor } from '@/components/admin/submissionEditors/SecondaryApplicationFormEditor';
-import { ParticipantRankingFormEditor } from '@/components/admin/submissionEditors/ParticipantRankingFormEditor';
+import { AdminSecondaryApplicationFormView } from '@/components/admin/submissionEditors/AdminSecondaryApplicationFormView';
+import { AdminIntakeFormView } from '@/components/admin/submissionEditors/AdminIntakeFormView';
+import { AdminRankingFormView } from '@/components/admin/submissionEditors/AdminRankingFormView';
 
 type EditableAnswers = VolunteerFormAnswers | ParticipantRankingAnswers;
 
 export default function FormViewPage() {
   const router = useRouter();
-  const { user_id, submission_id } = router.query;
+  const { id, submission_id } = router.query;
+
+  // Extract user_id as a string (handle array case from router.query)
+  const userId = useMemo(() => {
+    if (typeof id === 'string') {
+      return id;
+    }
+    if (Array.isArray(id) && id.length > 0) {
+      return id[0];
+    }
+    return null;
+  }, [id]);
 
   const [mounted, setMounted] = useState(false);
   const [submission, setSubmission] = useState<FormSubmission | null>(null);
@@ -43,12 +58,10 @@ export default function FormViewPage() {
         setLoading(true);
         const [submissionData, userDataResponse, volunteerDataResponse] = await Promise.all([
           intakeAPIClient.getFormSubmissionById(submissionId),
-          user_id && typeof user_id === 'string'
-            ? adminUserDataAPIClient.getUserData(user_id).catch(() => null)
+          userId
+            ? adminUserDataAPIClient.getUserData(userId).catch(() => null)
             : Promise.resolve(null),
-          user_id && typeof user_id === 'string'
-            ? volunteerDataAPIClient.getVolunteerDataByUserId(user_id)
-            : Promise.resolve(null),
+          userId ? volunteerDataAPIClient.getVolunteerDataByUserId(userId) : Promise.resolve(null),
         ]);
         setSubmission(submissionData);
         setUserData(userDataResponse);
@@ -62,7 +75,7 @@ export default function FormViewPage() {
         setLoading(false);
       }
     },
-    [user_id],
+    [userId],
   );
 
   useEffect(() => {
@@ -72,47 +85,71 @@ export default function FormViewPage() {
   }, [submission_id, mounted, loadSubmission]);
 
   const handleBack = () => {
-    const routeUserId = (Array.isArray(user_id) ? user_id[0] : user_id) ?? submission?.userId;
-    if (routeUserId) {
-      router.push(`/admin/users/${routeUserId}?tab=forms`);
+    // Use userId from router or fallback to submission.userId
+    const finalUserId = userId || submission?.userId;
+
+    if (finalUserId && typeof finalUserId === 'string') {
+      // Use window.location for a full page navigation to ensure the page updates
+      window.location.href = `/admin/users/${finalUserId}?tab=forms`;
     } else {
-      router.push('/admin/directory');
+      // Fallback to directory if we can't determine the user
+      window.location.href = '/admin/directory';
     }
   };
 
-  const updateSubmissionStatus = useCallback(
-    async (nextStatus: 'approved' | 'rejected') => {
-      if (!submission) return;
-      try {
-        setIsSavingForm(true);
-        setEditError(null);
-        setEditSuccess(null);
-        const updatedAnswers: Record<string, unknown> = {
-          ...(submission.answers || {}),
-          status: nextStatus,
-        };
-        const updated = await intakeAPIClient.updateFormSubmission(submission.id, updatedAnswers);
-        setSubmission(updated);
-        setEditSuccess(
-          nextStatus === 'approved' ? 'Form approved successfully.' : 'Form declined.',
-        );
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to update form status.';
-        setEditError(message);
-      } finally {
-        setIsSavingForm(false);
-      }
-    },
-    [submission],
-  );
+  const handleApprove = useCallback(async () => {
+    if (!submission) return;
+    try {
+      setIsSavingForm(true);
+      setEditError(null);
+      setEditSuccess(null);
+      await intakeAPIClient.approveFormSubmission(submission.id);
+      setEditSuccess('Form approved successfully. Processing complete.');
+      // Reload submission to get updated status
+      await loadSubmission(submission.id);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to approve form.';
+      setEditError(message);
+    } finally {
+      setIsSavingForm(false);
+    }
+  }, [submission, loadSubmission]);
 
-  const handleApprove = () => {
-    void updateSubmissionStatus('approved');
-  };
+  const handleDecline = useCallback(async () => {
+    if (!submission) return;
+    try {
+      setIsSavingForm(true);
+      setEditError(null);
+      setEditSuccess(null);
+      await intakeAPIClient.rejectFormSubmission(submission.id);
+      setEditSuccess('Form declined.');
+      // Reload submission to get updated status
+      await loadSubmission(submission.id);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to decline form.';
+      setEditError(message);
+    } finally {
+      setIsSavingForm(false);
+    }
+  }, [submission, loadSubmission]);
 
-  const handleDecline = () => {
-    void updateSubmissionStatus('rejected');
-  };
+  const handleResubmit = useCallback(async () => {
+    if (!submission) return;
+    try {
+      setIsSavingForm(true);
+      setEditError(null);
+      setEditSuccess(null);
+      await intakeAPIClient.resubmitFormSubmission(submission.id);
+      setEditSuccess('Form resubmitted for approval.');
+      // Reload submission to get updated status
+      await loadSubmission(submission.id);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to resubmit form.';
+      setEditError(message);
+    } finally {
+      setIsSavingForm(false);
+    }
+  }, [submission, loadSubmission]);
 
   const normalizedFormName = submission?.form?.name?.toLowerCase() ?? '';
   const normalizedFormType = submission?.form?.type ?? '';
@@ -158,12 +195,36 @@ export default function FormViewPage() {
     isParticipantFirstConnectionForm ||
     isParticipantBecomeVolunteerForm ||
     isVolunteerBecomeParticipantForm;
+  // Use the submission.status field (from database column) for approval workflow
+  const submissionStatus = submission?.status;
+  const isSubmissionPending = submissionStatus === 'pending_approval';
+  const isSubmissionApproved = submissionStatus === 'approved';
+  const isSubmissionRejected = submissionStatus === 'rejected';
+
   const intakePrefilledAnswers = useMemo(() => {
     if (!submission || (!usesUnifiedIntakeEditor && !isVolunteerSecondaryForm)) {
       return null;
     }
+    // For pending/rejected forms, only use data from form_submissions.answers
+    // Don't pull from volunteer_data or user_data tables until form is approved
+    const isPendingOrRejected =
+      submissionStatus === 'pending_approval' || submissionStatus === 'rejected';
+
+    if (isPendingOrRejected) {
+      // Only use submission.answers, don't use userData or volunteerData
+      return buildPrefilledIntakeAnswers(submission.answers, null, null);
+    }
+
+    // For approved forms, we can use all data sources
     return buildPrefilledIntakeAnswers(submission.answers, userData, volunteerData);
-  }, [submission, userData, volunteerData, usesUnifiedIntakeEditor, isVolunteerSecondaryForm]);
+  }, [
+    submission,
+    userData,
+    volunteerData,
+    usesUnifiedIntakeEditor,
+    isVolunteerSecondaryForm,
+    submissionStatus,
+  ]);
 
   const rankingPrefilledAnswers = useMemo(() => {
     if (!submission || !isParticipantRankingForm) {
@@ -171,13 +232,6 @@ export default function FormViewPage() {
     }
     return normalizeParticipantRankingAnswers(answersRecord);
   }, [submission, isParticipantRankingForm, answersRecord]);
-
-  const existingStatus =
-    typeof answersRecord.status === 'string' ? (answersRecord.status as string) : undefined;
-  const resolvedStatus =
-    (isParticipantRankingForm ? rankingPrefilledAnswers?.status : intakePrefilledAnswers?.status) ??
-    existingStatus;
-  const isSubmissionPending = resolvedStatus === 'pending-approval';
 
   const editableInitialAnswers = useMemo(() => {
     if (isParticipantRankingForm) {
@@ -277,18 +331,23 @@ export default function FormViewPage() {
     <Box minH="100vh" bg={UI_COLORS.white}>
       <AdminHeader />
       <Box px="80px" py="80px">
-        <Flex mb="48px" onClick={handleBack} cursor="pointer" w="fit-content" align="center">
-          <ChakraText
-            fontSize="16px"
-            fontWeight={600}
-            color={UI_COLORS.veniceBlue}
-            fontFamily="'Open Sans', sans-serif"
-          >
-            ← Back
-          </ChakraText>
-        </Flex>
+        <Button
+          variant="ghost"
+          onClick={handleBack}
+          mb="48px"
+          p={0}
+          h="auto"
+          minW="auto"
+          fontWeight={600}
+          fontSize="16px"
+          color={UI_COLORS.veniceBlue}
+          fontFamily="'Open Sans', sans-serif"
+          _hover={{ bg: 'transparent', textDecoration: 'underline' }}
+        >
+          ← Back
+        </Button>
 
-        <Flex justify="space-between" align="center" mb="32px">
+        <Flex justify="space-between" align="center" mb="24px">
           <ChakraText
             fontSize="36px"
             fontWeight={600}
@@ -300,19 +359,45 @@ export default function FormViewPage() {
         </Flex>
 
         {editSuccess && (
-          <Text color="green.600" mb={4} fontWeight={600}>
-            {editSuccess}
-          </Text>
+          <Box
+            mb={4}
+            p={3}
+            borderRadius="8px"
+            bg="green.50"
+            border="1px solid"
+            borderColor="green.200"
+          >
+            <Text color="green.700" fontWeight={600} fontSize="14px">
+              {editSuccess}
+            </Text>
+          </Box>
         )}
         {editError && (
-          <Text color="red.500" mb={4} fontWeight={600}>
-            {editError}
-          </Text>
+          <Box mb={4} p={3} borderRadius="8px" bg="red.50" border="1px solid" borderColor="red.200">
+            <Text color="red.700" fontWeight={600} fontSize="14px">
+              {editError}
+            </Text>
+          </Box>
+        )}
+
+        {isSubmissionRejected && (
+          <Box
+            mb={4}
+            p={3}
+            borderRadius="8px"
+            bg={UI_COLORS.bgPinkLight}
+            border="1px solid"
+            borderColor={UI_COLORS.red}
+          >
+            <Text color={UI_COLORS.red} fontWeight={600} fontSize="14px">
+              ✕ This form was rejected. You can edit and resubmit it for approval.
+            </Text>
+          </Box>
         )}
 
         {isVolunteerSecondaryForm ? (
           intakePrefilledAnswers ? (
-            <SecondaryApplicationFormEditor
+            <AdminSecondaryApplicationFormView
               initialAnswers={intakePrefilledAnswers}
               onChange={handleVolunteerEditorChange}
             />
@@ -323,9 +408,63 @@ export default function FormViewPage() {
           )
         ) : usesUnifiedIntakeEditor ? (
           intakePrefilledAnswers ? (
-            <IntakeFormEditor
-              initialAnswers={intakePrefilledAnswers}
-              onChange={handleVolunteerEditorChange}
+            <AdminIntakeFormView
+              initialData={convertToAdminIntakeFormData(intakePrefilledAnswers)}
+              formType={answersRecord.formType === 'volunteer' ? 'volunteer' : 'participant'}
+              onChange={(data, hasChanges) => {
+                // Convert back to VolunteerFormAnswers format for compatibility
+                const converted: VolunteerFormAnswers = {
+                  ...intakePrefilledAnswers,
+                  hasBloodCancer: data.hasBloodCancer,
+                  caringForSomeone: data.caringForSomeone,
+                  personalInfo: {
+                    ...intakePrefilledAnswers.personalInfo,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    dateOfBirth: data.dateOfBirth,
+                    phoneNumber: data.phoneNumber,
+                    postalCode: data.postalCode,
+                    city: data.city,
+                    province: data.province,
+                  },
+                  demographics: {
+                    ...intakePrefilledAnswers.demographics,
+                    genderIdentity: data.genderIdentity,
+                    pronouns: data.pronouns,
+                    ethnicGroup: data.ethnicGroup,
+                    preferredLanguage: data.preferredLanguage,
+                    maritalStatus: data.maritalStatus,
+                    hasKids: data.hasKids,
+                    timezone: data.timezone,
+                  },
+                  cancerExperience: {
+                    diagnosis: data.diagnosis || '',
+                    dateOfDiagnosis: data.dateOfDiagnosis || '',
+                    treatments: data.treatments || [],
+                    experiences: data.experiences || [],
+                  },
+                  caregiverExperience: {
+                    experiences: data.caregiverExperiences || [],
+                  },
+                  lovedOne: data.lovedOne
+                    ? {
+                        demographics: {
+                          genderIdentity: data.lovedOne.genderIdentity,
+                          genderIdentityCustom: data.lovedOne.genderIdentityCustom,
+                          age: data.lovedOne.age,
+                        },
+                        cancerExperience: {
+                          diagnosis: data.lovedOne.diagnosis,
+                          dateOfDiagnosis: data.lovedOne.dateOfDiagnosis,
+                          treatments: data.lovedOne.treatments,
+                          experiences: data.lovedOne.experiences,
+                        },
+                      }
+                    : intakePrefilledAnswers.lovedOne,
+                  additionalInfo: data.additionalInfo || '',
+                };
+                handleVolunteerEditorChange(converted, hasChanges);
+              }}
             />
           ) : (
             <Flex justify="center" py="60px">
@@ -333,9 +472,10 @@ export default function FormViewPage() {
             </Flex>
           )
         ) : isParticipantRankingForm ? (
-          rankingPrefilledAnswers ? (
-            <ParticipantRankingFormEditor
+          rankingPrefilledAnswers && userId ? (
+            <AdminRankingFormView
               initialAnswers={rankingPrefilledAnswers}
+              userId={userId}
               onChange={handleRankingEditorChange}
             />
           ) : (
@@ -347,55 +487,91 @@ export default function FormViewPage() {
           <FormViewer submission={submission} userData={userData} volunteerData={volunteerData} />
         )}
 
-        <Flex justify="flex-end" gap="10px" mt="48px" align="center">
+        {/* Action Buttons */}
+        <Flex justify="flex-end" gap="12px" mt="48px" align="center">
+          {/* Approve Button - Only for pending forms */}
           {isSubmissionPending && (
             <Button
-              px="16px"
-              py="10px"
+              px="18px"
+              py="12px"
               h="auto"
-              bg={UI_COLORS.teal}
-              color={UI_COLORS.white}
+              bg="#056067"
+              color="#FFFFFF"
               borderRadius="8px"
-              fontSize="14px"
+              fontSize="16px"
               fontWeight={600}
               fontFamily="'Open Sans', sans-serif"
-              _hover={{ bg: UI_COLORS.tealDarker }}
+              _hover={{ bg: '#044d52' }}
+              _disabled={{ bg: '#EAECF5', color: '#475467', cursor: 'not-allowed' }}
               onClick={handleApprove}
+              disabled={isSavingForm}
             >
-              <ChakraText>✓ Approve Form</ChakraText>
+              ✓ Approve form
             </Button>
           )}
+
+          {/* Decline Button - Only for pending forms */}
           {isSubmissionPending && (
             <Button
-              px="16px"
-              py="10px"
+              px="18px"
+              py="12px"
               h="auto"
-              bg={UI_COLORS.red}
-              color={UI_COLORS.white}
+              bg="#C7393F"
+              color="#FFFFFF"
               borderRadius="8px"
-              fontSize="14px"
+              fontSize="16px"
               fontWeight={600}
               fontFamily="'Open Sans', sans-serif"
-              _hover={{ bg: UI_COLORS.redDarker }}
+              _hover={{ bg: '#a82e33' }}
+              _disabled={{ bg: '#EAECF5', color: '#475467', cursor: 'not-allowed' }}
               onClick={handleDecline}
+              disabled={isSavingForm}
             >
-              <ChakraText>✕ Decline Request</ChakraText>
+              ✕ Decline Request
             </Button>
           )}
+
+          {/* Resubmit Button - Only for rejected forms */}
+          {isSubmissionRejected && (
+            <Button
+              px="18px"
+              py="12px"
+              h="auto"
+              bg="#056067"
+              color="#FFFFFF"
+              borderRadius="8px"
+              fontSize="16px"
+              fontWeight={600}
+              fontFamily="'Open Sans', sans-serif"
+              _hover={{ bg: '#044d52' }}
+              _disabled={{ bg: '#EAECF5', color: '#475467', cursor: 'not-allowed' }}
+              onClick={handleResubmit}
+              disabled={isSavingForm}
+            >
+              Resubmit for Approval
+            </Button>
+          )}
+
+          {/* Save Button - For all forms */}
           <Button
             onClick={handlePrimarySave}
-            disabled={!canSaveForm}
-            bg={canSaveForm ? '#101828' : '#EAECF5'}
-            color={canSaveForm ? '#FFFFFF' : '#475467'}
+            disabled={!canSaveForm || isSavingForm || isSubmissionApproved}
+            bg={canSaveForm && !isSavingForm && !isSubmissionApproved ? '#101828' : '#EAECF5'}
+            color={canSaveForm && !isSavingForm && !isSubmissionApproved ? '#FFFFFF' : '#475467'}
             borderRadius="8px"
             border="1px solid"
-            borderColor={canSaveForm ? '#101828' : '#D0D5DD'}
+            borderColor={
+              canSaveForm && !isSavingForm && !isSubmissionApproved ? '#101828' : '#D0D5DD'
+            }
             px="18px"
-            py="10px"
+            py="12px"
+            h="auto"
             fontWeight={600}
-            fontSize="14px"
+            fontSize="16px"
             fontFamily="'Open Sans', sans-serif"
-            _hover={canSaveForm ? { bg: '#0F1726' } : undefined}
+            _hover={
+              canSaveForm && !isSavingForm && !isSubmissionApproved ? { bg: '#0F1726' } : undefined
+            }
           >
             Save Form
           </Button>
