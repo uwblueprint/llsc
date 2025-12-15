@@ -219,7 +219,8 @@ def test_participant_with_cancer_only(db_session, test_user):
         assert len(user_data.loved_one_experiences) == 0
 
         db_session.refresh(test_user)
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
+        # Note: IntakeFormProcessor no longer updates form_status; that's done by FormProcessor after approval
+        assert test_user.form_status == FormStatus.INTAKE_TODO
 
         db_session.commit()
 
@@ -317,7 +318,8 @@ def test_volunteer_caregiver_experience_processing(db_session, test_user):
         assert "Fatigue" in loved_one_experience_names
 
         db_session.refresh(test_user)
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
+        # Note: IntakeFormProcessor no longer updates form_status; that's done by FormProcessor after approval
+        assert test_user.form_status == FormStatus.INTAKE_TODO
 
         db_session.commit()
 
@@ -395,7 +397,8 @@ def test_form_submission_json_structure(db_session, test_user):
         assert user_data.additional_info == "I'm only free on weekdays."
 
         db_session.refresh(test_user)
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
+        # Note: IntakeFormProcessor no longer updates form_status; that's done by FormProcessor after approval
+        assert test_user.form_status == FormStatus.INTAKE_TODO
 
         db_session.commit()
 
@@ -457,7 +460,8 @@ def test_empty_and_minimal_data_handling(db_session, test_user):
         assert user_data.additional_info == ""
 
         db_session.refresh(test_user)
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
+        # Note: IntakeFormProcessor no longer updates form_status; that's done by FormProcessor after approval
+        assert test_user.form_status == FormStatus.INTAKE_TODO
 
         db_session.commit()
 
@@ -957,7 +961,8 @@ def test_language_setting_french(db_session, test_user):
         # Assert
         db_session.refresh(test_user)
         assert test_user.language == Language.FRENCH
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
+        # Note: IntakeFormProcessor no longer updates form_status; that's done by FormProcessor after approval
+        assert test_user.form_status == FormStatus.INTAKE_TODO
 
         db_session.commit()
 
@@ -1000,7 +1005,8 @@ def test_language_setting_english(db_session, test_user):
         # Assert
         db_session.refresh(test_user)
         assert test_user.language == Language.ENGLISH
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
+        # Note: IntakeFormProcessor no longer updates form_status; that's done by FormProcessor after approval
+        assert test_user.form_status == FormStatus.INTAKE_TODO
 
         db_session.commit()
 
@@ -1046,7 +1052,8 @@ def test_language_defaults_to_english_when_not_provided(db_session, test_user):
         # Assert - Should default to English
         db_session.refresh(test_user)
         assert test_user.language == Language.ENGLISH
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
+        # Note: IntakeFormProcessor no longer updates form_status; that's done by FormProcessor after approval
+        assert test_user.form_status == FormStatus.INTAKE_TODO
 
         db_session.commit()
 
@@ -1096,7 +1103,8 @@ def test_language_persists_across_form_resubmission(db_session, test_user):
         # Assert - Language should be updated to English
         db_session.refresh(test_user)
         assert test_user.language == Language.ENGLISH
-        assert test_user.form_status == FormStatus.INTAKE_SUBMITTED
+        # Note: IntakeFormProcessor no longer updates form_status; that's done by FormProcessor after approval
+        assert test_user.form_status == FormStatus.INTAKE_TODO
 
         db_session.commit()
 
