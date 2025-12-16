@@ -135,6 +135,8 @@ export default function AdminUserProfile() {
 
   const role = user ? roleIdToUserRole(user.roleId) : null;
 
+  const formStatus = user?.formStatus;
+
   const formSections: FormSection[] = useMemo(() => {
     if (!role) return [];
 
@@ -149,6 +151,12 @@ export default function AdminUserProfile() {
           showCreateButton: false,
         },
         {
+          heading: 'Become a Participant Form',
+          formNames: ['Become a Participant Form'],
+          formId: FORM_IDS.BECOME_PARTICIPANT,
+          showCreateButton: false,
+        },
+        {
           heading: 'Ranking Form',
           formNames: ['Ranking Form'],
           formId: FORM_IDS.RANKING,
@@ -158,7 +166,7 @@ export default function AdminUserProfile() {
           heading: 'Become a Volunteer Form',
           formNames: ['Become a Volunteer Form'],
           formId: FORM_IDS.BECOME_VOLUNTEER,
-          showCreateButton: true,
+          showCreateButton: formStatus === 'completed',
         },
       ];
     }
@@ -171,6 +179,12 @@ export default function AdminUserProfile() {
         showCreateButton: false,
       },
       {
+        heading: 'Become a Volunteer Form',
+        formNames: ['Become a Volunteer Form'],
+        formId: FORM_IDS.BECOME_VOLUNTEER,
+        showCreateButton: false,
+      },
+      {
         heading: 'Secondary Application Form',
         formNames: ['Secondary Application Form'],
         formId: FORM_IDS.SECONDARY_APPLICATION,
@@ -180,7 +194,7 @@ export default function AdminUserProfile() {
         heading: 'Become a Participant Form',
         formNames: ['Become a Participant Form'],
         formId: FORM_IDS.BECOME_PARTICIPANT,
-        showCreateButton: true,
+        showCreateButton: formStatus === 'completed',
       },
     ];
   }, [role]);

@@ -127,6 +127,7 @@ class UserCreateResponse(BaseModel):
     role_id: int
     auth_id: str
     approved: bool
+    active: bool
     form_status: FormStatus
     language: Language
 

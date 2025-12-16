@@ -179,9 +179,28 @@ export const VALIDATION = {
 } as const;
 
 // Comprehensive intake form data structure
+export type IntakeFormType =
+  | 'participant'
+  | 'volunteer'
+  | 'become_participant'
+  | 'become_volunteer';
+
+export const getIntakeFormTitle = (formType?: IntakeFormType): string => {
+  switch (formType) {
+    case 'become_participant':
+      return 'First Connection Form: Become a Participant';
+    case 'become_volunteer':
+      return 'First Connection Form: Become a Volunteer';
+    case 'participant':
+      return 'First Connection Participant Form';
+    default:
+      return 'First Connection Volunteer Form';
+  }
+};
+
 export interface IntakeFormData {
   // Form type and flow control
-  formType: 'participant' | 'volunteer';
+  formType: IntakeFormType;
   hasBloodCancer: 'yes' | 'no' | '';
   caringForSomeone: 'yes' | 'no' | '';
   language: 'en' | 'fr';

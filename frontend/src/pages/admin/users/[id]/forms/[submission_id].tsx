@@ -517,7 +517,7 @@ export default function FormViewPage() {
               _hover={{ bg: '#044d52' }}
               _disabled={{ bg: '#EAECF5', color: '#475467', cursor: 'not-allowed' }}
               onClick={handleApprove}
-              disabled={isSavingForm}
+              disabled={isSavingForm || hasPendingChanges}
             >
               ✓ Approve form
             </Button>

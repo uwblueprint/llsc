@@ -1,3 +1,4 @@
+import { IntakeFormType } from '@/constants/form';
 import baseAPIClient from './baseAPIClient';
 
 export type FormSubmissionStatus = 'pending_approval' | 'approved' | 'rejected';
@@ -49,7 +50,7 @@ class IntakeAPIClient {
    */
   async createFormSubmission(submission: {
     formId?: string;
-    formType?: 'participant' | 'volunteer';
+    formType?: IntakeFormType;
     userId?: string;
     answers: Record<string, unknown>;
   }): Promise<FormSubmission> {

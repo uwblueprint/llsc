@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import { Box, Text, VStack, Button } from '@chakra-ui/react';
 import ProfileHeader from '@/components/dashboard/ProfileHeader';
 import {
@@ -8,9 +9,8 @@ import {
   getUserById,
 } from '@/APIClients/authAPIClient';
 import { UserResponse } from '@/types/userTypes';
-import { useRouter } from 'next/router';
 
-const AccountSettings: React.FC = () => {
+const VolunteerAccountSettings: React.FC = () => {
   const router = useRouter();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -32,8 +32,8 @@ const AccountSettings: React.FC = () => {
     loadUserProfile();
   }, []);
 
-  const handleBecomeVolunteer = () => {
-    void router.push('/participant/become-volunteer');
+  const handleBecomeParticipant = () => {
+    router.push('/volunteer/become-participant');
   };
 
   const handleOptOut = async () => {
@@ -62,9 +62,7 @@ const AccountSettings: React.FC = () => {
       <ProfileHeader>Account settings</ProfileHeader>
 
       <VStack gap={6} mt="32px" align="stretch">
-        {/* Preferred Language - This is now in Personal Details, but keeping structure for future fields */}
-
-        {/* Becoming a Volunteer */}
+        {/* Becoming a Participant */}
         <Box>
           <Text
             fontSize="1rem"
@@ -75,7 +73,7 @@ const AccountSettings: React.FC = () => {
             fontFamily="'Open Sans', sans-serif"
             mb={2}
           >
-            Becoming a Volunteer
+            Becoming a Participant
           </Text>
           <Text
             fontSize="0.875rem"
@@ -85,7 +83,7 @@ const AccountSettings: React.FC = () => {
             fontFamily="'Open Sans', sans-serif"
             mb={4}
           >
-            Complete the volunteer application to express your interest and confirm these details
+            Complete the participant application to express your interest and confirm these details
             are correct. Once submitted, we&apos;ll follow up by email with next steps.
           </Text>
           <Button
@@ -99,9 +97,9 @@ const AccountSettings: React.FC = () => {
             borderRadius="6px"
             _hover={{ bg: '#044d52' }}
             _active={{ bg: '#033e42' }}
-            onClick={handleBecomeVolunteer}
+            onClick={handleBecomeParticipant}
           >
-            Volunteer Application Form
+            Participant Application Form
           </Button>
         </Box>
 
@@ -129,8 +127,10 @@ const AccountSettings: React.FC = () => {
               fontFamily="'Open Sans', sans-serif"
               mb={4}
             >
-              Your experience is important to us. By opting out you are removing yourself from the
-              matching algorithm and cannot be connected with a potential volunteer.
+              Your experience is important to us. Our volunteers are the most important part of
+              First Connection. Volunteers are encouraged to take the time they need away from the
+              program when they need it. By opting out you are removing yourself from the matching
+              algorithm and cannot be connected with a potential participant.
               <br />
               <br />
               When you are ready to volunteer with us again, please sign back in and click the Opt
@@ -168,4 +168,4 @@ const AccountSettings: React.FC = () => {
   );
 };
 
-export default AccountSettings;
+export default VolunteerAccountSettings;

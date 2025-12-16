@@ -162,20 +162,27 @@ async def create_form_submission(
             form_name_mapping = {
                 "participant": "First Connection Participant Form",
                 "volunteer": "First Connection Volunteer Form",
+                "become_participant": "Become a Participant Form",
+                "become_volunteer": "Become a Volunteer Form",
             }
 
             form_name = form_name_mapping.get(effective_form_type)
             if not form_name:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Invalid formType: {effective_form_type}. Must be 'participant' or 'volunteer'",
+                    detail=f"Invalid formType: {effective_form_type}. Must be 'participant', 'volunteer', 'become_participant', or 'become_volunteer'",
                 )
 
-            # Find the form
-            form = db.query(Form).filter(Form.type == "intake", Form.name == form_name).first()
+            # Find the form - for become_* forms, look by type
+            if effective_form_type in ["become_participant", "become_volunteer"]:
+                form_type = effective_form_type
+                form = db.query(Form).filter(Form.type == form_type, Form.name == form_name).first()
+            else:
+                # Original intake forms
+                form = db.query(Form).filter(Form.type == "intake", Form.name == form_name).first()
 
             if not form:
-                raise HTTPException(status_code=500, detail=f"Intake form '{form_name}' not found in database")
+                raise HTTPException(status_code=500, detail=f"Form '{form_name}' not found in database")
             form_id = form.id
         else:
             # Verify the form exists and is of type 'intake'
@@ -190,21 +197,47 @@ async def create_form_submission(
 
         # Enforce role-to-form access (admin exempt)
         if current_user.role.name != "admin":
-            if current_user.role.name == "volunteer" and effective_form_type != "volunteer":
-                raise HTTPException(status_code=403, detail="Volunteers can only submit the volunteer intake form")
-            if current_user.role.name == "participant" and effective_form_type != "participant":
-                raise HTTPException(status_code=403, detail="Participants can only submit the participant intake form")
+            if current_user.role.name == "volunteer" and effective_form_type not in ["volunteer", "become_participant"]:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Volunteers can only submit the volunteer intake form or become participant form",
+                )
+            if current_user.role.name == "participant" and effective_form_type not in [
+                "participant",
+                "become_volunteer",
+            ]:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Participants can only submit the participant intake form or become volunteer form",
+                )
 
-        # Create the raw form submission record with pending status
-        db_submission = FormSubmission(
-            form_id=form_id,
-            user_id=target_user.id,
-            answers=submission.answers,
-            status="pending_approval",
-        )
+        # For role-change forms, ensure only one submission exists per user
+        existing_submission = None
+        if form and form.type in ["become_participant", "become_volunteer"]:
+            existing_submission = (
+                db.query(FormSubmission)
+                .filter(
+                    FormSubmission.user_id == target_user.id,
+                    FormSubmission.form_id == form.id,
+                )
+                .order_by(FormSubmission.submitted_at.desc())
+                .first()
+            )
 
-        db.add(db_submission)
-        db.flush()  # Get the submission ID without committing
+        if existing_submission:
+            existing_submission.answers = submission.answers
+            existing_submission.status = "pending_approval"
+            existing_submission.submitted_at = datetime.utcnow()
+            db_submission = existing_submission
+        else:
+            db_submission = FormSubmission(
+                form_id=form_id,
+                user_id=target_user.id,
+                answers=submission.answers,
+                status="pending_approval",
+            )
+            db.add(db_submission)
+            db.flush()  # Get the submission ID without committing
 
         # For intake forms: Update essential fields on User and set form_status
         # Full processing to UserData happens on admin approval

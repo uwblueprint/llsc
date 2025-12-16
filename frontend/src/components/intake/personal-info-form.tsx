@@ -5,7 +5,15 @@ import { Input } from '@chakra-ui/react';
 import { InputGroup } from '@/components/ui/input-group';
 import { FormField } from '@/components/ui/form-field';
 import { ExperienceTypeSection } from '@/components/intake/experience-type-section';
-import { COLORS, PROVINCES, VALIDATION, ExperienceData, PersonalData } from '@/constants/form';
+import {
+  COLORS,
+  PROVINCES,
+  VALIDATION,
+  ExperienceData,
+  PersonalData,
+  getIntakeFormTitle,
+  IntakeFormType,
+} from '@/constants/form';
 // import { CustomRadio } from '@/components/CustomRadio';
 import { useRouter } from 'next/router';
 import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
@@ -69,7 +77,7 @@ interface PersonalInfoFormData {
 }
 
 interface PersonalInfoFormProps {
-  formType: 'participant' | 'volunteer';
+  formType: IntakeFormType;
   onSubmit: (experienceData: ExperienceData, personalData: PersonalData) => void;
   onDropdownOpenChange?: (isOpen: boolean) => void;
 }
@@ -109,6 +117,8 @@ export function PersonalInfoForm({
     },
   });
 
+  const isVolunteerFlow = formType === 'volunteer' || formType === 'become_volunteer';
+
   const onFormSubmit = (data: PersonalInfoFormData) => {
     // Validate required experience fields
     if (!data.hasBloodCancer || !data.caringForSomeone) {
@@ -116,7 +126,7 @@ export function PersonalInfoForm({
     }
 
     // Validate all eligibility criteria are checked (only for volunteers)
-    if (formType === 'volunteer') {
+    if (isVolunteerFlow) {
       const allChecked = Object.values(data.eligibilityCriteria).every(
         (checked) => checked === true,
       );
@@ -143,10 +153,7 @@ export function PersonalInfoForm({
     onSubmit(experienceData, personalData);
   };
 
-  const formTitle =
-    formType === 'participant'
-      ? 'First Connection Participant Form'
-      : 'First Connection Volunteer Form';
+  const formTitle = getIntakeFormTitle(formType);
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
@@ -395,7 +402,7 @@ export function PersonalInfoForm({
       </Box>
 
       {/* Eligibility Criteria Section */}
-      {formType === 'volunteer' && (
+      {isVolunteerFlow && (
         <Box mb={10}>
           <Heading
             as="h2"
@@ -431,7 +438,7 @@ export function PersonalInfoForm({
             control={control}
             rules={{
               validate: (value) => {
-                if (formType === 'volunteer') {
+                if (isVolunteerFlow) {
                   const allChecked = Object.values(value).every((checked) => checked === true);
                   return allChecked || 'All eligibility criteria must be checked to continue';
                 }
