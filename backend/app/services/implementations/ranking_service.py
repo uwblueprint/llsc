@@ -1,4 +1,5 @@
 from typing import Dict, List
+from uuid import UUID
 
 from sqlalchemy.orm import Session
 
@@ -18,8 +19,6 @@ class RankingService:
 
     def _load_user_and_data_by_user_id(self, user_id: str) -> UserData | None:
         """Load UserData by user_id (UUID string) for admin use."""
-        from uuid import UUID
-
         try:
             user_uuid = UUID(user_id)
         except ValueError:

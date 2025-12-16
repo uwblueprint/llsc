@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Literal, Optional
 from uuid import UUID
 
@@ -227,7 +227,7 @@ async def create_form_submission(
         if existing_submission:
             existing_submission.answers = submission.answers
             existing_submission.status = "pending_approval"
-            existing_submission.submitted_at = datetime.utcnow()
+            existing_submission.submitted_at = datetime.now(timezone.utc)
             db_submission = existing_submission
         else:
             db_submission = FormSubmission(
