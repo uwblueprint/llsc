@@ -47,6 +47,8 @@ export interface UserCreateResponse {
   email: string;
   roleId: number;
   authId: string;
+  approved: boolean;
+  active: boolean;
   formStatus: FormStatus;
   language: Language;
 }

@@ -47,7 +47,7 @@ export const PRONOUNS_OPTIONS = [
 ] as const;
 
 // Ethnic group options
-export const ETHNIC_OPTIONS = [
+export const ETHNIC_GROUP_OPTIONS = [
   'Indigenous',
   'Arab',
   'Black',
@@ -64,6 +64,19 @@ export const ETHNIC_OPTIONS = [
   'Self-describe',
 ] as const;
 
+// Timezone options (keeping existing ones)
+export const TIMEZONE_OPTIONS = [
+  { value: 'Newfoundland Standard Time (NST)', label: 'Newfoundland Standard Time (NST)' },
+  { value: 'Atlantic Standard Time (AST)', label: 'Atlantic Standard Time (AST)' },
+  { value: 'Eastern Standard Time (EST)', label: 'Eastern Standard Time (EST)' },
+  { value: 'Central Standard Time (CST)', label: 'Central Standard Time (CST)' },
+  { value: 'Mountain Standard Time (MST)', label: 'Mountain Standard Time (MST)' },
+  { value: 'Pacific Standard Time (PST)', label: 'Pacific Standard Time (PST)' },
+] as const;
+
+// Timezone options with abbreviations only (for backend compatibility and SingleSelectDropdown that expects string[])
+export const TIMEZONE_OPTIONS_ABBREVIATED = ['NST', 'AST', 'EST', 'CST', 'MST', 'PST'] as const;
+
 // Marital status options
 export const MARITAL_STATUS_OPTIONS = [
   'Single',
@@ -74,6 +87,8 @@ export const MARITAL_STATUS_OPTIONS = [
   'Widowed',
   'Prefer not to answer',
 ] as const;
+
+export const HAS_KIDS_OPTIONS = ['Yes', 'No', 'Prefer not to answer'] as const;
 
 // Treatment options for blood cancer
 export const TREATMENT_OPTIONS = [
@@ -110,6 +125,14 @@ export const EXPERIENCE_OPTIONS = [
   'PTSD',
 ] as const;
 
+export const CAREGIVER_RELATIONSHIP_OPTIONS = [
+  'A parent',
+  'A sibling',
+  'A child',
+  'A spouse/partner',
+  'A friend',
+] as const;
+
 // Diagnosis options for blood cancer
 export const DIAGNOSIS_OPTIONS = [
   'Unknown',
@@ -134,6 +157,9 @@ export const DIAGNOSIS_OPTIONS = [
   "High Grade/Aggressive Non-Hodgkin's Lymphoma",
 ] as const;
 
+export const DEFAULT_TREATMENTS = [...TREATMENT_OPTIONS];
+export const DEFAULT_EXPERIENCES = [...EXPERIENCE_OPTIONS];
+
 // Convert arrays to dropdown options format
 export const DIAGNOSIS_DROPDOWN_OPTIONS = DIAGNOSIS_OPTIONS.map((option) => ({
   value: option,
@@ -145,16 +171,6 @@ export const GENDER_DROPDOWN_OPTIONS = GENDER_IDENTITY_OPTIONS.map((option) => (
   label: option,
 }));
 
-// Timezone options (keeping existing ones)
-export const TIMEZONE_OPTIONS = [
-  { value: 'Newfoundland Standard Time (NST)', label: 'Newfoundland Standard Time (NST)' },
-  { value: 'Atlantic Standard Time (AST)', label: 'Atlantic Standard Time (AST)' },
-  { value: 'Eastern Standard Time (EST)', label: 'Eastern Standard Time (EST)' },
-  { value: 'Central Standard Time (CST)', label: 'Central Standard Time (CST)' },
-  { value: 'Mountain Standard Time (MST)', label: 'Mountain Standard Time (MST)' },
-  { value: 'Pacific Standard Time (PST)', label: 'Pacific Standard Time (PST)' },
-] as const;
-
 // Validation patterns
 export const VALIDATION = {
   PHONE: /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/,
@@ -163,12 +179,32 @@ export const VALIDATION = {
 } as const;
 
 // Comprehensive intake form data structure
+export type IntakeFormType =
+  | 'participant'
+  | 'volunteer'
+  | 'become_participant'
+  | 'become_volunteer';
+
+export const getIntakeFormTitle = (formType?: IntakeFormType): string => {
+  switch (formType) {
+    case 'become_participant':
+      return 'First Connection Form: Become a Participant';
+    case 'become_volunteer':
+      return 'First Connection Form: Become a Volunteer';
+    case 'participant':
+      return 'First Connection Participant Form';
+    default:
+      return 'First Connection Volunteer Form';
+  }
+};
+
 export interface IntakeFormData {
   // Form type and flow control
-  formType: 'participant' | 'volunteer';
+  formType: IntakeFormType;
   hasBloodCancer: 'yes' | 'no' | '';
   caringForSomeone: 'yes' | 'no' | '';
   language: 'en' | 'fr';
+  caregiverRelationship?: string;
 
   // Personal Information
   personalInfo: {
@@ -280,6 +316,7 @@ export const INITIAL_INTAKE_FORM_DATA: IntakeFormData = {
   hasBloodCancer: '',
   caringForSomeone: '',
   language: 'en',
+  caregiverRelationship: '',
   personalInfo: {
     firstName: '',
     lastName: '',
@@ -293,8 +330,32 @@ export const INITIAL_INTAKE_FORM_DATA: IntakeFormData = {
     genderIdentity: '',
     pronouns: [],
     ethnicGroup: [],
+    preferredLanguage: '',
     maritalStatus: '',
     hasKids: '',
     timezone: '',
   },
+  cancerExperience: {
+    diagnosis: '',
+    dateOfDiagnosis: '',
+    treatments: [],
+    experiences: [],
+  },
+  caregiverExperience: {
+    experiences: [],
+  },
+  lovedOne: {
+    demographics: {
+      genderIdentity: '',
+      genderIdentityCustom: '',
+      age: '',
+    },
+    cancerExperience: {
+      diagnosis: '',
+      dateOfDiagnosis: '',
+      treatments: [],
+      experiences: [],
+    },
+  },
+  additionalInfo: '',
 };

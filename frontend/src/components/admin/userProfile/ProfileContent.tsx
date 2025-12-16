@@ -173,22 +173,19 @@ export function ProfileContent({
               </Text>
             </Box>
             <VStack align="flex-end" gap={2}>
-              {/* Only show deactivate/reactivate button for volunteers */}
-              {isVolunteer && (
-                <Button
-                  variant="ghost"
-                  color={isReactivate ? '#059669' : COLORS.red}
-                  _hover={{ textDecoration: 'underline', bg: 'transparent' }}
-                  fontSize="sm"
-                  fontWeight={400}
-                  p={0}
-                  h="auto"
-                  textDecoration="underline"
-                  onClick={handleDeactivateClick}
-                >
-                  {isReactivate ? 'Reactivate Account' : 'Deactivate Account'}
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                color={isReactivate ? '#059669' : COLORS.red}
+                _hover={{ textDecoration: 'underline', bg: 'transparent' }}
+                fontSize="sm"
+                fontWeight={400}
+                p={0}
+                h="auto"
+                textDecoration="underline"
+                onClick={handleDeactivateClick}
+              >
+                {isReactivate ? 'Reactivate Account' : 'Deactivate Account'}
+              </Button>
               <Button
                 bg={COLORS.red}
                 color="white"

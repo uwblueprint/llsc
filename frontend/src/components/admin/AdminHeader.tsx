@@ -23,7 +23,7 @@ export const AdminHeader: React.FC = () => {
       bg={COLORS.white}
       borderBottom={`1px solid ${COLORS.grayBorder}`}
       boxShadow={shadow.header}
-      px="100px"
+      px="24px"
       py="12px"
     >
       <Flex justify="space-between" align="center">

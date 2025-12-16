@@ -4,7 +4,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { FormField } from '@/components/ui/form-field';
 import { InputGroup } from '@/components/ui/input-group';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
-import { COLORS, VALIDATION } from '@/constants/form';
+import { COLORS, VALIDATION, getIntakeFormTitle, IntakeFormType } from '@/constants/form';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
 import { detectCanadianTimezone } from '@/utils/timezoneUtils';
@@ -88,7 +88,7 @@ const DIAGNOSIS_OPTIONS = [
 ];
 
 interface DemographicCancerFormProps {
-  formType?: 'participant' | 'volunteer';
+  formType?: IntakeFormType;
   onNext: (data: DemographicCancerFormData) => void;
   hasBloodCancer?: 'yes' | 'no' | '';
   caringForSomeone?: 'yes' | 'no' | '';
@@ -239,6 +239,8 @@ export function DemographicCancerForm({
     }
   };
 
+  const formTitle = getIntakeFormTitle(formType);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {/* Header */}
@@ -250,7 +252,7 @@ export function DemographicCancerForm({
         fontSize="28px"
         mb={8}
       >
-        First Connection {formType === 'participant' ? 'Participant' : 'Volunteer'} Form
+        {formTitle}
       </Heading>
 
       {/* Progress Bar */}
@@ -777,7 +779,7 @@ const getBasicDefaultValues = (): BasicDemographicsFormData => ({
 });
 
 interface BasicDemographicsFormProps {
-  formType?: 'participant' | 'volunteer';
+  formType?: IntakeFormType;
   onNext: (data: BasicDemographicsFormData) => void;
 }
 
@@ -829,6 +831,8 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
     }
   };
 
+  const formTitle = getIntakeFormTitle(formType);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {/* Header */}
@@ -840,7 +844,7 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
         fontSize="28px"
         mb={8}
       >
-        First Connection {formType === 'participant' ? 'Participant' : 'Volunteer'} Form
+        {formTitle}
       </Heading>
 
       {/* Progress Bar */}

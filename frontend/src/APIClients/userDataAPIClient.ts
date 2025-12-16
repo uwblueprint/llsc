@@ -69,8 +69,8 @@ export const getUserData = async (): Promise<UserDataResponse | null> => {
       throw new Error('User not authenticated');
     }
 
-    const headers = getAuthHeaders();
-    const response = await baseAPIClient.get<UserDataResponse>(`/user-data/me`, { headers });
+    const authConfig = getAuthHeaders();
+    const response = await baseAPIClient.get<UserDataResponse>(`/user-data/me`, authConfig);
 
     return response.data;
   } catch (error) {
@@ -89,11 +89,9 @@ export const updateUserData = async (
       throw new Error('User not authenticated');
     }
 
-    const headers = getAuthHeaders();
-
     // Call the PUT /user-data/me endpoint
     const response = await baseAPIClient.put<UserDataResponse>(`/user-data/me`, userData, {
-      headers,
+      ...getAuthHeaders(),
     });
 
     return response.data;
@@ -113,8 +111,6 @@ export const updateMyAvailability = async (
       throw new Error('User not authenticated');
     }
 
-    const headers = getAuthHeaders();
-
     // Convert to backend format (camelCase to snake_case)
     const backendTemplates = templates.map((t) => ({
       day_of_week: t.dayOfWeek,
@@ -129,7 +125,7 @@ export const updateMyAvailability = async (
         user_id: userId,
         templates: backendTemplates,
       },
-      { headers },
+      getAuthHeaders(),
     );
 
     return true;
@@ -138,3 +134,57 @@ export const updateMyAvailability = async (
     return false;
   }
 };
+
+export interface Treatment {
+  id: number;
+  name: string;
+}
+
+export interface Experience {
+  id: number;
+  name: string;
+}
+
+export interface AdminUserDataResponse {
+  id: string;
+  userId: string;
+  firstName: string | null;
+  lastName: string | null;
+  dateOfBirth: string | null;
+  email: string | null;
+  phone: string | null;
+  city: string | null;
+  province: string | null;
+  postalCode: string | null;
+  genderIdentity: string | null;
+  pronouns: string[] | null;
+  ethnicGroup: string[] | null;
+  maritalStatus: string | null;
+  hasKids: string | null;
+  diagnosis: string | null;
+  dateOfDiagnosis: string | null;
+  otherEthnicGroup: string | null;
+  genderIdentityCustom: string | null;
+  hasBloodCancer: string | null;
+  caringForSomeone: string | null;
+  lovedOneGenderIdentity: string | null;
+  lovedOneAge: string | null;
+  lovedOneDiagnosis: string | null;
+  lovedOneDateOfDiagnosis: string | null;
+  treatments: Treatment[];
+  experiences: Experience[];
+  lovedOneTreatments: Treatment[];
+  lovedOneExperiences: Experience[];
+}
+
+class AdminUserDataAPIClient {
+  /**
+   * Get UserData for a specific user (admin only)
+   */
+  async getUserData(userId: string): Promise<AdminUserDataResponse | null> {
+    const response = await baseAPIClient.get<AdminUserDataResponse>(`/user-data/${userId}`);
+    return response.data;
+  }
+}
+
+export const adminUserDataAPIClient = new AdminUserDataAPIClient();

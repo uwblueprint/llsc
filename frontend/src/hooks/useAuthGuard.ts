@@ -35,65 +35,67 @@ export const useAuthGuard = (allowedRoles: UserRole[]): AuthGuardState => {
   // Memoize allowedRoles to prevent infinite re-renders
   const memoizedAllowedRoles = useMemo(() => allowedRoles, [allowedRoles]);
 
-  const getUserRole = async (user: User): Promise<UserRole | null> => {
+  const getUserRole = async (
+    user: User,
+    options?: { ignoreCache?: boolean },
+  ): Promise<UserRole | null> => {
     const cacheKey = `userRole_${user.uid}`;
 
-    // Check cache first
-    try {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        const { role, timestamp } = JSON.parse(cached);
-        // Cache valid for 1 hour
-        if (Date.now() - timestamp < 3600000) {
-          return role;
+    const fetchAndCacheRole = async (): Promise<UserRole | null> => {
+      try {
+        const token = await user.getIdToken();
+        const response = await baseAPIClient.get('/auth/me', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const userRole = roleIdToUserRole(response.data.roleId);
+        if (userRole) {
+          sessionStorage.setItem(
+            cacheKey,
+            JSON.stringify({
+              role: userRole,
+              timestamp: Date.now(),
+            }),
+          );
         }
-        // Remove expired cache
+        return userRole;
+      } catch (error: unknown) {
+        console.error('[useAuthGuard] Error fetching user role:', error);
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as AxiosError;
+          console.error('[useAuthGuard] API Error status:', axiosError.response?.status);
+          console.error('[useAuthGuard] API Error data:', axiosError.response?.data);
+        } else if (error && typeof error === 'object' && 'request' in error) {
+          console.error('[useAuthGuard] No response received:', (error as AxiosError).request);
+        } else if (error && typeof error === 'object' && 'message' in error) {
+          console.error('[useAuthGuard] Request setup error:', (error as AxiosError).message);
+        }
+        console.error('[useAuthGuard] Full error object:', error);
+        return null;
+      }
+    };
+
+    if (!options?.ignoreCache) {
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const { role, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < 3600000) {
+            return role;
+          }
+          sessionStorage.removeItem(cacheKey);
+        }
+      } catch {
         sessionStorage.removeItem(cacheKey);
       }
-    } catch {
-      // If cache is corrupted, remove it and continue
+    }
+
+    if (options?.ignoreCache) {
       sessionStorage.removeItem(cacheKey);
     }
-
-    try {
-      // Get the Firebase ID token
-      const token = await user.getIdToken();
-      // Call your backend to get user data with role
-      const response = await baseAPIClient.get('/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Convert roleId to UserRole enum (API client converts snake_case to camelCase)
-      const userRole = roleIdToUserRole(response.data.roleId);
-
-      // Cache the result
-      if (userRole) {
-        sessionStorage.setItem(
-          cacheKey,
-          JSON.stringify({
-            role: userRole,
-            timestamp: Date.now(),
-          }),
-        );
-      }
-
-      return userRole;
-    } catch (error: unknown) {
-      console.error('[useAuthGuard] Error fetching user role:', error);
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as AxiosError;
-        console.error('[useAuthGuard] API Error status:', axiosError.response?.status);
-        console.error('[useAuthGuard] API Error data:', axiosError.response?.data);
-      } else if (error && typeof error === 'object' && 'request' in error) {
-        console.error('[useAuthGuard] No response received:', (error as AxiosError).request);
-      } else if (error && typeof error === 'object' && 'message' in error) {
-        console.error('[useAuthGuard] Request setup error:', (error as AxiosError).message);
-      }
-      console.error('[useAuthGuard] Full error object:', error);
-      return null;
-    }
+    return fetchAndCacheRole();
   };
 
   useEffect(() => {
@@ -111,22 +113,29 @@ export const useAuthGuard = (allowedRoles: UserRole[]): AuthGuardState => {
           return;
         }
 
-        // Get user role from backend
-        const userRole = await getUserRole(user);
+        // Get user role from backend (cached)
+        let userRole = await getUserRole(user);
 
         if (!userRole) {
-          // Could not get user role - redirect to login
           router.push('/');
           return;
         }
 
         if (!memoizedAllowedRoles.includes(userRole)) {
-          // User doesn't have required role - redirect to unauthorized
+          // Role may have changed; bypass cache and re-fetch once
+          userRole = await getUserRole(user, { ignoreCache: true });
+        }
+
+        if (!userRole) {
+          router.push('/');
+          return;
+        }
+
+        if (!memoizedAllowedRoles.includes(userRole)) {
           router.push('/unauthorized');
           return;
         }
 
-        // User is authorized
         setAuthState({ loading: false, authorized: true });
       } catch (error) {
         console.error('Auth guard error:', error);

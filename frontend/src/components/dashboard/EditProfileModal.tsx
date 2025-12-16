@@ -4,6 +4,7 @@ import type { TimeSlot } from '@/components/dashboard/types';
 import { Box, Heading, Text, VStack, HStack, Button, Image } from '@chakra-ui/react';
 import PersonalDetails from '@/components/dashboard/PersonalDetails';
 import BloodCancerExperience from '@/components/dashboard/BloodCancerExperience';
+import VolunteerAccountSettings from '@/components/volunteer/VolunteerAccountSettings';
 import ActionButton from '@/components/dashboard/EditButton';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -584,6 +585,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                 />
               </Box>
             </Box>
+            <VolunteerAccountSettings />
           </VStack>
         </Box>
       </Box>
