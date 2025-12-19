@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.interfaces.matching_service import IMatchingService
 from app.models.Experience import Experience
@@ -97,6 +97,96 @@ class MatchingService(IMatchingService):
             raise ve
         except Exception as e:
             self.logger.error(f"Error finding matches: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Internal server error during matching process: {str(e)}")
+
+    async def get_admin_matches(self, participant_id: UUID) -> List[Dict[str, Any]]:
+        """
+        Get potential volunteer matches for a participant with full volunteer details for admin view.
+        Returns all volunteers with their complete information and match scores.
+        :param participant_id: ID of the participant user to find matches for
+        :return: List of dictionaries with full volunteer details and match scores
+        :raises ValueError: If user is not found or not a participant
+        """
+        try:
+            # Get the participant user
+            user = self.db.query(User).filter(User.id == participant_id).first()
+            if not user:
+                raise ValueError(f"User with ID {participant_id} not found")
+
+            if user.role.name != UserRole.PARTICIPANT:
+                raise ValueError(f"User with ID {participant_id} is not a participant")
+
+            participant_data = self.db.query(UserData).filter(UserData.user_id == participant_id).first()
+            if not participant_data:
+                raise ValueError(f"User with ID {participant_id} has no intake form data")
+
+            participant_preferences = self._get_user_preferences(participant_id)
+            if not participant_preferences:
+                raise ValueError(f"User with ID {participant_id} has no ranking form data")
+
+            # Get all active, approved volunteers with their data and relationships
+            # Eagerly load user_data, treatments, and experiences to avoid N+1 queries
+            volunteers = (
+                self.db.query(User)
+                .join(User.role)
+                .options(
+                    joinedload(User.user_data).joinedload(UserData.treatments),
+                    joinedload(User.user_data).joinedload(UserData.experiences),
+                )
+                .filter(Role.name == UserRole.VOLUNTEER)
+                .filter(User.active)
+                .filter(User.approved)
+                .all()
+            )
+
+            if not volunteers:
+                return []
+
+            # Calculate scores and build detailed responses
+            scored_volunteers = []
+            for volunteer_user in volunteers:
+                volunteer_data = volunteer_user.user_data
+                if not volunteer_data:
+                    continue
+                score = self._calculate_match_score(participant_data, volunteer_data, participant_preferences)
+
+                # Calculate age from date_of_birth
+                age = None
+                if volunteer_data.date_of_birth:
+                    today = date.today()
+                    age = today.year - volunteer_data.date_of_birth.year
+                    # Adjust if birthday hasn't occurred this year
+                    if (today.month, today.day) < (
+                        volunteer_data.date_of_birth.month,
+                        volunteer_data.date_of_birth.day,
+                    ):
+                        age -= 1
+
+                treatment_names = [treatment.name for treatment in volunteer_data.treatments]
+
+                experience_names = [experience.name for experience in volunteer_data.experiences]
+
+                match_candidate = {
+                    "volunteer_id": volunteer_user.id,
+                    "first_name": volunteer_user.first_name,
+                    "last_name": volunteer_user.last_name,
+                    "email": volunteer_user.email,
+                    "timezone": volunteer_data.timezone,
+                    "age": age,
+                    "diagnosis": volunteer_data.diagnosis,
+                    "treatments": treatment_names,
+                    "experiences": experience_names,
+                    "match_score": round(score * 100, 2),
+                }
+                scored_volunteers.append((match_candidate, score))
+
+            scored_volunteers.sort(key=lambda x: x[1], reverse=True)
+            return [candidate for candidate, _ in scored_volunteers]
+
+        except ValueError as ve:
+            raise ve
+        except Exception as e:
+            self.logger.error(f"Error finding admin matches: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Internal server error during matching process: {str(e)}")
 
     def _get_user_preferences(self, user_id: UUID) -> List[Dict[str, Any]]:

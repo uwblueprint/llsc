@@ -344,6 +344,111 @@ def seed_users(session: Session) -> None:
             "loved_one_treatments": [3, 6],  # Chemotherapy, Radiation
             "loved_one_experiences": [3, 4],  # Feeling Overwhelmed, Fatigue
         },
+        # Additional volunteers for testing
+        {
+            "role": "volunteer",
+            "user_data": {
+                "first_name": "James",
+                "last_name": "Wilson",
+                "email": "james.wilson@example.com",
+                "auth_id": "auth_james_011",
+                "date_of_birth": date(1990, 3, 20),
+                "phone": "555-0402",
+                "city": "Calgary",
+                "province": "Alberta",
+                "postal_code": "T2P 1J4",
+                "gender_identity": "Man",
+                "pronouns": ["he", "him"],
+                "ethnic_group": ["White/Caucasian"],
+                "marital_status": "Single",
+                "has_kids": "No",
+                "timezone": "MST",
+                "diagnosis": "Non-Hodgkin Lymphoma",
+                "date_of_diagnosis": date(2019, 6, 10),
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
+            },
+            "treatments": [3, 6, 14],  # Chemotherapy, Radiation, BTK Inhibitors
+            "experiences": [1, 3, 4, 7],  # Brain Fog, Feeling Overwhelmed, Fatigue, Returning to work
+        },
+        {
+            "role": "volunteer",
+            "user_data": {
+                "first_name": "Maria",
+                "last_name": "Garcia",
+                "email": "maria.garcia@example.com",
+                "auth_id": "auth_maria_012",
+                "date_of_birth": date(1988, 8, 15),
+                "phone": "555-0403",
+                "city": "Vancouver",
+                "province": "British Columbia",
+                "postal_code": "V6B 2K1",
+                "gender_identity": "Woman",
+                "pronouns": ["she", "her"],
+                "ethnic_group": ["Hispanic/Latino"],
+                "marital_status": "Married/Common Law",
+                "has_kids": "Yes",
+                "timezone": "PST",
+                "diagnosis": "Acute Myeloid Leukemia",
+                "date_of_diagnosis": date(2021, 1, 8),
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
+            },
+            "treatments": [3, 10],  # Chemotherapy, Autologous Stem Cell Transplant
+            "experiences": [3, 4, 10, 11],  # Feeling Overwhelmed, Fatigue, Anxiety/Depression, PTSD
+        },
+        {
+            "role": "volunteer",
+            "user_data": {
+                "first_name": "Alex",
+                "last_name": "Martinez",
+                "email": "alex.martinez@example.com",
+                "auth_id": "auth_alex_013",
+                "date_of_birth": date(1992, 11, 5),
+                "phone": "555-0404",
+                "city": "Toronto",
+                "province": "Ontario",
+                "postal_code": "M5H 2N2",
+                "gender_identity": "Non-binary",
+                "pronouns": ["they", "them"],
+                "ethnic_group": ["Hispanic/Latino"],
+                "marital_status": "Single",
+                "has_kids": "No",
+                "timezone": "EST",
+                "diagnosis": "Chronic Myeloid Leukemia",
+                "date_of_diagnosis": date(2020, 9, 12),
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
+            },
+            "treatments": [14, 15],  # BTK Inhibitors, Targeted Therapy
+            "experiences": [1, 10],  # Brain Fog, Anxiety/Depression
+        },
+        {
+            "role": "volunteer",
+            "user_data": {
+                "first_name": "Patricia",
+                "last_name": "Brown",
+                "email": "patricia.brown@example.com",
+                "auth_id": "auth_patricia_014",
+                "date_of_birth": date(1985, 4, 18),
+                "phone": "555-0405",
+                "city": "Montreal",
+                "province": "Quebec",
+                "postal_code": "H3B 1M8",
+                "gender_identity": "Woman",
+                "pronouns": ["she", "her"],
+                "ethnic_group": ["Black/African"],
+                "marital_status": "Married/Common Law",
+                "has_kids": "Yes",
+                "timezone": "EST",
+                "diagnosis": "Multiple Myeloma",
+                "date_of_diagnosis": date(2019, 11, 22),
+                "has_blood_cancer": "yes",
+                "caring_for_someone": "no",
+            },
+            "treatments": [3, 10, 11],  # Chemotherapy, Autologous Stem Cell Transplant, Allogeneic Stem Cell Transplant
+            "experiences": [1, 3, 4, 5, 7],  # Brain Fog, Feeling Overwhelmed, Fatigue, Sleep Issues, Returning to work
+        },
     ]
 
     created_users = []
