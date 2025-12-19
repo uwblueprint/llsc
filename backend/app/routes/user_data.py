@@ -1,12 +1,17 @@
+"""Routes for accessing user data (UserData table)."""
+
 from datetime import datetime as dt
 from typing import List, Optional
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.middleware.auth import has_roles
 from app.models import Experience, Treatment, User, UserData
+from app.models.User import Language
+from app.models.VolunteerData import VolunteerData
 from app.schemas.user import UserRole
 from app.utilities.db_utils import get_db
 
@@ -62,6 +67,7 @@ class UserDataResponse(BaseModel):
     has_kids: Optional[str] = None
     other_ethnic_group: Optional[str] = None
     gender_identity_custom: Optional[str] = None
+    timezone: Optional[str] = None
 
     # Cancer Experience
     diagnosis: Optional[str] = None
@@ -83,6 +89,12 @@ class UserDataResponse(BaseModel):
 
     # Availability (list of availability templates)
     availability: List[AvailabilityTemplateResponse] = []
+
+    # Volunteer Data (for volunteers)
+    volunteer_experience: Optional[str] = None
+
+
+# ===== Endpoints =====
 
 
 # ===== Endpoints =====
@@ -106,7 +118,9 @@ async def get_my_user_data(
     try:
         # Get current user from auth middleware
         current_user_auth_id = request.state.user_id
-        current_user = db.query(User).filter(User.auth_id == current_user_auth_id).first()
+        current_user = (
+            db.query(User).options(joinedload(User.volunteer_data)).filter(User.auth_id == current_user_auth_id).first()
+        )
 
         if not current_user:
             raise HTTPException(status_code=401, detail="User not found")
@@ -128,6 +142,11 @@ async def get_my_user_data(
             if template.is_active
         ]
 
+        # Get volunteer_data.experience if user is a volunteer
+        volunteer_experience = None
+        if current_user.volunteer_data:
+            volunteer_experience = current_user.volunteer_data.experience
+
         # Build response with all fields and resolved relationships
         response = UserDataResponse(
             # Personal Information
@@ -147,6 +166,7 @@ async def get_my_user_data(
             has_kids=user_data.has_kids,
             other_ethnic_group=user_data.other_ethnic_group,
             gender_identity_custom=user_data.gender_identity_custom,
+            timezone=user_data.timezone,
             # Cancer Experience
             diagnosis=user_data.diagnosis,
             date_of_diagnosis=user_data.date_of_diagnosis.isoformat() if user_data.date_of_diagnosis else None,
@@ -166,6 +186,8 @@ async def get_my_user_data(
             caring_for_someone=user_data.caring_for_someone,
             # Availability
             availability=availability_templates,
+            # Volunteer Data
+            volunteer_experience=volunteer_experience,
         )
 
         return response
@@ -192,7 +214,9 @@ async def update_my_user_data(
     try:
         # Get current user from auth middleware
         current_user_auth_id = request.state.user_id
-        current_user = db.query(User).filter(User.auth_id == current_user_auth_id).first()
+        current_user = (
+            db.query(User).options(joinedload(User.volunteer_data)).filter(User.auth_id == current_user_auth_id).first()
+        )
 
         if not current_user:
             raise HTTPException(status_code=401, detail="User not found")
@@ -300,6 +324,32 @@ async def update_my_user_data(
                 if experience:
                     user_data.loved_one_experiences.append(experience)
 
+        # Update user language (stored on User model, not UserData)
+        if "language" in update_data:
+            try:
+                language_value = update_data["language"]
+                if language_value in ["en", "fr"]:
+                    current_user.language = Language(language_value)
+            except (ValueError, AttributeError):
+                pass  # Invalid language value, skip
+
+        # Update user timezone (stored on UserData model)
+        if "timezone" in update_data:
+            user_data.timezone = update_data["timezone"]
+
+        # Handle volunteer_experience update if provided
+        if "volunteer_experience" in update_data:
+            volunteer_data = db.query(VolunteerData).filter(VolunteerData.user_id == current_user.id).first()
+            if volunteer_data:
+                volunteer_data.experience = update_data["volunteer_experience"]
+            else:
+                # Create volunteer_data if it doesn't exist
+                volunteer_data = VolunteerData(
+                    user_id=current_user.id,
+                    experience=update_data["volunteer_experience"],
+                )
+                db.add(volunteer_data)
+
         db.commit()
         db.refresh(user_data)
 
@@ -313,6 +363,11 @@ async def update_my_user_data(
             for template in current_user.availability_templates
             if template.is_active
         ]
+
+        # Get volunteer_data.experience if user is a volunteer
+        volunteer_experience = None
+        if current_user.volunteer_data:
+            volunteer_experience = current_user.volunteer_data.experience
 
         response = UserDataResponse(
             first_name=user_data.first_name,
@@ -330,6 +385,7 @@ async def update_my_user_data(
             has_kids=user_data.has_kids,
             other_ethnic_group=user_data.other_ethnic_group,
             gender_identity_custom=user_data.gender_identity_custom,
+            timezone=user_data.timezone,
             diagnosis=user_data.diagnosis,
             date_of_diagnosis=user_data.date_of_diagnosis.isoformat() if user_data.date_of_diagnosis else None,
             treatments=[treatment.name for treatment in user_data.treatments],
@@ -345,6 +401,7 @@ async def update_my_user_data(
             has_blood_cancer=user_data.has_blood_cancer,
             caring_for_someone=user_data.caring_for_someone,
             availability=availability_templates,
+            volunteer_experience=volunteer_experience,
         )
 
         return response
@@ -354,3 +411,109 @@ async def update_my_user_data(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===== Admin Endpoints =====
+
+
+class AdminUserDataResponse(BaseModel):
+    """Detailed response for admin lookups."""
+
+    id: str
+    user_id: str
+    first_name: str | None
+    last_name: str | None
+    date_of_birth: str | None
+    email: str | None
+    phone: str | None
+    city: str | None
+    province: str | None
+    postal_code: str | None
+    gender_identity: str | None
+    pronouns: List[str] | None
+    ethnic_group: List[str] | None
+    marital_status: str | None
+    has_kids: str | None
+    diagnosis: str | None
+    date_of_diagnosis: str | None
+    other_ethnic_group: str | None
+    gender_identity_custom: str | None
+    has_blood_cancer: str | None
+    caring_for_someone: str | None
+    loved_one_gender_identity: str | None
+    loved_one_age: str | None
+    loved_one_diagnosis: str | None
+    loved_one_date_of_diagnosis: str | None
+    treatments: List[TreatmentResponse] = []
+    experiences: List[ExperienceResponse] = []
+    loved_one_treatments: List[TreatmentResponse] = []
+    loved_one_experiences: List[ExperienceResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+@router.get("/{user_id}", response_model=AdminUserDataResponse | None)
+async def get_user_data(
+    user_id: str,
+    db: Session = Depends(get_db),
+    authorized: bool = has_roles([UserRole.ADMIN]),
+):
+    """Get UserData for a specific user (admin only)."""
+    try:
+        user_uuid = UUID(user_id)
+        user_data = (
+            db.query(UserData)
+            .options(
+                joinedload(UserData.treatments),
+                joinedload(UserData.experiences),
+                joinedload(UserData.loved_one_treatments),
+                joinedload(UserData.loved_one_experiences),
+            )
+            .filter(UserData.user_id == user_uuid)
+            .first()
+        )
+
+        if not user_data:
+            return None
+
+        return AdminUserDataResponse(
+            id=str(user_data.id),
+            user_id=str(user_data.user_id),
+            first_name=user_data.first_name,
+            last_name=user_data.last_name,
+            date_of_birth=user_data.date_of_birth.isoformat() if user_data.date_of_birth else None,
+            email=user_data.email,
+            phone=user_data.phone,
+            city=user_data.city,
+            province=user_data.province,
+            postal_code=user_data.postal_code,
+            gender_identity=user_data.gender_identity,
+            pronouns=user_data.pronouns,
+            ethnic_group=user_data.ethnic_group,
+            marital_status=user_data.marital_status,
+            has_kids=user_data.has_kids,
+            diagnosis=user_data.diagnosis,
+            date_of_diagnosis=user_data.date_of_diagnosis.isoformat() if user_data.date_of_diagnosis else None,
+            other_ethnic_group=user_data.other_ethnic_group,
+            gender_identity_custom=user_data.gender_identity_custom,
+            has_blood_cancer=user_data.has_blood_cancer,
+            caring_for_someone=user_data.caring_for_someone,
+            loved_one_gender_identity=user_data.loved_one_gender_identity,
+            loved_one_age=user_data.loved_one_age,
+            loved_one_diagnosis=user_data.loved_one_diagnosis,
+            loved_one_date_of_diagnosis=(
+                user_data.loved_one_date_of_diagnosis.isoformat() if user_data.loved_one_date_of_diagnosis else None
+            ),
+            treatments=[TreatmentResponse.model_validate(t) for t in (user_data.treatments or [])],
+            experiences=[ExperienceResponse.model_validate(e) for e in (user_data.experiences or [])],
+            loved_one_treatments=[TreatmentResponse.model_validate(t) for t in (user_data.loved_one_treatments or [])],
+            loved_one_experiences=[
+                ExperienceResponse.model_validate(e) for e in (user_data.loved_one_experiences or [])
+            ],
+        )
+
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid user ID format: {exc}") from exc
+    except Exception as exc:  # pragma: no cover - unexpected errors
+        print(f"Error in get_user_data: {type(exc).__name__}: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))

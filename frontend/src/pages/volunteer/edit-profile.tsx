@@ -15,6 +15,7 @@ import {
   updateMyAvailability,
   AvailabilityTemplateResponse,
 } from '@/APIClients/userDataAPIClient';
+import { extractTimezoneAbbreviation, getTimezoneDisplayName } from '@/utils/timezoneUtils';
 
 const EditProfile: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -30,7 +31,7 @@ const EditProfile: React.FC = () => {
     birthday: '',
     gender: '',
     pronouns: '',
-    timezone: 'Eastern Standard Time (EST)',
+    timezone: 'EST',
     overview: '',
   });
 
@@ -108,19 +109,15 @@ const EditProfile: React.FC = () => {
         if (userData) {
           // Format date from ISO (YYYY-MM-DD) to display format (DD/MM/YYYY)
           const formatDate = (isoDate: string | undefined | null): string => {
-            console.log('formatDate input:', isoDate, 'type:', typeof isoDate);
             if (!isoDate) {
-              console.log('formatDate returning Not provided because isoDate is falsy');
               return 'Not provided';
             }
             try {
               const date = new Date(isoDate);
-              console.log('Created date object:', date);
               const day = date.getDate().toString().padStart(2, '0');
               const month = (date.getMonth() + 1).toString().padStart(2, '0');
               const year = date.getFullYear();
               const formatted = `${day}/${month}/${year}`;
-              console.log('Formatted date:', formatted);
               return formatted;
             } catch (error) {
               console.error('formatDate error:', error);
@@ -132,10 +129,6 @@ const EditProfile: React.FC = () => {
           const formattedBirthday = formatDate(userData.dateOfBirth);
           const formattedPronouns = userData.pronouns?.join(', ') || 'Not provided';
 
-          console.log('FINAL VALUES:');
-          console.log('formattedBirthday:', formattedBirthday);
-          console.log('formattedPronouns:', formattedPronouns);
-
           setPersonalDetails({
             name:
               `${userData.firstName || ''} ${userData.lastName || ''}`.trim() ||
@@ -145,16 +138,11 @@ const EditProfile: React.FC = () => {
             birthday: formattedBirthday,
             gender: userData.genderIdentity || 'Not provided',
             pronouns: formattedPronouns,
-            timezone: 'Eastern Standard Time (EST)', // TODO: Add timezone field to backend
-            overview: 'Not provided', // TODO: Add overview field to backend
-          });
-
-          console.log('Personal details state set to:', {
-            name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
-            email: userData.email,
-            birthday: formattedBirthday,
-            gender: userData.genderIdentity,
-            pronouns: formattedPronouns,
+            timezone: userData.timezone ? getTimezoneDisplayName(userData.timezone) : 'EST',
+            overview:
+              userData.volunteerExperience && userData.volunteerExperience.trim()
+                ? userData.volunteerExperience
+                : 'Not provided',
           });
 
           // Populate cancer experience
@@ -193,7 +181,6 @@ const EditProfile: React.FC = () => {
       } catch (error) {
         console.error('❌ Error loading user data:', error);
       } finally {
-        console.log('✅ Finished loading, setting loading=false');
         setLoading(false);
       }
     };
@@ -210,15 +197,13 @@ const EditProfile: React.FC = () => {
 
   // Save handler for PersonalDetails
   const handleSavePersonalDetail = async (field: string, value: string) => {
-    const updateData: Partial<any> = {};
+    const updateData: Partial<Record<string, unknown>> = {};
 
     // Map frontend field names to backend snake_case (axios will convert to camelCase on send)
     if (field === 'name') {
       const [firstName, ...lastNameParts] = value.split(' ');
       updateData.first_name = firstName || '';
       updateData.last_name = lastNameParts.join(' ') || '';
-    } else if (field === 'email') {
-      updateData.email = value;
     } else if (field === 'birthday') {
       // Convert DD/MM/YYYY to YYYY-MM-DD for backend
       try {
@@ -231,6 +216,11 @@ const EditProfile: React.FC = () => {
       updateData.gender_identity = value;
     } else if (field === 'pronouns') {
       updateData.pronouns = value.split(',').map((p) => p.trim());
+    } else if (field === 'timezone') {
+      // Extract abbreviation from full name (e.g., "Eastern Standard Time (EST)" -> "EST")
+      updateData.timezone = extractTimezoneAbbreviation(value);
+    } else if (field === 'overview') {
+      updateData.volunteer_experience = value;
     } else if (field === 'lovedOneBirthday') {
       // Loved one's age/birthday - store as is since backend expects lovedOneAge as string
       updateData.loved_one_age = value;
@@ -266,7 +256,7 @@ const EditProfile: React.FC = () => {
   const handleSaveLovedOneTreatments = async () => {
     if (!lovedOneCancerExperience) return;
     const result = await updateUserData({
-      loved_one_treatments: lovedOneCancerExperience.treatments,
+      lovedOneTreatments: lovedOneCancerExperience.treatments,
     });
     if (!result) {
       alert('Failed to save loved one treatments');
@@ -277,7 +267,7 @@ const EditProfile: React.FC = () => {
   const handleSaveLovedOneExperiences = async () => {
     if (!lovedOneCancerExperience) return;
     const result = await updateUserData({
-      loved_one_experiences: lovedOneCancerExperience.experiences,
+      lovedOneExperiences: lovedOneCancerExperience.experiences,
     });
     if (!result) {
       alert('Failed to save loved one experiences');
@@ -374,12 +364,10 @@ const EditProfile: React.FC = () => {
 
     try {
       const templates = convertToTemplates(profileTimeSlots);
-      console.log('Saving availability templates:', templates);
 
       const success = await updateMyAvailability(templates);
 
       if (success) {
-        console.log('✅ Availability updated successfully');
         setIsEditingAvailability(false);
 
         // Reload user data to refresh the display

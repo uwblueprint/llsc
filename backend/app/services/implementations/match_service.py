@@ -345,8 +345,11 @@ class MatchService:
             if acting_participant_id and match.participant_id != acting_participant_id:
                 raise HTTPException(status_code=403, detail="Cannot modify another participant's match")
 
-            self._clear_confirmed_time(match)
             self._set_match_status(match, "cancelled_by_participant")
+
+            # TODO: send particpant an email saying that the match has been cancelled
+            # Soft-delete the match when cancelled (cleans up time blocks and sets deleted_at)
+            self._delete_match(match)
 
             self.db.flush()
             self.db.commit()
@@ -665,6 +668,7 @@ class MatchService:
         diagnosis = None
         age: Optional[int] = None
         timezone: Optional[str] = None
+        phone: Optional[str] = None
         treatments: List[str] = []
         experiences: List[str] = []
         overview: Optional[str] = None
@@ -674,6 +678,7 @@ class MatchService:
                 pronouns = volunteer_data.pronouns
             diagnosis = volunteer_data.diagnosis
             timezone = volunteer_data.timezone
+            phone = volunteer_data.phone
 
             if volunteer_data.date_of_birth:
                 age = self._calculate_age(volunteer_data.date_of_birth)
@@ -693,6 +698,7 @@ class MatchService:
             first_name=volunteer.first_name,
             last_name=volunteer.last_name,
             email=volunteer.email,
+            phone=phone,
             pronouns=pronouns,
             diagnosis=diagnosis,
             age=age,

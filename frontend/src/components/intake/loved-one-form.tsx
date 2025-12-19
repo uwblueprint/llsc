@@ -4,7 +4,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { FormField } from '@/components/ui/form-field';
 import { InputGroup } from '@/components/ui/input-group';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
-import { COLORS, VALIDATION } from '@/constants/form';
+import { COLORS, VALIDATION, getIntakeFormTitle, IntakeFormType } from '@/constants/form';
 import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
@@ -51,7 +51,7 @@ const DIAGNOSIS_OPTIONS = [
 ];
 
 interface LovedOneFormProps {
-  formType?: 'participant' | 'volunteer';
+  formType?: IntakeFormType;
   onSubmit: (data: LovedOneFormData) => void;
 }
 
@@ -110,6 +110,8 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
     }
   };
 
+  const formTitle = getIntakeFormTitle(formType);
+
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
       {/* Header */}
@@ -121,7 +123,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
         fontSize="28px"
         mb={8}
       >
-        First Connection {formType === 'participant' ? 'Participant' : 'Volunteer'} Form
+        {formTitle}
       </Heading>
 
       {/* Progress Bar */}

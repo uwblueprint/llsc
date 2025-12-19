@@ -4,8 +4,8 @@ import type { TimeSlot } from '@/components/dashboard/types';
 import { Box, Heading, Text, VStack, HStack, Button, Image } from '@chakra-ui/react';
 import PersonalDetails from '@/components/dashboard/PersonalDetails';
 import BloodCancerExperience from '@/components/dashboard/BloodCancerExperience';
+import VolunteerAccountSettings from '@/components/volunteer/VolunteerAccountSettings';
 import ActionButton from '@/components/dashboard/EditButton';
-import { COLORS } from '@/constants/form';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   getUserData,
@@ -13,6 +13,7 @@ import {
   updateMyAvailability,
   AvailabilityTemplateResponse,
 } from '@/APIClients/userDataAPIClient';
+import { extractTimezoneAbbreviation, getTimezoneDisplayName } from '@/utils/timezoneUtils';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -24,15 +25,25 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
   const [isEditingAvailability, setIsEditingAvailability] = useState(false);
   const [loading, setLoading] = useState(true);
   const [savingAvailability, setSavingAvailability] = useState(false);
+  const [hasBloodCancer, setHasBloodCancer] = useState(false);
 
   // Personal details state for profile
-  const [personalDetails, setPersonalDetails] = useState({
+  const [personalDetails, setPersonalDetails] = useState<{
+    name: string;
+    email: string;
+    birthday: string;
+    gender: string;
+    pronouns: string;
+    timezone: string;
+    overview: string;
+    preferredLanguage?: string;
+  }>({
     name: '',
     email: '',
     birthday: '',
     gender: '',
     pronouns: '',
-    timezone: 'Eastern Standard Time (EST)',
+    timezone: 'EST',
     overview: '',
   });
 
@@ -125,6 +136,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
           // Populate personal details (using camelCase after axios conversion)
           const formattedBirthday = formatDate(userData.dateOfBirth);
           const formattedPronouns = userData.pronouns?.join(', ') || 'Not provided';
+          const userLanguage = user?.language || undefined;
 
           setPersonalDetails({
             name:
@@ -135,17 +147,34 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
             birthday: formattedBirthday,
             gender: userData.genderIdentity || 'Not provided',
             pronouns: formattedPronouns,
-            timezone: 'Eastern Standard Time (EST)', // TODO: Add timezone field to backend
-            overview: 'Not provided', // TODO: Add overview field to backend
+            timezone: userData.timezone ? getTimezoneDisplayName(userData.timezone) : 'EST',
+            overview:
+              userData.volunteerExperience && userData.volunteerExperience.trim()
+                ? userData.volunteerExperience
+                : 'Not provided',
+            preferredLanguage:
+              userLanguage === 'fr' ? 'fr' : userLanguage === 'en' ? 'en' : undefined,
           });
 
-          // Populate cancer experience
-          setCancerExperience({
-            diagnosis: userData.diagnosis ? [userData.diagnosis] : [],
-            dateOfDiagnosis: userData.dateOfDiagnosis || '',
-            treatments: userData.treatments || [],
-            experiences: userData.experiences || [],
-          });
+          // Determine if user has blood cancer
+          const hasBloodCancerValue = userData.hasBloodCancer;
+          const userHasBloodCancer =
+            hasBloodCancerValue === true ||
+            (hasBloodCancerValue !== undefined &&
+              hasBloodCancerValue !== null &&
+              String(hasBloodCancerValue).toLowerCase() === 'yes');
+
+          setHasBloodCancer(userHasBloodCancer);
+
+          // Populate cancer experience (only if user has cancer)
+          if (userHasBloodCancer) {
+            setCancerExperience({
+              diagnosis: userData.diagnosis ? [userData.diagnosis] : [],
+              dateOfDiagnosis: userData.dateOfDiagnosis || '',
+              treatments: userData.treatments || [],
+              experiences: userData.experiences || [],
+            });
+          }
 
           // Populate loved one details if caring for someone
           if (userData.caringForSomeone) {
@@ -191,15 +220,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
 
   // Save handler for PersonalDetails
   const handleSavePersonalDetail = async (field: string, value: string) => {
-    const updateData: Partial<any> = {};
+    const updateData: Partial<Record<string, unknown>> = {};
 
     // Map frontend field names to backend snake_case (axios will convert to camelCase on send)
     if (field === 'name') {
       const [firstName, ...lastNameParts] = value.split(' ');
       updateData.first_name = firstName || '';
       updateData.last_name = lastNameParts.join(' ') || '';
-    } else if (field === 'email') {
-      updateData.email = value;
     } else if (field === 'birthday') {
       // Convert DD/MM/YYYY to YYYY-MM-DD for backend
       try {
@@ -212,6 +239,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       updateData.gender_identity = value;
     } else if (field === 'pronouns') {
       updateData.pronouns = value.split(',').map((p) => p.trim());
+    } else if (field === 'overview') {
+      updateData.volunteer_experience = value;
+    } else if (field === 'timezone') {
+      // Extract abbreviation from full name (e.g., "Eastern Standard Time (EST)" -> "EST")
+      updateData.timezone = extractTimezoneAbbreviation(value);
+    } else if (field === 'preferredLanguage') {
+      updateData.language = value; // Backend expects 'language' field
     } else if (field === 'lovedOneBirthday') {
       // Loved one's age/birthday - store as is since backend expects lovedOneAge as string
       updateData.loved_one_age = value;
@@ -247,7 +281,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
   const handleSaveLovedOneTreatments = async () => {
     if (!lovedOneCancerExperience) return;
     const result = await updateUserData({
-      loved_one_treatments: lovedOneCancerExperience.treatments,
+      lovedOneTreatments: lovedOneCancerExperience.treatments,
     });
     if (!result) {
       alert('Failed to save loved one treatments');
@@ -258,7 +292,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
   const handleSaveLovedOneExperiences = async () => {
     if (!lovedOneCancerExperience) return;
     const result = await updateUserData({
-      loved_one_experiences: lovedOneCancerExperience.experiences,
+      lovedOneExperiences: lovedOneCancerExperience.experiences,
     });
     if (!result) {
       alert('Failed to save loved one experiences');
@@ -447,6 +481,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
               lovedOneDetails={lovedOneDetails}
               setLovedOneDetails={setLovedOneDetails}
               onSave={handleSavePersonalDetail}
+              isVolunteer={true}
             />
             <BloodCancerExperience
               cancerExperience={cancerExperience}
@@ -457,6 +492,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
               onEditExperiences={handleSaveExperiences}
               onEditLovedOneTreatments={handleSaveLovedOneTreatments}
               onEditLovedOneExperiences={handleSaveLovedOneExperiences}
+              hasBloodCancer={hasBloodCancer}
             />
             <Box bg="white" p={0} mt="116px" w="100%" pb={12}>
               <HStack justify="space-between" align="center" mb={0}>
@@ -549,6 +585,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                 />
               </Box>
             </Box>
+            <VolunteerAccountSettings />
           </VStack>
         </Box>
       </Box>

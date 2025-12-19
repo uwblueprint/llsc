@@ -1,3 +1,4 @@
+import { signOut as firebaseSignOut } from 'firebase/auth';
 import {
   AuthenticatedUser,
   UserCreateResponse,
@@ -18,7 +19,6 @@ import {
 } from '../utils/LocalStorageUtils';
 import { signInWithEmailAndPassword, applyActionCode, checkActionCode } from 'firebase/auth';
 import { auth } from '@/config/firebase';
-import { sendEmailVerificationToUser } from '@/services/firebaseAuthService';
 
 // Validation helper
 const validateEmail = (email: string): boolean => {
@@ -149,12 +149,20 @@ export const logout = async (): Promise<boolean> => {
   const bearerToken = `Bearer ${getLocalStorageObjProperty(AUTHENTICATED_USER_KEY, 'accessToken')}`;
 
   try {
+    // Call backend to revoke tokens
     await baseAPIClient.post('/auth/logout', {}, { headers: { Authorization: bearerToken } });
-    localStorage.removeItem(AUTHENTICATED_USER_KEY);
     return true;
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error('Backend logout error:', error);
     return false;
+  } finally {
+    // Always clear localStorage and sign out from Firebase regardless of backend API success/failure
+    localStorage.removeItem(AUTHENTICATED_USER_KEY);
+    try {
+      await firebaseSignOut(auth);
+    } catch (firebaseError) {
+      console.error('Firebase sign out error:', firebaseError);
+    }
   }
 };
 
@@ -233,16 +241,8 @@ export const register = async ({
       const user = userCredential.user;
       console.log('[REGISTER] Firebase sign-in successful, user:', user.email);
 
-      // Wait a moment to ensure Firebase auth state is fully updated
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Now send the verification email
-      const emailSent = await sendEmailVerificationToUser();
-      if (emailSent) {
-        console.log('[REGISTER] Email verification sent successfully after registration');
-      } else {
-        console.warn('[REGISTER] Failed to send email verification after registration');
-      }
+      // Note: Email verification will be handled on the verification page
+      // This avoids timing issues with Firebase auth state during registration
 
       // Return success with user info - don't try to login since email isn't verified yet
       return {

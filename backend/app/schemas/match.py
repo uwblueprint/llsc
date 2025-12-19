@@ -47,6 +47,7 @@ class MatchVolunteerSummary(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: str
+    phone: Optional[str] = None
     pronouns: Optional[List[str]] = None
     diagnosis: Optional[str] = None
     age: Optional[int] = None

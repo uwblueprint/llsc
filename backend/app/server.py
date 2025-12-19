@@ -11,6 +11,7 @@ from .middleware.auth_middleware import AuthMiddleware
 from .routes import (
     auth,
     availability,
+    contact,
     intake,
     match,
     matching,
@@ -40,6 +41,7 @@ PUBLIC_PATHS = [
     "/auth/register",
     "/auth/resetPassword/{email}",
     "/auth/verify/{email}",
+    "/auth/send-email-verification/{email}",
     "/health",
     "/test-middleware-public",
     "/email/send-test-email",
@@ -90,6 +92,7 @@ app.include_router(volunteer_data.router)
 app.include_router(send_email.router)
 app.include_router(task.router)
 app.include_router(test.router)
+app.include_router(contact.router)
 
 
 @app.get("/")

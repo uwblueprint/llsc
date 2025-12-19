@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+import logging
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -64,14 +66,19 @@ async def logout(
     request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(security),
     auth_service: AuthService = Depends(get_auth_service),
+    user_service: UserService = Depends(get_user_service),
 ):
     try:
-        user_id = request.state.user_id
-        if not user_id:
+        auth_id = request.state.user_id  # This is actually the Firebase auth_id
+        if not auth_id:
             raise HTTPException(status_code=401, detail="Authentication required")
 
+        # Convert Firebase auth_id to database user_id (UUID)
+        user_id = await user_service.get_user_id_by_auth_id(auth_id)
         auth_service.revoke_tokens(user_id)
         return {"message": "Successfully logged out"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -110,6 +117,32 @@ async def verify_email(email: str, auth_service: AuthService = Depends(get_auth_
         # Log unexpected errors
         print(f"Unexpected error during email verification for {email}: {str(e)}")
         return Response(status_code=500)
+
+
+@router.post("/send-email-verification/{email}")
+async def send_email_verification(
+    email: str,
+    language: str = Query("en", description="Language code: 'en' for English, 'fr' for French"),
+    auth_service: AuthService = Depends(get_auth_service),
+):
+    try:
+        # Normalize and validate language
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"  # Default to English if invalid
+
+        # Log for debugging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Sending email verification to {email} with language: {language}")
+
+        auth_service.send_email_verification_link(email, language)
+        return Response(status_code=204)
+    except Exception as e:
+        # Log error but don't reveal if email exists or not for security reasons
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error sending email verification: {str(e)}")
+        # Always return success even if email doesn't exist
+        return Response(status_code=204)
 
 
 @router.get("/me", response_model=UserCreateResponse)

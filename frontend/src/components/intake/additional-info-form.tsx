@@ -1,14 +1,14 @@
 import React from 'react';
 import { Box, Heading, Button, VStack, HStack, Text, Textarea } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
-import { COLORS } from '@/constants/form';
+import { COLORS, getIntakeFormTitle, IntakeFormType } from '@/constants/form';
 
 interface AdditionalInfoFormData {
   additionalInfo: string;
 }
 
 interface AdditionalInfoFormProps {
-  formType: 'participant' | 'volunteer';
+  formType: IntakeFormType;
   onSubmit: (data: AdditionalInfoFormData) => void;
   onBack?: () => void;
 }
@@ -28,10 +28,7 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
     onSubmit(data);
   };
 
-  const formTitle =
-    formType === 'participant'
-      ? 'First Connection Participant Form'
-      : 'First Connection Volunteer Form';
+  const formTitle = getIntakeFormTitle(formType);
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>

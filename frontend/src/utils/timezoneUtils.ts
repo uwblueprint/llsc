@@ -74,3 +74,43 @@ export function detectCanadianTimezone(): string {
     return '';
   }
 }
+
+/**
+ * Extracts the timezone abbreviation from a full timezone name.
+ * Example: "Eastern Standard Time (EST)" -> "EST"
+ * If the input is already an abbreviation, returns it as-is.
+ */
+export function extractTimezoneAbbreviation(timezone: string): string {
+  if (!timezone) return '';
+
+  // If it's already an abbreviation (3-4 letters), return as-is
+  if (/^[A-Z]{2,4}$/.test(timezone.trim())) {
+    return timezone.trim().toUpperCase();
+  }
+
+  // Extract abbreviation from format like "Eastern Standard Time (EST)"
+  const match = timezone.match(/\(([A-Z]{2,4})\)/);
+  if (match && match[1]) {
+    return match[1];
+  }
+
+  // Fallback: return as-is if no pattern matches
+  return timezone.trim();
+}
+
+/**
+ * Converts a timezone abbreviation to the full display name.
+ * Example: "EST" -> "Eastern Standard Time (EST)"
+ */
+export function getTimezoneDisplayName(abbreviation: string): string {
+  const timezoneMap: Record<string, string> = {
+    NST: 'Newfoundland Standard Time (NST)',
+    AST: 'Atlantic Standard Time (AST)',
+    EST: 'Eastern Standard Time (EST)',
+    CST: 'Central Standard Time (CST)',
+    MST: 'Mountain Standard Time (MST)',
+    PST: 'Pacific Standard Time (PST)',
+  };
+
+  return timezoneMap[abbreviation.toUpperCase()] || abbreviation;
+}

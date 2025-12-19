@@ -1,7 +1,7 @@
 """Seed users data for testing matching functionality."""
 
 import uuid
-from datetime import date
+from datetime import date, time
 
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
@@ -131,6 +131,7 @@ def seed_users(session: Session) -> None:
                 "date_of_diagnosis": date(2018, 4, 20),  # Survivor
                 "has_blood_cancer": "yes",
                 "caring_for_someone": "no",
+                "timezone": "EST",
             },
             "treatments": [
                 TreatmentId.CHEMOTHERAPY,
@@ -142,6 +143,12 @@ def seed_users(session: Session) -> None:
                 ExperienceId.FEELING_OVERWHELMED,
                 ExperienceId.FATIGUE,
                 ExperienceId.RETURNING_TO_WORK,
+            ],
+            "volunteer_experience": "My journey with blood cancer started when I was about twelve years old and getting treatment for the first time was extremely stress-inducing. My journey with blood cancer started when I was about twelve years old and getting treatment for the first time was extremely stress-inducing.",
+            "availability_templates": [
+                {"day_of_week": 1, "start_time": time(14, 0), "end_time": time(16, 0)},  # Tuesday 2-4pm
+                {"day_of_week": 3, "start_time": time(14, 0), "end_time": time(17, 0)},  # Thursday 2-5pm
+                {"day_of_week": 4, "start_time": time(10, 0), "end_time": time(12, 0)},  # Friday 10am-12pm
             ],
         },
         {
@@ -165,9 +172,16 @@ def seed_users(session: Session) -> None:
                 "date_of_diagnosis": date(2020, 8, 15),  # Survivor
                 "has_blood_cancer": "yes",
                 "caring_for_someone": "no",
+                "timezone": "PST",
             },
             "treatments": [3, 6],  # Chemotherapy, Radiation (matching Sarah's preferences)
             "experiences": [1, 3, 4],  # Brain Fog, Feeling Overwhelmed, Fatigue (same as Sarah!)
+            "volunteer_experience": "I was diagnosed with ALL at 34 and underwent intensive chemotherapy and radiation. The hardest part was balancing treatment with being a mother. I want to help others navigate this difficult journey and share what I learned.",
+            "availability_templates": [
+                {"day_of_week": 0, "start_time": time(16, 0), "end_time": time(18, 0)},  # Monday 4-6pm
+                {"day_of_week": 2, "start_time": time(11, 0), "end_time": time(13, 0)},  # Wednesday 11am-1pm
+                {"day_of_week": 4, "start_time": time(13, 0), "end_time": time(15, 0)},  # Friday 1-3pm
+            ],
         },
         {
             "role": "volunteer",
@@ -190,9 +204,16 @@ def seed_users(session: Session) -> None:
                 "date_of_diagnosis": date(2020, 2, 14),
                 "has_blood_cancer": "yes",
                 "caring_for_someone": "no",
+                "timezone": "EST",
             },
             "treatments": [3, 6],  # Chemotherapy, Radiation
             "experiences": [10, 11, 7],  # Anxiety/Depression, PTSD, Returning to work
+            "volunteer_experience": "Fighting Hodgkin Lymphoma taught me resilience I never knew I had. The mental health challenges were just as tough as the physical ones. I'm here to listen and support anyone going through similar struggles.",
+            "availability_templates": [
+                {"day_of_week": 1, "start_time": time(9, 0), "end_time": time(11, 0)},  # Tuesday 9-11am
+                {"day_of_week": 3, "start_time": time(14, 0), "end_time": time(16, 0)},  # Thursday 2-4pm
+                {"day_of_week": 5, "start_time": time(10, 0), "end_time": time(12, 0)},  # Saturday 10am-12pm
+            ],
         },
         # High-matching volunteers for Sarah Johnson
         {
@@ -216,9 +237,15 @@ def seed_users(session: Session) -> None:
                 "date_of_diagnosis": date(2019, 5, 10),  # Survivor
                 "has_blood_cancer": "yes",
                 "caring_for_someone": "no",
+                "timezone": "EST",
             },
             "treatments": [3, 6],  # Chemotherapy, Radiation (matching Sarah's preferences)
             "experiences": [1, 3, 4],  # Brain Fog, Feeling Overwhelmed, Fatigue (same as Sarah!)
+            "volunteer_experience": "As a working mother of two, being diagnosed with leukemia turned my world upside down. Brain fog and fatigue made everyday tasks feel impossible. Now in remission, I'm passionate about helping others find their strength during treatment.",
+            "availability_templates": [
+                {"day_of_week": 2, "start_time": time(14, 0), "end_time": time(17, 0)},  # Wednesday 2-5pm
+                {"day_of_week": 3, "start_time": time(16, 0), "end_time": time(18, 0)},  # Thursday 4-6pm
+            ],
         },
         {
             "role": "volunteer",
@@ -241,9 +268,15 @@ def seed_users(session: Session) -> None:
                 "date_of_diagnosis": date(2021, 3, 18),  # Survivor
                 "has_blood_cancer": "yes",
                 "caring_for_someone": "no",
+                "timezone": "MST",
             },
             "treatments": [3, 6],  # Chemotherapy, Radiation (matching Sarah's preferences)
             "experiences": [1, 3, 4, 10],  # Brain Fog, Feeling Overwhelmed, Fatigue, Anxiety/Depression
+            "volunteer_experience": "My cancer journey came with intense anxiety and depression alongside the physical symptoms. Through therapy and support groups, I learned to cope with the overwhelming emotions. I want to be that supportive voice for others facing the same battles.",
+            "availability_templates": [
+                {"day_of_week": 0, "start_time": time(10, 0), "end_time": time(12, 0)},  # Monday 10am-12pm
+                {"day_of_week": 4, "start_time": time(14, 30), "end_time": time(16, 30)},  # Friday 2:30-4:30pm
+            ],
         },
         {
             "role": "volunteer",
@@ -266,9 +299,16 @@ def seed_users(session: Session) -> None:
                 "date_of_diagnosis": date(2018, 9, 25),  # Survivor
                 "has_blood_cancer": "yes",
                 "caring_for_someone": "no",
+                "timezone": "CST",
             },
             "treatments": [3, 6, 7],  # Chemotherapy, Radiation, Maintenance Chemo
             "experiences": [1, 4, 5],  # Brain Fog, Feeling Overwhelmed, Fatigue (same as Sarah!)
+            "volunteer_experience": "Seven years ago, ALL changed everything. The fatigue was relentless, and brain fog made me feel like a stranger in my own mind. But I made it through, and now I want to offer hope and practical advice to anyone starting this journey.",
+            "availability_templates": [
+                {"day_of_week": 1, "start_time": time(15, 0), "end_time": time(17, 0)},  # Tuesday 3-5pm
+                {"day_of_week": 3, "start_time": time(10, 0), "end_time": time(12, 0)},  # Thursday 10am-12pm
+                {"day_of_week": 5, "start_time": time(14, 0), "end_time": time(16, 0)},  # Saturday 2-4pm
+            ],
         },
         # Test Case 3: Participant who is a caregiver wanting caregiver volunteers
         {
@@ -538,6 +578,22 @@ def seed_users(session: Session) -> None:
                 experience=volunteer_experience_text,
             )
             session.add(volunteer_data)
+
+            # Add availability templates for volunteers (if specified)
+            # Skip yashkothari@uwblueprint.org so they can set their own availability
+            if (
+                user_info.get("availability_templates")
+                and user_info["user_data"]["email"] != "yashkothari@uwblueprint.org"
+            ):
+                for template_info in user_info["availability_templates"]:
+                    availability_template = AvailabilityTemplate(
+                        user_id=user.id,
+                        day_of_week=template_info["day_of_week"],
+                        start_time=template_info["start_time"],
+                        end_time=template_info["end_time"],
+                        is_active=True,
+                    )
+                    session.add(availability_template)
 
         created_users.append((user, user_info["role"]))
         print(f"Added {user_info['role']}: {user.first_name} {user.last_name}")

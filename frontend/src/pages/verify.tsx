@@ -18,8 +18,8 @@ export default function VerifyPage() {
     text: '',
   });
 
-  const { sendVerificationEmail, sendSignInLink, isLoading, error, success } =
-    useEmailVerification();
+  const { sendVerificationEmail, isLoading, error, success } = useEmailVerification();
+  const [autoSent, setAutoSent] = useState<boolean>(false);
 
   useEffect(() => {
     // Get email from query params or localStorage
@@ -33,6 +33,23 @@ export default function VerifyPage() {
       setEmailForSignIn(emailFromQuery);
     }
   }, [email]);
+
+  // Auto-send verification email once when we have a displayEmail
+  useEffect(() => {
+    const maybeSend = async () => {
+      if (!autoSent && displayEmail && displayEmail.includes('@')) {
+        setMessage({ type: null, text: '' });
+        // For regular users, send verification email
+        await sendVerificationEmail(displayEmail);
+        setAutoSent(true);
+      }
+    };
+    // Only trigger after displayEmail is populated
+    if (displayEmail) {
+      void maybeSend();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayEmail]);
 
   useEffect(() => {
     if (success) {
@@ -48,18 +65,7 @@ export default function VerifyPage() {
 
   const handleResendEmail = async () => {
     setMessage({ type: null, text: '' });
-
-    // Debug: Log current auth state
-    console.log('Current auth user:', auth.currentUser);
-    console.log('User email verified:', auth.currentUser?.emailVerified);
-
-    if (role === 'admin') {
-      // For admin users, send sign-in link
-      await sendSignInLink(displayEmail);
-    } else {
-      // For regular users, send verification email
-      await sendVerificationEmail();
-    }
+    await sendVerificationEmail(displayEmail);
   };
 
   const handleBackToLogin = () => {

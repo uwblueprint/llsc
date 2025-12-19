@@ -159,6 +159,18 @@ async def get_ranking_preferences(
                 )
 
         return result
+@router.get("/admin/options", response_model=RankingOptionsResponse)
+async def get_ranking_options_admin(
+    user_id: str = Query(..., description="User ID (UUID) to fetch options for"),
+    target: str = Query(..., pattern="^(patient|caregiver)$"),
+    db: Session = Depends(get_db),
+    authorized: bool = has_roles([UserRole.ADMIN]),
+) -> RankingOptionsResponse:
+    """Admin endpoint to get ranking options for a specific user."""
+    try:
+        service = RankingService(db)
+        options = service.get_options_for_user_id(user_id=user_id, target=target)
+        return RankingOptionsResponse(**options)
     except HTTPException:
         raise
     except Exception as e:
