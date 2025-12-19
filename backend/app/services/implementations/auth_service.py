@@ -49,6 +49,29 @@ class AuthService(IAuthService):
 
     def reset_password(self, email: str) -> None:
         try:
+            # Get user's first name if available
+            first_name = None
+            try:
+                # Try database first, then fall back to Firebase
+                try:
+                    user = self.user_service.get_user_by_email(email)
+                    if user and user.first_name and user.first_name.strip():
+                        first_name = user.first_name.strip()
+                except Exception:
+                    pass
+
+                # Fall back to Firebase if database didn't have first_name
+                if not first_name:
+                    try:
+                        firebase_user = firebase_admin.auth.get_user_by_email(email)
+                        if firebase_user and firebase_user.display_name:
+                            display_name = firebase_user.display_name.strip()
+                            first_name = display_name.split()[0] if display_name else None
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
             # Use Firebase Admin SDK to generate password reset link
             action_code_settings = firebase_admin.auth.ActionCodeSettings(
                 url="http://localhost:3000/set-new-password",
@@ -58,7 +81,7 @@ class AuthService(IAuthService):
             reset_link = firebase_admin.auth.generate_password_reset_link(email, action_code_settings)
 
             # Send via SES
-            email_sent = self.ses_email_service.send_password_reset_email(email, reset_link)
+            email_sent = self.ses_email_service.send_password_reset_email(email, reset_link, first_name)
 
             if email_sent:
                 self.logger.info(f"Password reset email sent successfully to {email}")

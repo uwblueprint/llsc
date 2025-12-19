@@ -1,0 +1,15 @@
+Bonjour {{first_name}},
+
+Vous avez rendez-vous avec {{match_name}} le {{date}} à {{time}} {{timezone}}. Veuillez vous connecter à votre compte pour voir ses coordonnées.
+
+Voir les appels planifiés : {{scheduled_calls_url}}
+
+---
+
+Restez à jour : suivez-nous dès aujourd'hui!
+
+© Société de leucémie et lymphome du Canada
+Tous droits réservés.
+No d'enregistrement à titre d'organisme de bienfaisance : 10762 3654 RR0001
+
+REMARQUE : Veuillez ne pas répondre au présent courriel. Il est envoyé automatiquement à partir d'une boîte de messagerie non surveillée – aucune réponse ne sera reçue ou traitée. Pour toute question ou préoccupation concernant le programme de soutien par les pairs Premier contact, écrivez à FirstConnection@bloodcancers.ca.

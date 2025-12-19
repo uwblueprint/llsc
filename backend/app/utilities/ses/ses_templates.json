@@ -1,26 +1,92 @@
 [
   {
-    "HtmlPart": "app/utilities/ses/template_files/test.html",
+    "HtmlPart": "app/utilities/ses/template_files/compiled/test.html",
     "SubjectPart": "Testing Email SES Template",
     "TemplateName": "Test",
-    "TextPart": "app/utilities/ses/template_files/test.txt"
+    "TextPart": "app/utilities/ses/template_files/text/test.txt"
   },
   {
-    "HtmlPart": "app/utilities/ses/template_files/email_verification_en.html",
-    "SubjectPart": "Verify Your Email Address",
+    "HtmlPart": "app/utilities/ses/template_files/compiled/email_verification_en.html",
+    "SubjectPart": "{{first_name}}, confirm your email - First Connection Peer Support Program",
     "TemplateName": "EmailVerificationEn",
-    "TextPart": "app/utilities/ses/template_files/email_verification_en.txt"
+    "TextPart": "app/utilities/ses/template_files/text/email_verification_en.txt"
   },
   {
-    "HtmlPart": "app/utilities/ses/template_files/email_verification_fr.html",
-    "SubjectPart": "Vérifiez votre adresse courriel",
+    "HtmlPart": "app/utilities/ses/template_files/compiled/email_verification_fr.html",
+    "SubjectPart": "{{first_name}}, confirmation de l'adresse courriel – Programme de soutien par les pairs Premier contact",
     "TemplateName": "EmailVerificationFr",
-    "TextPart": "app/utilities/ses/template_files/email_verification_fr.txt"
+    "TextPart": "app/utilities/ses/template_files/text/email_verification_fr.txt"
   },
   {
-    "HtmlPart": "app/utilities/ses/template_files/password_reset.html",
-    "SubjectPart": "Reset Your Password",
-    "TemplateName": "PasswordReset",
-    "TextPart": "app/utilities/ses/template_files/password_reset.txt"
+    "HtmlPart": "app/utilities/ses/template_files/compiled/password_reset_en.html",
+    "SubjectPart": "Reset Your Password - First Connection Peer Support Program",
+    "TemplateName": "PasswordResetEn",
+    "TextPart": "app/utilities/ses/template_files/text/password_reset_en.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/password_reset_fr.html",
+    "SubjectPart": "Réinitialisation du mot de passe – Programme de soutien par les pairs Premier contact",
+    "TemplateName": "PasswordResetFr",
+    "TextPart": "app/utilities/ses/template_files/text/password_reset_fr.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/intake_form_confirmation_en.html",
+    "SubjectPart": "We received your intake form - First Connection Peer Support Program",
+    "TemplateName": "IntakeFormConfirmationEn",
+    "TextPart": "app/utilities/ses/template_files/text/intake_form_confirmation_en.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/intake_form_confirmation_fr.html",
+    "SubjectPart": "Réception de votre formulaire de demande – Programme de soutien par les pairs Premier contact",
+    "TemplateName": "IntakeFormConfirmationFr",
+    "TextPart": "app/utilities/ses/template_files/text/intake_form_confirmation_fr.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/matches_available_en.html",
+    "SubjectPart": "{{first_name}}, you have new matches - First Connection Peer Support Program",
+    "TemplateName": "MatchesAvailableEn",
+    "TextPart": "app/utilities/ses/template_files/text/matches_available_en.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/matches_available_fr.html",
+    "SubjectPart": "{{first_name}}, nouveaux jumelages – Programme de soutien par les pairs Premier contact",
+    "TemplateName": "MatchesAvailableFr",
+    "TextPart": "app/utilities/ses/template_files/text/matches_available_fr.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/call_scheduled_en.html",
+    "SubjectPart": "Call confirmed with {{match_name}} @ {{date}} {{time}} {{timezone}} - First Connection Peer Support Program",
+    "TemplateName": "CallScheduledEn",
+    "TextPart": "app/utilities/ses/template_files/text/call_scheduled_en.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/call_scheduled_fr.html",
+    "SubjectPart": "Confirmation de l'appel avec {{match_name}} le {{date}} à {{time}} {{timezone}} – Programme de soutien par les pairs Premier contact",
+    "TemplateName": "CallScheduledFr",
+    "TextPart": "app/utilities/ses/template_files/text/call_scheduled_fr.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/participant_requested_new_times_en.html",
+    "SubjectPart": "{{participant_name}} requested new times - First Connection Peer Support Program",
+    "TemplateName": "ParticipantRequestedNewTimesEn",
+    "TextPart": "app/utilities/ses/template_files/text/participant_requested_new_times_en.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/participant_requested_new_times_fr.html",
+    "SubjectPart": "Demande d'une autre plage horaire par {{participant_name}} – Programme de soutien par les pairs Premier contact",
+    "TemplateName": "ParticipantRequestedNewTimesFr",
+    "TextPart": "app/utilities/ses/template_files/text/participant_requested_new_times_fr.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/volunteer_accepted_new_times_en.html",
+    "SubjectPart": "{{volunteer_name}} confirmed your new time @ {{date}} {{time}} {{timezone}} - First Connection Peer Support Program",
+    "TemplateName": "VolunteerAcceptedNewTimesEn",
+    "TextPart": "app/utilities/ses/template_files/text/volunteer_accepted_new_times_en.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/volunteer_accepted_new_times_fr.html",
+    "SubjectPart": "Confirmation de la nouvelle plage horaire, le {{date}} à {{time}} {{timezone}}, par {{volunteer_name}} – Programme de soutien par les pairs Premier contact",
+    "TemplateName": "VolunteerAcceptedNewTimesFr",
+    "TextPart": "app/utilities/ses/template_files/text/volunteer_accepted_new_times_fr.txt"
   }
 ]
