@@ -1,0 +1,20 @@
+Hi {{first_name}},
+
+Click the link to verify your email:
+
+{{verification_link}}
+
+If the link doesn't work, copy and paste it into your browser.
+
+This link will expire in 24 hours. If you didn't create an account, please ignore this email.
+
+---
+
+Stay informed. Connect with us today!
+
+Copyright © The Leukemia & Lymphoma Society of Canada.
+All rights reserved.
+Charitable registration: #10762 3654 RR0001
+
+NOTICE: Please do not reply to this email. It is automated from an unmonitored email address and will not be received or responded to. Please contact FirstConnection@bloodcancers.ca for any questions or concerns related to the First Connection Peer Support Program.
+

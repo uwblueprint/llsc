@@ -141,17 +141,225 @@ class SESEmailService:
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
-    def send_password_reset_email(self, to_email: str, reset_link: str) -> bool:
+    def send_password_reset_email(
+        self, to_email: str, reset_link: str, first_name: str = None, language: str = "en"
+    ) -> bool:
         """
         Send password reset email
 
         Args:
             to_email: Recipient email address
             reset_link: Firebase password reset link
+            first_name: User's first name (optional)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
 
         Returns:
             bool: True if email sent successfully, False otherwise
         """
-        template_data = {"reset_link": reset_link}
+        # Normalize language code
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
 
-        return self.send_templated_email(to_email, "PasswordReset", template_data)
+        template_name = "PasswordResetEn" if language == "en" else "PasswordResetFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        template_data = {"reset_link": reset_link, "first_name": first_name if first_name else "there"}
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_intake_form_confirmation_email(self, to_email: str, first_name: str = None, language: str = "en") -> bool:
+        """
+        Send intake form confirmation email
+
+        Args:
+            to_email: Recipient email address
+            first_name: User's first name (optional)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        # Normalize language code
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "IntakeFormConfirmationEn" if language == "en" else "IntakeFormConfirmationFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        template_data = {"first_name": first_name if first_name else "there"}
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_matches_available_email(
+        self, to_email: str, first_name: str = None, matches_url: str = None, language: str = "en"
+    ) -> bool:
+        """
+        Send matches available email
+
+        Args:
+            to_email: Recipient email address
+            first_name: User's first name (optional)
+            matches_url: URL to view matches (optional, defaults to dashboard)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        # Normalize language code
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "MatchesAvailableEn" if language == "en" else "MatchesAvailableFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        # Default to dashboard if no specific URL provided
+        if not matches_url:
+            matches_url = "http://localhost:3000/participant/dashboard"
+
+        template_data = {"first_name": first_name if first_name else "there", "matches_url": matches_url}
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_call_scheduled_email(
+        self,
+        to_email: str,
+        match_name: str,
+        date: str,
+        time: str,
+        timezone: str,
+        first_name: str = None,
+        scheduled_calls_url: str = None,
+        language: str = "en",
+    ) -> bool:
+        """
+        Send call scheduled confirmation email
+
+        Args:
+            to_email: Recipient email address
+            match_name: Name of the person they're meeting with
+            date: Date of the call
+            time: Time of the call
+            timezone: Timezone of the call
+            first_name: User's first name (optional)
+            scheduled_calls_url: URL to view scheduled calls (optional, defaults to dashboard)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        # Normalize language code
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "CallScheduledEn" if language == "en" else "CallScheduledFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        # Default to dashboard if no specific URL provided
+        if not scheduled_calls_url:
+            scheduled_calls_url = "http://localhost:3000/participant/dashboard"
+
+        template_data = {
+            "first_name": first_name if first_name else "there",
+            "match_name": match_name,
+            "date": date,
+            "time": time,
+            "timezone": timezone,
+            "scheduled_calls_url": scheduled_calls_url,
+        }
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_participant_requested_new_times_email(
+        self,
+        to_email: str,
+        participant_name: str,
+        first_name: str = None,
+        matches_url: str = None,
+        language: str = "en",
+    ) -> bool:
+        """
+        Send participant requested new times email (to volunteer)
+
+        Args:
+            to_email: Volunteer email address
+            participant_name: Name of the participant who requested new times
+            first_name: Volunteer's first name (optional)
+            matches_url: URL to view matches (optional, defaults to dashboard)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        # Normalize language code
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "ParticipantRequestedNewTimesEn" if language == "en" else "ParticipantRequestedNewTimesFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        # Default to dashboard if no specific URL provided
+        if not matches_url:
+            matches_url = "http://localhost:3000/volunteer/dashboard"
+
+        template_data = {
+            "first_name": first_name if first_name else "there",
+            "participant_name": participant_name,
+            "matches_url": matches_url,
+        }
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_volunteer_accepted_new_times_email(
+        self,
+        to_email: str,
+        volunteer_name: str,
+        date: str,
+        time: str,
+        timezone: str,
+        first_name: str = None,
+        scheduled_calls_url: str = None,
+        language: str = "en",
+    ) -> bool:
+        """
+        Send volunteer accepted new times email (to participant)
+
+        Args:
+            to_email: Participant email address
+            volunteer_name: Name of the volunteer who accepted new times
+            date: Date of the call
+            time: Time of the call
+            timezone: Timezone of the call
+            first_name: Participant's first name (optional)
+            scheduled_calls_url: URL to view scheduled calls (optional, defaults to dashboard)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        # Normalize language code
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "VolunteerAcceptedNewTimesEn" if language == "en" else "VolunteerAcceptedNewTimesFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        # Default to dashboard if no specific URL provided
+        if not scheduled_calls_url:
+            scheduled_calls_url = "http://localhost:3000/participant/dashboard"
+
+        template_data = {
+            "first_name": first_name if first_name else "there",
+            "volunteer_name": volunteer_name,
+            "date": date,
+            "time": time,
+            "timezone": timezone,
+            "scheduled_calls_url": scheduled_calls_url,
+        }
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)

@@ -1,0 +1,8 @@
+{% extends "base_email_en.html" %}
+
+{% block content %}
+<p class="MsoNormal">Hi {{first_name}},</p>
+<p>Click the link to verify your email: <a href="{{verification_link}}">{{verification_link}}</a></p>
+<p>If the link doesn&#39;t work, copy and paste it into your browser.</p>
+<p>This link will expire in 24 hours. If you didn&#39;t create an account, please ignore this email.</p>
+{% endblock %}

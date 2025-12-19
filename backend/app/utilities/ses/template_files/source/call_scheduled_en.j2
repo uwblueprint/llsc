@@ -1,0 +1,11 @@
+{% extends "base_email_en.html" %}
+
+{% block content %}
+<p class="MsoNormal">Hi {{first_name}},</p>
+<p>You're meeting with {{match_name}} on {{date}} @ {{time}} {{timezone}}. Please login to view their contact information.</p>
+<p align="center" style="text-align:center;margin-top:20px;margin-bottom:20px;">
+  <a href="{{scheduled_calls_url}}" style="background-color:#056067;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;font-weight:bold;display:inline-block;">
+    View scheduled calls
+  </a>
+</p>
+{% endblock %}
