@@ -49,14 +49,19 @@ class AuthService(IAuthService):
 
     def reset_password(self, email: str) -> None:
         try:
-            # Get user's first name if available
+            # Get user's first name and language if available
             first_name = None
+            language = "en"  # Default to English
             try:
                 # Try database first, then fall back to Firebase
                 try:
                     user = self.user_service.get_user_by_email(email)
-                    if user and user.first_name and user.first_name.strip():
-                        first_name = user.first_name.strip()
+                    if user:
+                        if user.first_name and user.first_name.strip():
+                            first_name = user.first_name.strip()
+                        # Get language from user (enum values are already "en" or "fr")
+                        if user.language:
+                            language = user.language.value
                 except Exception:
                     pass
 
@@ -80,8 +85,8 @@ class AuthService(IAuthService):
 
             reset_link = firebase_admin.auth.generate_password_reset_link(email, action_code_settings)
 
-            # Send via SES
-            email_sent = self.ses_email_service.send_password_reset_email(email, reset_link, first_name)
+            # Send via SES with language
+            email_sent = self.ses_email_service.send_password_reset_email(email, reset_link, first_name, language)
 
             if email_sent:
                 self.logger.info(f"Password reset email sent successfully to {email}")

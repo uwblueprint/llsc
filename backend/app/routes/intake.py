@@ -13,6 +13,7 @@ from app.models.User import FormStatus, Language
 from app.schemas.user import UserRole
 from app.services.implementations.form_processor import FormProcessor
 from app.utilities.db_utils import get_db
+from app.utilities.ses_email_service import SESEmailService
 
 # ===== Schemas =====
 
@@ -268,6 +269,21 @@ async def create_form_submission(
         # Commit everything together
         db.commit()
         db.refresh(db_submission)
+
+        # Send intake form confirmation email for intake forms
+        if form and form.type == "intake":
+            try:
+                ses_service = SESEmailService()
+                # Get language (enum values are already "en" or "fr")
+                language = target_user.language.value if target_user.language else "en"
+
+                first_name = target_user.first_name if target_user.first_name else None
+                ses_service.send_intake_form_confirmation_email(
+                    to_email=target_user.email, first_name=first_name, language=language
+                )
+            except Exception as e:
+                # Log error but don't fail the request
+                print(f"Failed to send intake form confirmation email: {str(e)}")
 
         # Build response dict
         response_dict = {

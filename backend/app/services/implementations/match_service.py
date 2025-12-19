@@ -24,6 +24,7 @@ from app.schemas.match import (
 )
 from app.schemas.time_block import TimeBlockEntity, TimeRange
 from app.schemas.user import UserRole
+from app.utilities.ses_email_service import SESEmailService
 from app.utilities.timezone_utils import get_timezone_from_abbreviation
 
 SCHEDULE_CLEANUP_STATUSES = {
@@ -94,6 +95,28 @@ class MatchService:
 
             for match in created_matches:
                 self.db.refresh(match)
+
+            # Send "matches available" email to each volunteer
+            ses_service = SESEmailService()
+            for match in created_matches:
+                try:
+                    volunteer = self.db.get(User, match.volunteer_id)
+                    if volunteer and volunteer.email:
+                        # Get volunteer's language (enum values are already "en" or "fr")
+                        language = volunteer.language.value if volunteer.language else "en"
+
+                        first_name = volunteer.first_name if volunteer.first_name else None
+                        matches_url = "http://localhost:3000/volunteer/dashboard"
+
+                        ses_service.send_matches_available_email(
+                            to_email=volunteer.email,
+                            first_name=first_name,
+                            matches_url=matches_url,
+                            language=language,
+                        )
+                except Exception as e:
+                    # Log error but don't fail the match creation
+                    self.logger.error(f"Failed to send matches available email to volunteer {match.volunteer_id}: {e}")
 
             responses = [self._build_match_response(match) for match in created_matches]
             return MatchCreateResponse(matches=responses)
@@ -258,6 +281,90 @@ class MatchService:
             self.db.commit()
             self.db.refresh(match)
 
+            # Send "call scheduled" email to both participant and volunteer
+            try:
+                # Load participant and volunteer with their data
+                participant = (
+                    self.db.query(User)
+                    .options(joinedload(User.user_data))
+                    .filter(User.id == match.participant_id)
+                    .first()
+                )
+                volunteer = (
+                    self.db.query(User)
+                    .options(joinedload(User.user_data))
+                    .filter(User.id == match.volunteer_id)
+                    .first()
+                )
+
+                if participant and volunteer and match.confirmed_time:
+                    ses_service = SESEmailService()
+                    confirmed_time_utc = match.confirmed_time.start_time
+
+                    # Get participant's timezone and language
+                    participant_tz = ZoneInfo("America/Toronto")  # Default to EST
+                    if participant.user_data and participant.user_data.timezone:
+                        tz_result = get_timezone_from_abbreviation(participant.user_data.timezone)
+                        if tz_result:
+                            participant_tz = tz_result
+
+                    participant_language = participant.language.value if participant.language else "en"
+
+                    # Get volunteer's timezone and language
+                    volunteer_tz = ZoneInfo("America/Toronto")  # Default to EST
+                    if volunteer.user_data and volunteer.user_data.timezone:
+                        tz_result = get_timezone_from_abbreviation(volunteer.user_data.timezone)
+                        if tz_result:
+                            volunteer_tz = tz_result
+
+                    volunteer_language = volunteer.language.value if volunteer.language else "en"
+
+                    # Convert time to participant's timezone
+                    participant_time = confirmed_time_utc.astimezone(participant_tz)
+                    participant_date = participant_time.strftime("%B %d, %Y")
+                    participant_time_str = participant_time.strftime("%I:%M %p")
+                    participant_tz_abbr = participant_time.strftime("%Z")
+
+                    # Convert time to volunteer's timezone
+                    volunteer_time = confirmed_time_utc.astimezone(volunteer_tz)
+                    volunteer_date = volunteer_time.strftime("%B %d, %Y")
+                    volunteer_time_str = volunteer_time.strftime("%I:%M %p")
+                    volunteer_tz_abbr = volunteer_time.strftime("%Z")
+
+                    # Send to participant
+                    if participant.email:
+                        ses_service.send_call_scheduled_email(
+                            to_email=participant.email,
+                            match_name=f"{volunteer.first_name} {volunteer.last_name}"
+                            if volunteer.first_name and volunteer.last_name
+                            else "Your volunteer",
+                            date=participant_date,
+                            time=participant_time_str,
+                            timezone=participant_tz_abbr,
+                            first_name=participant.first_name,
+                            scheduled_calls_url="http://localhost:3000/participant/dashboard",
+                            language=participant_language,
+                        )
+
+                    # Send to volunteer
+                    if volunteer.email:
+                        ses_service.send_call_scheduled_email(
+                            to_email=volunteer.email,
+                            match_name=f"{participant.first_name} {participant.last_name}"
+                            if participant.first_name and participant.last_name
+                            else "Your participant",
+                            date=volunteer_date,
+                            time=volunteer_time_str,
+                            timezone=volunteer_tz_abbr,
+                            first_name=volunteer.first_name,
+                            scheduled_calls_url="http://localhost:3000/volunteer/dashboard",
+                            language=volunteer_language,
+                        )
+
+            except Exception as e:
+                # Log error but don't fail the scheduling
+                self.logger.error(f"Failed to send call scheduled emails for match {match_id}: {e}")
+
             return self._build_match_detail(match)
 
         except HTTPException:
@@ -316,6 +423,35 @@ class MatchService:
             self.db.flush()
             self.db.commit()
             self.db.refresh(match)
+
+            # Send "participant requested new times" email to volunteer
+            try:
+                # Load participant and volunteer
+                participant = self.db.get(User, match.participant_id)
+                volunteer = self.db.get(User, match.volunteer_id)
+
+                if participant and volunteer and volunteer.email:
+                    # Get volunteer's language
+                    volunteer_language = volunteer.language.value if volunteer.language else "en"
+
+                    # Get participant's name for email
+                    participant_name = (
+                        f"{participant.first_name} {participant.last_name}"
+                        if participant.first_name and participant.last_name
+                        else "A participant"
+                    )
+
+                    ses_service = SESEmailService()
+                    ses_service.send_participant_requested_new_times_email(
+                        to_email=volunteer.email,
+                        participant_name=participant_name,
+                        first_name=volunteer.first_name,
+                        matches_url="http://localhost:3000/volunteer/dashboard",
+                        language=volunteer_language,
+                    )
+            except Exception as e:
+                # Log error but don't fail the request
+                self.logger.error(f"Failed to send participant requested new times email for match {match_id}: {e}")
 
             return self._build_match_detail(match)
 
@@ -529,6 +665,27 @@ class MatchService:
             self.db.flush()
             self.db.commit()
             self.db.refresh(match)
+
+            # Send "matches available" email to participant
+            try:
+                participant = match.participant
+                if participant and participant.email:
+                    # Get participant's language (enum values are already "en" or "fr")
+                    language = participant.language.value if participant.language else "en"
+
+                    first_name = participant.first_name if participant.first_name else None
+                    matches_url = "http://localhost:3000/participant/dashboard"
+
+                    ses_service = SESEmailService()
+                    ses_service.send_matches_available_email(
+                        to_email=participant.email,
+                        first_name=first_name,
+                        matches_url=matches_url,
+                        language=language,
+                    )
+            except Exception as e:
+                # Log error but don't fail the match acceptance
+                self.logger.error(f"Failed to send matches available email to participant {match.participant_id}: {e}")
 
             # Return match detail for participant view (includes suggested times)
             return self._build_match_detail(match)
