@@ -159,6 +159,12 @@ async def get_ranking_preferences(
                 )
 
         return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/admin/options", response_model=RankingOptionsResponse)
 async def get_ranking_options_admin(
     user_id: str = Query(..., description="User ID (UUID) to fetch options for"),
