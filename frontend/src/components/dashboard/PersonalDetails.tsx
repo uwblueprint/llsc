@@ -112,6 +112,8 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
     let value: string;
     if (fieldName === 'lovedOneBirthday') {
       value = lovedOneDetails?.birthday || '';
+    } else if (fieldName === 'lovedOneGender') {
+      value = lovedOneDetails?.gender || '';
     } else {
       const fieldValue = personalDetails[fieldName as keyof typeof personalDetails];
       value = typeof fieldValue === 'string' ? fieldValue : '';
@@ -128,6 +130,8 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
     let value: string;
     if (editingField === 'lovedOneBirthday') {
       value = lovedOneDetails?.birthday || '';
+    } else if (editingField === 'lovedOneGender') {
+      value = lovedOneDetails?.gender || '';
     } else {
       const fieldValue = personalDetails[editingField as keyof typeof personalDetails];
       value = typeof fieldValue === 'string' ? fieldValue : '';
@@ -259,8 +263,30 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
             label="Gender"
             value={personalDetails.gender}
             onChange={(e) => setPersonalDetails((prev) => ({ ...prev, gender: e.target.value }))}
+            onFocus={() => handleInputFocus('gender')}
+            onBlur={() => handleBlur('gender')}
             options={GENDER_DROPDOWN_OPTIONS}
           />
+          {editingField === 'gender' && (
+            <Box mt={2} display="flex" justifyContent="flex-end">
+              <Button
+                onClick={handleSave}
+                bg="#056067"
+                color="white"
+                px={4}
+                py={1}
+                borderRadius="6px"
+                fontFamily="'Open Sans', sans-serif"
+                fontWeight={600}
+                fontSize="0.875rem"
+                _hover={{ bg: '#044d52' }}
+                _active={{ bg: '#033e42' }}
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </Button>
+            </Box>
+          )}
 
           <ProfileDropdown
             label="Timezone"
@@ -437,9 +463,31 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                   setLovedOneDetails &&
                   setLovedOneDetails((prev) => (prev ? { ...prev, gender: e.target.value } : null))
                 }
+                onFocus={() => handleInputFocus('lovedOneGender')}
+                onBlur={() => handleBlur('lovedOneGender')}
                 options={GENDER_DROPDOWN_OPTIONS}
                 icon={<FiHeart size={14} color="#1D3448" />}
               />
+              {editingField === 'lovedOneGender' && (
+                <Box mt={2} display="flex" justifyContent="flex-end">
+                  <Button
+                    onClick={handleSave}
+                    bg="#056067"
+                    color="white"
+                    px={4}
+                    py={1}
+                    borderRadius="6px"
+                    fontFamily="'Open Sans', sans-serif"
+                    fontWeight={600}
+                    fontSize="0.875rem"
+                    _hover={{ bg: '#044d52' }}
+                    _active={{ bg: '#033e42' }}
+                    disabled={saving}
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </Button>
+                </Box>
+              )}
             </VStack>
           </Flex>
         </>

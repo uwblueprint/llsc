@@ -3,14 +3,20 @@ import baseAPIClient from './baseAPIClient';
 export interface BackendTask {
   id: string;
   participantId: string | null;
+  participantName: string | null;
+  participantEmail: string | null;
+  participantRoleId: number | null;
   type: 'intake_form_review' | 'volunteer_app_review' | 'profile_update' | 'matching';
   priority: 'no_status' | 'low' | 'medium' | 'high';
   status: 'pending' | 'in_progress' | 'completed';
   assigneeId: string | null;
+  assigneeName: string | null;
+  assigneeEmail: string | null;
   startDate: string; // ISO datetime string
   endDate: string | null; // ISO datetime string
   createdAt: string;
   updatedAt: string;
+  description: string | null;
 }
 
 export interface TaskListResponse {

@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session, joinedload
 
 from app.middleware.auth import has_roles
-from app.models import Experience, Treatment, User, UserData
+from app.models import Experience, Task, TaskType, Treatment, User, UserData
 from app.models.User import Language
 from app.models.VolunteerData import VolunteerData
 from app.schemas.user import UserRole
@@ -227,6 +227,50 @@ async def update_my_user_data(
         if not user_data:
             raise HTTPException(status_code=404, detail="User data not found")
 
+        # Capture old values for task description (before any updates)
+        old_values = {}
+        # Store simple fields
+        for field in [
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "city",
+            "province",
+            "postal_code",
+            "gender_identity",
+            "marital_status",
+            "has_kids",
+            "other_ethnic_group",
+            "gender_identity_custom",
+            "diagnosis",
+            "loved_one_gender_identity",
+            "loved_one_age",
+            "loved_one_diagnosis",
+            "has_blood_cancer",
+            "caring_for_someone",
+            "pronouns",
+            "ethnic_group",
+            "date_of_birth",
+            "date_of_diagnosis",
+            "loved_one_date_of_diagnosis",
+            "timezone",
+        ]:
+            old_values[field] = getattr(user_data, field, None)
+
+        # Store treatments/experiences
+        old_values["treatments"] = [t.name for t in user_data.treatments]
+        old_values["experiences"] = [e.name for e in user_data.experiences]
+        old_values["loved_one_treatments"] = [t.name for t in user_data.loved_one_treatments]
+        old_values["loved_one_experiences"] = [e.name for e in user_data.loved_one_experiences]
+
+        # Store language from User model
+        old_values["language"] = current_user.language.value if current_user.language else None
+
+        # Store volunteer_experience
+        volunteer_data = db.query(VolunteerData).filter(VolunteerData.user_id == current_user.id).first()
+        old_values["volunteer_experience"] = volunteer_data.experience if volunteer_data else None
+
         # Update simple fields
         simple_fields = [
             "first_name",
@@ -350,8 +394,118 @@ async def update_my_user_data(
                 )
                 db.add(volunteer_data)
 
+        # Commit the main profile update first
         db.commit()
         db.refresh(user_data)
+
+        # Create PROFILE_UPDATE task if user is not an admin (after main commit to avoid rollback)
+        if current_user.role and current_user.role.name != "admin":
+            try:
+                changes = []
+
+                # Compare simple fields
+                for field in update_data:
+                    if field in [
+                        "first_name",
+                        "last_name",
+                        "email",
+                        "phone",
+                        "city",
+                        "province",
+                        "postal_code",
+                        "gender_identity",
+                        "marital_status",
+                        "has_kids",
+                        "other_ethnic_group",
+                        "gender_identity_custom",
+                        "diagnosis",
+                        "loved_one_gender_identity",
+                        "loved_one_age",
+                        "loved_one_diagnosis",
+                        "has_blood_cancer",
+                        "caring_for_someone",
+                        "timezone",
+                    ]:
+                        new_value = getattr(user_data, field, None)
+                        old_value = old_values.get(field)
+                        if new_value != old_value:
+                            changes.append(f"{field}: '{old_value}' → '{new_value}'")
+
+                    # Compare array fields
+                    elif field in ["pronouns", "ethnic_group"]:
+                        new_value = getattr(user_data, field, [])
+                        old_value = old_values.get(field, [])
+                        if new_value != old_value:
+                            changes.append(f"{field}: {old_value} → {new_value}")
+
+                    # Compare date fields
+                    elif field in ["date_of_birth", "date_of_diagnosis", "loved_one_date_of_diagnosis"]:
+                        new_value = getattr(user_data, field, None)
+                        old_value = old_values.get(field)
+                        if new_value != old_value:
+                            new_str = new_value.isoformat() if new_value else None
+                            old_str = old_value.isoformat() if old_value else None
+                            changes.append(f"{field}: '{old_str}' → '{new_str}'")
+
+                    # Compare treatments/experiences
+                    elif field == "treatments":
+                        new_value = [t.name for t in user_data.treatments]
+                        old_value = old_values.get("treatments", [])
+                        if sorted(new_value) != sorted(old_value):
+                            changes.append(f"treatments: {old_value} → {new_value}")
+
+                    elif field == "experiences":
+                        new_value = [e.name for e in user_data.experiences]
+                        old_value = old_values.get("experiences", [])
+                        if sorted(new_value) != sorted(old_value):
+                            changes.append(f"experiences: {old_value} → {new_value}")
+
+                    elif field == "loved_one_treatments":
+                        new_value = [t.name for t in user_data.loved_one_treatments]
+                        old_value = old_values.get("loved_one_treatments", [])
+                        if sorted(new_value) != sorted(old_value):
+                            changes.append(f"loved_one_treatments: {old_value} → {new_value}")
+
+                    elif field == "loved_one_experiences":
+                        new_value = [e.name for e in user_data.loved_one_experiences]
+                        old_value = old_values.get("loved_one_experiences", [])
+                        if sorted(new_value) != sorted(old_value):
+                            changes.append(f"loved_one_experiences: {old_value} → {new_value}")
+
+                    # Compare language
+                    elif field == "language":
+                        new_value = current_user.language.value if current_user.language else None
+                        old_value = old_values.get("language")
+                        if new_value != old_value:
+                            changes.append(f"language: '{old_value}' → '{new_value}'")
+
+                    # Compare volunteer_experience
+                    elif field == "volunteer_experience":
+                        volunteer_data_check = (
+                            db.query(VolunteerData).filter(VolunteerData.user_id == current_user.id).first()
+                        )
+                        new_value = volunteer_data_check.experience if volunteer_data_check else None
+                        old_value = old_values.get("volunteer_experience")
+                        if new_value != old_value:
+                            changes.append(f"volunteer_experience: '{old_value}' → '{new_value}'")
+
+                # Only create task if there are actual changes
+                if changes:
+                    user_name = f"{user_data.first_name} {user_data.last_name}".strip() or user_data.email
+                    description = f"{user_name} updated profile: " + ", ".join(changes)
+
+                    profile_task = Task(
+                        participant_id=current_user.id,
+                        type=TaskType.PROFILE_UPDATE,
+                        description=description,
+                    )
+                    db.add(profile_task)
+                    # Commit task creation in isolated try/except to prevent rollback of profile update
+                    db.commit()
+            except Exception as e:
+                # Log error but don't fail the request - profile update already committed
+                db.rollback()  # Rollback only the task creation attempt
+                print(f"Failed to create PROFILE_UPDATE task: {str(e)}")
 
         # Return updated data using the same logic as GET
         availability_templates = [

@@ -1,7 +1,8 @@
 export interface Task {
   id: string;
   name: string;
-  type: 'Intake Form Review' | 'Volunteer App. Review' | 'Matching' | 'Profile Update';
+  participantId?: string;
+  type: 'Intake Form Review' | 'Ranking / Secondary App Review' | 'Matching' | 'Profile Update';
   startDate: string;
   endDate: string;
   priority: 'High' | 'Medium' | 'Low' | 'Add status';
@@ -28,7 +29,7 @@ export interface TaskCategory {
 
 export const categoryLabels: Record<Task['category'], string> = {
   intake_screening: 'Review intake forms and schedule screening call',
-  secondary_app: 'Review secondary application form',
+  secondary_app: 'Review secondary application / ranking forms',
   matching_requests: 'Participants requesting a match',
   profile_updates: 'User profile updates',
 };
@@ -42,7 +43,7 @@ export const taskCategories: TaskCategory[] = [
   },
   {
     id: '2',
-    name: 'Review secondary application form',
+    name: 'Review secondary application / ranking forms',
     categoryKey: 'secondary_app',
     bgColor: 'rgba(179, 206, 209, 0.3)',
   },

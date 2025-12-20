@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.orm import Session
 
 from app.middleware.auth import has_roles
 from app.schemas.user import UserRole
@@ -13,7 +14,9 @@ from app.schemas.volunteer_data import (
 )
 from app.services.implementations.user_service import UserService
 from app.services.implementations.volunteer_data_service import VolunteerDataService
+from app.utilities.db_utils import get_db
 from app.utilities.service_utils import get_user_service, get_volunteer_data_service
+from app.utilities.task_utils import create_volunteer_app_review_task
 
 router = APIRouter(
     prefix="/volunteer-data",
@@ -26,6 +29,7 @@ router = APIRouter(
 async def submit_volunteer_data(
     volunteer_data: VolunteerDataPublicSubmission,
     request: Request,
+    db: Session = Depends(get_db),
     volunteer_data_service: VolunteerDataService = Depends(get_volunteer_data_service),
     user_service: UserService = Depends(get_user_service),
     authorized: bool = has_roles([UserRole.VOLUNTEER, UserRole.ADMIN]),
@@ -47,7 +51,12 @@ async def submit_volunteer_data(
             references_json=volunteer_data.references_json,
             additional_comments=volunteer_data.additional_comments,
         )
-        return await volunteer_data_service.create_volunteer_data(create_request)
+        result = await volunteer_data_service.create_volunteer_data(create_request)
+
+        # Create task for admin review
+        create_volunteer_app_review_task(db, str(user_id), "secondary")
+
+        return result
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:

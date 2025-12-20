@@ -99,14 +99,20 @@ class TaskAssignRequest(BaseModel):
 class TaskResponse(BaseModel):
     """
     Response schema for task data.
+    Includes participant and assignee names for efficient loading.
     """
 
     id: UUID
     participant_id: Optional[UUID]
+    participant_name: Optional[str] = None
+    participant_email: Optional[str] = None
+    participant_role_id: Optional[int] = None
     type: TaskType
     priority: TaskPriority
     status: TaskStatus
     assignee_id: Optional[UUID]
+    assignee_name: Optional[str] = None
+    assignee_email: Optional[str] = None
     start_date: datetime
     end_date: Optional[datetime]
     created_at: datetime

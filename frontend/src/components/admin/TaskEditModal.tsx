@@ -4,7 +4,9 @@ import DatePicker from 'react-datepicker';
 import { FiX, FiChevronRight, FiTag, FiClock, FiFlag, FiUser, FiCheckCircle } from 'react-icons/fi';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getTypeColor, getPriorityColor } from '@/utils/taskHelpers';
+import { getParticipantLink } from '@/utils/taskLinkHelpers';
 import { Admin, Task, categoryLabels } from '@/types/adminTypes';
+import Link from 'next/link';
 import {
   bgOverlay,
   white,
@@ -235,15 +237,30 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
               >
                 Participant Name
               </Text>
-              <Text
-                fontFamily="'Open Sans', sans-serif"
-                fontWeight={400}
-                fontSize="22px"
-                lineHeight="1.3636363636363635em"
-                color={veniceBlue}
-              >
-                {task.name}
-              </Text>
+              {task.participantId ? (
+                <Link href={getParticipantLink(task)} style={{ textDecoration: 'none' }}>
+                  <Text
+                    fontFamily="'Open Sans', sans-serif"
+                    fontWeight={400}
+                    fontSize="22px"
+                    lineHeight="1.3636363636363635em"
+                    color={veniceBlue}
+                    _hover={{ textDecoration: 'underline', cursor: 'pointer' }}
+                  >
+                    {task.name}
+                  </Text>
+                </Link>
+              ) : (
+                <Text
+                  fontFamily="'Open Sans', sans-serif"
+                  fontWeight={400}
+                  fontSize="22px"
+                  lineHeight="1.3636363636363635em"
+                  color={veniceBlue}
+                >
+                  {task.name}
+                </Text>
+              )}
             </Flex>
 
             {/* Type Field */}

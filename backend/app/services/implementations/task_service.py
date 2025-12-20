@@ -4,7 +4,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.interfaces.task_service import ITaskService
 from app.models import Task, TaskPriority, TaskStatus, TaskType, User
@@ -60,13 +60,50 @@ class TaskService(ITaskService):
 
     async def get_task_by_id(self, task_id: UUID) -> TaskResponse:
         """
-        Get a task by its ID
+        Get a task by its ID with eager loading of participant and assignee
         """
         try:
-            task = self.db.query(Task).filter(Task.id == task_id).first()
+            task = (
+                self.db.query(Task)
+                .options(
+                    joinedload(Task.participant),
+                    joinedload(Task.assignee),
+                )
+                .filter(Task.id == task_id)
+                .first()
+            )
             if not task:
                 raise HTTPException(status_code=404, detail="Task not found")
-            return TaskResponse.model_validate(task)
+
+            # Extract participant and assignee names
+            participant_name = None
+            participant_email = None
+            participant_role_id = None
+            if task.participant:
+                first_name = task.participant.first_name or ""
+                last_name = task.participant.last_name or ""
+                participant_name = f"{first_name} {last_name}".strip() or task.participant.email
+                participant_email = task.participant.email
+                participant_role_id = task.participant.role_id
+
+            assignee_name = None
+            assignee_email = None
+            if task.assignee:
+                first_name = task.assignee.first_name or ""
+                last_name = task.assignee.last_name or ""
+                assignee_name = f"{first_name} {last_name}".strip() or task.assignee.email
+                assignee_email = task.assignee.email
+
+            # Create response dict with additional fields
+            task_dict = {
+                **{c.name: getattr(task, c.name) for c in task.__table__.columns},
+                "participant_name": participant_name,
+                "participant_email": participant_email,
+                "participant_role_id": participant_role_id,
+                "assignee_name": assignee_name,
+                "assignee_email": assignee_email,
+            }
+            return TaskResponse.model_validate(task_dict)
         except HTTPException:
             raise
         except Exception as e:
@@ -81,10 +118,14 @@ class TaskService(ITaskService):
         assignee_id: Optional[UUID] = None,
     ) -> List[TaskResponse]:
         """
-        Get all tasks with optional filters
+        Get all tasks with optional filters.
+        Uses eager loading to fetch participant and assignee data in a single query.
         """
         try:
-            query = self.db.query(Task)
+            query = self.db.query(Task).options(
+                joinedload(Task.participant),
+                joinedload(Task.assignee),
+            )
 
             # Apply filters if provided
             if status:
@@ -109,7 +150,42 @@ class TaskService(ITaskService):
                 query = query.filter(Task.assignee_id == assignee_id)
 
             tasks = query.order_by(Task.created_at.desc()).all()
-            return [TaskResponse.model_validate(task) for task in tasks]
+
+            # Build TaskResponse with participant and assignee names
+            task_responses = []
+            for task in tasks:
+                # Extract participant name, email, and role_id if available
+                participant_name = None
+                participant_email = None
+                participant_role_id = None
+                if task.participant:
+                    first_name = task.participant.first_name or ""
+                    last_name = task.participant.last_name or ""
+                    participant_name = f"{first_name} {last_name}".strip() or task.participant.email
+                    participant_email = task.participant.email
+                    participant_role_id = task.participant.role_id
+
+                # Extract assignee name and email if available
+                assignee_name = None
+                assignee_email = None
+                if task.assignee:
+                    first_name = task.assignee.first_name or ""
+                    last_name = task.assignee.last_name or ""
+                    assignee_name = f"{first_name} {last_name}".strip() or task.assignee.email
+                    assignee_email = task.assignee.email
+
+                # Create response dict with additional fields
+                task_dict = {
+                    **{c.name: getattr(task, c.name) for c in task.__table__.columns},
+                    "participant_name": participant_name,
+                    "participant_email": participant_email,
+                    "participant_role_id": participant_role_id,
+                    "assignee_name": assignee_name,
+                    "assignee_email": assignee_email,
+                }
+                task_responses.append(TaskResponse.model_validate(task_dict))
+
+            return task_responses
         except HTTPException:
             raise
         except Exception as e:
