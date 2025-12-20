@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Union
 
+from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,6 +25,7 @@ from .routes import (
     user_data,
     volunteer_data,
 )
+from .services.implementations.match_completion_service import MatchCompletionService
 from .utilities.constants import LOGGER_NAME
 from .utilities.firebase_init import initialize_firebase
 from .utilities.ses.ses_init import ensure_ses_templates
@@ -55,7 +57,36 @@ async def lifespan(_: FastAPI):
     ensure_ses_templates()
     models.run_migrations()
     initialize_firebase()
+
+    # Initialize and start the background scheduler for match completion
+    # IMPORTANT: This scheduler runs in-process. When using uvicorn with --reload or multiple
+    # workers (--workers N), each process will spawn its own scheduler, causing duplicate job
+    # execution. For production, either:
+    #   1. Run with a single worker (recommended for this app): uvicorn app.server:app --workers 1
+    #   2. Use a distributed task queue (Celery + Redis) for multi-worker deployments
+    #   3. Use a distributed lock mechanism to ensure only one process runs the job
+    # The auto-completion logic is idempotent, so duplicate runs are safe but wasteful.
+    scheduler = BackgroundScheduler()
+    match_completion_service = MatchCompletionService()
+
+    # Schedule match auto-completion job to run every 15 minutes at fixed times (:00, :15, :30, :45)
+    scheduler.add_job(
+        match_completion_service.auto_complete_matches,
+        trigger="cron",
+        minute="0,15,30,45",  # Run at :00, :15, :30, :45 every hour
+        id="auto_complete_matches",
+        name="Auto-complete matches after scheduled calls",
+        replace_existing=True,
+    )
+
+    scheduler.start()
+    log.info("Background scheduler started - match auto-completion job runs at :00, :15, :30, :45 every hour")
+
     yield
+
+    # Shutdown scheduler gracefully
+    log.info("Shutting down scheduler...")
+    scheduler.shutdown()
     log.info("Shutting down...")
 
 
