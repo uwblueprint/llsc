@@ -8,7 +8,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.middleware.auth import has_roles
-from app.models import Experience, Form, FormSubmission, Treatment, User
+from app.models import Experience, Form, FormSubmission, Task, TaskType, Treatment, User
 from app.models.User import FormStatus, Language
 from app.schemas.user import UserRole
 from app.services.implementations.form_processor import FormProcessor
@@ -284,6 +284,27 @@ async def create_form_submission(
             except Exception as e:
                 # Log error but don't fail the request
                 print(f"Failed to send intake form confirmation email: {str(e)}")
+
+        # Create INTAKE_FORM_REVIEW task for intake forms and role change forms
+        if form and form.type in ("intake", "become_participant", "become_volunteer"):
+            try:
+                user_name = f"{target_user.first_name} {target_user.last_name}".strip() or target_user.email
+                form_type_label = {
+                    "intake": "intake form",
+                    "become_participant": "become participant form",
+                    "become_volunteer": "become volunteer form",
+                }.get(form.type, "form")
+
+                intake_task = Task(
+                    participant_id=target_user.id,
+                    type=TaskType.INTAKE_FORM_REVIEW,
+                    description=f"{user_name} submitted {form_type_label} for review",
+                )
+                db.add(intake_task)
+                db.commit()
+            except Exception as e:
+                # Log error but don't fail the request
+                print(f"Failed to create INTAKE_FORM_REVIEW task: {str(e)}")
 
         # Build response dict
         response_dict = {

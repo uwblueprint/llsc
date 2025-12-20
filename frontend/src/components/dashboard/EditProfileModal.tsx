@@ -249,6 +249,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
     } else if (field === 'lovedOneBirthday') {
       // Loved one's age/birthday - store as is since backend expects lovedOneAge as string
       updateData.loved_one_age = value;
+    } else if (field === 'lovedOneGender') {
+      updateData.loved_one_gender_identity = value;
     }
 
     const result = await updateUserData(updateData);

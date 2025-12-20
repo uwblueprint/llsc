@@ -10,7 +10,10 @@ from app.models import Experience, Quality, Treatment, User
 from app.models.RankingPreference import RankingPreference
 from app.schemas.user import UserRole
 from app.services.implementations.ranking_service import RankingService
+from app.services.implementations.user_service import UserService
 from app.utilities.db_utils import get_db
+from app.utilities.service_utils import get_user_service
+from app.utilities.task_utils import create_volunteer_app_review_task
 
 
 class StaticQualityOption(BaseModel):
@@ -66,6 +69,7 @@ async def put_ranking_preferences(
     target: str = Query(..., pattern="^(patient|caregiver)$"),
     items: List[PreferenceItem] = [],
     db: Session = Depends(get_db),
+    user_service: UserService = Depends(get_user_service),
     authorized: bool = has_roles([UserRole.PARTICIPANT, UserRole.ADMIN]),
 ) -> None:
     try:
@@ -74,6 +78,15 @@ async def put_ranking_preferences(
         # Convert Pydantic models to dicts
         payload = [i.model_dump() for i in items]
         service.save_preferences(user_auth_id=user_auth_id, target=target, items=payload)
+
+        # Create task for admin review
+        try:
+            user_id_str = await user_service.get_user_id_by_auth_id(user_auth_id)
+            create_volunteer_app_review_task(db, user_id_str, "ranking")
+        except Exception:
+            # Log error but don't fail the request
+            pass
+
         return None
     except HTTPException:
         raise

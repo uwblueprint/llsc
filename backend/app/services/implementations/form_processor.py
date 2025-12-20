@@ -21,6 +21,7 @@ from app.models import (
     RankingPreference,
     Role,
     Task,
+    TaskType,
     User,
     suggested_times,
 )
@@ -133,6 +134,19 @@ class FormProcessor:
         # Update form_status to completed after ranking form is approved
         if user.form_status in (FormStatus.RANKING_TODO, FormStatus.RANKING_SUBMITTED):
             user.form_status = FormStatus.COMPLETED
+
+            # Create a MATCHING task so admins know this participant is ready to be matched
+            try:
+                matching_task = Task(
+                    participant_id=user.id,
+                    type=TaskType.MATCHING,
+                    description=f"Participant {user.first_name} {user.last_name} completed ranking form and is ready for matching",
+                )
+                self.db.add(matching_task)
+                self.logger.info(f"Created MATCHING task for user {user.id}")
+            except Exception as e:
+                # Log error but don't fail the ranking form approval
+                self.logger.error(f"Failed to create MATCHING task for user {user.id}: {str(e)}")
 
     def _process_secondary_form(self, submission: FormSubmission, user: User) -> None:
         """Process secondary application form - creates VolunteerData."""

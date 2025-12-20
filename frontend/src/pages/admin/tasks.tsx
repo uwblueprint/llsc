@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Flex, Text } from '@chakra-ui/react';
+import { useRouter } from 'next/router';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { UserRole } from '@/types/authTypes';
 import { TaskRow } from '@/components/admin/TaskRow';
@@ -20,7 +21,7 @@ import {
   FiChevronRight,
 } from 'react-icons/fi';
 import { taskAPIClient, BackendTask } from '@/APIClients/taskAPIClient';
-import { getAdmins, getUserById, UserResponse, getCurrentUser } from '@/APIClients/authAPIClient';
+import { getAdmins, UserResponse, getCurrentUser } from '@/APIClients/authAPIClient';
 import {
   DndContext,
   DragOverlay,
@@ -78,7 +79,7 @@ const mapAPITaskToFrontend = (
   // Map backend type to frontend type
   const typeMap: Record<string, Task['type']> = {
     intake_form_review: 'Intake Form Review',
-    volunteer_app_review: 'Volunteer App. Review',
+    volunteer_app_review: 'Ranking / Secondary App Review',
     profile_update: 'Profile Update',
     matching: 'Matching',
   };
@@ -108,18 +109,21 @@ const mapAPITaskToFrontend = (
     return `${day}/${month}/${year}`;
   };
 
-  // Get participant name
-  const participantName = participant
-    ? `${participant.firstName || ''} ${participant.lastName || ''}`.trim() || participant.email
-    : 'Unknown Participant';
+  // Get participant name - use from API response if available, otherwise from participant object
+  const participantName = apiTask.participantName
+    ? apiTask.participantName
+    : participant
+      ? `${participant.firstName || ''} ${participant.lastName || ''}`.trim() || participant.email
+      : 'Unknown Participant';
 
-  // Determine user type from participant's role
+  // Determine user type from participant's role (default to Participant if not available)
   const userType: 'Participant' | 'Volunteer' =
     participant && participant.roleId === 2 ? 'Volunteer' : 'Participant';
 
   return {
     id: apiTask.id,
     name: participantName,
+    participantId: apiTask.participantId || undefined,
     startDate: formatDate(apiTask.startDate),
     endDate: apiTask.endDate ? formatDate(apiTask.endDate) : formatDate(apiTask.startDate),
     priority: priorityMap[apiTask.priority] || 'Add status',
@@ -128,7 +132,7 @@ const mapAPITaskToFrontend = (
     completed: apiTask.status === 'completed',
     userType,
     category: categoryMap[apiTask.type] || 'intake_screening',
-    description: `Task for ${typeMap[apiTask.type]}`,
+    description: apiTask.description || `Task for ${typeMap[apiTask.type]}`,
   };
 };
 
@@ -159,6 +163,7 @@ interface FilterState {
 }
 
 export default function AdminTasks() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('Unassigned');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [admins, setAdmins] = useState<Admin[]>([]);
@@ -207,8 +212,12 @@ export default function AdminTasks() {
       try {
         setLoading(true);
 
-        // Fetch admins
-        const adminsResponse = await getAdmins();
+        // Fetch admins and tasks in parallel for better performance
+        const [adminsResponse, tasksResponse] = await Promise.all([
+          getAdmins(),
+          taskAPIClient.getTasks(),
+        ]);
+
         const mappedAdmins = adminsResponse.users.map((user, index) => mapUserToAdmin(user, index));
         setAdmins(mappedAdmins);
 
@@ -234,39 +243,16 @@ export default function AdminTasks() {
           }
         }
 
-        // Fetch tasks
-        const tasksResponse = await taskAPIClient.getTasks();
-
-        // Fetch participants for tasks
-        const participantIds = [
-          ...new Set(
-            tasksResponse.tasks
-              .filter((t) => t.participantId)
-              .map((t) => t.participantId as string),
-          ),
-        ];
-
-        const participantMap = new Map<string, UserResponse>();
-        await Promise.all(
-          participantIds.map(async (id) => {
-            try {
-              const participant = await getUserById(id);
-              participantMap.set(id, participant);
-            } catch (error) {
-              console.error(`Error fetching participant ${id}:`, error);
-            }
-          }),
-        );
-
         // Map tasks to frontend format
+        // Participant and assignee names are now included in the API response via eager loading
         const mappedTasks = tasksResponse.tasks.map((apiTask) => {
-          const participant = apiTask.participantId
-            ? participantMap.get(apiTask.participantId)
-            : null;
+          // Assignee is already in the admins list, so we can find it there
           const assignee = apiTask.assigneeId
             ? mappedAdmins.find((a) => a.id === apiTask.assigneeId)
             : null;
-          return mapAPITaskToFrontend(apiTask, participant, assignee);
+
+          // Participant name is now included in the API response, so we don't need to fetch it
+          return mapAPITaskToFrontend(apiTask, null, assignee);
         });
 
         setTasks(mappedTasks);

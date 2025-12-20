@@ -5,6 +5,8 @@ import { FiUserPlus } from 'react-icons/fi';
 import { Task, Admin } from '@/types/adminTypes';
 import { getTypeColor, getPriorityColor } from '@/utils/taskHelpers';
 import { gray300, textPrimary, black } from '@/constants/colors';
+import { getParticipantLink } from '@/utils/taskLinkHelpers';
+import Link from 'next/link';
 
 interface TaskRowProps {
   task: Task;
@@ -35,14 +37,32 @@ export const TaskRow: React.FC<TaskRowProps> = ({
           <Box onClick={(e) => e.stopPropagation()}>
             <Checkbox checked={task.completed} onCheckedChange={() => onCheck(task.id)} />
           </Box>
-          <Text
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={400}
-            fontSize="20px"
-            color={textPrimary}
-          >
-            {task.name}
-          </Text>
+          {task.participantId ? (
+            <Link
+              href={getParticipantLink(task)}
+              onClick={(e) => e.stopPropagation()}
+              style={{ textDecoration: 'none' }}
+            >
+              <Text
+                fontFamily="'Open Sans', sans-serif"
+                fontWeight={400}
+                fontSize="20px"
+                color={textPrimary}
+                _hover={{ textDecoration: 'underline', cursor: 'pointer' }}
+              >
+                {task.name}
+              </Text>
+            </Link>
+          ) : (
+            <Text
+              fontFamily="'Open Sans', sans-serif"
+              fontWeight={400}
+              fontSize="20px"
+              color={textPrimary}
+            >
+              {task.name}
+            </Text>
+          )}
         </Flex>
 
         {/* Type Badge (conditional) */}
