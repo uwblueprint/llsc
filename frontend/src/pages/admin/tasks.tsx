@@ -116,9 +116,14 @@ const mapAPITaskToFrontend = (
       ? `${participant.firstName || ''} ${participant.lastName || ''}`.trim() || participant.email
       : 'Unknown Participant';
 
-  // Determine user type from participant's role (default to Participant if not available)
+  // Determine user type from participant's role
+  // Use role_id from API response if available, otherwise fall back to participant object
   const userType: 'Participant' | 'Volunteer' =
-    participant && participant.roleId === 2 ? 'Volunteer' : 'Participant';
+    apiTask.participantRoleId === 2
+      ? 'Volunteer'
+      : participant && participant.roleId === 2
+        ? 'Volunteer'
+        : 'Participant';
 
   return {
     id: apiTask.id,

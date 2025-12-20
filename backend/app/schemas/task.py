@@ -106,6 +106,7 @@ class TaskResponse(BaseModel):
     participant_id: Optional[UUID]
     participant_name: Optional[str] = None
     participant_email: Optional[str] = None
+    participant_role_id: Optional[int] = None
     type: TaskType
     priority: TaskPriority
     status: TaskStatus

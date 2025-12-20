@@ -78,11 +78,13 @@ class TaskService(ITaskService):
             # Extract participant and assignee names
             participant_name = None
             participant_email = None
+            participant_role_id = None
             if task.participant:
                 first_name = task.participant.first_name or ""
                 last_name = task.participant.last_name or ""
                 participant_name = f"{first_name} {last_name}".strip() or task.participant.email
                 participant_email = task.participant.email
+                participant_role_id = task.participant.role_id
 
             assignee_name = None
             assignee_email = None
@@ -97,6 +99,7 @@ class TaskService(ITaskService):
                 **{c.name: getattr(task, c.name) for c in task.__table__.columns},
                 "participant_name": participant_name,
                 "participant_email": participant_email,
+                "participant_role_id": participant_role_id,
                 "assignee_name": assignee_name,
                 "assignee_email": assignee_email,
             }
@@ -151,14 +154,16 @@ class TaskService(ITaskService):
             # Build TaskResponse with participant and assignee names
             task_responses = []
             for task in tasks:
-                # Extract participant name and email if available
+                # Extract participant name, email, and role_id if available
                 participant_name = None
                 participant_email = None
+                participant_role_id = None
                 if task.participant:
                     first_name = task.participant.first_name or ""
                     last_name = task.participant.last_name or ""
                     participant_name = f"{first_name} {last_name}".strip() or task.participant.email
                     participant_email = task.participant.email
+                    participant_role_id = task.participant.role_id
 
                 # Extract assignee name and email if available
                 assignee_name = None
@@ -174,6 +179,7 @@ class TaskService(ITaskService):
                     **{c.name: getattr(task, c.name) for c in task.__table__.columns},
                     "participant_name": participant_name,
                     "participant_email": participant_email,
+                    "participant_role_id": participant_role_id,
                     "assignee_name": assignee_name,
                     "assignee_email": assignee_email,
                 }
