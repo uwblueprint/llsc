@@ -88,5 +88,29 @@
     "SubjectPart": "Confirmation de la nouvelle plage horaire, le {{date}} à {{time}} {{timezone}}, par {{volunteer_name}} – Programme de soutien par les pairs Premier contact",
     "TemplateName": "VolunteerAcceptedNewTimesFr",
     "TextPart": "app/utilities/ses/template_files/text/volunteer_accepted_new_times_fr.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/participant_cancelled_en.html",
+    "SubjectPart": "Call cancelled by {{participant_name}} - First Connection Peer Support Program",
+    "TemplateName": "ParticipantCancelledEn",
+    "TextPart": "app/utilities/ses/template_files/text/participant_cancelled_en.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/participant_cancelled_fr.html",
+    "SubjectPart": "Appel annulé par {{participant_name}} – Programme de soutien par les pairs Premier contact",
+    "TemplateName": "ParticipantCancelledFr",
+    "TextPart": "app/utilities/ses/template_files/text/participant_cancelled_fr.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/volunteer_cancelled_en.html",
+    "SubjectPart": "Call cancelled by {{volunteer_name}} - First Connection Peer Support Program",
+    "TemplateName": "VolunteerCancelledEn",
+    "TextPart": "app/utilities/ses/template_files/text/volunteer_cancelled_en.txt"
+  },
+  {
+    "HtmlPart": "app/utilities/ses/template_files/compiled/volunteer_cancelled_fr.html",
+    "SubjectPart": "Appel annulé par {{volunteer_name}} – Programme de soutien par les pairs Premier contact",
+    "TemplateName": "VolunteerCancelledFr",
+    "TextPart": "app/utilities/ses/template_files/text/volunteer_cancelled_fr.txt"
   }
 ]

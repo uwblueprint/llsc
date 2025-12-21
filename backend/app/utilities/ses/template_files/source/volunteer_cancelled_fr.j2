@@ -1,0 +1,12 @@
+{% extends "base_email_fr.html" %}
+
+{% block content %}
+<p class="MsoNormal">Bonjour {{first_name}},</p>
+<p>{{volunteer_name}} a annulé votre appel planifié le {{date}} à {{time}} {{timezone}}.</p>
+<p align="center" style="text-align:center;margin-top:20px;margin-bottom:20px;">
+  <a href="{{request_matches_url}}" style="background-color:#056067;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;font-weight:bold;display:inline-block;">
+    Demander de nouvelles correspondances
+  </a>
+</p>
+{% endblock %}
+
