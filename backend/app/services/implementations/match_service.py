@@ -483,7 +483,62 @@ class MatchService:
 
             self._set_match_status(match, "cancelled_by_participant")
 
-            # TODO: send particpant an email saying that the match has been cancelled
+            # Send cancellation email to volunteer before deleting match
+            try:
+                # Load volunteer with their data before deleting match
+                volunteer = (
+                    self.db.query(User)
+                    .options(joinedload(User.user_data))
+                    .filter(User.id == match.volunteer_id)
+                    .first()
+                )
+                participant = (
+                    self.db.query(User)
+                    .options(joinedload(User.user_data))
+                    .filter(User.id == match.participant_id)
+                    .first()
+                )
+
+                if volunteer and participant and match.confirmed_time:
+                    ses_service = SESEmailService()
+                    confirmed_time_utc = match.confirmed_time.start_time
+
+                    # Get volunteer's timezone and language
+                    volunteer_tz = ZoneInfo("America/Toronto")  # Default to EST
+                    if volunteer.user_data and volunteer.user_data.timezone:
+                        tz_result = get_timezone_from_abbreviation(volunteer.user_data.timezone)
+                        if tz_result:
+                            volunteer_tz = tz_result
+
+                    volunteer_language = volunteer.language.value if volunteer.language else "en"
+
+                    # Convert time to volunteer's timezone
+                    volunteer_time = confirmed_time_utc.astimezone(volunteer_tz)
+                    volunteer_date = volunteer_time.strftime("%B %d, %Y")
+                    volunteer_time_str = volunteer_time.strftime("%I:%M %p")
+                    volunteer_tz_abbr = volunteer_time.strftime("%Z")
+
+                    # Send to volunteer
+                    if volunteer.email:
+                        participant_name = (
+                            f"{participant.first_name} {participant.last_name}"
+                            if participant.first_name and participant.last_name
+                            else participant.first_name or "The participant"
+                        )
+                        ses_service.send_participant_cancelled_email(
+                            to_email=volunteer.email,
+                            participant_name=participant_name,
+                            date=volunteer_date,
+                            time=volunteer_time_str,
+                            timezone=volunteer_tz_abbr,
+                            first_name=volunteer.first_name,
+                            dashboard_url="http://localhost:3000/volunteer/dashboard",
+                            language=volunteer_language,
+                        )
+            except Exception as e:
+                # Log error but don't fail the cancellation
+                self.logger.error(f"Failed to send participant cancelled email for match {match_id}: {e}")
+
             # Soft-delete the match when cancelled (cleans up time blocks and sets deleted_at)
             self._delete_match(match)
 
@@ -518,6 +573,62 @@ class MatchService:
 
             if acting_volunteer_id and match.volunteer_id != acting_volunteer_id:
                 raise HTTPException(status_code=403, detail="Cannot modify another volunteer's match")
+
+            # Send cancellation email to participant before clearing confirmed time
+            try:
+                # Load participant and volunteer with their data before clearing time
+                participant = (
+                    self.db.query(User)
+                    .options(joinedload(User.user_data))
+                    .filter(User.id == match.participant_id)
+                    .first()
+                )
+                volunteer = (
+                    self.db.query(User)
+                    .options(joinedload(User.user_data))
+                    .filter(User.id == match.volunteer_id)
+                    .first()
+                )
+
+                if participant and volunteer and match.confirmed_time:
+                    ses_service = SESEmailService()
+                    confirmed_time_utc = match.confirmed_time.start_time
+
+                    # Get participant's timezone and language
+                    participant_tz = ZoneInfo("America/Toronto")  # Default to EST
+                    if participant.user_data and participant.user_data.timezone:
+                        tz_result = get_timezone_from_abbreviation(participant.user_data.timezone)
+                        if tz_result:
+                            participant_tz = tz_result
+
+                    participant_language = participant.language.value if participant.language else "en"
+
+                    # Convert time to participant's timezone
+                    participant_time = confirmed_time_utc.astimezone(participant_tz)
+                    participant_date = participant_time.strftime("%B %d, %Y")
+                    participant_time_str = participant_time.strftime("%I:%M %p")
+                    participant_tz_abbr = participant_time.strftime("%Z")
+
+                    # Send to participant
+                    if participant.email:
+                        volunteer_name = (
+                            f"{volunteer.first_name} {volunteer.last_name}"
+                            if volunteer.first_name and volunteer.last_name
+                            else volunteer.first_name or "Your volunteer"
+                        )
+                        ses_service.send_volunteer_cancelled_email(
+                            to_email=participant.email,
+                            volunteer_name=volunteer_name,
+                            date=participant_date,
+                            time=participant_time_str,
+                            timezone=participant_tz_abbr,
+                            first_name=participant.first_name,
+                            request_matches_url="http://localhost:3000/participant/dashboard",
+                            language=participant_language,
+                        )
+            except Exception as e:
+                # Log error but don't fail the cancellation
+                self.logger.error(f"Failed to send volunteer cancelled email for match {match_id}: {e}")
 
             self._clear_confirmed_time(match)
             self._set_match_status(match, "cancelled_by_volunteer")

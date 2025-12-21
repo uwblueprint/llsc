@@ -363,3 +363,103 @@ class SESEmailService:
         }
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_participant_cancelled_email(
+        self,
+        to_email: str,
+        participant_name: str,
+        date: str,
+        time: str,
+        timezone: str,
+        first_name: str = None,
+        dashboard_url: str = None,
+        language: str = "en",
+    ) -> bool:
+        """
+        Send participant cancelled call email (to volunteer)
+
+        Args:
+            to_email: Volunteer email address
+            participant_name: Name of the participant who cancelled
+            date: Date of the cancelled call
+            time: Time of the cancelled call
+            timezone: Timezone of the cancelled call
+            first_name: Volunteer's first name (optional)
+            dashboard_url: URL to volunteer dashboard (optional, defaults to dashboard)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        # Normalize language code
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "ParticipantCancelledEn" if language == "en" else "ParticipantCancelledFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        # Default to dashboard if no specific URL provided
+        if not dashboard_url:
+            dashboard_url = "http://localhost:3000/volunteer/dashboard"
+
+        template_data = {
+            "first_name": first_name if first_name else "there",
+            "participant_name": participant_name,
+            "date": date,
+            "time": time,
+            "timezone": timezone,
+            "dashboard_url": dashboard_url,
+        }
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_volunteer_cancelled_email(
+        self,
+        to_email: str,
+        volunteer_name: str,
+        date: str,
+        time: str,
+        timezone: str,
+        first_name: str = None,
+        request_matches_url: str = None,
+        language: str = "en",
+    ) -> bool:
+        """
+        Send volunteer cancelled call email (to participant)
+
+        Args:
+            to_email: Participant email address
+            volunteer_name: Name of the volunteer who cancelled
+            date: Date of the cancelled call
+            time: Time of the cancelled call
+            timezone: Timezone of the cancelled call
+            first_name: Participant's first name (optional)
+            request_matches_url: URL to request new matches (optional, defaults to dashboard)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        # Normalize language code
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "VolunteerCancelledEn" if language == "en" else "VolunteerCancelledFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        # Default to dashboard if no specific URL provided
+        if not request_matches_url:
+            request_matches_url = "http://localhost:3000/participant/dashboard"
+
+        template_data = {
+            "first_name": first_name if first_name else "there",
+            "volunteer_name": volunteer_name,
+            "date": date,
+            "time": time,
+            "timezone": timezone,
+            "request_matches_url": request_matches_url,
+        }
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
