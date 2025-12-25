@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
+import { Box, Heading, Text, Button, Input, VStack } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
+import { FormLabel } from '@/components/ui/form-label';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
 import { login } from '@/APIClients/authAPIClient';
-
-const veniceBlue = '#1d3448';
-const fieldGray = '#414651';
-const teal = '#056067';
+import { AuthPageLayout } from '@/components/layout';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,201 +47,127 @@ export default function LoginPage() {
   };
 
   return (
-    <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Left: Login Form */}
-      <Flex
-        flex="1"
-        align="center"
-        justify="center"
-        px={{ base: 4, md: 12 }}
-        py={{ base: 16, md: 0 }}
-        bg="white"
-        minH={{ base: '60vh', md: '100vh' }}
-      >
-        <Box w="full" maxW="520px">
+    <AuthPageLayout
+      illustration={{ src: '/login.png', alt: 'First Connection Peer Support', priority: true }}
+    >
+      <VStack spacing={{ base: 6, md: 8 }} align="stretch">
+        <Box>
           <Heading
-            as="h1"
-            fontFamily="'Open Sans', sans-serif"
             fontWeight={600}
-            color={veniceBlue}
-            fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}
-            lineHeight="50px"
-            mb={2}
+            color="brand.navy"
+            fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}
+            lineHeight="1.25"
           >
-            First Connection Peer
-            <br />
-            Support Program
+            First Connection Peer Support Program
           </Heading>
-          <Heading
-            as="h2"
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={600}
-            color={veniceBlue}
-            fontSize={{ base: 'xl', md: '2xl' }}
-            mb={6}
-            mt={8}
-          >
+          <Heading fontWeight={600} color="brand.navy" fontSize={{ base: 'xl', md: '2xl' }} mt={4}>
             {isFromEmailVerification ? 'Thank you for confirming!' : 'Welcome Back!'}
           </Heading>
-          <Text
-            mb={8}
-            color={veniceBlue}
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={400}
-            fontSize="lg"
-          >
+          <Text mt={3} color="brand.navy" fontWeight={400} fontSize={{ base: 'md', md: 'lg' }}>
             {isFromEmailVerification
               ? 'Your email has been successfully verified. Please sign in again to continue.'
               : 'Sign in with your email and password.'}
           </Text>
-
-          <form onSubmit={handleSubmit}>
-            <Field
-              label={
-                <span
-                  style={{
-                    color: fieldGray,
-                    fontWeight: 600,
-                    fontSize: 14,
-                    fontFamily: 'Open Sans, sans-serif',
-                  }}
-                >
-                  Email
-                </span>
-              }
-              mb={4}
-            >
-              <InputGroup w="100%">
-                <Input
-                  type="email"
-                  placeholder="john.doe@gmail.com"
-                  required
-                  autoComplete="email"
-                  w="100%"
-                  maxW="518px"
-                  fontFamily="'Open Sans', sans-serif"
-                  fontWeight={400}
-                  fontSize={14}
-                  color={fieldGray}
-                  bg="white"
-                  borderColor="#D5D7DA"
-                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </InputGroup>
-            </Field>
-            <Field
-              label={
-                <span
-                  style={{
-                    color: fieldGray,
-                    fontWeight: 600,
-                    fontSize: 14,
-                    fontFamily: 'Open Sans, sans-serif',
-                  }}
-                >
-                  Password
-                </span>
-              }
-              mb={2}
-            >
-              <InputGroup w="100%">
-                <Input
-                  type="password"
-                  placeholder=""
-                  required
-                  autoComplete="current-password"
-                  w="100%"
-                  maxW="518px"
-                  fontFamily="'Open Sans', sans-serif"
-                  fontWeight={400}
-                  fontSize={14}
-                  color={fieldGray}
-                  bg="white"
-                  borderColor="#D5D7DA"
-                  _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </InputGroup>
-            </Field>
-            <Box mt={1} mb={6} textAlign="right">
-              <span
-                style={{
-                  color: '#535862',
-                  fontWeight: 600,
-                  fontFamily: 'Open Sans, sans-serif',
-                  fontSize: 15,
-                  display: 'inline-block',
-                  marginTop: 6,
-                  cursor: 'pointer',
-                }}
-                onClick={() => router.push('/reset-password')}
-              >
-                Forgot Password?
-              </span>
-            </Box>
-            {error && (
-              <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
-                {error}
-              </Text>
-            )}
-            <Button
-              type="submit"
-              w="100%"
-              maxW="518px"
-              mt={2}
-              size="lg"
-              fontWeight={600}
-              fontFamily="'Open Sans', sans-serif"
-              fontSize="lg"
-              bg={teal}
-              color="white"
-              borderRadius="8px"
-              border="1px solid #056067"
-              boxShadow="0 1px 2px 0 #0A0D12, 0 0 0 0 transparent"
-              _hover={{ bg: '#044953' }}
-              px={8}
-              py={3}
-              loading={isLoading}
-            >
-              Sign In
-            </Button>
-          </form>
-          <Text
-            mt={8}
-            color={veniceBlue}
-            fontSize="md"
-            fontWeight={600}
-            fontFamily="'Open Sans', sans-serif"
-          >
-            Don&apos;t have an account?{' '}
-            <Link
-              href="/participant-form"
-              style={{
-                color: teal,
-                textDecoration: 'underline',
-                fontWeight: 600,
-                fontFamily: 'Open Sans, sans-serif',
-              }}
-            >
-              Complete our First Connection Participant Form.
-            </Link>
-          </Text>
         </Box>
-      </Flex>
-      {/* Right: Image */}
-      <Box flex="1" display={{ base: 'none', md: 'block' }} position="relative" minH="100vh">
-        <Image
-          src="/login.png"
-          alt="First Connection Peer Support"
-          fill
-          sizes="(max-width: 768px) 100vw, 50vw"
-          style={{ objectFit: 'cover', objectPosition: '90% 50%' }}
-          priority
-        />
-      </Box>
-    </Flex>
+
+        <VStack as="form" spacing={6} align="stretch" onSubmit={handleSubmit}>
+          <Field label={<FormLabel>Email</FormLabel>}>
+            <InputGroup w="100%">
+              <Input
+                type="email"
+                placeholder="john.doe@gmail.com"
+                required
+                autoComplete="email"
+                w="100%"
+                fontWeight={400}
+                fontSize="sm"
+                color="brand.fieldText"
+                bg="white"
+                borderColor="brand.border"
+                _placeholder={{ color: 'gray.400', fontWeight: 400 }}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </InputGroup>
+          </Field>
+
+          <Field label={<FormLabel>Password</FormLabel>}>
+            <InputGroup w="100%">
+              <Input
+                type="password"
+                placeholder=""
+                required
+                autoComplete="current-password"
+                w="100%"
+                fontWeight={400}
+                fontSize="sm"
+                color="brand.fieldText"
+                bg="white"
+                borderColor="brand.border"
+                _placeholder={{ color: 'gray.400', fontWeight: 400 }}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </InputGroup>
+          </Field>
+
+          <Box textAlign="right">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/reset-password')}
+              color="brand.navyMuted"
+              fontWeight={600}
+              fontSize="sm"
+              p={0}
+              h="auto"
+              _hover={{ color: 'brand.navy' }}
+            >
+              Forgot Password?
+            </Button>
+          </Box>
+
+          {error && (
+            <Text color="red.500" fontWeight={600}>
+              {error}
+            </Text>
+          )}
+
+          <Button
+            type="submit"
+            w="full"
+            size="lg"
+            fontWeight={600}
+            fontSize="lg"
+            bg="brand.primary"
+            color="white"
+            borderRadius="8px"
+            border="1px solid"
+            borderColor="brand.primary"
+            boxShadow="0 1px 2px 0 #0A0D12, 0 0 0 0 transparent"
+            _hover={{ bg: 'brand.primaryEmphasis' }}
+            px={8}
+            py={3}
+            isLoading={isLoading}
+          >
+            Sign In
+          </Button>
+        </VStack>
+
+        <Text color="brand.navy" fontSize="md" fontWeight={600}>
+          Don&apos;t have an account?{' '}
+          <Link
+            href="/participant-form"
+            style={{
+              color: 'var(--chakra-colors-brand-primary)',
+              textDecoration: 'underline',
+              fontWeight: 600,
+            }}
+          >
+            Complete our First Connection Participant Form.
+          </Link>
+        </Text>
+      </VStack>
+    </AuthPageLayout>
   );
 }

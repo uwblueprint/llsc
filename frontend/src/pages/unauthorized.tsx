@@ -1,48 +1,45 @@
 import React from 'react';
 import Link from 'next/link';
-import { Box, Flex, Heading, Text, Button } from '@chakra-ui/react';
-
-const veniceBlue = '#1d3448';
-const teal = '#056067';
+import { Heading, Text, Button, VStack } from '@chakra-ui/react';
+import { AuthPageLayout } from '@/components/layout';
 
 export default function Unauthorized() {
   return (
-    <Flex minH="100vh" align="center" justify="center" bg="gray.50">
-      <Box textAlign="center" py={10} px={6}>
+    <AuthPageLayout>
+      <VStack spacing={6} textAlign="center" align="center">
         <Heading
           as="h1"
           size="4xl"
-          bgGradient={`linear(to-r, ${teal}, ${veniceBlue})`}
+          bgGradient="linear(to-r, brand.primary, brand.navy)"
           bgClip="text"
-          mb={4}
         >
           403
         </Heading>
 
-        <Heading as="h2" size="xl" mt={6} mb={2} color={veniceBlue}>
+        <Heading as="h2" size="xl" color="brand.navy">
           Access Denied
         </Heading>
 
-        <Text color="gray.500" mb={8} fontSize="lg">
+        <Text color="gray.500" fontSize="lg">
           You don&apos;t have permission to access this page.
           <br />
           Please contact your administrator if you believe this is an error.
         </Text>
 
-        <Link href="/" passHref>
-          <Button
-            colorScheme="teal"
-            bg={teal}
-            color="white"
-            size="lg"
-            _hover={{
-              bg: veniceBlue,
-            }}
-          >
-            Go to Home Page
-          </Button>
-        </Link>
-      </Box>
-    </Flex>
+        <Button
+          as={Link}
+          href="/"
+          bg="brand.primary"
+          color="white"
+          size="lg"
+          fontWeight={600}
+          w="full"
+          maxW="320px"
+          _hover={{ bg: 'brand.navy' }}
+        >
+          Go to Home Page
+        </Button>
+      </VStack>
+    </AuthPageLayout>
   );
 }
