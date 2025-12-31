@@ -103,7 +103,7 @@ export default function WelcomePage() {
           </Heading>
         </Box>
 
-        <VStack spacing={4}>
+        <VStack spacing={4} align="stretch">
           <Text color="brand.navy" fontSize="md">
             You can learn more about the program{' '}
             <a

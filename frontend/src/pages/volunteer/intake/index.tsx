@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Flex } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { syncCurrentUser } from '@/APIClients/authAPIClient';
@@ -10,8 +9,8 @@ import {
 } from '@/components/intake/demographic-cancer-form';
 import { LovedOneForm } from '@/components/intake/loved-one-form';
 import { AdditionalInfoForm } from '@/components/intake/additional-info-form';
+import { FormPageLayout } from '@/components/layout';
 import {
-  COLORS,
   IntakeFormData,
   INITIAL_INTAKE_FORM_DATA,
   ExperienceData,
@@ -240,63 +239,45 @@ export default function VolunteerIntakePage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_TODO]}>
-        <Flex
-          minH="100vh"
-          bg={COLORS.lightGray}
-          justify="center"
-          py={12}
-          overflow="visible"
-          pb={hasDropdownOpen ? '30vh' : 12}
-        >
-          <Box
-            w="full"
-            maxW="1200px"
-            bg="white"
-            borderRadius="8px"
-            boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-            p={10}
-            overflow="visible"
-            position="relative"
-          >
-            {currentStepType === 'experience-personal' && (
-              <PersonalInfoForm
-                formType="volunteer"
-                onSubmit={handleExperiencePersonalSubmit}
-                onDropdownOpenChange={setHasDropdownOpen}
-              />
-            )}
+        <FormPageLayout>
+          {currentStepType === 'experience-personal' && (
+            <PersonalInfoForm
+              formType="volunteer"
+              onSubmit={handleExperiencePersonalSubmit}
+              onDropdownOpenChange={setHasDropdownOpen}
+            />
+          )}
 
-            {currentStepType === 'demographics-cancer' && (
-              <DemographicCancerForm
-                formType="volunteer"
-                onNext={handleDemographicsNext}
-                hasBloodCancer={formData.hasBloodCancer}
-                caringForSomeone={formData.caringForSomeone}
-              />
-            )}
+          {currentStepType === 'demographics-cancer' && (
+            <DemographicCancerForm
+              formType="volunteer"
+              onNext={handleDemographicsNext}
+              hasBloodCancer={formData.hasBloodCancer}
+              caringForSomeone={formData.caringForSomeone}
+            />
+          )}
 
-            {currentStepType === 'demographics-caregiver' && (
-              <DemographicCancerForm
-                formType="volunteer"
-                onNext={handleDemographicsNext}
-                hasBloodCancer={formData.hasBloodCancer}
-                caringForSomeone={formData.caringForSomeone}
-              />
-            )}
+          {currentStepType === 'demographics-caregiver' && (
+            <DemographicCancerForm
+              formType="volunteer"
+              onNext={handleDemographicsNext}
+              hasBloodCancer={formData.hasBloodCancer}
+              caringForSomeone={formData.caringForSomeone}
+            />
+          )}
 
-            {currentStepType === 'loved-one' && (
-              <LovedOneForm formType="volunteer" onSubmit={handleLovedOneNext} />
-            )}
+          {currentStepType === 'loved-one' && (
+            <LovedOneForm formType="volunteer" onSubmit={handleLovedOneNext} />
+          )}
 
-            {currentStepType === 'demographics-basic' && (
-              <BasicDemographicsForm formType="volunteer" onNext={handleBasicDemographicsNext} />
-            )}
+          {currentStepType === 'demographics-basic' && (
+            <BasicDemographicsForm formType="volunteer" onNext={handleBasicDemographicsNext} />
+          )}
 
-            {currentStepType === 'additional-info' && (
-              <AdditionalInfoForm formType="volunteer" onSubmit={handleAdditionalInfoNext} />
-            )}
-          </Box>
-        </Flex>
+          {currentStepType === 'additional-info' && (
+            <AdditionalInfoForm formType="volunteer" onSubmit={handleAdditionalInfoNext} />
+          )}
+        </FormPageLayout>
       </FormStatusGuard>
     </ProtectedPage>
   );

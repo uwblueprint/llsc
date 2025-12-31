@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { Box, Heading, Text, Button, VStack } from '@chakra-ui/react';
+import { Box, Heading, Text, Button, VStack, Link } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useEmailVerification } from '@/hooks/useEmailVerification';
 import {
@@ -88,7 +88,7 @@ export default function VerifyPage() {
             First Connection Peer Support Program
           </Heading>
           <Heading fontWeight={600} color="brand.navy" fontSize={{ base: 'xl', md: '2xl' }} mt={4}>
-            Welcome to our application portal!
+            Welcome. Let&apos;s start by creating an account.
           </Heading>
           <Text mt={3} color="brand.navy" fontWeight={400} fontSize={{ base: 'md', md: 'lg' }}>
             We sent a confirmation link to <b>{displayEmail}</b>
@@ -105,23 +105,20 @@ export default function VerifyPage() {
           </Text>
         )}
 
-        <VStack spacing={3}>
-          <Text color="brand.navy" fontSize="md">
-            Didn&apos;t get a link? Request a new message below.
-          </Text>
-          <Button
-            variant="outline"
-            alignSelf="flex-start"
+        <Text color="brand.navy" fontSize="md">
+          Didn&apos;t get a link?{' '}
+          <Link
             color="brand.primary"
-            borderColor="brand.primary"
             fontWeight={600}
-            onClick={handleResendEmail}
-            isLoading={isLoading}
-            _hover={{ bg: 'rgba(5, 96, 103, 0.1)' }}
+            textDecoration="underline"
+            cursor={isLoading ? 'not-allowed' : 'pointer'}
+            opacity={isLoading ? 0.5 : 1}
+            onClick={isLoading ? undefined : handleResendEmail}
+            _hover={{ color: 'brand.primaryEmphasis' }}
           >
-            Resend link
-          </Button>
-        </VStack>
+            Resend link.
+          </Link>
+        </Text>
 
         <Button
           variant="solid"

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Box, Heading, Button, VStack, HStack, Text, Textarea } from '@chakra-ui/react';
+import { Box, Heading, Button, VStack, Flex, Text, Textarea } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
-import { COLORS, getIntakeFormTitle, IntakeFormType } from '@/constants/form';
+import { StepIndicator } from '@/components/ui';
+import { getIntakeFormTitle, IntakeFormType } from '@/constants/form';
 
 interface AdditionalInfoFormData {
   additionalInfo: string;
@@ -37,27 +38,15 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
         as="h1"
         fontFamily="system-ui, -apple-system, sans-serif"
         fontWeight={600}
-        color={COLORS.veniceBlue}
+        color="brand.navy"
         fontSize="28px"
         mb={8}
       >
         {formTitle}
       </Heading>
 
-      {/* Progress Bar */}
-      <Box mb={10}>
-        <HStack gap={3}>
-          <Box flex="1">
-            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
-          </Box>
-          <Box flex="1">
-            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
-          </Box>
-          <Box flex="1">
-            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
-          </Box>
-        </HStack>
-      </Box>
+      {/* Progress Bar - All segments active on final step */}
+      <StepIndicator currentStep={3} />
 
       {/* Additional Information Section */}
       <Box mb={10}>
@@ -65,14 +54,14 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
           as="h2"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontWeight={600}
-          color={COLORS.veniceBlue}
+          color="brand.navy"
           fontSize="20px"
           mb={3}
         >
           Additional Information
         </Heading>
         <Text
-          color={COLORS.fieldGray}
+          color="brand.fieldText"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="15px"
           mb={8}
@@ -86,7 +75,7 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
               fontFamily="system-ui, -apple-system, sans-serif"
               fontWeight={500}
               fontSize="14px"
-              color={COLORS.veniceBlue}
+              color="brand.navy"
               mb={2}
             >
               Additional Information (Optional)
@@ -101,7 +90,7 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
                   placeholder="Please share any additional information that might be helpful..."
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
-                  color={COLORS.veniceBlue}
+                  color="brand.navy"
                   borderColor={errors.additionalInfo ? 'red.500' : '#d1d5db'}
                   borderRadius="6px"
                   minH="200px"
@@ -111,8 +100,8 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
                   py={3}
                   _placeholder={{ color: '#9ca3af' }}
                   _focus={{
-                    borderColor: COLORS.teal,
-                    boxShadow: `0 0 0 3px ${COLORS.teal}20`,
+                    borderColor: 'brand.primary',
+                    boxShadow: '0 0 0 3px var(--chakra-colors-brand-primary-emphasis)',
                   }}
                 />
               )}
@@ -127,20 +116,20 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
       </Box>
 
       {/* Navigation Buttons */}
-      <HStack justify="space-between" mt={8}>
+      <Flex justify="space-between" mt={8}>
         {onBack ? (
           <Button
             onClick={onBack}
             variant="outline"
-            borderColor={COLORS.teal}
-            color={COLORS.teal}
+            borderColor="brand.primary"
+            color="brand.primary"
             fontFamily="system-ui, -apple-system, sans-serif"
             fontWeight={500}
             fontSize="14px"
             h="40px"
             px={6}
             _hover={{
-              bg: `${COLORS.teal}10`,
+              bg: 'brand.primaryLight',
             }}
           >
             Back
@@ -151,10 +140,10 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
 
         <Button
           type="submit"
-          bg={COLORS.teal}
+          bg="brand.primary"
           color="white"
-          _hover={{ bg: COLORS.teal }}
-          _active={{ bg: COLORS.teal }}
+          _hover={{ bg: 'brand.primaryEmphasis' }}
+          _active={{ bg: 'brand.primaryEmphasis' }}
           loading={isSubmitting}
           loadingText="Submitting..."
           w="auto"
@@ -165,7 +154,7 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
         >
           Submit Form →
         </Button>
-      </HStack>
+      </Flex>
     </form>
   );
 }

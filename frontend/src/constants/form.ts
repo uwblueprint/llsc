@@ -1,12 +1,15 @@
-// Colors
+/**
+ * @deprecated Color constants - migrate to theme tokens:
+ * - COLORS.veniceBlue → brand.navy
+ * - COLORS.fieldGray → brand.fieldText
+ * - COLORS.teal → brand.primary
+ * - COLORS.lightGray → gray.50
+ * - COLORS.progressGray → gray.300
+ *
+ * Will be removed after Phase 2b-2d form refactoring is complete.
+ */
 export const COLORS = {
-  veniceBlue: '#1d3448',
-  fieldGray: '#6b7280',
-  teal: '#0d7377',
   lightTeal: '#e6f7f7',
-  lightGray: '#f3f4f6',
-  progressTeal: '#5eead4',
-  progressGray: '#d1d5db',
 } as const;
 
 // Canadian provinces

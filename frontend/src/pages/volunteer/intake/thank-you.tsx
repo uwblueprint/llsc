@@ -7,7 +7,7 @@ export default function VolunteerIntakeThankYouPage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_SUBMITTED]}>
-        <ThankYouScreen />
+        <ThankYouScreen userRole={UserRole.VOLUNTEER} />
       </FormStatusGuard>
     </ProtectedPage>
   );
