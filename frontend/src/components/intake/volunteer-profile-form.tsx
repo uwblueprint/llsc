@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Heading, Text, Button, VStack, HStack, Textarea } from '@chakra-ui/react';
+import { Box, Heading, Text, Button, VStack, Flex, Textarea } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
-import { FormField } from '@/components/ui/form-field';
-import { COLORS } from '@/constants/form';
+import { StepIndicator } from '@/components/ui';
 
 interface VolunteerProfileFormData {
   experience: string;
@@ -60,24 +59,15 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
         as="h1"
         fontFamily="system-ui, -apple-system, sans-serif"
         fontWeight={600}
-        color={COLORS.veniceBlue}
-        fontSize="28px"
+        color="brand.navy"
+        fontSize={{ base: '24px', md: '28px' }}
         mb={8}
       >
         Volunteer Profile Form
       </Heading>
 
       {/* Progress Bar */}
-      <Box mb={10}>
-        <HStack gap={3}>
-          <Box flex="1">
-            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
-          </Box>
-          <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
-          </Box>
-        </HStack>
-      </Box>
+      <StepIndicator currentStep={1} totalSteps={2} />
 
       {/* Your Experience Section */}
       <Box mb={10}>
@@ -85,8 +75,8 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
           as="h2"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontWeight={600}
-          color={COLORS.veniceBlue}
-          fontSize="20px"
+          color="brand.navy"
+          fontSize={{ base: '18px', md: '20px' }}
           mb={3}
         >
           Your Experience
@@ -95,7 +85,7 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
         <Text
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="14px"
-          color={COLORS.fieldGray}
+          color="brand.fieldText"
           mb={6}
         >
           This information will serve as your biography and will encourage potential matches to
@@ -108,11 +98,11 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
               fontFamily="system-ui, -apple-system, sans-serif"
               fontWeight={500}
               fontSize="14px"
-              color={COLORS.veniceBlue}
+              color="brand.navy"
               mb={2}
             >
               Tell us about yourself: include your age, diagnosis and treatments. Include personal
-              details like if you're married or have kids, what you struggled with at diagnosis
+              details like if you&apos;re married or have kids, what you struggled with at diagnosis
               and/or treatment, and how you are doing now.
             </Text>
 
@@ -145,19 +135,19 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
                     placeholder="Type here...."
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                     borderRadius="6px"
                     minH="200px"
                     resize="vertical"
                     px={3}
                     py={3}
                     border="1px solid"
-                    borderColor={errors.experience ? 'red.500' : '#d1d5db'}
+                    borderColor={errors.experience ? 'red.500' : 'gray.300'}
                     boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
-                    _placeholder={{ color: '#9ca3af' }}
+                    _placeholder={{ color: 'gray.400' }}
                     _focus={{
-                      borderColor: COLORS.teal,
-                      boxShadow: `0 0 0 3px ${COLORS.teal}20`,
+                      borderColor: 'brand.primary',
+                      boxShadow: '0 0 0 3px var(--chakra-colors-brand-primary-alpha)',
                     }}
                   />
                   <Text
@@ -165,7 +155,7 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
                     bottom="8px"
                     right="12px"
                     fontSize="12px"
-                    color={isOverLimit ? 'red.500' : COLORS.fieldGray}
+                    color={isOverLimit ? 'red.500' : 'brand.fieldText'}
                     fontFamily="system-ui, -apple-system, sans-serif"
                     pointerEvents="none"
                   >
@@ -184,20 +174,21 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
       </Box>
 
       {/* Navigation Buttons */}
-      <HStack justify="space-between" mt={8}>
+      <Flex justify="space-between" mt={8} gap={4} direction={{ base: 'column', sm: 'row' }}>
         {onBack ? (
           <Button
             onClick={onBack}
             variant="outline"
-            borderColor={COLORS.teal}
-            color={COLORS.teal}
+            borderColor="brand.primary"
+            color="brand.primary"
             fontFamily="system-ui, -apple-system, sans-serif"
             fontWeight={500}
             fontSize="14px"
             h="40px"
             px={6}
+            w={{ base: 'full', sm: 'auto' }}
             _hover={{
-              bg: `${COLORS.teal}10`,
+              bg: 'brand.primaryAlpha',
             }}
           >
             Back
@@ -208,12 +199,12 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
 
         <Button
           type="submit"
-          bg={COLORS.teal}
+          bg="brand.primary"
           color="white"
-          _hover={{ bg: COLORS.teal }}
-          _active={{ bg: COLORS.teal }}
+          _hover={{ bg: 'brand.primaryEmphasis' }}
+          _active={{ bg: 'brand.primaryEmphasis' }}
           disabled={!isValid || isOverLimit}
-          w="auto"
+          w={{ base: 'full', sm: 'auto' }}
           h="40px"
           fontSize="14px"
           fontWeight={500}
@@ -221,7 +212,7 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
         >
           Next Section →
         </Button>
-      </HStack>
+      </Flex>
     </form>
   );
 }

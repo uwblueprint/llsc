@@ -1,9 +1,20 @@
-// Colors
+/**
+ * @deprecated Color constants - migrate to theme tokens:
+ * - COLORS.veniceBlue → brand.navy
+ * - COLORS.fieldGray → brand.fieldText
+ * - COLORS.teal → brand.primary
+ * - COLORS.lightTeal → brand.primaryLight
+ * - COLORS.lightGray → gray.50
+ * - COLORS.progressGray → gray.300
+ *
+ * These are temporarily kept for pages not yet migrated (admin, dashboards).
+ * Will be removed after all form refactoring is complete.
+ */
 export const COLORS = {
   veniceBlue: '#1d3448',
   fieldGray: '#6b7280',
-  teal: '#0d7377',
-  lightTeal: '#e6f7f7',
+  teal: '#056067', // Updated to match brand.primary
+  lightTeal: '#E6F4F5', // Updated to match brand.primaryLight
   lightGray: '#f3f4f6',
   progressTeal: '#5eead4',
   progressGray: '#d1d5db',

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Heading, Text, Button } from '@chakra-ui/react';
-import { COLORS } from '@/constants/form';
 
 interface WelcomeScreenProps {
   icon: React.ReactNode;
@@ -17,14 +16,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   buttonText = 'Continue',
   onContinue,
 }) => (
-  <Box
-    minH="100vh"
-    bg={COLORS.lightGray}
-    display="flex"
-    alignItems="center"
-    justifyContent="center"
-    px={4}
-  >
+  <Box minH="100vh" bg="gray.50" display="flex" alignItems="center" justifyContent="center" px={4}>
     <Box w="full" maxW="384px" mx="auto" textAlign="center">
       {icon}
 
@@ -32,8 +24,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         as="h1"
         fontFamily="system-ui, -apple-system, sans-serif"
         fontWeight={600}
-        color="#1f2937"
-        fontSize="20px"
+        color="brand.navy"
+        fontSize={{ base: '18px', md: '20px' }}
         mb={4}
         lineHeight="tight"
       >
@@ -43,14 +35,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       <Text
         fontFamily="system-ui, -apple-system, sans-serif"
         fontSize="14px"
-        color={COLORS.fieldGray}
+        color="brand.fieldText"
         mb={8}
         lineHeight="relaxed"
         dangerouslySetInnerHTML={{ __html: description }}
       />
 
       <Button
-        bg={COLORS.teal}
+        bg="brand.primary"
         color="white"
         fontFamily="system-ui, -apple-system, sans-serif"
         fontWeight={500}
@@ -62,8 +54,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         py="10px"
         h="auto"
         borderRadius="8px"
-        _hover={{ bg: COLORS.teal, opacity: 0.9 }}
-        _active={{ bg: COLORS.teal }}
+        _hover={{ bg: 'brand.primaryEmphasis' }}
+        _active={{ bg: 'brand.primaryEmphasis' }}
         onClick={onContinue}
       >
         {buttonText}

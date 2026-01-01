@@ -4,8 +4,7 @@ import { useRouter } from 'next/router';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { FormStatus, UserRole } from '@/types/authTypes';
-import { Box } from '@chakra-ui/react';
-import { COLORS } from '@/constants/form';
+import { FormPageLayout } from '@/components/layout';
 import { VolunteerProfileForm } from '@/components/intake/volunteer-profile-form';
 import { VolunteerReferencesForm } from '@/components/intake/volunteer-references-form';
 import { syncCurrentUser } from '@/APIClients/authAPIClient';
@@ -65,75 +64,43 @@ export default function SecondaryApplicationPage() {
   );
 
   const VolunteerProfileStep = () => (
-    <Box
-      minH="100vh"
-      bg={COLORS.lightGray}
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      py={12}
-    >
-      <Box
-        w="full"
-        maxW="800px"
-        bg="white"
-        borderRadius="8px"
-        boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-        p={12}
-      >
-        <VolunteerProfileForm
-          onNext={(data) => {
-            setProfileData(data);
-            setCurrentStep(3);
-          }}
-          onBack={() => setCurrentStep(1)}
-        />
-      </Box>
-    </Box>
+    <FormPageLayout maxW="800px">
+      <VolunteerProfileForm
+        onNext={(data) => {
+          setProfileData(data);
+          setCurrentStep(3);
+        }}
+        onBack={() => setCurrentStep(1)}
+      />
+    </FormPageLayout>
   );
 
   const VolunteerReferencesStep = () => (
-    <Box
-      minH="100vh"
-      bg={COLORS.lightGray}
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      py={12}
-    >
-      <Box
-        w="full"
-        maxW="800px"
-        bg="white"
-        borderRadius="8px"
-        boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-        p={12}
-      >
-        <VolunteerReferencesForm
-          onNext={async (data) => {
-            setSubmitError(null);
-            setIsSubmitting(true);
-            setReferencesData(data);
+    <FormPageLayout maxW="800px">
+      <VolunteerReferencesForm
+        onNext={async (data) => {
+          setSubmitError(null);
+          setIsSubmitting(true);
+          setReferencesData(data);
 
-            try {
-              await submitSecondaryApplication(profileData, data);
-              await syncCurrentUser();
-              await router.replace('/volunteer/secondary-application/thank-you');
-            } catch (error) {
-              const message =
-                (error as any)?.response?.data?.detail ||
-                (error instanceof Error ? error.message : 'Failed to submit volunteer data');
-              setSubmitError(message);
-            } finally {
-              setIsSubmitting(false);
-            }
-          }}
-          onBack={() => setCurrentStep(2)}
-          isSubmitting={isSubmitting}
-          submitError={submitError}
-        />
-      </Box>
-    </Box>
+          try {
+            await submitSecondaryApplication(profileData, data);
+            await syncCurrentUser();
+            await router.replace('/volunteer/secondary-application/thank-you');
+          } catch (error) {
+            const message =
+              (error as any)?.response?.data?.detail ||
+              (error instanceof Error ? error.message : 'Failed to submit volunteer data');
+            setSubmitError(message);
+          } finally {
+            setIsSubmitting(false);
+          }
+        }}
+        onBack={() => setCurrentStep(2)}
+        isSubmitting={isSubmitting}
+        submitError={submitError}
+      />
+    </FormPageLayout>
   );
 
   return (

@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { Box, Flex, Heading, Text, Button } from '@chakra-ui/react';
+import { Box, Heading, Text, Button, VStack, Link } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useEmailVerification } from '@/hooks/useEmailVerification';
 import {
@@ -7,11 +7,11 @@ import {
   clearEmailForSignIn,
   setEmailForSignIn,
 } from '@/services/firebaseAuthService';
-import { auth } from '@/config/firebase';
+import { AuthPageLayout } from '@/components/layout';
 
 export default function VerifyPage() {
   const router = useRouter();
-  const { email, role } = router.query;
+  const { email } = router.query;
   const [displayEmail, setDisplayEmail] = useState<string>('');
   const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({
     type: null,
@@ -74,106 +74,62 @@ export default function VerifyPage() {
   };
 
   return (
-    <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      <Flex
-        flex="1"
-        align="center"
-        justify="center"
-        px={{ base: 4, md: 12 }}
-        py={{ base: 16, md: 0 }}
-        bg="white"
-        minH={{ base: '60vh', md: '100vh' }}
-      >
-        <Box w="full" maxW="520px">
+    <AuthPageLayout
+      illustration={{ src: '/login.png', alt: 'First Connection Peer Support', priority: true }}
+    >
+      <VStack spacing={{ base: 6, md: 8 }} align="stretch">
+        <Box>
           <Heading
-            as="h1"
-            fontFamily="'Open Sans', sans-serif"
             fontWeight={600}
-            color="#1d3448"
-            fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}
-            lineHeight="50px"
-            mb={2}
+            color="brand.navy"
+            fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}
+            lineHeight="1.25"
           >
-            First Connection Peer
-            <br />
-            Support Program
+            First Connection Peer Support Program
           </Heading>
-          <Heading
-            as="h2"
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={600}
-            color="#1d3448"
-            fontSize={{ base: 'xl', md: '2xl' }}
-            mb={6}
-            mt={8}
-          >
-            Welcome to our application portal!
+          <Heading fontWeight={600} color="brand.navy" fontSize={{ base: 'xl', md: '2xl' }} mt={4}>
+            Welcome. Let&apos;s start by creating an account.
           </Heading>
-          <Text
-            mb={8}
-            color="#1d3448"
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={400}
-            fontSize="lg"
-          >
+          <Text mt={3} color="brand.navy" fontWeight={400} fontSize={{ base: 'md', md: 'lg' }}>
             We sent a confirmation link to <b>{displayEmail}</b>
           </Text>
+        </Box>
 
-          {message.text && (
-            <Text
-              mb={4}
-              color={message.type === 'success' ? 'green.600' : 'red.600'}
-              fontFamily="'Open Sans', sans-serif"
-              fontWeight={400}
-              fontSize="md"
-            >
-              {message.text}
-            </Text>
-          )}
-
+        {message.text && (
           <Text
-            mb={6}
-            color="#1d3448"
-            fontFamily="'Open Sans', sans-serif"
+            color={message.type === 'success' ? 'green.600' : 'red.600'}
             fontWeight={400}
             fontSize="md"
           >
-            Didn&apos;t get a link?{' '}
-            <Button
-              variant="ghost"
-              color="#056067"
-              textDecoration="underline"
-              fontWeight={600}
-              fontFamily="'Open Sans', sans-serif"
-              onClick={handleResendEmail}
-              loading={isLoading}
-              _hover={{ textDecoration: 'none' }}
-              p={0}
-              h="auto"
-              minH="auto"
-            >
-              Resend link.
-            </Button>
+            {message.text}
           </Text>
-          <Button
-            variant="outline"
-            color="#1d3448"
-            borderColor="#1d3448"
-            onClick={handleBackToLogin}
-            fontFamily="'Open Sans', sans-serif"
-            _hover={{ bg: '#1d3448', color: 'white' }}
+        )}
+
+        <Text color="brand.navy" fontSize="md">
+          Didn&apos;t get a link?{' '}
+          <Link
+            color="brand.primary"
+            fontWeight={600}
+            textDecoration="underline"
+            cursor={isLoading ? 'not-allowed' : 'pointer'}
+            opacity={isLoading ? 0.5 : 1}
+            onClick={isLoading ? undefined : handleResendEmail}
+            _hover={{ color: 'brand.primaryEmphasis' }}
           >
-            Back to Login
-          </Button>
-        </Box>
-      </Flex>
-      <Box flex="1" display={{ base: 'none', md: 'block' }} position="relative" minH="100vh">
-        <img
-          src="/login.png"
-          alt="First Connection Peer Support"
-          style={{ objectFit: 'cover', objectPosition: '90% 50%', width: '100%', height: '100%' }}
-        />
-      </Box>
-    </Flex>
+            Resend link.
+          </Link>
+        </Text>
+
+        <Button
+          variant="solid"
+          bg="brand.navy"
+          color="white"
+          _hover={{ bg: 'brand.navyMuted' }}
+          onClick={handleBackToLogin}
+        >
+          Back to Login
+        </Button>
+      </VStack>
+    </AuthPageLayout>
   );
 }

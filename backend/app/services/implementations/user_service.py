@@ -22,6 +22,7 @@ from app.models import (
     User,
     UserData,
 )
+from app.models.SuggestedTime import suggested_times
 from app.schemas.availability import AvailabilityTemplateSlot
 from app.schemas.user import (
     SignUpMethod,
@@ -119,17 +120,21 @@ class UserService(IUserService):
 
     async def delete_user_by_id(self, user_id: str):
         """
-        Delete a user and all related data.
-        This includes:
-        - UserData and its many-to-many relationships (treatments, experiences)
-        - VolunteerData
-        - AvailabilityTemplate records
-        - RankingPreference records
-        - FormSubmission records
-        - Soft-delete Match records (set deleted_at)
-        - Handle Task records (set participant_id/assignee_id to NULL or delete)
-        - Delete Firebase user
-        - Finally delete the User record
+        Delete a user and all related data in the correct order to respect FK constraints.
+
+        Deletion order:
+        1. UserData many-to-many relationships (treatments, experiences, loved_one_*)
+        2. UserData
+        3. VolunteerData
+        4. AvailabilityTemplate records
+        5. RankingPreference records
+        6. FormSubmission records
+        7. suggested_times junction table (Match <-> TimeBlock) for user's matches
+        8. Soft-delete Match records (set deleted_at for audit)
+        9. Hard delete Match records
+        10. Handle Task records (set participant_id/assignee_id to NULL)
+        11. Delete User record
+        12. Delete Firebase user
         """
         firebase_auth_id = None
         try:
@@ -140,7 +145,7 @@ class UserService(IUserService):
             # Store Firebase auth_id before deletion
             firebase_auth_id = db_user.auth_id
 
-            # 1. Clear many-to-many relationships in UserData (treatments, experiences)
+            # 1. Clear many-to-many relationships in UserData
             if db_user.user_data:
                 db_user.user_data.treatments.clear()
                 db_user.user_data.experiences.clear()
@@ -164,12 +169,30 @@ class UserService(IUserService):
             # 6. Delete FormSubmission records
             self.db.query(FormSubmission).filter(FormSubmission.user_id == db_user.id).delete()
 
-            # 7. Soft-delete Match records (set deleted_at timestamp)
+            # 7. Delete suggested_times entries for matches involving this user
+            # First get all match IDs for this user
+            user_match_ids = (
+                self.db.query(Match.id)
+                .filter((Match.participant_id == db_user.id) | (Match.volunteer_id == db_user.id))
+                .all()
+            )
+            match_ids = [match_id[0] for match_id in user_match_ids]
+
+            if match_ids:
+                # Delete suggested_times entries for these matches
+                self.db.execute(suggested_times.delete().where(suggested_times.c.match_id.in_(match_ids)))
+
+            # 8. Soft-delete Match records (set deleted_at timestamp for audit trail)
             self.db.query(Match).filter(
                 (Match.participant_id == db_user.id) | (Match.volunteer_id == db_user.id)
             ).update({Match.deleted_at: func.now()}, synchronize_session=False)
 
-            # 8. Handle Task records - set participant_id and assignee_id to NULL
+            # 9. Hard delete Match records (now safe - all FK constraints cleared)
+            self.db.query(Match).filter(
+                (Match.participant_id == db_user.id) | (Match.volunteer_id == db_user.id)
+            ).delete(synchronize_session=False)
+
+            # 10. Handle Task records - set participant_id and assignee_id to NULL
             self.db.query(Task).filter(Task.participant_id == db_user.id).update(
                 {Task.participant_id: None}, synchronize_session=False
             )
@@ -177,13 +200,13 @@ class UserService(IUserService):
                 {Task.assignee_id: None}, synchronize_session=False
             )
 
-            # 9. Delete the User record
+            # 11. Delete the User record
             self.db.delete(db_user)
 
             # Commit all database changes
             self.db.commit()
 
-            # 10. Delete Firebase user (after successful DB deletion)
+            # 12. Delete Firebase user (after successful DB deletion)
             if firebase_auth_id:
                 try:
                     firebase_admin.auth.delete_user(firebase_auth_id)

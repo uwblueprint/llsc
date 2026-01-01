@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Text } from '@chakra-ui/react';
+import { Flex, Text } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { FiChevronLeft } from 'react-icons/fi';
 import baseAPIClient from '@/APIClients/baseAPIClient';
@@ -11,8 +11,8 @@ import {
 } from '@/components/intake/demographic-cancer-form';
 import { LovedOneForm } from '@/components/intake/loved-one-form';
 import { AdditionalInfoForm } from '@/components/intake/additional-info-form';
+import { FormPageLayout } from '@/components/layout';
 import {
-  COLORS,
   IntakeFormData,
   INITIAL_INTAKE_FORM_DATA,
   ExperienceData,
@@ -224,85 +224,67 @@ export default function BecomeVolunteerPage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
-        <Flex
-          minH="100vh"
-          bg={COLORS.lightGray}
-          justify="center"
-          py={12}
-          overflow="visible"
-          pb={hasDropdownOpen ? '50vh' : 12}
-        >
-          <Box
-            w="full"
-            maxW="1200px"
-            bg="white"
-            borderRadius="8px"
-            boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-            p={10}
-            overflow="visible"
-            position="relative"
+        <FormPageLayout hasDropdownOpen={hasDropdownOpen}>
+          <Flex
+            align="center"
+            gap={2}
+            cursor="pointer"
+            onClick={() => {
+              void router.push('/participant/dashboard');
+            }}
+            alignSelf="flex-start"
+            color="brand.navy"
+            fontSize="16px"
+            fontWeight={600}
+            fontFamily="'Open Sans', sans-serif"
+            lineHeight="1.25em"
+            mb={6}
           >
-            <Flex
-              align="center"
-              gap={2}
-              cursor="pointer"
-              onClick={() => {
-                void router.push('/participant/dashboard');
-              }}
-              alignSelf="flex-start"
-              color={COLORS.veniceBlue}
-              fontSize="16px"
-              fontWeight={600}
-              fontFamily="'Open Sans', sans-serif"
-              lineHeight="1.25em"
-              mb={6}
-            >
-              <FiChevronLeft size={20} />
-              <Text>Back</Text>
-            </Flex>
+            <FiChevronLeft size={20} />
+            <Text>Back</Text>
+          </Flex>
 
-            {currentStepType === 'experience-personal' && (
-              <PersonalInfoForm
-                formType="become_volunteer"
-                onSubmit={handleExperiencePersonalSubmit}
-                onDropdownOpenChange={setHasDropdownOpen}
-              />
-            )}
+          {currentStepType === 'experience-personal' && (
+            <PersonalInfoForm
+              formType="become_volunteer"
+              onSubmit={handleExperiencePersonalSubmit}
+              onDropdownOpenChange={setHasDropdownOpen}
+            />
+          )}
 
-            {currentStepType === 'demographics-cancer' && (
-              <DemographicCancerForm
-                formType="become_volunteer"
-                onNext={handleDemographicsNext}
-                hasBloodCancer={formData.hasBloodCancer}
-                caringForSomeone={formData.caringForSomeone}
-              />
-            )}
+          {currentStepType === 'demographics-cancer' && (
+            <DemographicCancerForm
+              formType="become_volunteer"
+              onNext={handleDemographicsNext}
+              hasBloodCancer={formData.hasBloodCancer}
+              caringForSomeone={formData.caringForSomeone}
+            />
+          )}
 
-            {currentStepType === 'demographics-caregiver' && (
-              <DemographicCancerForm
-                formType="become_volunteer"
-                onNext={handleDemographicsNext}
-                hasBloodCancer={formData.hasBloodCancer}
-                caringForSomeone={formData.caringForSomeone}
-              />
-            )}
+          {currentStepType === 'demographics-caregiver' && (
+            <DemographicCancerForm
+              formType="become_volunteer"
+              onNext={handleDemographicsNext}
+              hasBloodCancer={formData.hasBloodCancer}
+              caringForSomeone={formData.caringForSomeone}
+            />
+          )}
 
-            {currentStepType === 'loved-one' && (
-              <LovedOneForm formType="become_volunteer" onSubmit={handleLovedOneNext} />
-            )}
+          {currentStepType === 'loved-one' && (
+            <LovedOneForm formType="become_volunteer" onSubmit={handleLovedOneNext} />
+          )}
 
-            {currentStepType === 'demographics-basic' && (
-              <BasicDemographicsForm
-                formType="become_volunteer"
-                onNext={handleBasicDemographicsNext}
-              />
-            )}
+          {currentStepType === 'demographics-basic' && (
+            <BasicDemographicsForm
+              formType="become_volunteer"
+              onNext={handleBasicDemographicsNext}
+            />
+          )}
 
-            {currentStepType === 'additional-info' && (
-              <AdditionalInfoForm formType="become_volunteer" onSubmit={handleAdditionalInfoNext} />
-            )}
-          </Box>
-        </Flex>
+          {currentStepType === 'additional-info' && (
+            <AdditionalInfoForm formType="become_volunteer" onSubmit={handleAdditionalInfoNext} />
+          )}
+        </FormPageLayout>
       </FormStatusGuard>
     </ProtectedPage>
   );

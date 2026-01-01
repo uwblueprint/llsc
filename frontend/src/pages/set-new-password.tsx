@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Box, Flex, Heading, Text, Button, Input } from '@chakra-ui/react';
+import { Box, Heading, Text, Button, Input, VStack } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
+import { FormLabel } from '@/components/ui/form-label';
 import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
 import firebaseApp from '@/config/firebase';
-
-const veniceBlue = '#1d3448';
-const teal = '#056067';
+import { AuthPageLayout } from '@/components/layout';
 
 export default function SetNewPasswordPage() {
   const [password, setPassword] = useState('');
@@ -100,201 +98,136 @@ export default function SetNewPasswordPage() {
   const showForm = Boolean(oobCode) && !error;
 
   return (
-    <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Left: Set New Password Form */}
-      <Flex
-        flex="1"
-        align="center"
-        justify="center"
-        px={{ base: 4, md: 12 }}
-        py={{ base: 16, md: 0 }}
-        bg="white"
-        minH={{ base: '60vh', md: '100vh' }}
-      >
-        <Box w="full" maxW="520px">
+    <AuthPageLayout
+      illustration={{ src: '/login.png', alt: 'First Connection Peer Support', priority: true }}
+    >
+      <VStack spacing={{ base: 6, md: 8 }} align="stretch">
+        <Box>
           <Heading
-            as="h1"
-            fontFamily="'Open Sans', sans-serif"
             fontWeight={600}
-            color={veniceBlue}
-            fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}
-            lineHeight="50px"
-            mb={2}
+            color="brand.navy"
+            fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}
+            lineHeight="1.25"
           >
-            First Connection Peer
-            <br />
-            Support Program
+            First Connection Peer Support Program
           </Heading>
-          <Heading
-            as="h2"
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={600}
-            color={veniceBlue}
-            fontSize={{ base: 'xl', md: '2xl' }}
-            mb={6}
-            mt={8}
-          >
+          <Heading fontWeight={600} color="brand.navy" fontSize={{ base: 'xl', md: '2xl' }} mt={4}>
             Reset Your Password
           </Heading>
-          <Text
-            mb={8}
-            color={veniceBlue}
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={400}
-            fontSize="lg"
-          >
+          <Text mt={3} color="brand.navy" fontWeight={400} fontSize={{ base: 'md', md: 'lg' }}>
             Set a new password to restore access to your account.
           </Text>
-          {error && (
-            <Text color="red.500" mb={4} fontWeight={600} fontFamily="'Open Sans', sans-serif">
-              {error}
-            </Text>
-          )}
-          {showForm && (
-            <form onSubmit={handleSubmit}>
-              <Field
-                label={
-                  <span
-                    style={{
-                      color: veniceBlue,
-                      fontWeight: 600,
-                      fontSize: 14,
-                      fontFamily: 'Open Sans, sans-serif',
-                    }}
-                  >
-                    New Password
-                  </span>
-                }
-                mb={4}
-              >
-                <InputGroup w="100%">
-                  <Input
-                    ref={passwordRef}
-                    type="password"
-                    placeholder="Enter your new password"
-                    required
-                    autoComplete="new-password"
-                    w="100%"
-                    maxW="518px"
-                    fontFamily="'Open Sans', sans-serif"
-                    fontWeight={400}
-                    fontSize={14}
-                    color={veniceBlue}
-                    bg="white"
-                    borderColor="#D5D7DA"
-                    _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </InputGroup>
-              </Field>
-              <Field
-                label={
-                  <span
-                    style={{
-                      color: veniceBlue,
-                      fontWeight: 600,
-                      fontSize: 14,
-                      fontFamily: 'Open Sans, sans-serif',
-                    }}
-                  >
-                    Confirm New Password
-                  </span>
-                }
-                mb={4}
-              >
-                <InputGroup w="100%">
-                  <Input
-                    ref={confirmPasswordRef}
-                    type="password"
-                    placeholder="Confirm your new password"
-                    required
-                    autoComplete="new-password"
-                    w="100%"
-                    maxW="518px"
-                    fontFamily="'Open Sans', sans-serif"
-                    fontWeight={400}
-                    fontSize={14}
-                    color={veniceBlue}
-                    bg="white"
-                    borderColor={passwordError ? '#E53E3E' : '#D5D7DA'}
-                    borderWidth={passwordError ? 2 : 1}
-                    boxShadow={passwordError ? '0 0 0 2px #E53E3E' : 'none'}
-                    _focus={
-                      passwordError
-                        ? { borderColor: '#E53E3E', boxShadow: '0 0 0 2px #E53E3E' }
-                        : { borderColor: teal, boxShadow: '0 0 0 1px #319795' }
-                    }
-                    _placeholder={{ color: '#A0AEC0', fontWeight: 400 }}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </InputGroup>
-              </Field>
-              {/* Show password mismatch error only after submit attempt */}
-              {passwordError && (
-                <Text
-                  color="red.500"
-                  mb={4}
-                  fontWeight={400}
-                  fontFamily="'Open Sans', sans-serif"
-                  fontSize="sm"
-                >
-                  {passwordError}
-                </Text>
-              )}
-              <Button
-                type="submit"
-                w="100%"
-                maxW="518px"
-                mt={2}
-                size="lg"
-                fontWeight={600}
-                fontFamily="'Open Sans', sans-serif"
-                fontSize="lg"
-                bg={teal}
-                color="white"
-                borderRadius="8px"
-                border="1px solid #056067"
-                boxShadow="none"
-                _hover={{ bg: '#044953' }}
-                px={8}
-                py={3}
-                loading={isLoading}
-                disabled={isLoading}
-              >
-                Reset Password
-              </Button>
-            </form>
-          )}
-          <Text
-            mt={8}
-            color={veniceBlue}
-            fontSize="md"
-            fontWeight={600}
-            fontFamily="'Open Sans', sans-serif"
-          >
-            Return to{' '}
-            <Link href="/" style={{ color: teal, textDecoration: 'underline', fontWeight: 600 }}>
-              login
-            </Link>
-            .
-          </Text>
         </Box>
-      </Flex>
-      {/* Right: Image */}
-      <Box flex="1" display={{ base: 'none', md: 'block' }} position="relative" minH="100vh">
-        <Image
-          src="/login.png"
-          alt="First Connection Peer Support"
-          fill
-          sizes="(max-width: 768px) 100vw, 50vw"
-          style={{ objectFit: 'cover', objectPosition: '90% 50%' }}
-          priority
-        />
-      </Box>
-    </Flex>
+
+        {error && (
+          <Text color="red.500" fontWeight={600}>
+            {error}
+          </Text>
+        )}
+
+        {showForm && (
+          <VStack as="form" spacing={4} onSubmit={handleSubmit}>
+            <Field label={<FormLabel>New Password</FormLabel>}>
+              <InputGroup w="100%">
+                <Input
+                  ref={passwordRef}
+                  type="password"
+                  placeholder="Enter your new password"
+                  required
+                  autoComplete="new-password"
+                  w="100%"
+                  fontWeight={400}
+                  fontSize="sm"
+                  color="brand.fieldText"
+                  bg="white"
+                  borderColor="brand.border"
+                  _placeholder={{ color: 'gray.400', fontWeight: 400 }}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                />
+              </InputGroup>
+            </Field>
+
+            <Field label={<FormLabel>Confirm New Password</FormLabel>}>
+              <InputGroup w="100%">
+                <Input
+                  ref={confirmPasswordRef}
+                  type="password"
+                  placeholder="Confirm your new password"
+                  required
+                  autoComplete="new-password"
+                  w="100%"
+                  fontWeight={400}
+                  fontSize="sm"
+                  color="brand.fieldText"
+                  bg="white"
+                  borderColor={passwordError ? 'red.500' : 'brand.border'}
+                  borderWidth={passwordError ? 2 : 1}
+                  boxShadow={passwordError ? '0 0 0 2px var(--chakra-colors-red-500)' : 'none'}
+                  _focus={
+                    passwordError
+                      ? {
+                          borderColor: 'red.500',
+                          boxShadow: '0 0 0 2px var(--chakra-colors-red-500)',
+                        }
+                      : {
+                          borderColor: 'brand.primary',
+                          boxShadow: '0 0 0 1px var(--chakra-colors-brand-primary)',
+                        }
+                  }
+                  _placeholder={{ color: 'gray.400', fontWeight: 400 }}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={isLoading}
+                />
+              </InputGroup>
+            </Field>
+
+            {passwordError && (
+              <Text color="red.500" fontSize="sm">
+                {passwordError}
+              </Text>
+            )}
+
+            <Button
+              type="submit"
+              w="full"
+              size="lg"
+              fontWeight={600}
+              fontSize="lg"
+              bg="brand.primary"
+              color="white"
+              borderRadius="8px"
+              border="1px solid"
+              borderColor="brand.primary"
+              boxShadow="none"
+              _hover={{ bg: 'brand.primaryEmphasis' }}
+              px={8}
+              py={3}
+              isLoading={isLoading}
+              isDisabled={isLoading}
+            >
+              Reset Password
+            </Button>
+          </VStack>
+        )}
+
+        <Text color="brand.navy" fontSize="md" fontWeight={600}>
+          Return to{' '}
+          <Link
+            href="/"
+            style={{
+              color: 'var(--chakra-colors-brand-primary)',
+              textDecoration: 'underline',
+              fontWeight: 600,
+            }}
+          >
+            login
+          </Link>
+          .
+        </Text>
+      </VStack>
+    </AuthPageLayout>
   );
 }

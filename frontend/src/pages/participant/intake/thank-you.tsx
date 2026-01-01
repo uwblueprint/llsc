@@ -7,7 +7,7 @@ export default function ParticipantIntakeThankYouPage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_SUBMITTED]}>
-        <ThankYouScreen />
+        <ThankYouScreen userRole={UserRole.PARTICIPANT} />
       </FormStatusGuard>
     </ProtectedPage>
   );

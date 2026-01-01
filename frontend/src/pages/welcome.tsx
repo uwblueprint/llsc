@@ -1,11 +1,12 @@
 import Link from 'next/link';
-import { Box, Flex, Heading, Text, Button } from '@chakra-ui/react';
+import { Box, Heading, Text, Button, VStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { getCurrentUser, syncCurrentUser } from '@/APIClients/authAPIClient';
 import { AuthenticatedUser, FormStatus, UserRole } from '@/types/authTypes';
 import { roleIdToUserRole } from '@/utils/roleUtils';
 import { getRedirectRoute } from '@/constants/formStatusRoutes';
+import { AuthPageLayout } from '@/components/layout';
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -84,152 +85,95 @@ export default function WelcomePage() {
   }
 
   return (
-    <Flex minH="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Left: Content */}
-      <Flex
-        flex="1"
-        align="center"
-        justify="center"
-        px={{ base: 4, md: 12 }}
-        py={{ base: 16, md: 0 }}
-        bg="white"
-        minH={{ base: '60vh', md: '100vh' }}
-      >
-        <Box w="full" maxW="520px">
+    <AuthPageLayout
+      illustration={{ src: '/login.png', alt: 'First Connection Peer Support', priority: true }}
+    >
+      <VStack spacing={{ base: 6, md: 8 }} align="stretch">
+        <Box>
           <Heading
-            as="h1"
-            fontFamily="'Open Sans', sans-serif"
             fontWeight={600}
-            color="#1d3448"
-            fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}
-            lineHeight="50px"
-            mb={2}
+            color="brand.navy"
+            fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}
+            lineHeight="1.25"
           >
-            First Connection Peer
-            <br />
-            Support Program
+            First Connection Peer Support Program
           </Heading>
-          <Heading
-            as="h2"
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={600}
-            color="#1d3448"
-            fontSize={{ base: 'xl', md: '2xl' }}
-            mb={6}
-            mt={8}
-          >
+          <Heading fontWeight={600} color="brand.navy" fontSize={{ base: 'xl', md: '2xl' }} mt={4}>
             Welcome to our application portal!
           </Heading>
-          <Text
-            mb={5}
-            color="#1d3448"
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={400}
-            fontSize="md"
-          >
+        </Box>
+
+        <VStack spacing={4} align="stretch">
+          <Text color="brand.navy" fontSize="md">
             You can learn more about the program{' '}
-            <a href="#" style={{ color: '#056067', textDecoration: 'underline' }}>
+            <a
+              href="#"
+              style={{ color: 'var(--chakra-colors-brand-primary)', textDecoration: 'underline' }}
+            >
               here
             </a>
             .
           </Text>
-          <Text
-            mb={5}
-            color="#1d3448"
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={400}
-            fontSize="md"
-          >
+          <Text color="brand.navy" fontSize="md">
             We&apos;re going to ask you a few questions to get started.
           </Text>
-          <Text
-            mb={8}
-            color="#1d3448"
-            fontFamily="'Open Sans', sans-serif"
-            fontWeight={400}
-            fontSize="md"
-          >
+          <Text color="brand.navy" fontSize="md">
             This form takes ~10 minutes to complete. Your responses will not be saved if you close
             the tab, or exit this web page.
           </Text>
-          <Button
-            w="100%"
-            maxW="518px"
-            mt={2}
-            size="lg"
-            fontWeight={600}
-            fontFamily="'Open Sans', sans-serif"
-            fontSize="lg"
-            bg="#056067"
-            color="white"
-            borderRadius="8px"
-            border="1px solid #056067"
-            boxShadow="none"
-            _hover={{ bg: '#044953' }}
-            px={8}
-            py={3}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            onClick={handleContinueInEnglish}
+        </VStack>
+
+        <Button
+          w="full"
+          size="lg"
+          fontWeight={600}
+          fontSize="lg"
+          bg="brand.primary"
+          color="white"
+          borderRadius="8px"
+          border="1px solid"
+          borderColor="brand.primary"
+          boxShadow="none"
+          _hover={{ bg: 'brand.primaryEmphasis' }}
+          px={8}
+          py={3}
+          onClick={handleContinueInEnglish}
+        >
+          Continue in English &nbsp; &rarr;
+        </Button>
+        <Button
+          w="full"
+          size="lg"
+          fontWeight={600}
+          fontSize="lg"
+          bg="white"
+          color="brand.primary"
+          borderRadius="8px"
+          border="1px solid"
+          borderColor="brand.primary"
+          boxShadow="none"
+          _hover={{ bg: 'gray.50' }}
+          px={8}
+          py={3}
+          onClick={handleContinueInEnglish}
+        >
+          Continue en Francais &nbsp; &rarr;
+        </Button>
+
+        <Text color="brand.navy" fontSize="md" fontWeight={600}>
+          Already have an account?{' '}
+          <Link
+            href="/"
+            style={{
+              color: 'var(--chakra-colors-brand-primary)',
+              textDecoration: 'underline',
+              fontWeight: 600,
+            }}
           >
-            Continue in English &nbsp; &rarr;
-          </Button>
-          <Button
-            w="100%"
-            maxW="518px"
-            mt={4}
-            size="lg"
-            fontWeight={600}
-            fontFamily="'Open Sans', sans-serif"
-            fontSize="lg"
-            bg="white"
-            color="#056067"
-            borderRadius="8px"
-            border="1px solid #056067"
-            boxShadow="none"
-            _hover={{ bg: '#f0f0f0' }}
-            px={8}
-            py={3}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            _focus={{ boxShadow: 'none', outline: 'none' }}
-            _active={{ boxShadow: 'none', outline: 'none' }}
-            onClick={handleContinueInEnglish}
-          >
-            Continue en Francais &nbsp; &rarr;
-          </Button>
-          <Text
-            mt={8}
-            color="#1d3448"
-            fontSize="md"
-            fontWeight={600}
-            fontFamily="'Open Sans', sans-serif"
-          >
-            Already have an account?{' '}
-            <Link
-              href="/"
-              style={{
-                color: '#056067',
-                textDecoration: 'underline',
-                fontWeight: 600,
-                fontFamily: 'Open Sans, sans-serif',
-              }}
-            >
-              Sign In
-            </Link>
-          </Text>
-        </Box>
-      </Flex>
-      {/* Right: Image */}
-      <Box flex="1" display={{ base: 'none', md: 'block' }} position="relative" minH="100vh">
-        <img
-          src="/login.png"
-          alt="First Connection Peer Support"
-          style={{ objectFit: 'cover', objectPosition: '90% 50%', width: '100%', height: '100%' }}
-        />
-      </Box>
-    </Flex>
+            Sign In
+          </Link>
+        </Text>
+      </VStack>
+    </AuthPageLayout>
   );
 }
