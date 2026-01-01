@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, Heading, Button, VStack, HStack, Text, SimpleGrid } from '@chakra-ui/react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { COLORS } from '@/constants/form';
 
 interface CaregiverTwoColumnQualitiesFormProps {
   selectedQualities: string[];
@@ -62,8 +61,8 @@ export function CaregiverTwoColumnQualitiesForm({
         as="h1"
         fontFamily="system-ui, -apple-system, sans-serif"
         fontWeight={600}
-        color={COLORS.veniceBlue}
-        fontSize="28px"
+        color="brand.navy"
+        fontSize={{ base: '24px', md: '28px' }}
         mb={8}
       >
         Volunteer Matching Preferences
@@ -72,13 +71,13 @@ export function CaregiverTwoColumnQualitiesForm({
       <Box mb={10}>
         <HStack gap={3}>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
+            <Box h="3px" bg="gray.300" borderRadius="full" />
           </Box>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
+            <Box h="3px" bg="brand.primary" borderRadius="full" />
           </Box>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
+            <Box h="3px" bg="gray.300" borderRadius="full" />
           </Box>
         </HStack>
       </Box>
@@ -88,14 +87,14 @@ export function CaregiverTwoColumnQualitiesForm({
           as="h2"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontWeight={600}
-          color={COLORS.veniceBlue}
-          fontSize="20px"
+          color="brand.navy"
+          fontSize={{ base: '18px', md: '20px' }}
           mb={3}
         >
           Relevant Qualities in a Volunteer
         </Heading>
         <Text
-          color={COLORS.fieldGray}
+          color="brand.fieldText"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="15px"
           mb={2}
@@ -103,7 +102,7 @@ export function CaregiverTwoColumnQualitiesForm({
           You will be ranking these qualities in the next step.
         </Text>
         <Text
-          color={COLORS.veniceBlue}
+          color="brand.navy"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="15px"
           fontWeight={600}
@@ -116,7 +115,7 @@ export function CaregiverTwoColumnQualitiesForm({
         <VStack gap={5} align="start">
           <Box w="full">
             <Text
-              color={COLORS.veniceBlue}
+              color="brand.navy"
               fontFamily="system-ui, -apple-system, sans-serif"
               fontWeight={500}
               fontSize="14px"
@@ -125,7 +124,7 @@ export function CaregiverTwoColumnQualitiesForm({
               I would prefer that...
             </Text>
             <Text
-              color={COLORS.fieldGray}
+              color="brand.fieldText"
               fontFamily="system-ui, -apple-system, sans-serif"
               fontSize="12px"
               mb={4}
@@ -137,7 +136,7 @@ export function CaregiverTwoColumnQualitiesForm({
             <SimpleGrid columns={{ base: 1, md: 2 }} gap={8} w="full">
               <Box>
                 <Text
-                  color={COLORS.fieldGray}
+                  color="brand.fieldText"
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="12px"
                   mb={3}
@@ -155,7 +154,7 @@ export function CaregiverTwoColumnQualitiesForm({
                       <Text
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
-                        color={COLORS.veniceBlue}
+                        color="brand.navy"
                       >
                         {opt.label}
                       </Text>
@@ -166,7 +165,7 @@ export function CaregiverTwoColumnQualitiesForm({
 
               <Box>
                 <Text
-                  color={COLORS.fieldGray}
+                  color="brand.fieldText"
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="12px"
                   mb={3}
@@ -184,7 +183,7 @@ export function CaregiverTwoColumnQualitiesForm({
                       <Text
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
-                        color={COLORS.veniceBlue}
+                        color="brand.navy"
                       >
                         {opt.label}
                       </Text>
@@ -197,15 +196,15 @@ export function CaregiverTwoColumnQualitiesForm({
         </VStack>
       </Box>
 
-      <Box w="full" display="flex" justifyContent="flex-end">
+      <Box w="full" display="flex" justifyContent={{ base: 'stretch', sm: 'flex-end' }}>
         <Button
-          bg={COLORS.teal}
+          bg="brand.primary"
           color="white"
-          _hover={{ bg: COLORS.teal }}
-          _active={{ bg: COLORS.teal }}
+          _hover={{ bg: 'brand.primaryEmphasis' }}
+          _active={{ bg: 'brand.primaryEmphasis' }}
           onClick={onNext}
           disabled={selectedQualities.length === 0}
-          w="auto"
+          w={{ base: 'full', sm: 'auto' }}
           h="40px"
           fontSize="14px"
           fontWeight={500}
