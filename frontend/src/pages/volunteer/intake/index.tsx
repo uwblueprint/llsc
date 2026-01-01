@@ -239,7 +239,7 @@ export default function VolunteerIntakePage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_TODO]}>
-        <FormPageLayout>
+        <FormPageLayout hasDropdownOpen={hasDropdownOpen}>
           {currentStepType === 'experience-personal' && (
             <PersonalInfoForm
               formType="volunteer"

@@ -14,16 +14,15 @@ interface StepIndicatorProps {
 
 /**
  * Visual progress indicator for multi-step forms.
- * Always renders 3 segments, highlighting the current step.
+ * Renders the specified number of segments, highlighting the current step.
  *
  * @example
  * ```tsx
- * <StepIndicator currentStep={2} />
+ * <StepIndicator currentStep={2} totalSteps={3} />
  * ```
  */
-export function StepIndicator({ currentStep }: StepIndicatorProps) {
-  // Always render 3 segments as per current implementation
-  const segments = 3;
+export function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
+  const segments = totalSteps ?? 3;
 
   return (
     <Box mb={10}>

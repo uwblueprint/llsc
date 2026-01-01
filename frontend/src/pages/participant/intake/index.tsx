@@ -230,7 +230,7 @@ export default function ParticipantIntakePage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.INTAKE_TODO]}>
-        <FormPageLayout>
+        <FormPageLayout hasDropdownOpen={hasDropdownOpen}>
           {currentStepType === 'experience-personal' && (
             <PersonalInfoForm
               formType="participant"

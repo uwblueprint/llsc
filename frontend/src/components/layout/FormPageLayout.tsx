@@ -13,6 +13,11 @@ interface FormPageLayoutProps {
    * @default "gray.50"
    */
   bg?: string;
+  /**
+   * Whether a dropdown is currently open (adds extra bottom padding to prevent clipping)
+   * @default false
+   */
+  hasDropdownOpen?: boolean;
 }
 
 /**
@@ -26,9 +31,21 @@ interface FormPageLayoutProps {
  * </FormPageLayout>
  * ```
  */
-export function FormPageLayout({ children, maxW = '1200px', bg = 'gray.50' }: FormPageLayoutProps) {
+export function FormPageLayout({
+  children,
+  maxW = '1200px',
+  bg = 'gray.50',
+  hasDropdownOpen = false,
+}: FormPageLayoutProps) {
   return (
-    <Flex minH="100vh" bg={bg} justify="center" py={12} overflow="visible">
+    <Flex
+      minH="100vh"
+      bg={bg}
+      justify="center"
+      pt={12}
+      pb={hasDropdownOpen ? '50vh' : 12}
+      overflow="visible"
+    >
       <Box
         w="full"
         maxW={maxW}

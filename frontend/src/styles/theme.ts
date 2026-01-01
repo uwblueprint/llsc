@@ -6,6 +6,8 @@ const brandTokens = defineTokens({
       primary: { value: '#056067' },
       primaryEmphasis: { value: '#044953' },
       primaryMuted: { value: '#B3CED1' },
+      primaryAlpha: { value: 'rgba(5, 96, 103, 0.08)' }, // 8% opacity for subtle hover states
+      primaryLight: { value: '#E6F4F5' }, // Very light teal for hover backgrounds
       navy: { value: '#1D3448' },
       navyMuted: { value: '#41576B' },
       fieldText: { value: '#414651' },
