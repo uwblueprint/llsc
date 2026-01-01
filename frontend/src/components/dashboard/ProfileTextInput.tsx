@@ -16,6 +16,7 @@ interface ProfileTextInputProps {
   error?: string;
   onBlur?: () => void;
   icon?: React.ReactNode;
+  readOnly?: boolean;
 }
 
 const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
@@ -31,6 +32,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
   error,
   onBlur,
   icon,
+  readOnly = false,
 }) => {
   const styledLabel = (
     <Box>
@@ -71,7 +73,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
   );
 
   const inputStyles = {
-    background: 'white',
+    background: readOnly ? '#F6F6F6' : 'white',
     borderColor: error ? '#EF4444' : '#D5D7DA',
     fontFamily: "'Open Sans', sans-serif",
     border: `1px solid ${error ? '#EF4444' : '#D5D7DA'}`,
@@ -84,10 +86,11 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
     fontWeight: 400,
     lineHeight: '24px',
     letterSpacing: '0%',
-    color: '#181D27',
+    color: readOnly ? '#9E9E9E' : '#181D27',
     width: '100%',
     outline: 'none',
     transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+    cursor: readOnly ? 'not-allowed' : 'text',
   };
 
   if (isTextarea) {
@@ -132,21 +135,26 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        readOnly={readOnly}
         style={{
           ...inputStyles,
           height: '44px',
         }}
         onFocus={(e) => {
-          e.target.style.borderColor = error ? '#EF4444' : '#319795';
-          e.target.style.boxShadow = error
-            ? '0 0 0 2px rgba(239, 68, 68, 0.2)'
-            : '0 0 0 2px rgba(49, 151, 149, 0.2)';
-          onFocus?.();
+          if (!readOnly) {
+            e.target.style.borderColor = error ? '#EF4444' : '#319795';
+            e.target.style.boxShadow = error
+              ? '0 0 0 2px rgba(239, 68, 68, 0.2)'
+              : '0 0 0 2px rgba(49, 151, 149, 0.2)';
+            onFocus?.();
+          }
         }}
         onBlur={(e) => {
-          e.target.style.borderColor = error ? '#EF4444' : '#D5D7DA';
-          e.target.style.boxShadow = 'none';
-          onBlur?.();
+          if (!readOnly) {
+            e.target.style.borderColor = error ? '#EF4444' : '#D5D7DA';
+            e.target.style.boxShadow = 'none';
+            onBlur?.();
+          }
         }}
       />
       {error && (

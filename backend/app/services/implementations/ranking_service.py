@@ -1,9 +1,10 @@
 from typing import Dict, List
+from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.models import FormStatus, Quality, User, UserData
-from app.models.RankingPreference import RankingPreference
+from app.models import Form, FormSubmission, Quality, User, UserData
+from app.models.User import FormStatus
 
 
 class RankingService:
@@ -15,6 +16,14 @@ class RankingService:
         if not user:
             return None
         return self.db.query(UserData).filter(UserData.user_id == user.id).first()
+
+    def _load_user_and_data_by_user_id(self, user_id: str) -> UserData | None:
+        """Load UserData by user_id (UUID string) for admin use."""
+        try:
+            user_uuid = UUID(user_id)
+        except ValueError:
+            return None
+        return self.db.query(UserData).filter(UserData.user_id == user_uuid).first()
 
     def _infer_case(self, data: UserData) -> Dict[str, bool]:
         has_cancer = (data.has_blood_cancer or "").lower() == "yes"
@@ -88,14 +97,18 @@ class RankingService:
                     {"kind": "experience", "id": e.id, "name": getattr(e, "name", str(e.id)), "scope": scope}
                 )
 
-        if target == "patient":
-            if case["patient"]:
-                add_txs(data.treatments or [], "self")
-                add_exps(data.experiences or [], "self")
-            else:
-                add_txs(data.loved_one_treatments or [], "loved_one")
-                add_exps(data.loved_one_experiences or [], "loved_one")
-        else:  # caregiver target
+        # Show treatments/experiences based on the user's case (their actual situation)
+        # regardless of which target (patient/caregiver) they're ranking for
+        if case["patient"]:
+            # Patient only: show self treatments/experiences only
+            add_txs(data.treatments or [], "self")
+            add_exps(data.experiences or [], "self")
+        elif case["caregiver_without_cancer"]:
+            # Caregiver without cancer: show loved_one treatments/experiences only
+            add_txs(data.loved_one_treatments or [], "loved_one")
+            add_exps(data.loved_one_experiences or [], "loved_one")
+        elif case["caregiver_with_cancer"]:
+            # Caregiver with cancer: show BOTH self and loved_one treatments/experiences
             add_txs(data.treatments or [], "self")
             add_exps(data.experiences or [], "self")
             add_txs(data.loved_one_treatments or [], "loved_one")
@@ -115,6 +128,22 @@ class RankingService:
 
     def get_options(self, user_auth_id: str, target: str) -> Dict:
         data = self._load_user_and_data(user_auth_id)
+        if not data:
+            # Return just static qualities if no data
+            dummy_case = {"patient": False, "caregiver_with_cancer": False, "caregiver_without_cancer": False}
+            return {
+                "static_qualities": self._static_qualities(UserData(), target, dummy_case),
+                "dynamic_options": [],
+            }
+        case = self._infer_case(data)
+        return {
+            "static_qualities": self._static_qualities(data, target, case),
+            "dynamic_options": self._dynamic_options(data, target, case),
+        }
+
+    def get_options_for_user_id(self, user_id: str, target: str) -> Dict:
+        """Get ranking options for a specific user_id (for admin use)."""
+        data = self._load_user_and_data_by_user_id(user_id)
         if not data:
             # Return just static qualities if no data
             dummy_case = {"patient": False, "caregiver_with_cancer": False, "caregiver_without_cancer": False}
@@ -149,19 +178,21 @@ class RankingService:
             "caring_for_someone": data.caring_for_someone,
         }
 
-    # Preferences persistence
+    # Preferences persistence - creates form_submission with pending_approval status
+    # Actual processing to ranking_preferences happens when admin approves
     def save_preferences(self, user_auth_id: str, target: str, items: List[Dict]) -> None:
         user = self.db.query(User).filter(User.auth_id == user_auth_id).first()
         if not user:
             raise ValueError("User not found")
 
-        # Validate and normalize
-        normalized: List[RankingPreference] = []
+        # Validate input (fail fast - don't create submission if data is invalid)
         if len(items) > 5:
             raise ValueError("A maximum of 5 ranking items is allowed")
 
         seen_ranks: set[int] = set()
         seen_keys: set[tuple] = set()
+        validated_items = []
+
         for item in items:
             kind = item.get("kind")
             scope = item.get("scope")
@@ -185,31 +216,52 @@ class RankingService:
                 raise ValueError("duplicate item in payload")
             seen_keys.add(key)
 
-            pref = RankingPreference(
-                user_id=user.id,
-                target_role=target,
-                kind=kind,
-                quality_id=item_id if kind == "quality" else None,
-                treatment_id=item_id if kind == "treatment" else None,
-                experience_id=item_id if kind == "experience" else None,
-                scope=scope,
-                rank=rank,
+            validated_items.append(
+                {
+                    "kind": kind,
+                    "id": item_id,
+                    "scope": scope,
+                    "rank": rank,
+                }
             )
-            normalized.append(pref)
 
-        # Overwrite strategy: delete existing rows for (user, target), then bulk insert
-        (
-            self.db.query(RankingPreference)
-            .filter(RankingPreference.user_id == user.id, RankingPreference.target_role == target)
-            .delete(synchronize_session=False)
-        )
-        if normalized:
-            self.db.bulk_save_objects(normalized)
+        # NOTE: We no longer process to ranking_preferences here.
+        # That happens when admin approves the form submission.
 
-        if user.form_status in (
-            FormStatus.RANKING_TODO,
-            FormStatus.RANKING_SUBMITTED,
-        ):
+        # Update user form_status to RANKING_SUBMITTED when they submit
+        if user.form_status == FormStatus.RANKING_TODO:
             user.form_status = FormStatus.RANKING_SUBMITTED
+
+        # Create or update form_submission record for ranking form
+        ranking_form = self.db.query(Form).filter(Form.type == "ranking", Form.name == "Ranking Form").first()
+        if not ranking_form:
+            raise ValueError("Ranking Form not found in database")
+
+        # Check if submission already exists
+        existing_submission = (
+            self.db.query(FormSubmission)
+            .filter(FormSubmission.user_id == user.id, FormSubmission.form_id == ranking_form.id)
+            .first()
+        )
+
+        # Build answers dict from validated preferences
+        answers = {
+            "target": target,
+            "preferences": validated_items,
+        }
+
+        if existing_submission:
+            # Update existing submission and reset to pending
+            existing_submission.answers = answers
+            existing_submission.status = "pending_approval"
+        else:
+            # Create new submission with pending status
+            new_submission = FormSubmission(
+                form_id=ranking_form.id,
+                user_id=user.id,
+                answers=answers,
+                status="pending_approval",
+            )
+            self.db.add(new_submission)
 
         self.db.commit()

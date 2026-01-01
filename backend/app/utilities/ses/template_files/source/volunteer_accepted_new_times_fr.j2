@@ -1,0 +1,11 @@
+{% extends "base_email_fr.html" %}
+
+{% block content %}
+<p class="MsoNormal">Bonjour {{first_name}},</p>
+<p>Vous avez rendez-vous avec {{volunteer_name}} le {{date}} à {{time}} {{timezone}}. Veuillez vous connecter à votre compte pour voir ses coordonnées.</p>
+<p align="center" style="text-align:center;margin-top:20px;margin-bottom:20px;">
+  <a href="{{scheduled_calls_url}}" style="background-color:#056067;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;font-weight:bold;display:inline-block;">
+    Voir les appels planifiés
+  </a>
+</p>
+{% endblock %}

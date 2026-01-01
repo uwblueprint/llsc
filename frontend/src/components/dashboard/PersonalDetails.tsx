@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Box, Text, HStack, Stack, VStack, Flex, Textarea, Button } from '@chakra-ui/react';
+import { Box, VStack, Flex, Button } from '@chakra-ui/react';
 import { FiHeart } from 'react-icons/fi';
 import ProfileTextInput from './ProfileTextInput';
 import ProfileDropdown from './ProfileDropdown';
 import ProfileHeader from './ProfileHeader';
-import { GENDER_DROPDOWN_OPTIONS, TIMEZONE_OPTIONS, COLORS } from '@/constants/form';
+import { GENDER_DROPDOWN_OPTIONS, TIMEZONE_OPTIONS } from '@/constants/form';
 import { validateEmail, validateBirthday, validatePronouns } from '@/utils/validationUtils';
 
 interface PersonalDetailsProps {
@@ -16,6 +16,7 @@ interface PersonalDetailsProps {
     pronouns: string;
     timezone: string;
     overview: string;
+    preferredLanguage?: string | undefined;
   };
   lovedOneDetails?: {
     birthday: string;
@@ -30,6 +31,7 @@ interface PersonalDetailsProps {
       pronouns: string;
       timezone: string;
       overview: string;
+      preferredLanguage?: string;
     }>
   >;
   setLovedOneDetails?: React.Dispatch<
@@ -39,6 +41,7 @@ interface PersonalDetailsProps {
     } | null>
   >;
   onSave?: (field: string, value: string) => Promise<void>;
+  isVolunteer?: boolean;
 }
 
 const PersonalDetails: React.FC<PersonalDetailsProps> = ({
@@ -47,6 +50,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
   setPersonalDetails,
   setLovedOneDetails,
   onSave,
+  isVolunteer = false,
 }) => {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -69,7 +73,17 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
         validation = validateBirthday(value, 18); // Require at least 18 years old
         break;
       case 'lovedOneBirthday':
-        validation = validateBirthday(value, 0); // No age requirement for loved one
+        // Age field - just validate it's not empty and is a reasonable number
+        if (!value || !value.trim()) {
+          validation = { isValid: false, error: 'Age is required' };
+        } else {
+          const ageNum = parseInt(value, 10);
+          if (isNaN(ageNum) || ageNum < 0 || ageNum > 1000) {
+            validation = { isValid: false, error: 'Please enter a valid age (0-1000)' };
+          } else {
+            validation = { isValid: true };
+          }
+        }
         break;
       case 'pronouns':
         validation = validatePronouns(value);
@@ -95,11 +109,14 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
   };
 
   const handleBlur = (fieldName: string) => {
-    let value;
+    let value: string;
     if (fieldName === 'lovedOneBirthday') {
       value = lovedOneDetails?.birthday || '';
+    } else if (fieldName === 'lovedOneGender') {
+      value = lovedOneDetails?.gender || '';
     } else {
-      value = personalDetails[fieldName as keyof typeof personalDetails];
+      const fieldValue = personalDetails[fieldName as keyof typeof personalDetails];
+      value = typeof fieldValue === 'string' ? fieldValue : '';
     }
     validateField(fieldName, value);
   };
@@ -110,11 +127,14 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
       return;
     }
 
-    let value;
+    let value: string;
     if (editingField === 'lovedOneBirthday') {
       value = lovedOneDetails?.birthday || '';
+    } else if (editingField === 'lovedOneGender') {
+      value = lovedOneDetails?.gender || '';
     } else {
-      value = personalDetails[editingField as keyof typeof personalDetails];
+      const fieldValue = personalDetails[editingField as keyof typeof personalDetails];
+      value = typeof fieldValue === 'string' ? fieldValue : '';
     }
 
     // Validate before saving
@@ -163,7 +183,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 fontSize="0.875rem"
                 _hover={{ bg: '#044d52' }}
                 _active={{ bg: '#033e42' }}
-                isDisabled={saving}
+                disabled={saving}
               >
                 {saving ? 'Saving...' : 'Save'}
               </Button>
@@ -193,7 +213,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 fontSize="0.875rem"
                 _hover={{ bg: '#044d52' }}
                 _active={{ bg: '#033e42' }}
-                isDisabled={saving}
+                disabled={saving}
               >
                 {saving ? 'Saving...' : 'Save'}
               </Button>
@@ -222,7 +242,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 fontSize="0.875rem"
                 _hover={{ bg: '#044d52' }}
                 _active={{ bg: '#033e42' }}
-                isDisabled={saving}
+                disabled={saving}
               >
                 {saving ? 'Saving...' : 'Save'}
               </Button>
@@ -235,11 +255,19 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
             label="Email Address"
             value={personalDetails.email}
             onChange={(e) => setPersonalDetails((prev) => ({ ...prev, email: e.target.value }))}
-            onFocus={() => handleInputFocus('email')}
-            onBlur={() => handleBlur('email')}
+            readOnly={true}
             error={errors.email}
           />
-          {editingField === 'email' && (
+
+          <ProfileDropdown
+            label="Gender"
+            value={personalDetails.gender}
+            onChange={(e) => setPersonalDetails((prev) => ({ ...prev, gender: e.target.value }))}
+            onFocus={() => handleInputFocus('gender')}
+            onBlur={() => handleBlur('gender')}
+            options={GENDER_DROPDOWN_OPTIONS}
+          />
+          {editingField === 'gender' && (
             <Box mt={2} display="flex" justifyContent="flex-end">
               <Button
                 onClick={handleSave}
@@ -253,7 +281,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 fontSize="0.875rem"
                 _hover={{ bg: '#044d52' }}
                 _active={{ bg: '#033e42' }}
-                isDisabled={saving}
+                disabled={saving}
               >
                 {saving ? 'Saving...' : 'Save'}
               </Button>
@@ -261,68 +289,127 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
           )}
 
           <ProfileDropdown
-            label="Gender"
-            value={personalDetails.gender}
-            onChange={(e) => setPersonalDetails((prev) => ({ ...prev, gender: e.target.value }))}
-            options={GENDER_DROPDOWN_OPTIONS}
-          />
-
-          <ProfileDropdown
             label="Timezone"
             value={personalDetails.timezone}
-            onChange={(e) => setPersonalDetails((prev) => ({ ...prev, timezone: e.target.value }))}
+            onChange={(e) => {
+              setPersonalDetails((prev) => ({ ...prev, timezone: e.target.value }));
+              handleInputFocus('timezone');
+            }}
+            onFocus={() => handleInputFocus('timezone')}
+            onBlur={() => handleBlur('timezone')}
             options={TIMEZONE_OPTIONS.map((option) => ({
               value: option.value,
               label: `${option.label} • ${new Date().toLocaleTimeString('en-US', {
                 timeZone:
-                  option.value === 'Eastern Standard Time (EST)'
-                    ? 'America/New_York'
-                    : option.value === 'Pacific Standard Time (PST)'
-                      ? 'America/Los_Angeles'
-                      : option.value === 'Central Standard Time (CST)'
-                        ? 'America/Chicago'
-                        : option.value === 'Mountain Standard Time (MST)'
-                          ? 'America/Denver'
-                          : 'America/New_York',
+                  option.value === 'Newfoundland Standard Time (NST)'
+                    ? 'America/St_Johns'
+                    : option.value === 'Atlantic Standard Time (AST)'
+                      ? 'America/Halifax'
+                      : option.value === 'Eastern Standard Time (EST)'
+                        ? 'America/New_York'
+                        : option.value === 'Pacific Standard Time (PST)'
+                          ? 'America/Los_Angeles'
+                          : option.value === 'Central Standard Time (CST)'
+                            ? 'America/Chicago'
+                            : option.value === 'Mountain Standard Time (MST)'
+                              ? 'America/Denver'
+                              : 'America/New_York',
                 hour12: true,
                 hour: 'numeric',
                 minute: '2-digit',
               })}`,
             }))}
           />
+          {editingField === 'timezone' && (
+            <Box mt={2} display="flex" justifyContent="flex-end">
+              <Button
+                onClick={handleSave}
+                bg="#056067"
+                color="white"
+                px={4}
+                py={1}
+                borderRadius="6px"
+                fontFamily="'Open Sans', sans-serif"
+                fontWeight={600}
+                fontSize="0.875rem"
+                _hover={{ bg: '#044d52' }}
+                _active={{ bg: '#033e42' }}
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </Button>
+            </Box>
+          )}
+          <ProfileDropdown
+            label="Preferred Language"
+            value={personalDetails.preferredLanguage || 'en'}
+            onChange={(e) => {
+              setPersonalDetails((prev) => ({ ...prev, preferredLanguage: e.target.value }));
+              handleInputFocus('preferredLanguage');
+            }}
+            onFocus={() => handleInputFocus('preferredLanguage')}
+            onBlur={() => handleBlur('preferredLanguage')}
+            options={[
+              { value: 'en', label: 'English' },
+              { value: 'fr', label: 'Français' },
+            ]}
+          />
+          {editingField === 'preferredLanguage' && (
+            <Box mt={2} display="flex" justifyContent="flex-end">
+              <Button
+                onClick={handleSave}
+                bg="#056067"
+                color="white"
+                px={4}
+                py={1}
+                borderRadius="6px"
+                fontFamily="'Open Sans', sans-serif"
+                fontWeight={600}
+                fontSize="0.875rem"
+                _hover={{ bg: '#044d52' }}
+                _active={{ bg: '#033e42' }}
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </Button>
+            </Box>
+          )}
         </VStack>
       </Flex>
 
-      <Box mt={8}>
-        <ProfileTextInput
-          label="Overview"
-          value={personalDetails.overview}
-          onChange={(e) => setPersonalDetails((prev) => ({ ...prev, overview: e.target.value }))}
-          isTextarea={true}
-          rows={2}
-          helperText="Explain your story! Participants will be able to learn more about you."
-          onFocus={() => handleInputFocus('overview')}
-        />
-        {editingField === 'overview' && (
-          <Box mt={2} display="flex" justifyContent="flex-end">
-            <Button
-              onClick={handleSave}
-              bg="#056067"
-              color="white"
-              px={4}
-              py={1}
-              borderRadius="6px"
-              fontFamily="'Open Sans', sans-serif"
-              fontWeight={600}
-              fontSize="0.875rem"
-              _hover={{ bg: '#044d52' }}
-              _active={{ bg: '#033e42' }}
-            >
-              Save
-            </Button>
-          </Box>
-        )}
-      </Box>
+      {/* Overview section - only for volunteers */}
+      {isVolunteer && (
+        <Box mt={8}>
+          <ProfileTextInput
+            label="Overview"
+            value={personalDetails.overview}
+            onChange={(e) => setPersonalDetails((prev) => ({ ...prev, overview: e.target.value }))}
+            isTextarea={true}
+            rows={2}
+            helperText="Explain your story! Participants will be able to learn more about you."
+            onFocus={() => handleInputFocus('overview')}
+          />
+          {editingField === 'overview' && (
+            <Box mt={2} display="flex" justifyContent="flex-end">
+              <Button
+                onClick={handleSave}
+                bg="#056067"
+                color="white"
+                px={4}
+                py={1}
+                borderRadius="6px"
+                fontFamily="'Open Sans', sans-serif"
+                fontWeight={600}
+                fontSize="0.875rem"
+                _hover={{ bg: '#044d52' }}
+                _active={{ bg: '#033e42' }}
+              >
+                Save
+              </Button>
+            </Box>
+          )}
+        </Box>
+      )}
 
       {/* Loved One Section */}
       {lovedOneDetails && (
@@ -332,7 +419,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
           <Flex gap="6.5%" mt="32px" align="start">
             <VStack gap={8} flex="1" align="stretch">
               <ProfileTextInput
-                label="Your Loved One's Birthday"
+                label="Your Loved One's Age"
                 value={lovedOneDetails.birthday}
                 onChange={(e) =>
                   setLovedOneDetails &&
@@ -343,7 +430,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 onFocus={() => handleInputFocus('lovedOneBirthday')}
                 onBlur={() => handleBlur('lovedOneBirthday')}
                 error={errors.lovedOneBirthday}
-                placeholder="DD/MM/YYYY"
+                placeholder="Age"
                 icon={<FiHeart size={14} color="#1D3448" />}
               />
               {editingField === 'lovedOneBirthday' && (
@@ -360,7 +447,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                     fontSize="0.875rem"
                     _hover={{ bg: '#044d52' }}
                     _active={{ bg: '#033e42' }}
-                    isDisabled={saving}
+                    disabled={saving}
                   >
                     {saving ? 'Saving...' : 'Save'}
                   </Button>
@@ -376,9 +463,31 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                   setLovedOneDetails &&
                   setLovedOneDetails((prev) => (prev ? { ...prev, gender: e.target.value } : null))
                 }
+                onFocus={() => handleInputFocus('lovedOneGender')}
+                onBlur={() => handleBlur('lovedOneGender')}
                 options={GENDER_DROPDOWN_OPTIONS}
                 icon={<FiHeart size={14} color="#1D3448" />}
               />
+              {editingField === 'lovedOneGender' && (
+                <Box mt={2} display="flex" justifyContent="flex-end">
+                  <Button
+                    onClick={handleSave}
+                    bg="#056067"
+                    color="white"
+                    px={4}
+                    py={1}
+                    borderRadius="6px"
+                    fontFamily="'Open Sans', sans-serif"
+                    fontWeight={600}
+                    fontSize="0.875rem"
+                    _hover={{ bg: '#044d52' }}
+                    _active={{ bg: '#033e42' }}
+                    disabled={saving}
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </Button>
+                </Box>
+              )}
             </VStack>
           </Flex>
         </>

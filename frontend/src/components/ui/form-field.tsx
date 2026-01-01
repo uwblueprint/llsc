@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text, Box } from '@chakra-ui/react';
 import { Field } from './field';
-import { COLORS } from '@/constants/form';
 
 interface FormFieldProps {
   label: string;
@@ -16,7 +15,7 @@ export const FormField: React.FC<FormFieldProps> = ({ label, error, children, fl
       <Field
         label={
           <Text
-            color={COLORS.veniceBlue}
+            color="brand.navy"
             fontWeight={500}
             fontSize="14px"
             fontFamily="system-ui, -apple-system, sans-serif"

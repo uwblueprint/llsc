@@ -1,0 +1,18 @@
+Bonjour {{first_name}},
+
+Pour confirmer votre adresse courriel, cliquez sur le lien suivant : {{verification_link}}
+
+Si le lien ne fonctionne pas, vous pouvez le copier et le coller dans la barre d'adresse de votre navigateur.
+
+Le lien expirera dans 24 heures. Si vous n'avez pas demandé à créer de compte, veuillez ignorer ce message.
+
+---
+
+Restez à jour : suivez-nous dès aujourd'hui!
+
+© Société de leucémie et lymphome du Canada
+Tous droits réservés.
+No d'enregistrement à titre d'organisme de bienfaisance : 10762 3654 RR0001
+
+REMARQUE : Veuillez ne pas répondre au présent courriel. Il est envoyé automatiquement à partir d'une boîte de messagerie non surveillée – aucune réponse ne sera reçue ou traitée. Pour toute question ou préoccupation concernant le programme de soutien par les pairs Premier contact, écrivez à FirstConnection@bloodcancers.ca.
+

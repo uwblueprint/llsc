@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, Heading, Button, VStack, HStack, Text } from '@chakra-ui/react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { COLORS } from '@/constants/form';
 
 const CAREGIVER_QUALITIES = [
   'the same age as my loved one',
@@ -39,8 +38,8 @@ export function CaregiverQualitiesForm({
         as="h1"
         fontFamily="system-ui, -apple-system, sans-serif"
         fontWeight={600}
-        color={COLORS.veniceBlue}
-        fontSize="28px"
+        color="brand.navy"
+        fontSize={{ base: '24px', md: '28px' }}
         mb={8}
       >
         Volunteer Matching Preferences
@@ -49,13 +48,13 @@ export function CaregiverQualitiesForm({
       <Box mb={10}>
         <HStack gap={3}>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
+            <Box h="3px" bg="gray.300" borderRadius="full" />
           </Box>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
+            <Box h="3px" bg="brand.primary" borderRadius="full" />
           </Box>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
+            <Box h="3px" bg="gray.300" borderRadius="full" />
           </Box>
         </HStack>
       </Box>
@@ -65,14 +64,14 @@ export function CaregiverQualitiesForm({
           as="h2"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontWeight={600}
-          color={COLORS.veniceBlue}
-          fontSize="20px"
+          color="brand.navy"
+          fontSize={{ base: '18px', md: '20px' }}
           mb={3}
         >
           Relevant Qualities in a Volunteer
         </Heading>
         <Text
-          color={COLORS.fieldGray}
+          color="brand.fieldText"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="15px"
           mb={2}
@@ -80,7 +79,7 @@ export function CaregiverQualitiesForm({
           You will be ranking these qualities in the next step.
         </Text>
         <Text
-          color={COLORS.veniceBlue}
+          color="brand.navy"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="15px"
           fontWeight={600}
@@ -93,7 +92,7 @@ export function CaregiverQualitiesForm({
         <VStack gap={5}>
           <Box w="full">
             <Text
-              color={COLORS.veniceBlue}
+              color="brand.navy"
               fontFamily="system-ui, -apple-system, sans-serif"
               fontWeight={500}
               fontSize="14px"
@@ -102,7 +101,7 @@ export function CaregiverQualitiesForm({
               I would prefer a volunteer with...
             </Text>
             <Text
-              color={COLORS.fieldGray}
+              color="brand.fieldText"
               fontFamily="system-ui, -apple-system, sans-serif"
               fontSize="12px"
               mb={4}
@@ -121,7 +120,7 @@ export function CaregiverQualitiesForm({
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                   >
                     {opt.label}
                   </Text>
@@ -132,15 +131,15 @@ export function CaregiverQualitiesForm({
         </VStack>
       </Box>
 
-      <Box w="full" display="flex" justifyContent="flex-end">
+      <Box w="full" display="flex" justifyContent={{ base: 'stretch', sm: 'flex-end' }}>
         <Button
-          bg={COLORS.teal}
+          bg="brand.primary"
           color="white"
-          _hover={{ bg: COLORS.teal }}
-          _active={{ bg: COLORS.teal }}
+          _hover={{ bg: 'brand.primaryEmphasis' }}
+          _active={{ bg: 'brand.primaryEmphasis' }}
           onClick={onNext}
           disabled={selectedQualities.length === 0}
-          w="auto"
+          w={{ base: 'full', sm: 'auto' }}
           h="40px"
           fontSize="14px"
           fontWeight={500}

@@ -1,49 +1,22 @@
 import React from 'react';
-import { Box, Heading, Button, VStack, HStack, Text } from '@chakra-ui/react';
+import { Box, Heading, Button, VStack, Text } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { Input } from '@chakra-ui/react';
 import { InputGroup } from '@/components/ui/input-group';
 import { FormField } from '@/components/ui/form-field';
 import { ExperienceTypeSection } from '@/components/intake/experience-type-section';
-import { COLORS, PROVINCES, VALIDATION, ExperienceData, PersonalData } from '@/constants/form';
-// import { CustomRadio } from '@/components/CustomRadio';
-import { useRouter } from 'next/router';
+import { ResponsiveFieldGroup } from '@/components/layout';
+import { StepIndicator } from '@/components/ui';
+import {
+  PROVINCES,
+  VALIDATION,
+  ExperienceData,
+  PersonalData,
+  getIntakeFormTitle,
+  IntakeFormType,
+} from '@/constants/form';
 import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
 import { Checkbox } from '@/components/ui/checkbox';
-
-// Reusable Select component to replace inline styling
-type StyledSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
-  children: React.ReactNode;
-  error?: boolean;
-};
-
-const StyledSelect = React.forwardRef<HTMLSelectElement, StyledSelectProps>(
-  ({ children, error, style, ...props }, ref) => (
-    <select
-      ref={ref}
-      {...props}
-      style={{
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        fontSize: '14px',
-        color: COLORS.veniceBlue,
-        borderColor: error ? '#ef4444' : '#d1d5db',
-        borderRadius: '6px',
-        height: '40px',
-        width: '100%',
-        padding: '0 12px',
-        border: '1px solid',
-        outline: 'none',
-        backgroundColor: 'white',
-        textAlign: 'left',
-        direction: 'ltr',
-        ...(style || {}),
-      }}
-    >
-      {children}
-    </select>
-  ),
-);
-StyledSelect.displayName = 'StyledSelect';
 
 interface PersonalInfoFormData {
   hasBloodCancer: 'yes' | 'no' | '';
@@ -69,7 +42,7 @@ interface PersonalInfoFormData {
 }
 
 interface PersonalInfoFormProps {
-  formType: 'participant' | 'volunteer';
+  formType: IntakeFormType;
   onSubmit: (experienceData: ExperienceData, personalData: PersonalData) => void;
   onDropdownOpenChange?: (isOpen: boolean) => void;
 }
@@ -79,7 +52,6 @@ export function PersonalInfoForm({
   onSubmit,
   onDropdownOpenChange,
 }: PersonalInfoFormProps) {
-  const router = useRouter();
   const {
     control,
     handleSubmit,
@@ -109,6 +81,8 @@ export function PersonalInfoForm({
     },
   });
 
+  const isVolunteerFlow = formType === 'volunteer' || formType === 'become_volunteer';
+
   const onFormSubmit = (data: PersonalInfoFormData) => {
     // Validate required experience fields
     if (!data.hasBloodCancer || !data.caringForSomeone) {
@@ -116,7 +90,7 @@ export function PersonalInfoForm({
     }
 
     // Validate all eligibility criteria are checked (only for volunteers)
-    if (formType === 'volunteer') {
+    if (isVolunteerFlow) {
       const allChecked = Object.values(data.eligibilityCriteria).every(
         (checked) => checked === true,
       );
@@ -143,10 +117,7 @@ export function PersonalInfoForm({
     onSubmit(experienceData, personalData);
   };
 
-  const formTitle =
-    formType === 'participant'
-      ? 'First Connection Participant Form'
-      : 'First Connection Volunteer Form';
+  const formTitle = getIntakeFormTitle(formType);
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
@@ -155,7 +126,7 @@ export function PersonalInfoForm({
         as="h1"
         fontFamily="system-ui, -apple-system, sans-serif"
         fontWeight={600}
-        color={COLORS.veniceBlue}
+        color="brand.navy"
         fontSize="28px"
         mb={8}
       >
@@ -163,19 +134,7 @@ export function PersonalInfoForm({
       </Heading>
 
       {/* Progress Bar */}
-      <Box mb={10}>
-        <HStack gap={3}>
-          <Box flex="1">
-            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
-          </Box>
-          <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
-          </Box>
-          <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
-          </Box>
-        </HStack>
-      </Box>
+      <StepIndicator currentStep={1} />
 
       {/* Experience Type Section */}
       <ExperienceTypeSection control={control} errors={errors} />
@@ -186,14 +145,14 @@ export function PersonalInfoForm({
           as="h2"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontWeight={600}
-          color={COLORS.veniceBlue}
+          color="brand.navy"
           fontSize="20px"
           mb={3}
         >
           Personal Information
         </Heading>
         <Text
-          color={COLORS.fieldGray}
+          color="brand.fieldText"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="15px"
           mb={8}
@@ -201,10 +160,10 @@ export function PersonalInfoForm({
           Please provide your contact details and address.
         </Text>
 
-        <VStack gap={5}>
+        <VStack gap={5} align="stretch">
           {/* Name Fields */}
-          <HStack gap={4} w="full">
-            <FormField label="First Name" error={errors.firstName?.message} flex="1">
+          <ResponsiveFieldGroup>
+            <FormField label="First Name" error={errors.firstName?.message}>
               <Controller
                 name="firstName"
                 control={control}
@@ -216,12 +175,15 @@ export function PersonalInfoForm({
                       placeholder="Enter your first name"
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
-                      color={COLORS.veniceBlue}
+                      color="brand.navy"
                       borderColor={errors.firstName ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
-                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                      _focus={{
+                        borderColor: 'brand.primary',
+                        boxShadow: '0 0 0 3px var(--chakra-colors-brand-primary-emphasis)',
+                      }}
                       onBlur={(e) => field.onChange(e.target.value.trimStart().trimEnd())}
                     />
                   </InputGroup>
@@ -229,7 +191,7 @@ export function PersonalInfoForm({
               />
             </FormField>
 
-            <FormField label="Last Name" error={errors.lastName?.message} flex="1">
+            <FormField label="Last Name" error={errors.lastName?.message}>
               <Controller
                 name="lastName"
                 control={control}
@@ -241,23 +203,26 @@ export function PersonalInfoForm({
                       placeholder="Enter your last name"
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
-                      color={COLORS.veniceBlue}
+                      color="brand.navy"
                       borderColor={errors.lastName ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
-                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                      _focus={{
+                        borderColor: 'brand.primary',
+                        boxShadow: '0 0 0 3px var(--chakra-colors-brand-primary-emphasis)',
+                      }}
                       onBlur={(e) => field.onChange(e.target.value.trimStart().trimEnd())}
                     />
                   </InputGroup>
                 )}
               />
             </FormField>
-          </HStack>
+          </ResponsiveFieldGroup>
 
           {/* Date of Birth and Phone Number */}
-          <HStack gap={4} w="full">
-            <FormField label="Date of Birth" error={errors.dateOfBirth?.message} flex="1">
+          <ResponsiveFieldGroup>
+            <FormField label="Date of Birth" error={errors.dateOfBirth?.message}>
               <Controller
                 name="dateOfBirth"
                 control={control}
@@ -269,19 +234,22 @@ export function PersonalInfoForm({
                       placeholder="DD/MM/YYYY"
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
-                      color={COLORS.veniceBlue}
+                      color="brand.navy"
                       borderColor={errors.dateOfBirth ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
-                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                      _focus={{
+                        borderColor: 'brand.primary',
+                        boxShadow: '0 0 0 3px var(--chakra-colors-brand-primary-emphasis)',
+                      }}
                     />
                   </InputGroup>
                 )}
               />
             </FormField>
 
-            <FormField label="Phone Number" error={errors.phoneNumber?.message} flex="1">
+            <FormField label="Phone Number" error={errors.phoneNumber?.message}>
               <Controller
                 name="phoneNumber"
                 control={control}
@@ -299,22 +267,25 @@ export function PersonalInfoForm({
                       placeholder="###-###-####"
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
-                      color={COLORS.veniceBlue}
+                      color="brand.navy"
                       borderColor={errors.phoneNumber ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
-                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                      _focus={{
+                        borderColor: 'brand.primary',
+                        boxShadow: '0 0 0 3px var(--chakra-colors-brand-primary-emphasis)',
+                      }}
                     />
                   </InputGroup>
                 )}
               />
             </FormField>
-          </HStack>
+          </ResponsiveFieldGroup>
 
           {/* Postal Code and City */}
-          <HStack gap={4} w="full">
-            <FormField label="Postal Code" error={errors.postalCode?.message} flex="1">
+          <ResponsiveFieldGroup>
+            <FormField label="Postal Code" error={errors.postalCode?.message}>
               <Controller
                 name="postalCode"
                 control={control}
@@ -332,19 +303,22 @@ export function PersonalInfoForm({
                       placeholder="ZIP Code"
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
-                      color={COLORS.veniceBlue}
+                      color="brand.navy"
                       borderColor={errors.postalCode ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
-                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                      _focus={{
+                        borderColor: 'brand.primary',
+                        boxShadow: '0 0 0 3px var(--chakra-colors-brand-primary-emphasis)',
+                      }}
                     />
                   </InputGroup>
                 )}
               />
             </FormField>
 
-            <FormField label="City" error={errors.city?.message} flex="1">
+            <FormField label="City" error={errors.city?.message}>
               <Controller
                 name="city"
                 control={control}
@@ -356,59 +330,59 @@ export function PersonalInfoForm({
                       placeholder="City"
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
-                      color={COLORS.veniceBlue}
+                      color="brand.navy"
                       borderColor={errors.city ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
-                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                      _focus={{
+                        borderColor: 'brand.primary',
+                        boxShadow: '0 0 0 3px var(--chakra-colors-brand-primary-emphasis)',
+                      }}
                       onBlur={(e) => field.onChange(e.target.value.trimStart().trimEnd())}
                     />
                   </InputGroup>
                 )}
               />
             </FormField>
-          </HStack>
+          </ResponsiveFieldGroup>
 
           {/* Province */}
-          <HStack gap={4} w="full">
-            <FormField label="Province" error={errors.province?.message} flex="1">
-              <Controller
-                name="province"
-                control={control}
-                rules={{ required: 'Province is required' }}
-                render={({ field }) => (
-                  <SingleSelectDropdown
-                    options={[...PROVINCES]}
-                    selectedValue={field.value || ''}
-                    onSelectionChange={field.onChange}
-                    placeholder="Province"
-                    error={!!errors.province}
-                    onOpenChange={onDropdownOpenChange}
-                  />
-                )}
-              />
-            </FormField>
-            <Box flex="1" /> {/* Empty box to maintain two-column layout */}
-          </HStack>
+          <FormField label="Province" error={errors.province?.message}>
+            <Controller
+              name="province"
+              control={control}
+              rules={{ required: 'Province is required' }}
+              render={({ field }) => (
+                <SingleSelectDropdown
+                  options={[...PROVINCES]}
+                  selectedValue={field.value || ''}
+                  onSelectionChange={field.onChange}
+                  placeholder="Province"
+                  error={!!errors.province}
+                  onOpenChange={onDropdownOpenChange}
+                />
+              )}
+            />
+          </FormField>
         </VStack>
       </Box>
 
       {/* Eligibility Criteria Section */}
-      {formType === 'volunteer' && (
+      {isVolunteerFlow && (
         <Box mb={10}>
           <Heading
             as="h2"
             fontFamily="system-ui, -apple-system, sans-serif"
             fontWeight={600}
-            color={COLORS.veniceBlue}
+            color="brand.navy"
             fontSize="20px"
             mb={3}
           >
             Eligibility Criteria
           </Heading>
           <Text
-            color={COLORS.fieldGray}
+            color="brand.fieldText"
             fontFamily="system-ui, -apple-system, sans-serif"
             fontSize="15px"
             mb={6}
@@ -419,7 +393,7 @@ export function PersonalInfoForm({
           <Text
             fontFamily="system-ui, -apple-system, sans-serif"
             fontSize="14px"
-            color={COLORS.veniceBlue}
+            color="brand.navy"
             mb={3}
             fontWeight={600}
           >
@@ -431,7 +405,7 @@ export function PersonalInfoForm({
             control={control}
             rules={{
               validate: (value) => {
-                if (formType === 'volunteer') {
+                if (isVolunteerFlow) {
                   const allChecked = Object.values(value).every((checked) => checked === true);
                   return allChecked || 'All eligibility criteria must be checked to continue';
                 }
@@ -449,7 +423,7 @@ export function PersonalInfoForm({
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                   >
                     18 years of age or older
                   </Text>
@@ -463,7 +437,7 @@ export function PersonalInfoForm({
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                   >
                     No criminal record
                   </Text>
@@ -477,7 +451,7 @@ export function PersonalInfoForm({
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                   >
                     Reside in Canada
                   </Text>
@@ -491,7 +465,7 @@ export function PersonalInfoForm({
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                   >
                     It has been at least 1 year since yours or your loved one&apos;s blood cancer
                     treatment. For people and their caregivers who are on active surveillance or
@@ -507,7 +481,7 @@ export function PersonalInfoForm({
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                   >
                     Have had a blood cancer, or is a caregiver of a loved one with a blood cancer
                   </Text>
@@ -521,7 +495,7 @@ export function PersonalInfoForm({
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                   >
                     Willing to participate in a pre-screening intake
                   </Text>
@@ -535,7 +509,7 @@ export function PersonalInfoForm({
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                   >
                     Willing to attend a virtual 3-hour peer support training
                   </Text>
@@ -549,7 +523,7 @@ export function PersonalInfoForm({
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                   >
                     Have access and comfortable using the phone and computer
                   </Text>
@@ -566,7 +540,7 @@ export function PersonalInfoForm({
                   <Text
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                   >
                     Comfortable sharing your personal blood cancer experience with others
                   </Text>
@@ -586,10 +560,10 @@ export function PersonalInfoForm({
       <Box w="full" display="flex" justifyContent="flex-end">
         <Button
           type="submit"
-          bg={COLORS.teal}
+          bg="brand.primary"
           color="white"
-          _hover={{ bg: COLORS.teal }}
-          _active={{ bg: COLORS.teal }}
+          _hover={{ bg: 'brand.primaryEmphasis' }}
+          _active={{ bg: 'brand.primaryEmphasis' }}
           loading={isSubmitting}
           loadingText="Submitting..."
           w="auto"

@@ -1,5 +1,9 @@
-import { Box, Button, Flex, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, HStack, Text, VStack } from '@chakra-ui/react';
 import { Match } from '@/types/matchTypes';
+import { Avatar } from '@/components/ui/avatar';
+import Badge from '@/components/dashboard/Badge';
+import { COLORS } from '@/constants/form';
+import { FiLoader } from 'react-icons/fi';
 
 interface VolunteerCardProps {
   match: Match;
@@ -9,192 +13,205 @@ interface VolunteerCardProps {
 export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
   const { volunteer } = match;
 
-  // Get initials from first and last name
-  const getInitials = () => {
-    const first = volunteer.firstName?.[0] || '';
-    const last = volunteer.lastName?.[0] || '';
-    return `${first}${last}`.toUpperCase();
-  };
+  // Format full name
+  const fullName = `${volunteer.firstName || ''} ${volunteer.lastName || ''}`.trim();
 
   // Format pronouns for display
   const pronounsText =
-    volunteer.pronouns && volunteer.pronouns.length > 0 ? volunteer.pronouns.join('/') : null;
+    volunteer.pronouns && volunteer.pronouns.length > 0 ? volunteer.pronouns.join('/') : '';
 
-  // Format timezone (remove underscores, capitalize)
-  const formatTimezone = (tz: string) => {
-    return tz.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-  };
-
-  // Get volunteer timezone or use placeholder
-  const volunteerTimezone = volunteer.timezone ? formatTimezone(volunteer.timezone) : 'TBD';
+  const isRequestingNewTimes = match.matchStatus === 'requesting_new_times';
 
   return (
     <Box
+      w="full"
+      maxW="675px"
+      border="1px solid #D5D7DA"
+      borderRadius="8px"
       bg="white"
-      border="1px solid"
-      borderColor="#E2E8F0"
-      borderRadius="7px"
-      p={6}
-      boxShadow="0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+      boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+      py="24px"
+      px="28px"
+      pb="80px"
+      position="relative"
+      minH="fit-content"
     >
-      <VStack align="stretch" gap={4}>
-        {/* Header with avatar, name, and info badges */}
-        <Flex gap={4} align="flex-start">
-          {/* Avatar */}
-          <Flex
-            w="60px"
-            h="60px"
-            bg="rgba(179, 206, 209, 0.3)"
-            borderRadius="full"
-            align="center"
-            justify="center"
-            flexShrink={0}
-          >
-            <Text fontSize="xl" fontWeight="medium" color="#056067">
-              {getInitials()}
+      {/* Pending Badge - Top Right */}
+      {isRequestingNewTimes && (
+        <Box
+          position="absolute"
+          top="24px"
+          right="28px"
+          bg="#F5E9E1"
+          borderRadius="16px"
+          px="12px"
+          py="4px"
+          display="inline-flex"
+          alignItems="center"
+          gap="4px"
+          height="28px"
+        >
+          <HStack gap="4px" align="center">
+            <FiLoader size={12} color="#B26939" />
+            <Text
+              fontSize="14px"
+              fontWeight={400}
+              color="#B26939"
+              fontFamily="'Open Sans', sans-serif"
+              lineHeight="1.4285714285714286em"
+            >
+              Pending
             </Text>
-          </Flex>
+          </HStack>
+        </Box>
+      )}
+      <VStack align="start" gap={0}>
+        <HStack gap="32px" align="start">
+          {/* Avatar */}
+          <Avatar name={fullName} size="xl" bg="#F4F4F4" color="#000000" fontSize="36.52px" />
 
-          {/* Name, pronouns, and info badges */}
-          <VStack align="stretch" gap={3} flex={1}>
-            {/* Name and pronouns */}
-            <Flex gap={2} align="baseline" flexWrap="wrap">
-              <Text fontSize="lg" fontWeight="600" color="#1F2937">
-                {volunteer.firstName} {volunteer.lastName}
+          {/* Volunteer Info */}
+          <VStack align="start" gap={2}>
+            <HStack gap={2} align="center">
+              <Text
+                fontSize="1.5rem"
+                fontWeight={600}
+                color="#1D3448"
+                fontFamily="'Open Sans', sans-serif"
+                lineHeight="1.875rem"
+                letterSpacing="0%"
+              >
+                {fullName}
               </Text>
               {pronounsText && (
-                <Text fontSize="sm" color="#6B7280">
+                <Text
+                  fontSize="1rem"
+                  fontWeight={400}
+                  color="#495D6C"
+                  fontFamily="'Open Sans', sans-serif"
+                  lineHeight="100%"
+                  letterSpacing="0%"
+                  mr="16px"
+                >
                   {pronounsText}
                 </Text>
               )}
-            </Flex>
+            </HStack>
 
-            {/* Info badges */}
-            <Flex gap={2} flexWrap="wrap">
+            <HStack gap={2} align="center" wrap="wrap" mt="16px">
               {typeof volunteer.age === 'number' && (
-                <Box
-                  bg="#B3CED14D"
-                  px={3}
-                  py={1.5}
-                  borderRadius="14px"
-                  fontSize="sm"
-                  display="flex"
-                  alignItems="center"
-                  gap={1.5}
-                >
-                  <Text color="#3538CD" fontWeight="500">
-                    👤 Current Age: {volunteer.age}
-                  </Text>
-                </Box>
+                <Badge iconSrc="/icons/user-secondary.png">Current Age: {volunteer.age}</Badge>
               )}
-              <Box
-                bg="#B3CED14D"
-                px={3}
-                py={1.5}
-                borderRadius="14px"
-                fontSize="sm"
-                display="flex"
-                alignItems="center"
-                gap={1.5}
-              >
-                <Text color="#3538CD" fontWeight="500">
-                  🕐 Time Zone: {volunteerTimezone}
-                </Text>
-              </Box>
+              {volunteer.timezone && (
+                <Badge iconSrc="/icons/clock-secondary.png">Time Zone: {volunteer.timezone}</Badge>
+              )}
               {volunteer.diagnosis && (
-                <Box
-                  bg="#B3CED14D"
-                  px={3}
-                  py={1.5}
-                  borderRadius="14px"
-                  fontSize="sm"
-                  display="flex"
-                  alignItems="center"
-                  gap={1.5}
-                >
-                  <Text color="#3538CD" fontWeight="500">
-                    🎗️ {volunteer.diagnosis}
-                  </Text>
-                </Box>
+                <Badge iconSrc="/icons/activity-secondary.png">{volunteer.diagnosis}</Badge>
               )}
-            </Flex>
+            </HStack>
           </VStack>
-        </Flex>
+        </HStack>
 
         {/* Overview Section */}
         {volunteer.overview && (
-          <Box>
-            <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
+          <Box mt={4}>
+            <Text
+              fontSize="1.125rem"
+              fontWeight={600}
+              color="#1D3448"
+              fontFamily="'Open Sans', sans-serif"
+              lineHeight="1.875rem"
+              letterSpacing="0%"
+              mb="16px"
+            >
               Overview
             </Text>
-            <Text fontSize="sm" color="#6B7280" lineHeight="1.5">
+            <Text
+              fontSize="1rem"
+              fontWeight={400}
+              color="#495D6C"
+              fontFamily="'Open Sans', sans-serif"
+              lineHeight="1.5"
+            >
               {volunteer.overview}
             </Text>
           </Box>
         )}
 
-        {/* Treatment Information Section */}
-        {volunteer.treatments.length > 0 && (
-          <Box>
-            <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
+        {/* Treatment Information */}
+        {volunteer.treatments && volunteer.treatments.length > 0 && (
+          <Box mt={4}>
+            <Text
+              fontSize="1.125rem"
+              fontWeight={600}
+              color="#1D3448"
+              fontFamily="'Open Sans', sans-serif"
+              lineHeight="1.875rem"
+              letterSpacing="0%"
+              mb="16px"
+            >
               Treatment Information
             </Text>
-            <Flex gap={2} flexWrap="wrap">
-              {volunteer.treatments.map((treatment) => (
-                <Box key={treatment} bg="#EEF4FF" px={3} py={1.5} borderRadius="14px" fontSize="sm">
-                  <Text color="#3538CD" fontWeight="500">
-                    {treatment}
-                  </Text>
-                </Box>
+            <HStack gap={2} wrap="wrap">
+              {volunteer.treatments.map((treatment: string, index: number) => (
+                <Badge key={index} bgColor="#EEF4FF" textColor="#3538CD">
+                  {treatment}
+                </Badge>
               ))}
-            </Flex>
+            </HStack>
           </Box>
         )}
 
-        {/* Experience Information Section */}
-        {volunteer.experiences.length > 0 && (
-          <Box>
-            <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
+        {/* Experience Information */}
+        {volunteer.experiences && volunteer.experiences.length > 0 && (
+          <Box mt={4}>
+            <Text
+              fontSize="1.125rem"
+              fontWeight={600}
+              color="#1D3448"
+              fontFamily="'Open Sans', sans-serif"
+              lineHeight="1.875rem"
+              letterSpacing="0%"
+              mb="16px"
+            >
               Experience Information
             </Text>
-            <Flex gap={2} flexWrap="wrap">
-              {volunteer.experiences.map((experience) => (
-                <Box
-                  key={experience}
-                  bg="#FDF2FA"
-                  px={3}
-                  py={1.5}
-                  borderRadius="14px"
-                  fontSize="sm"
-                >
-                  <Text color="#C11574" fontWeight="500">
-                    {experience}
-                  </Text>
-                </Box>
+            <HStack gap={2} wrap="wrap">
+              {volunteer.experiences.map((experience: string, index: number) => (
+                <Badge key={index} bgColor="#FDF2FA" textColor="#C11574">
+                  {experience}
+                </Badge>
               ))}
-            </Flex>
+            </HStack>
           </Box>
         )}
-
-        {/* Schedule call button */}
-        {onSchedule && (
-          <Flex justify="flex-end" mt={2}>
-            <Button
-              bg="#056067"
-              color="white"
-              px={6}
-              py={2.5}
-              borderRadius="7px"
-              fontWeight="600"
-              fontSize="md"
-              _hover={{ bg: '#044d52' }}
-              onClick={() => onSchedule(match.id)}
-            >
-              Schedule call
-            </Button>
-          </Flex>
-        )}
       </VStack>
+
+      {/* Schedule call button - Positioned at bottom right */}
+      {onSchedule && !isRequestingNewTimes && (
+        <Button
+          position="absolute"
+          bottom="24px"
+          right="28px"
+          bg={COLORS.teal}
+          color="white"
+          fontWeight={600}
+          fontSize="0.875rem"
+          fontFamily="'Open Sans', sans-serif"
+          px={6}
+          py={3}
+          borderRadius="6px"
+          _hover={{
+            bg: '#056067',
+          }}
+          _active={{
+            bg: '#044953',
+          }}
+          onClick={() => onSchedule(match.id)}
+        >
+          Schedule call
+        </Button>
+      )}
     </Box>
   );
 }

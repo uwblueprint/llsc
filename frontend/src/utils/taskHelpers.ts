@@ -5,7 +5,7 @@ import { COLORS } from '@/constants/colors';
 export const getTypeColor = (type: string): { bg: string; color: string } => {
   const typeColors: Record<string, { bg: string; color: string }> = {
     'Intake Form Review': { bg: COLORS.bgPurpleLight, color: COLORS.purple },
-    'Volunteer App. Review': { bg: COLORS.bgTealLight, color: COLORS.teal },
+    'Ranking / Secondary App Review': { bg: COLORS.bgTealLight, color: COLORS.teal },
     Matching: { bg: COLORS.bgPinkLight, color: COLORS.red },
     'Profile Update': { bg: COLORS.bgGrayLight, color: COLORS.gray700 },
   };

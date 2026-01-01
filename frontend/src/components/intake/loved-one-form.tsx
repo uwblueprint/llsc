@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Heading, Button, VStack, HStack, Text, Input } from '@chakra-ui/react';
+import { Box, Heading, Button, VStack, Text, Input, SimpleGrid } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { FormField } from '@/components/ui/form-field';
 import { InputGroup } from '@/components/ui/input-group';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
-import { COLORS, VALIDATION } from '@/constants/form';
+import { ResponsiveFieldGroup } from '@/components/layout';
+import { StepIndicator } from '@/components/ui';
+import { VALIDATION, getIntakeFormTitle, IntakeFormType } from '@/constants/form';
 import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
@@ -51,7 +53,7 @@ const DIAGNOSIS_OPTIONS = [
 ];
 
 interface LovedOneFormProps {
-  formType?: 'participant' | 'volunteer';
+  formType?: IntakeFormType;
   onSubmit: (data: LovedOneFormData) => void;
 }
 
@@ -110,6 +112,8 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
     }
   };
 
+  const formTitle = getIntakeFormTitle(formType);
+
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
       {/* Header */}
@@ -117,27 +121,15 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
         as="h1"
         fontFamily="system-ui, -apple-system, sans-serif"
         fontWeight={600}
-        color={COLORS.veniceBlue}
+        color="brand.navy"
         fontSize="28px"
         mb={8}
       >
-        First Connection {formType === 'participant' ? 'Participant' : 'Volunteer'} Form
+        {formTitle}
       </Heading>
 
       {/* Progress Bar */}
-      <Box mb={10}>
-        <HStack gap={3}>
-          <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
-          </Box>
-          <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
-          </Box>
-          <Box flex="1">
-            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
-          </Box>
-        </HStack>
-      </Box>
+      <StepIndicator currentStep={3} />
 
       {/* Loved One's Demographic Information Section */}
       <Box mb={10}>
@@ -145,7 +137,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
           as="h2"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontWeight={600}
-          color={COLORS.veniceBlue}
+          color="brand.navy"
           fontSize="20px"
           mb={3}
         >
@@ -155,7 +147,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
         <Text
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="14px"
-          color={COLORS.fieldGray}
+          color="brand.fieldText"
           mb={6}
         >
           {formType === 'volunteer'
@@ -165,54 +157,53 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
 
         <VStack gap={5} align="stretch">
           {/* Gender Identity */}
-          <HStack gap={8} w="full" align="start">
-            <Box w="50%">
-              <FormField label="Gender Identity" error={errors.genderIdentity?.message}>
-                <Controller
-                  name="genderIdentity"
-                  control={control}
-                  rules={{
-                    validate: (value) => {
-                      if (!value) return 'Gender identity is required';
-                      if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
-                        return 'Please specify gender identity when selecting Self-describe';
-                      }
-                      return true;
-                    },
-                  }}
-                  render={({ field }) => (
-                    <SingleSelectDropdown
-                      options={GENDER_IDENTITY_OPTIONS}
-                      selectedValue={field.value || ''}
-                      onSelectionChange={field.onChange}
-                      placeholder="Gender Identity"
-                      error={!!errors.genderIdentity}
-                    />
-                  )}
-                />
-              </FormField>
-            </Box>
+          <ResponsiveFieldGroup>
+            <FormField label="Gender Identity" error={errors.genderIdentity?.message}>
+              <Controller
+                name="genderIdentity"
+                control={control}
+                rules={{
+                  validate: (value) => {
+                    if (!value) return 'Gender identity is required';
+                    if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
+                      return 'Please specify gender identity when selecting Self-describe';
+                    }
+                    return true;
+                  },
+                }}
+                render={({ field }) => (
+                  <SingleSelectDropdown
+                    options={GENDER_IDENTITY_OPTIONS}
+                    selectedValue={field.value || ''}
+                    onSelectionChange={field.onChange}
+                    placeholder="Gender Identity"
+                    error={!!errors.genderIdentity}
+                  />
+                )}
+              />
+            </FormField>
 
             {genderIdentity === 'Self-describe' && (
-              <Box w="50%">
-                <FormField label="Please specify">
-                  <Input
-                    value={genderIdentityCustom}
-                    onChange={(e) => setGenderIdentityCustom(e.target.value)}
-                    placeholder="Please specify gender identity"
-                    fontFamily="system-ui, -apple-system, sans-serif"
-                    fontSize="14px"
-                    color={COLORS.veniceBlue}
-                    borderRadius="6px"
-                    h="40px"
-                    px={3}
-                    _placeholder={{ color: '#9ca3af' }}
-                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
-                  />
-                </FormField>
-              </Box>
+              <FormField label="Please specify">
+                <Input
+                  value={genderIdentityCustom}
+                  onChange={(e) => setGenderIdentityCustom(e.target.value)}
+                  placeholder="Please specify gender identity"
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  fontSize="14px"
+                  color="brand.navy"
+                  borderRadius="6px"
+                  h="40px"
+                  px={3}
+                  _placeholder={{ color: '#9ca3af' }}
+                  _focus={{
+                    borderColor: 'brand.primary',
+                    boxShadow: '0 0 0 3px var(--chakra-colors-brand-primary-emphasis)',
+                  }}
+                />
+              </FormField>
             )}
-          </HStack>
+          </ResponsiveFieldGroup>
 
           {/* Age */}
           <FormField label="Age" error={errors.age?.message}>
@@ -227,12 +218,15 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                     placeholder="Age"
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
-                    color={COLORS.veniceBlue}
+                    color="brand.navy"
                     borderColor={errors.age ? 'red.500' : undefined}
                     borderRadius="6px"
                     h="40px"
                     _placeholder={{ color: '#9ca3af' }}
-                    _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                    _focus={{
+                      borderColor: 'brand.primary',
+                      boxShadow: '0 0 0 3px var(--chakra-colors-brand-primary-emphasis)',
+                    }}
                   />
                 </InputGroup>
               )}
@@ -247,7 +241,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
           as="h2"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontWeight={600}
-          color={COLORS.veniceBlue}
+          color="brand.navy"
           fontSize="20px"
           mb={3}
         >
@@ -257,7 +251,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
         <Text
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="14px"
-          color={COLORS.fieldGray}
+          color="brand.fieldText"
           mb={6}
         >
           {formType === 'volunteer'
@@ -265,10 +259,10 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
             : 'This information can also be taken into account when matching you with a volunteer.'}
         </Text>
 
-        <VStack gap={6}>
+        <VStack gap={6} align="stretch">
           {/* Diagnosis and Date */}
-          <HStack gap={4} w="full">
-            <FormField label="Their Diagnosis" error={errors.diagnosis?.message} flex="1">
+          <ResponsiveFieldGroup>
+            <FormField label="Their Diagnosis" error={errors.diagnosis?.message}>
               <Controller
                 name="diagnosis"
                 control={control}
@@ -285,11 +279,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
               />
             </FormField>
 
-            <FormField
-              label="Their Date of Diagnosis"
-              error={errors.dateOfDiagnosis?.message}
-              flex="1"
-            >
+            <FormField label="Their Date of Diagnosis" error={errors.dateOfDiagnosis?.message}>
               <Controller
                 name="dateOfDiagnosis"
                 control={control}
@@ -307,28 +297,31 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                       placeholder="DD/MM/YYYY"
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
-                      color={COLORS.veniceBlue}
+                      color="brand.navy"
                       borderColor={errors.dateOfDiagnosis ? 'red.500' : undefined}
                       borderRadius="6px"
                       h="40px"
                       _placeholder={{ color: '#9ca3af' }}
-                      _focus={{ borderColor: COLORS.teal, boxShadow: `0 0 0 3px ${COLORS.teal}20` }}
+                      _focus={{
+                        borderColor: 'brand.primary',
+                        boxShadow: '0 0 0 3px var(--chakra-colors-brand-primary-emphasis)',
+                      }}
                     />
                   </InputGroup>
                 )}
               />
             </FormField>
-          </HStack>
+          </ResponsiveFieldGroup>
 
-          {/* Treatment and Experience Sections Side by Side */}
-          <HStack gap={8} w="full" align="start">
+          {/* Treatment and Experience Sections Side by Side on Desktop, Stacked on Mobile */}
+          <SimpleGrid columns={{ base: 1, md: 2 }} gap={8} w="full">
             {/* Treatment Section */}
-            <Box flex="1">
+            <Box>
               <Text
                 fontFamily="system-ui, -apple-system, sans-serif"
                 fontWeight={500}
                 fontSize="14px"
-                color={COLORS.veniceBlue}
+                color="brand.navy"
                 mb={2}
               >
                 Which of the following treatments have they done?
@@ -336,7 +329,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
               <Text
                 fontFamily="system-ui, -apple-system, sans-serif"
                 fontSize="12px"
-                color={COLORS.fieldGray}
+                color="brand.fieldText"
                 mb={4}
               >
                 You can select a maximum of 2.
@@ -362,12 +355,12 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
             </Box>
 
             {/* Experience Section */}
-            <Box flex="1">
+            <Box>
               <Text
                 fontFamily="system-ui, -apple-system, sans-serif"
                 fontWeight={500}
                 fontSize="14px"
-                color={COLORS.veniceBlue}
+                color="brand.navy"
                 mb={2}
               >
                 Which of the following do you have experience with?
@@ -375,7 +368,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
               <Text
                 fontFamily="system-ui, -apple-system, sans-serif"
                 fontSize="12px"
-                color={COLORS.fieldGray}
+                color="brand.fieldText"
                 mb={4}
               >
                 You can select a maximum of 5.
@@ -399,7 +392,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                 </Text>
               )}
             </Box>
-          </HStack>
+          </SimpleGrid>
         </VStack>
       </Box>
 
@@ -407,10 +400,10 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
       <Box w="full" display="flex" justifyContent="flex-end">
         <Button
           type="submit"
-          bg={COLORS.teal}
+          bg="brand.primary"
           color="white"
-          _hover={{ bg: COLORS.teal }}
-          _active={{ bg: COLORS.teal }}
+          _hover={{ bg: 'brand.primaryEmphasis' }}
+          _active={{ bg: 'brand.primaryEmphasis' }}
           loading={isSubmitting}
           loadingText="Submitting..."
           w="auto"

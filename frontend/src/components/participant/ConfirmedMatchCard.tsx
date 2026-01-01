@@ -1,6 +1,8 @@
-import { Box, Button, Flex, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Flex, Text, VStack, HStack } from '@chakra-ui/react';
 import { Match } from '@/types/matchTypes';
 import { formatDateRelative, formatDateShort, formatTime } from '@/utils/dateUtils';
+import { Avatar } from '@/components/ui/avatar';
+import Badge from '@/components/dashboard/Badge';
 
 interface ConfirmedMatchCardProps {
   match: Match;
@@ -22,13 +24,6 @@ export function ConfirmedMatchCard({
   const dateLabel = formatDateRelative(chosenTimeBlock.startTime);
   const dateShort = formatDateShort(chosenTimeBlock.startTime);
   const timeFormatted = formatTime(chosenTimeBlock.startTime);
-
-  // Get initials from first and last name
-  const getInitials = () => {
-    const first = volunteer.firstName?.[0] || '';
-    const last = volunteer.lastName?.[0] || '';
-    return `${first}${last}`.toUpperCase();
-  };
 
   // Format pronouns for display
   const pronounsText =
@@ -77,171 +72,165 @@ export function ConfirmedMatchCard({
           flex={1}
           bg="white"
           border="1px solid"
-          borderColor="#E2E8F0"
-          borderRadius="7px"
-          p={6}
-          boxShadow="0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+          borderColor="#D5D7DA"
+          borderRadius="8px"
+          p={7}
+          boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
         >
-          <VStack align="stretch" gap={4}>
+          <VStack align="stretch" gap={0}>
             {/* Volunteer Info */}
-            <Flex gap={4} align="flex-start">
+            <HStack gap={8} align="flex-start" mb={4}>
               {/* Avatar */}
-              <Flex
-                w="60px"
-                h="60px"
-                bg="rgba(179, 206, 209, 0.3)"
-                borderRadius="full"
-                align="center"
-                justify="center"
-                flexShrink={0}
-              >
-                <Text fontSize="xl" fontWeight="medium" color="#056067">
-                  {getInitials()}
-                </Text>
-              </Flex>
+              <Avatar
+                name={`${volunteer.firstName} ${volunteer.lastName}`}
+                size="xl"
+                bg="#F4F4F4"
+                color="#000000"
+                fontSize="36.52px"
+              />
 
               {/* Name, pronouns, and info badges */}
-              <VStack align="stretch" gap={3} flex={1}>
+              <VStack align="start" gap={2} flex={1}>
                 {/* Name and pronouns */}
-                <Flex gap={2} align="baseline" flexWrap="wrap">
-                  <Text fontSize="lg" fontWeight="600" color="#1F2937">
+                <HStack gap={2} align="center">
+                  <Text
+                    fontSize="1.5rem"
+                    fontWeight={600}
+                    color="#1D3448"
+                    fontFamily="'Open Sans', sans-serif"
+                    lineHeight="1.875rem"
+                  >
                     {volunteer.firstName} {volunteer.lastName}
                   </Text>
                   {pronounsText && (
-                    <Text fontSize="sm" color="#6B7280">
+                    <Text
+                      fontSize="1rem"
+                      fontWeight={400}
+                      color="#495D6C"
+                      fontFamily="'Open Sans', sans-serif"
+                      lineHeight="100%"
+                    >
                       {pronounsText}
                     </Text>
                   )}
-                </Flex>
+                </HStack>
 
                 {/* Info badges */}
-                <Flex gap={2} flexWrap="wrap">
+                <HStack gap={2} align="center" wrap="wrap" mt={4}>
                   {typeof volunteer.age === 'number' && (
-                    <Box
-                      bg="#B3CED14D"
-                      px={3}
-                      py={1.5}
-                      borderRadius="14px"
-                      fontSize="sm"
-                      display="flex"
-                      alignItems="center"
-                      gap={1.5}
+                    <Badge
+                      iconSrc="/icons/user-secondary.png"
+                      bgColor="rgba(179, 206, 209, 0.3)"
+                      textColor="#056067"
                     >
-                      <Text color="#3538CD" fontWeight="500">
-                        👤 Current Age: {volunteer.age}
-                      </Text>
-                    </Box>
+                      Current Age: {volunteer.age}
+                    </Badge>
                   )}
-                  <Box
-                    bg="#B3CED14D"
-                    px={3}
-                    py={1.5}
-                    borderRadius="14px"
-                    fontSize="sm"
-                    display="flex"
-                    alignItems="center"
-                    gap={1.5}
+                  <Badge
+                    iconSrc="/icons/clock-secondary.png"
+                    bgColor="rgba(179, 206, 209, 0.3)"
+                    textColor="#056067"
                   >
-                    <Text color="#3538CD" fontWeight="500">
-                      🕐 Time Zone: {volunteerTimezone}
-                    </Text>
-                  </Box>
+                    Time Zone: {volunteerTimezone}
+                  </Badge>
                   {volunteer.diagnosis && (
-                    <Box
-                      bg="#B3CED14D"
-                      px={3}
-                      py={1.5}
-                      borderRadius="14px"
-                      fontSize="sm"
-                      display="flex"
-                      alignItems="center"
-                      gap={1.5}
+                    <Badge
+                      iconSrc="/icons/activity-secondary.png"
+                      bgColor="rgba(179, 206, 209, 0.3)"
+                      textColor="#056067"
                     >
-                      <Text color="#3538CD" fontWeight="500">
-                        🎗️ {volunteer.diagnosis}
-                      </Text>
-                    </Box>
+                      {volunteer.diagnosis}
+                    </Badge>
                   )}
-                </Flex>
+                </HStack>
               </VStack>
-            </Flex>
+            </HStack>
 
             {/* Overview Section */}
             {volunteer.overview && (
-              <Box>
-                <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
+              <Box mt={4}>
+                <Text
+                  fontSize="1.125rem"
+                  fontWeight={600}
+                  color="#1D3448"
+                  fontFamily="'Open Sans', sans-serif"
+                  lineHeight="1.875rem"
+                  mb={4}
+                >
                   Overview
                 </Text>
-                <Text fontSize="sm" color="#6B7280" lineHeight="1.5">
+                <Text
+                  fontSize="1rem"
+                  fontWeight={400}
+                  color="#495D6C"
+                  fontFamily="'Open Sans', sans-serif"
+                  lineHeight="1.5"
+                >
                   {volunteer.overview}
                 </Text>
               </Box>
             )}
 
             {/* Treatment Information Section */}
-            {volunteer.treatments.length > 0 && (
-              <Box>
-                <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
+            {volunteer.treatments && volunteer.treatments.length > 0 && (
+              <Box mt={4}>
+                <Text
+                  fontSize="1.125rem"
+                  fontWeight={600}
+                  color="#1D3448"
+                  fontFamily="'Open Sans', sans-serif"
+                  lineHeight="1.875rem"
+                  mb={4}
+                >
                   Treatment Information
                 </Text>
-                <Flex gap={2} flexWrap="wrap">
-                  {volunteer.treatments.map((treatment) => (
-                    <Box
-                      key={treatment}
-                      bg="#EEF4FF"
-                      px={3}
-                      py={1.5}
-                      borderRadius="14px"
-                      fontSize="sm"
-                    >
-                      <Text color="#3538CD" fontWeight="500">
-                        {treatment}
-                      </Text>
-                    </Box>
+                <HStack gap={2} wrap="wrap">
+                  {volunteer.treatments.map((treatment: string, index: number) => (
+                    <Badge key={index} bgColor="#EEF4FF" textColor="#3538CD">
+                      {treatment}
+                    </Badge>
                   ))}
-                </Flex>
+                </HStack>
               </Box>
             )}
 
             {/* Experience Information Section */}
-            {volunteer.experiences.length > 0 && (
-              <Box>
-                <Text fontSize="md" fontWeight="600" mb={2} color="#1F2937">
+            {volunteer.experiences && volunteer.experiences.length > 0 && (
+              <Box mt={4}>
+                <Text
+                  fontSize="1.125rem"
+                  fontWeight={600}
+                  color="#1D3448"
+                  fontFamily="'Open Sans', sans-serif"
+                  lineHeight="1.875rem"
+                  mb={4}
+                >
                   Experience Information
                 </Text>
-                <Flex gap={2} flexWrap="wrap">
-                  {volunteer.experiences.map((experience) => (
-                    <Box
-                      key={experience}
-                      bg="#FDF2FA"
-                      px={3}
-                      py={1.5}
-                      borderRadius="14px"
-                      fontSize="sm"
-                    >
-                      <Text color="#C11574" fontWeight="500">
-                        {experience}
-                      </Text>
-                    </Box>
+                <HStack gap={2} wrap="wrap">
+                  {volunteer.experiences.map((experience: string, index: number) => (
+                    <Badge key={index} bgColor="#FDF2FA" textColor="#C11574">
+                      {experience}
+                    </Badge>
                   ))}
-                </Flex>
+                </HStack>
               </Box>
             )}
 
             {/* Action Buttons */}
-            <Flex justify="flex-end" gap={3} mt={2}>
+            <Flex justify="flex-end" gap={3} mt={6}>
               {onCancelCall && (
                 <Button
                   bg="#DC2626"
                   color="white"
-                  border="1px solid"
-                  borderColor="#DC2626"
                   px={6}
                   py={2.5}
-                  borderRadius="7px"
-                  fontWeight="600"
+                  borderRadius="8px"
+                  fontWeight={600}
                   fontSize="md"
-                  _hover={{ bg: '#B91C1C', borderColor: '#B91C1C' }}
+                  fontFamily="'Open Sans', sans-serif"
+                  _hover={{ bg: '#B91C1C' }}
+                  _active={{ bg: '#991B1B' }}
                   onClick={() => onCancelCall(match.id)}
                 >
                   Cancel Call
@@ -253,10 +242,12 @@ export function ConfirmedMatchCard({
                   color="white"
                   px={6}
                   py={2.5}
-                  borderRadius="7px"
-                  fontWeight="600"
+                  borderRadius="8px"
+                  fontWeight={600}
                   fontSize="md"
+                  fontFamily="'Open Sans', sans-serif"
                   _hover={{ bg: '#044d52' }}
+                  _active={{ bg: '#033a3e' }}
                   onClick={() => onViewContactDetails(match.id)}
                 >
                   View Contact Details

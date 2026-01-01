@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Flex, Text } from '@chakra-ui/react';
+import { Text } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { UserIcon, WelcomeScreen } from '@/components/ui';
 import {
@@ -10,7 +10,7 @@ import {
   CaregiverRankingForm,
   CaregiverTwoColumnQualitiesForm,
 } from '@/components/ranking';
-import { COLORS } from '@/constants/form';
+import { FormPageLayout } from '@/components/layout';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { syncCurrentUser } from '@/APIClients/authAPIClient';
 import { auth } from '@/config/firebase';
@@ -240,60 +240,51 @@ export default function ParticipantRankingPage({
     }, [effectiveParticipantType]);
 
     return (
-      <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
-        <Box
-          w="full"
-          maxW="1200px"
-          bg="white"
-          borderRadius="8px"
-          boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-          p={10}
-        >
-          {optionsError ? (
-            <Text color="red.500" mb={4}>
-              {optionsError}
-            </Text>
-          ) : null}
+      <FormPageLayout>
+        {optionsError ? (
+          <Text color="red.500" mb={4}>
+            {optionsError}
+          </Text>
+        ) : null}
 
-          {effectiveParticipantType === 'caregiver' ? (
-            <CaregiverMatchingForm
-              volunteerType={formData.volunteerType || ''}
-              onVolunteerTypeChange={handleVolunteerTypeChange}
-              onNext={async (type) => {
-                setFormData((prev) => ({
-                  ...prev,
-                  volunteerType: type,
-                  isCaregiverVolunteerFlow: type === 'caringForLovedOne',
-                }));
-                // Prefetch options based on caregiver choice before advancing
-                const target: 'patient' | 'caregiver' =
-                  type === 'caringForLovedOne' ? 'caregiver' : 'patient';
-                try {
-                  await fetchOptions(target);
-                } catch {}
-                setCurrentStep(3);
-              }}
-            />
-          ) : (
-            <VolunteerMatchingForm
-              selectedQualities={formData.selectedQualities}
-              onQualityToggle={toggleQuality}
-              options={singleColumnOptions}
-              onNext={() => {
-                // Build ranking arrays from selected keys
-                const keys = formData.selectedQualities;
-                const labels = keys.map((k) => optionsIndex[k]?.label || k);
-                setFormData((prev) => ({
-                  ...prev,
-                  rankedPreferences: [...labels],
-                  rankedKeys: [...keys],
-                }));
-                setCurrentStep(3);
-              }}
-            />
-          )}
-        </Box>
-      </Flex>
+        {effectiveParticipantType === 'caregiver' ? (
+          <CaregiverMatchingForm
+            volunteerType={formData.volunteerType || ''}
+            onVolunteerTypeChange={handleVolunteerTypeChange}
+            onNext={async (type) => {
+              setFormData((prev) => ({
+                ...prev,
+                volunteerType: type,
+                isCaregiverVolunteerFlow: type === 'caringForLovedOne',
+              }));
+              // Prefetch options based on caregiver choice before advancing
+              const target: 'patient' | 'caregiver' =
+                type === 'caringForLovedOne' ? 'caregiver' : 'patient';
+              try {
+                await fetchOptions(target);
+              } catch {}
+              setCurrentStep(3);
+            }}
+          />
+        ) : (
+          <VolunteerMatchingForm
+            selectedQualities={formData.selectedQualities}
+            onQualityToggle={toggleQuality}
+            options={singleColumnOptions}
+            onNext={() => {
+              // Build ranking arrays from selected keys
+              const keys = formData.selectedQualities;
+              const labels = keys.map((k) => optionsIndex[k]?.label || k);
+              setFormData((prev) => ({
+                ...prev,
+                rankedPreferences: [...labels],
+                rankedKeys: [...keys],
+              }));
+              setCurrentStep(3);
+            }}
+          />
+        )}
+      </FormPageLayout>
     );
   };
 
@@ -310,84 +301,37 @@ export default function ParticipantRankingPage({
     };
 
     return (
-      <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
-        <Box
-          w="full"
-          maxW="1200px"
-          bg="white"
-          borderRadius="8px"
-          boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-          p={10}
-        >
-          {
-            // Prefer explicit flag; otherwise infer from value
-            (formData.isCaregiverVolunteerFlow ?? false) ||
-            formData.volunteerType === 'caringForLovedOne' ||
-            (!!formData.volunteerType && formData.volunteerType !== 'similarDiagnosis') ? (
-              <CaregiverTwoColumnQualitiesForm
-                selectedQualities={formData.selectedQualities}
-                onQualityToggle={toggleQuality}
-                leftOptions={leftColumnOptions}
-                rightOptions={rightColumnOptions}
-                onNext={() => {
-                  if (
-                    leftColumnOptions.length === 0 &&
-                    rightColumnOptions.length === 0 &&
-                    !isLoadingOptions
-                  ) {
-                    fetchOptions('caregiver');
-                  }
-                  const keys = formData.selectedQualities;
-                  const labels = keys.map((k) => optionsIndex[k]?.label || k);
-                  setFormData((prev) => ({
-                    ...prev,
-                    rankedPreferences: [...labels],
-                    rankedKeys: [...keys],
-                  }));
-                  setCurrentStep(4);
-                }}
-              />
-            ) : effectiveCaregiverHasCancer ? (
-              formData.volunteerType === 'similarDiagnosis' ? (
-                <CaregiverQualitiesForm
-                  selectedQualities={formData.selectedQualities}
-                  onQualityToggle={toggleQuality}
-                  options={singleColumnOptions}
-                  onNext={() => {
-                    if (singleColumnOptions.length === 0 && !isLoadingOptions) {
-                      fetchOptions('patient');
-                    }
-                    const keys = formData.selectedQualities;
-                    const labels = keys.map((k) => optionsIndex[k]?.label || k);
-                    setFormData((prev) => ({
-                      ...prev,
-                      rankedPreferences: [...labels],
-                      rankedKeys: [...keys],
-                    }));
-                    setCurrentStep(4);
-                  }}
-                />
-              ) : (
-                <VolunteerMatchingForm
-                  selectedQualities={formData.selectedQualities}
-                  onQualityToggle={toggleQuality}
-                  options={singleColumnOptions}
-                  onNext={() => {
-                    if (singleColumnOptions.length === 0 && !isLoadingOptions) {
-                      fetchOptions('patient');
-                    }
-                    const keys = formData.selectedQualities;
-                    const labels = keys.map((k) => optionsIndex[k]?.label || k);
-                    setFormData((prev) => ({
-                      ...prev,
-                      rankedPreferences: [...labels],
-                      rankedKeys: [...keys],
-                    }));
-                    setCurrentStep(4);
-                  }}
-                />
-              )
-            ) : (
+      <FormPageLayout>
+        {
+          // Prefer explicit flag; otherwise infer from value
+          (formData.isCaregiverVolunteerFlow ?? false) ||
+          formData.volunteerType === 'caringForLovedOne' ||
+          (!!formData.volunteerType && formData.volunteerType !== 'similarDiagnosis') ? (
+            <CaregiverTwoColumnQualitiesForm
+              selectedQualities={formData.selectedQualities}
+              onQualityToggle={toggleQuality}
+              leftOptions={leftColumnOptions}
+              rightOptions={rightColumnOptions}
+              onNext={() => {
+                if (
+                  leftColumnOptions.length === 0 &&
+                  rightColumnOptions.length === 0 &&
+                  !isLoadingOptions
+                ) {
+                  fetchOptions('caregiver');
+                }
+                const keys = formData.selectedQualities;
+                const labels = keys.map((k) => optionsIndex[k]?.label || k);
+                setFormData((prev) => ({
+                  ...prev,
+                  rankedPreferences: [...labels],
+                  rankedKeys: [...keys],
+                }));
+                setCurrentStep(4);
+              }}
+            />
+          ) : effectiveCaregiverHasCancer ? (
+            formData.volunteerType === 'similarDiagnosis' ? (
               <CaregiverQualitiesForm
                 selectedQualities={formData.selectedQualities}
                 onQualityToggle={toggleQuality}
@@ -406,10 +350,48 @@ export default function ParticipantRankingPage({
                   setCurrentStep(4);
                 }}
               />
+            ) : (
+              <VolunteerMatchingForm
+                selectedQualities={formData.selectedQualities}
+                onQualityToggle={toggleQuality}
+                options={singleColumnOptions}
+                onNext={() => {
+                  if (singleColumnOptions.length === 0 && !isLoadingOptions) {
+                    fetchOptions('patient');
+                  }
+                  const keys = formData.selectedQualities;
+                  const labels = keys.map((k) => optionsIndex[k]?.label || k);
+                  setFormData((prev) => ({
+                    ...prev,
+                    rankedPreferences: [...labels],
+                    rankedKeys: [...keys],
+                  }));
+                  setCurrentStep(4);
+                }}
+              />
             )
-          }
-        </Box>
-      </Flex>
+          ) : (
+            <CaregiverQualitiesForm
+              selectedQualities={formData.selectedQualities}
+              onQualityToggle={toggleQuality}
+              options={singleColumnOptions}
+              onNext={() => {
+                if (singleColumnOptions.length === 0 && !isLoadingOptions) {
+                  fetchOptions('patient');
+                }
+                const keys = formData.selectedQualities;
+                const labels = keys.map((k) => optionsIndex[k]?.label || k);
+                setFormData((prev) => ({
+                  ...prev,
+                  rankedPreferences: [...labels],
+                  rankedKeys: [...keys],
+                }));
+                setCurrentStep(4);
+              }}
+            />
+          )
+        }
+      </FormPageLayout>
     );
   };
 
@@ -461,34 +443,25 @@ export default function ParticipantRankingPage({
     };
 
     return (
-      <Flex minH="100vh" bg={COLORS.lightGray} justify="center" py={12}>
-        <Box
-          w="full"
-          maxW="1200px"
-          bg="white"
-          borderRadius="8px"
-          boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-          p={10}
-        >
-          {effectiveParticipantType === 'caregiver' ? (
-            <CaregiverRankingForm
-              rankedPreferences={formData.rankedPreferences}
-              onMoveItem={moveItem}
-              onSubmit={handleSubmit}
-              itemScopes={formData.rankedKeys.map((k) => optionsIndex[k]?.meta.scope || 'self')}
-              itemKinds={formData.rankedKeys.map((k) => optionsIndex[k]?.meta.kind || 'quality')}
-            />
-          ) : (
-            <VolunteerRankingForm
-              rankedPreferences={formData.rankedPreferences}
-              onMoveItem={moveItem}
-              onSubmit={handleSubmit}
-              itemScopes={formData.rankedKeys.map((k) => optionsIndex[k]?.meta.scope || 'self')}
-              itemKinds={formData.rankedKeys.map((k) => optionsIndex[k]?.meta.kind || 'quality')}
-            />
-          )}
-        </Box>
-      </Flex>
+      <FormPageLayout>
+        {effectiveParticipantType === 'caregiver' ? (
+          <CaregiverRankingForm
+            rankedPreferences={formData.rankedPreferences}
+            onMoveItem={moveItem}
+            onSubmit={handleSubmit}
+            itemScopes={formData.rankedKeys.map((k) => optionsIndex[k]?.meta.scope || 'self')}
+            itemKinds={formData.rankedKeys.map((k) => optionsIndex[k]?.meta.kind || 'quality')}
+          />
+        ) : (
+          <VolunteerRankingForm
+            rankedPreferences={formData.rankedPreferences}
+            onMoveItem={moveItem}
+            onSubmit={handleSubmit}
+            itemScopes={formData.rankedKeys.map((k) => optionsIndex[k]?.meta.scope || 'self')}
+            itemKinds={formData.rankedKeys.map((k) => optionsIndex[k]?.meta.kind || 'quality')}
+          />
+        )}
+      </FormPageLayout>
     );
   };
 

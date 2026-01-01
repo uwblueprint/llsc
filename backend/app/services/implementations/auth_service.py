@@ -2,10 +2,10 @@ import logging
 import os
 
 import firebase_admin.auth
-import requests
 from fastapi import HTTPException
 
 from app.utilities.constants import LOGGER_NAME
+from app.utilities.ses_email_service import SESEmailService
 
 from ...interfaces.auth_service import IAuthService
 from ...schemas.auth import AuthResponse, Token
@@ -17,6 +17,7 @@ class AuthService(IAuthService):
         self.logger = logging.getLogger(LOGGER_NAME("auth_service"))
         self.user_service = user_service
         self.firebase_client = FirebaseRestClient(logger)
+        self.ses_email_service = SESEmailService()
 
     def generate_token(self, email: str, password: str) -> AuthResponse:
         try:
@@ -48,36 +49,133 @@ class AuthService(IAuthService):
 
     def reset_password(self, email: str) -> None:
         try:
-            # Use Firebase REST API to send password reset email
-            url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={os.getenv('FIREBASE_WEB_API_KEY')}"
-            data = {
-                "requestType": "PASSWORD_RESET",
-                "email": email,
-                "continueUrl": "http://localhost:3000/set-new-password",  # Custom action URL
-            }
+            # Get user's first name and language if available
+            first_name = None
+            language = "en"  # Default to English
+            try:
+                # Try database first, then fall back to Firebase
+                try:
+                    user = self.user_service.get_user_by_email(email)
+                    if user:
+                        if user.first_name and user.first_name.strip():
+                            first_name = user.first_name.strip()
+                        # Get language from user (enum values are already "en" or "fr")
+                        if user.language:
+                            language = user.language.value
+                except Exception:
+                    pass
 
-            response = requests.post(url, json=data)
-            response_json = response.json()
+                # Fall back to Firebase if database didn't have first_name
+                if not first_name:
+                    try:
+                        firebase_user = firebase_admin.auth.get_user_by_email(email)
+                        if firebase_user and firebase_user.display_name:
+                            display_name = firebase_user.display_name.strip()
+                            first_name = display_name.split()[0] if display_name else None
+                    except Exception:
+                        pass
+            except Exception:
+                pass
 
-            if response.status_code != 200:
-                error_message = response_json.get("error", {}).get("message", "Unknown error")
-                self.logger.error(f"Failed to send password reset email: {error_message}")
-                # Don't raise exception for security reasons - don't reveal if email exists
-                return
+            # Use Firebase Admin SDK to generate password reset link
+            action_code_settings = firebase_admin.auth.ActionCodeSettings(
+                url="http://localhost:3000/set-new-password",
+                handle_code_in_app=True,
+            )
 
-            self.logger.info(f"Password reset email sent successfully to {email}")
+            reset_link = firebase_admin.auth.generate_password_reset_link(email, action_code_settings)
+
+            # Send via SES with language
+            email_sent = self.ses_email_service.send_password_reset_email(email, reset_link, first_name, language)
+
+            if email_sent:
+                self.logger.info(f"Password reset email sent successfully to {email}")
+            else:
+                self.logger.warning(
+                    f"Failed to send password reset email to {email}, but link was generated: {reset_link}"
+                )
+                # Do not raise, avoid revealing if email exists
 
         except Exception as e:
             self.logger.error(f"Failed to reset password: {str(e)}")
             # Don't raise exception for security reasons - don't reveal if email exists
             return
 
-    def send_email_verification_link(self, email: str) -> None:
+    def send_email_verification_link(self, email: str, language: str = None) -> None:
         try:
-            firebase_admin.auth.generate_email_verification_link(email)
+            # Get user's first name if available
+            # Try Firebase first (for display_name), then fall back to database
+            first_name = None
+            try:
+                # Try to get from Firebase user (display_name)
+                try:
+                    firebase_user = firebase_admin.auth.get_user_by_email(email)
+                    if firebase_user and firebase_user.display_name:
+                        # Extract first name from display_name (e.g., "John Doe" -> "John")
+                        display_name = firebase_user.display_name.strip()
+                        first_name = display_name.split()[0] if display_name else None
+                        if first_name:
+                            self.logger.info(
+                                f"Found first name '{first_name}' from Firebase display_name for user {email}"
+                            )
+                    else:
+                        self.logger.debug(f"Firebase user exists but display_name is None for {email}")
+                except Exception as firebase_error:
+                    self.logger.debug(f"Could not get Firebase user for {email}: {str(firebase_error)}")
+
+                # Fall back to database if Firebase didn't have display_name
+                if not first_name:
+                    try:
+                        user = self.user_service.get_user_by_email(email)
+                        if user and user.first_name and user.first_name.strip():
+                            first_name = user.first_name.strip()
+                            self.logger.info(f"Found first name '{first_name}' from database for user {email}")
+                        else:
+                            self.logger.debug(f"No first name found in database for user {email}")
+                    except Exception as db_error:
+                        self.logger.debug(f"Could not get user from database for {email}: {str(db_error)}")
+            except Exception as e:
+                # If we can't get the user, continue without first name
+                self.logger.debug(f"Could not retrieve user for email {email}: {str(e)}")
+                pass
+
+            # Normalize and validate language
+            # If not provided, check environment variable, otherwise default to English
+            if not language:
+                language = os.getenv("EMAIL_LANGUAGE", "en").lower()
+            else:
+                language = language.lower()
+
+            # Only allow 'en' or 'fr', default to 'en' for anything else
+            if language not in ["en", "fr"]:
+                language = "en"
+
+            # Use Firebase Admin SDK to generate email verification link
+            action_code_settings = firebase_admin.auth.ActionCodeSettings(
+                url="http://localhost:3000/action",  # URL to redirect after verification
+                handle_code_in_app=True,
+            )
+
+            # Generate the verification link
+            verification_link = firebase_admin.auth.generate_email_verification_link(email, action_code_settings)
+
+            # Send the verification email via SES (works with any email address)
+            email_sent = self.ses_email_service.send_verification_email(email, verification_link, first_name, language)
+
+            if email_sent:
+                self.logger.info(f"Email verification sent successfully to {email}")
+            else:
+                # If SES fails, we can still provide the link for manual verification
+                self.logger.warning(
+                    f"Failed to send verification email to {email}, but link was generated: {verification_link}"
+                )
+                # For development/testing, you could log the link or store it temporarily
+                # In production, you might want to implement a fallback mechanism
+
         except Exception as e:
             self.logger.error(f"Failed to send verification email: {str(e)}")
-            raise
+            # Don't raise exception for security reasons - don't reveal if email exists
+            return
 
     def is_authorized_by_role(self, access_token: str, roles: set[str]) -> bool:
         try:

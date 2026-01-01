@@ -24,7 +24,7 @@ export default function AdminLogin() {
     try {
       const result = await login(email, password);
       if (result.success) {
-        router.push('/admin/dashboard');
+        router.push('/admin/directory');
       } else if (result.errorCode === 'auth/email-not-verified') {
         router.push(`/admin-verify?email=${encodeURIComponent(email)}&role=admin`);
       } else {

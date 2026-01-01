@@ -193,11 +193,12 @@ async def test_options_caregiver_without_cancer(db_session: Session):
     assert same_diag_p["allowed_scopes"] == ["loved_one"]
     assert {o["scope"] for o in res_p["dynamic_options"]} == {"loved_one"}
 
-    # target=caregiver → both scopes; same_diagnosis loved_one only
+    # target=caregiver → loved_one scope only (caregiver without cancer case); same_diagnosis loved_one only
     res_c = service.get_options(user_auth_id=user.auth_id, target="caregiver")
     same_diag_c = next(q for q in res_c["static_qualities"] if q["slug"] == "same_diagnosis")
     assert same_diag_c["allowed_scopes"] == ["loved_one"]
-    assert {o["scope"] for o in res_c["dynamic_options"]} == {"self", "loved_one"}
+    # Dynamic options based on user's case (caregiver_without_cancer) - only loved_one
+    assert {o["scope"] for o in res_c["dynamic_options"]} == {"loved_one"}
 
 
 @pytest.mark.asyncio
@@ -216,11 +217,12 @@ async def test_options_caregiver_with_cancer(db_session: Session):
     )
 
     service = RankingService(db_session)
-    # target=patient → loved_one options only; same_diagnosis loved_one only
+    # target=patient → both self and loved_one options (caregiver with cancer case); same_diagnosis loved_one only
     res_p = service.get_options(user_auth_id=user.auth_id, target="patient")
     same_diag_p = next(q for q in res_p["static_qualities"] if q["slug"] == "same_diagnosis")
     assert same_diag_p["allowed_scopes"] == ["loved_one"]
-    assert {o["scope"] for o in res_p["dynamic_options"]} == {"loved_one"}
+    # Dynamic options based on user's case (caregiver_with_cancer) - both self and loved_one
+    assert {o["scope"] for o in res_p["dynamic_options"]} == {"self", "loved_one"}
 
     # target=caregiver → both scopes; same_diagnosis includes both scopes
     res_c = service.get_options(user_auth_id=user.auth_id, target="caregiver")

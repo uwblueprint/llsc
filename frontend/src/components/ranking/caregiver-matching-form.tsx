@@ -2,7 +2,6 @@ import React from 'react';
 import { Box, Heading, Button, VStack, HStack, Text } from '@chakra-ui/react';
 
 import { CustomRadio } from '@/components/CustomRadio';
-import { COLORS } from '@/constants/form';
 
 interface CaregiverMatchingFormProps {
   volunteerType: string;
@@ -21,8 +20,8 @@ export function CaregiverMatchingForm({
         as="h1"
         fontFamily="system-ui, -apple-system, sans-serif"
         fontWeight={600}
-        color={COLORS.veniceBlue}
-        fontSize="28px"
+        color="brand.navy"
+        fontSize={{ base: '24px', md: '28px' }}
         mb={8}
       >
         Volunteer Matching Preferences
@@ -31,13 +30,13 @@ export function CaregiverMatchingForm({
       <Box mb={10}>
         <HStack gap={3}>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
+            <Box h="3px" bg="brand.primary" borderRadius="full" />
           </Box>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
+            <Box h="3px" bg="gray.300" borderRadius="full" />
           </Box>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
+            <Box h="3px" bg="gray.300" borderRadius="full" />
           </Box>
         </HStack>
       </Box>
@@ -47,14 +46,14 @@ export function CaregiverMatchingForm({
           as="h2"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontWeight={600}
-          color={COLORS.veniceBlue}
-          fontSize="20px"
+          color="brand.navy"
+          fontSize={{ base: '18px', md: '20px' }}
           mb={3}
         >
           Your volunteer
         </Heading>
         <Text
-          color={COLORS.fieldGray}
+          color="brand.fieldText"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="15px"
           mb={2}
@@ -62,7 +61,7 @@ export function CaregiverMatchingForm({
           This information will be used in the next step.
         </Text>
         <Text
-          color={COLORS.veniceBlue}
+          color="brand.navy"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="15px"
           fontWeight={600}
@@ -75,7 +74,7 @@ export function CaregiverMatchingForm({
         <VStack gap={5}>
           <Box w="full">
             <Text
-              color={COLORS.veniceBlue}
+              color="brand.navy"
               fontFamily="system-ui, -apple-system, sans-serif"
               fontWeight={500}
               fontSize="14px"
@@ -94,7 +93,7 @@ export function CaregiverMatchingForm({
                 <Text
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
-                  color={COLORS.veniceBlue}
+                  color="brand.navy"
                 >
                   has a similar diagnosis
                 </Text>
@@ -109,7 +108,7 @@ export function CaregiverMatchingForm({
                 <Text
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
-                  color={COLORS.veniceBlue}
+                  color="brand.navy"
                 >
                   is caring for a loved one with blood cancer
                 </Text>
@@ -119,15 +118,15 @@ export function CaregiverMatchingForm({
         </VStack>
       </Box>
 
-      <Box w="full" display="flex" justifyContent="flex-end">
+      <Box w="full" display="flex" justifyContent={{ base: 'stretch', sm: 'flex-end' }}>
         <Button
-          bg={COLORS.teal}
+          bg="brand.primary"
           color="white"
-          _hover={{ bg: COLORS.teal }}
-          _active={{ bg: COLORS.teal }}
+          _hover={{ bg: 'brand.primaryEmphasis' }}
+          _active={{ bg: 'brand.primaryEmphasis' }}
           onClick={() => onNext(volunteerType)}
           disabled={!volunteerType}
-          w="auto"
+          w={{ base: 'full', sm: 'auto' }}
           h="40px"
           fontSize="14px"
           fontWeight={500}

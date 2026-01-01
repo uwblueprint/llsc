@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text } from '@chakra-ui/react';
-import { COLORS } from '@/constants/form';
+
+// Theme colors (inline styles can't use CSS variables easily)
+const COLORS = {
+  navy: '#1d3448',
+  primary: '#056067',
+  lightTeal: '#e6f7f7',
+};
 
 interface MultiSelectDropdownProps {
   options: string[];
@@ -67,7 +73,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           justifyContent: 'space-between',
           fontFamily: 'system-ui, -apple-system, sans-serif',
           fontSize: '14px',
-          color: COLORS.veniceBlue,
+          color: COLORS.navy,
           textAlign: 'left',
           cursor: 'pointer',
           outline: 'none',
@@ -75,8 +81,8 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           gap: '8px',
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = COLORS.teal;
-          e.currentTarget.style.boxShadow = `0 0 0 3px ${COLORS.teal}20`;
+          e.currentTarget.style.borderColor = COLORS.primary;
+          e.currentTarget.style.boxShadow = `0 0 0 3px ${COLORS.primary}20`;
         }}
         onBlur={(e) => {
           e.currentTarget.style.borderColor = error ? '#ef4444' : '#d1d5db';
@@ -95,12 +101,12 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 py="4px"
                 bg={COLORS.lightTeal}
                 borderRadius="20px"
-                border={`1px solid ${COLORS.teal}`}
+                border={`1px solid ${COLORS.primary}`}
               >
                 <Text
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
-                  color={COLORS.teal}
+                  color={COLORS.primary}
                   fontWeight={500}
                 >
                   {value}
@@ -116,7 +122,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: COLORS.teal,
+                    color: COLORS.primary,
                     fontSize: '14px',
                     lineHeight: '1',
                     width: '16px',
@@ -183,9 +189,9 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     appearance: 'none',
                     WebkitAppearance: 'none',
                     MozAppearance: 'none',
-                    border: isSelected ? `1px solid ${COLORS.teal}` : '1px solid #d1d5db',
+                    border: isSelected ? `1px solid ${COLORS.primary}` : '1px solid #d1d5db',
                     borderRadius: '3px',
-                    backgroundColor: isSelected ? COLORS.teal : 'white',
+                    backgroundColor: isSelected ? COLORS.primary : 'white',
                     backgroundImage: isSelected
                       ? "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M10 3L4.5 8.5L2 6l1.5-1.5L4.5 6L8.5 2L10 3z'/%3E%3C/svg%3E\")"
                       : 'none',
@@ -197,7 +203,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 <Text
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
-                  color={COLORS.veniceBlue}
+                  color={COLORS.navy}
                   cursor="pointer"
                   flex="1"
                   fontWeight={isSelected ? 500 : 400}

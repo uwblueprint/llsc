@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, Heading, Button, VStack, HStack, Text } from '@chakra-ui/react';
 import { DragIcon } from '@/components/ui';
-import { COLORS } from '@/constants/form';
 
 interface CaregiverRankingFormProps {
   rankedPreferences: string[];
@@ -78,8 +77,8 @@ export function CaregiverRankingForm({
         as="h1"
         fontFamily="system-ui, -apple-system, sans-serif"
         fontWeight={600}
-        color={COLORS.veniceBlue}
-        fontSize="28px"
+        color="brand.navy"
+        fontSize={{ base: '24px', md: '28px' }}
         mb={8}
       >
         Volunteer Matching Preferences
@@ -88,13 +87,13 @@ export function CaregiverRankingForm({
       <Box mb={10}>
         <HStack gap={3}>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
+            <Box h="3px" bg="gray.300" borderRadius="full" />
           </Box>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.progressGray} borderRadius="full" />
+            <Box h="3px" bg="gray.300" borderRadius="full" />
           </Box>
           <Box flex="1">
-            <Box h="3px" bg={COLORS.teal} borderRadius="full" />
+            <Box h="3px" bg="brand.primary" borderRadius="full" />
           </Box>
         </HStack>
       </Box>
@@ -104,14 +103,14 @@ export function CaregiverRankingForm({
           as="h2"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontWeight={600}
-          color={COLORS.veniceBlue}
-          fontSize="20px"
+          color="brand.navy"
+          fontSize={{ base: '18px', md: '20px' }}
           mb={3}
         >
           Ranking Match Preferences
         </Heading>
         <Text
-          color={COLORS.fieldGray}
+          color="brand.fieldText"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="15px"
           mb={2}
@@ -119,7 +118,7 @@ export function CaregiverRankingForm({
           This information will be used to match you with a suitable volunteer.
         </Text>
         <Text
-          color={COLORS.veniceBlue}
+          color="brand.navy"
           fontFamily="system-ui, -apple-system, sans-serif"
           fontSize="15px"
           fontWeight={600}
@@ -132,7 +131,7 @@ export function CaregiverRankingForm({
         <VStack gap={5}>
           <Box w="full">
             <Text
-              color={COLORS.fieldGray}
+              color="brand.fieldText"
               fontFamily="system-ui, -apple-system, sans-serif"
               fontSize="14px"
               mb={2}
@@ -140,7 +139,7 @@ export function CaregiverRankingForm({
               Rank the following statements in the order that you agree with them:
             </Text>
             <Text
-              color={COLORS.fieldGray}
+              color="brand.fieldText"
               fontFamily="system-ui, -apple-system, sans-serif"
               fontSize="12px"
               mb={6}
@@ -148,7 +147,7 @@ export function CaregiverRankingForm({
               1 is most agreed, 5 is least agreed.
             </Text>
 
-            <VStack gap={3} align="start">
+            <VStack gap={{ base: 6, md: 3 }} align="start">
               {rankedPreferences.map((statement, index) => {
                 const isDragging = draggedIndex === index;
                 const isDropTarget = dropTargetIndex === index;
@@ -164,7 +163,7 @@ export function CaregiverRankingForm({
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="16px"
                       fontWeight={600}
-                      color={COLORS.veniceBlue}
+                      color="brand.navy"
                       minW="20px"
                     >
                       {index + 1}.
@@ -172,9 +171,9 @@ export function CaregiverRankingForm({
 
                     <HStack
                       flex="1"
-                      p={4}
+                      p={{ base: 5, md: 4 }}
                       bg={isDragging ? '#e5e7eb' : isDropTarget ? '#dbeafe' : '#f9fafb'}
-                      border={`1px solid ${isDropTarget ? COLORS.teal : '#e5e7eb'}`}
+                      border={`1px solid ${isDropTarget ? 'var(--chakra-colors-brand-primary)' : '#e5e7eb'}`}
                       borderRadius="6px"
                       cursor={isDragging ? 'grabbing' : 'grab'}
                       gap={3}
@@ -187,14 +186,14 @@ export function CaregiverRankingForm({
                       onDrop={(e) => handleDrop(e, index)}
                       onDragEnd={handleDragEnd}
                       _hover={{
-                        borderColor: COLORS.teal,
-                        boxShadow: `0 0 0 1px ${COLORS.teal}20`,
+                        borderColor: 'brand.primary',
+                        boxShadow: '0 0 0 1px var(--chakra-colors-brand-primary-alpha)',
                         bg: isDragging ? '#e5e7eb' : '#f3f4f6',
                       }}
                     >
                       <Box
                         cursor={isDragging ? 'grabbing' : 'grab'}
-                        p={1}
+                        p={{ base: 3, md: 1 }}
                         _hover={{ opacity: 0.7 }}
                       >
                         <DragIcon />
@@ -203,7 +202,7 @@ export function CaregiverRankingForm({
                       <Text
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
-                        color={COLORS.veniceBlue}
+                        color="brand.navy"
                         flex="1"
                         userSelect="none"
                       >
@@ -218,14 +217,14 @@ export function CaregiverRankingForm({
         </VStack>
       </Box>
 
-      <Box w="full" display="flex" justifyContent="flex-end">
+      <Box w="full" display="flex" justifyContent={{ base: 'stretch', sm: 'flex-end' }}>
         <Button
-          bg={COLORS.teal}
+          bg="brand.primary"
           color="white"
-          _hover={{ bg: COLORS.teal }}
-          _active={{ bg: COLORS.teal }}
+          _hover={{ bg: 'brand.primaryEmphasis' }}
+          _active={{ bg: 'brand.primaryEmphasis' }}
           onClick={onSubmit}
-          w="auto"
+          w={{ base: 'full', sm: 'auto' }}
           h="40px"
           fontSize="14px"
           fontWeight={500}

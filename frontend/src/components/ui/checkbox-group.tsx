@@ -1,7 +1,6 @@
 import React from 'react';
-import { Box, Text, HStack, Input } from '@chakra-ui/react';
+import { Box, Text } from '@chakra-ui/react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { COLORS } from '@/constants/form';
 
 export interface CheckboxGroupProps {
   options: string[];
@@ -34,7 +33,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
           disabled={!selectedValues.includes(option) && selectedValues.length >= maxSelections}
           colorScheme="teal"
         >
-          <Text fontSize="14px" color={COLORS.veniceBlue}>
+          <Text fontSize="14px" color="brand.navy">
             {option}
           </Text>
         </Checkbox>

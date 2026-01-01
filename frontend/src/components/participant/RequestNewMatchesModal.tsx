@@ -134,6 +134,7 @@ export function RequestNewMatchesModal({
                 onClick={handleSubmit}
                 loading={isSubmitting}
                 loadingText="Submitting..."
+                disabled={isSubmitting}
                 px={6}
               >
                 Submit Request
