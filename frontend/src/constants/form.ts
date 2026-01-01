@@ -6,10 +6,17 @@
  * - COLORS.lightGray → gray.50
  * - COLORS.progressGray → gray.300
  *
- * Will be removed after Phase 2b-2d form refactoring is complete.
+ * These are temporarily kept for pages not yet migrated (ranking forms, admin, dashboards).
+ * Will be removed after all form refactoring is complete.
  */
 export const COLORS = {
+  veniceBlue: '#1d3448',
+  fieldGray: '#6b7280',
+  teal: '#0d7377',
   lightTeal: '#e6f7f7',
+  lightGray: '#f3f4f6',
+  progressTeal: '#5eead4',
+  progressGray: '#d1d5db',
 } as const;
 
 // Canadian provinces
