@@ -66,17 +66,25 @@ export function NotesModal({ participantId, participantName }: NotesModalProps) 
               <Text>
                 Submitted{' '}
                 {latestTask.createdAt
-                  ? new Date(latestTask.createdAt).toLocaleDateString('en-US', {
-                      month: 'numeric',
-                      day: 'numeric',
-                      year: 'numeric',
-                    }) +
-                    ', ' +
-                    new Date(latestTask.createdAt).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true,
-                    })
+                  ? (() => {
+                      // Backend sends UTC datetime without timezone marker, so we need to
+                      // explicitly treat it as UTC before converting to local timezone
+                      const utcDateString = latestTask.createdAt.endsWith('Z')
+                        ? latestTask.createdAt
+                        : `${latestTask.createdAt}Z`;
+                      const date = new Date(utcDateString);
+                      const dateStr = date.toLocaleDateString('en-US', {
+                        month: 'numeric',
+                        day: 'numeric',
+                        year: 'numeric',
+                      });
+                      const timeStr = date.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      });
+                      return `${dateStr}, ${timeStr}`;
+                    })()
                   : 'N/A'}
               </Text>
             </HStack>

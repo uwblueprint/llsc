@@ -48,9 +48,30 @@ const ETHNIC_OPTIONS = [
   'Another background/Prefer to self-describe (please specify):',
 ];
 
+const LANGUAGE_OPTIONS = ['English', 'Français'];
+
+// Helper functions to convert between display and DB values
+const languageToDisplay = (dbValue: string | undefined): string => {
+  if (!dbValue) return 'English';
+  if (dbValue.toLowerCase() === 'en' || dbValue.toLowerCase() === 'english') return 'English';
+  if (
+    dbValue.toLowerCase() === 'fr' ||
+    dbValue.toLowerCase() === 'français' ||
+    dbValue.toLowerCase() === 'francais'
+  )
+    return 'Français';
+  return dbValue;
+};
+
+const languageToDb = (displayValue: string): string => {
+  if (displayValue === 'Français') return 'fr';
+  return 'en';
+};
+
 interface ProfileSummaryProps {
   userData: UserData | null | undefined;
   userEmail?: string;
+  userLanguage?: string;
   isEditing: boolean;
   isSaving: boolean;
   editData: ProfileEditData;
@@ -63,6 +84,7 @@ interface ProfileSummaryProps {
 export function ProfileSummary({
   userData,
   userEmail,
+  userLanguage,
   isEditing,
   isSaving,
   editData,
@@ -289,9 +311,18 @@ export function ProfileSummary({
           <Text fontSize="xs" color={COLORS.textSecondary} mb={1}>
             Preferred Language
           </Text>
-          <Text fontSize="sm" color={COLORS.veniceBlue}>
-            N/A
-          </Text>
+          {isEditing ? (
+            <SingleSelectDropdown
+              options={LANGUAGE_OPTIONS}
+              selectedValue={editData.language || languageToDisplay(userLanguage)}
+              onSelectionChange={(value) => onEditDataChange({ ...editData, language: value })}
+              placeholder="Select preferred language"
+            />
+          ) : (
+            <Text fontSize="sm" color={COLORS.veniceBlue}>
+              {languageToDisplay(userLanguage)}
+            </Text>
+          )}
         </Box>
         {/* Marital Status */}
         <Box>

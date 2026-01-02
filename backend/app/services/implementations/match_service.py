@@ -660,6 +660,8 @@ class MatchService:
                 .options(
                     joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.treatments),
                     joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.experiences),
+                    joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.loved_one_treatments),
+                    joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.loved_one_experiences),
                     joinedload(Match.volunteer).joinedload(User.volunteer_data),
                     joinedload(Match.match_status),
                     joinedload(Match.suggested_time_blocks),
@@ -685,6 +687,46 @@ class MatchService:
             self.logger.error(f"Error fetching matches for participant {participant_id}: {exc}")
             raise HTTPException(status_code=500, detail="Failed to fetch matches")
 
+    async def get_all_matches_for_participant_admin(self, participant_id: UUID) -> MatchListResponse:
+        """Get all matches for a participant including those awaiting volunteer acceptance (admin only)."""
+        try:
+            # Get participant to check pending request flag
+            participant: User | None = self.db.get(User, participant_id)
+            if not participant:
+                raise HTTPException(404, f"Participant {participant_id} not found")
+
+            # Get ALL matches including those awaiting volunteer acceptance
+            matches: List[Match] = (
+                self.db.query(Match)
+                .options(
+                    joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.treatments),
+                    joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.experiences),
+                    joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.loved_one_treatments),
+                    joinedload(Match.volunteer).joinedload(User.user_data).joinedload(UserData.loved_one_experiences),
+                    joinedload(Match.volunteer).joinedload(User.volunteer_data),
+                    joinedload(Match.match_status),
+                    joinedload(Match.suggested_time_blocks),
+                    joinedload(Match.confirmed_time),
+                )
+                .filter(
+                    Match.participant_id == participant_id,
+                    Match.deleted_at.is_(None),
+                )
+                .order_by(Match.created_at.desc())
+                .all()
+            )
+
+            responses = [self._build_match_detail(match) for match in matches]
+            return MatchListResponse(
+                matches=responses,
+                has_pending_request=participant.pending_volunteer_request or False,
+            )
+        except HTTPException:
+            raise
+        except Exception as exc:
+            self.logger.error(f"Error fetching all matches for participant {participant_id}: {exc}")
+            raise HTTPException(status_code=500, detail="Failed to fetch matches")
+
     async def get_matches_for_volunteer(self, volunteer_id: UUID) -> MatchListForVolunteerResponse:
         """Get all matches for a volunteer, including those awaiting acceptance."""
         try:
@@ -699,6 +741,8 @@ class MatchService:
                 .options(
                     joinedload(Match.participant).joinedload(User.user_data).joinedload(UserData.treatments),
                     joinedload(Match.participant).joinedload(User.user_data).joinedload(UserData.experiences),
+                    joinedload(Match.participant).joinedload(User.user_data).joinedload(UserData.loved_one_treatments),
+                    joinedload(Match.participant).joinedload(User.user_data).joinedload(UserData.loved_one_experiences),
                     joinedload(Match.match_status),
                 )
                 .filter(Match.volunteer_id == volunteer_id, Match.deleted_at.is_(None))
@@ -822,6 +866,9 @@ class MatchService:
         treatments: List[str] = []
         experiences: List[str] = []
         timezone: Optional[str] = None
+        loved_one_diagnosis: Optional[str] = None
+        loved_one_treatments: List[str] = []
+        loved_one_experiences: List[str] = []
 
         if participant_data:
             if participant_data.pronouns:
@@ -839,6 +886,13 @@ class MatchService:
 
             timezone = participant_data.timezone
 
+            # Add loved one data
+            loved_one_diagnosis = participant_data.loved_one_diagnosis
+            if participant_data.loved_one_treatments:
+                loved_one_treatments = [t.name for t in participant_data.loved_one_treatments if t and t.name]
+            if participant_data.loved_one_experiences:
+                loved_one_experiences = [e.name for e in participant_data.loved_one_experiences if e and e.name]
+
         participant_summary = MatchParticipantSummary(
             id=participant.id,
             first_name=participant.first_name,
@@ -850,6 +904,9 @@ class MatchService:
             treatments=treatments,
             experiences=experiences,
             timezone=timezone,
+            loved_one_diagnosis=loved_one_diagnosis,
+            loved_one_treatments=loved_one_treatments,
+            loved_one_experiences=loved_one_experiences,
         )
 
         match_status_name = match.match_status.name if match.match_status else ""
@@ -940,6 +997,9 @@ class MatchService:
         treatments: List[str] = []
         experiences: List[str] = []
         overview: Optional[str] = None
+        loved_one_diagnosis: Optional[str] = None
+        loved_one_treatments: List[str] = []
+        loved_one_experiences: List[str] = []
 
         if volunteer_data:
             if volunteer_data.pronouns:
@@ -956,6 +1016,13 @@ class MatchService:
 
             if volunteer_data.experiences:
                 experiences = [e.name for e in volunteer_data.experiences if e and e.name]
+
+            # Add loved one data
+            loved_one_diagnosis = volunteer_data.loved_one_diagnosis
+            if volunteer_data.loved_one_treatments:
+                loved_one_treatments = [t.name for t in volunteer_data.loved_one_treatments if t and t.name]
+            if volunteer_data.loved_one_experiences:
+                loved_one_experiences = [e.name for e in volunteer_data.loved_one_experiences if e and e.name]
 
         # Get overview/experience from volunteer_data table
         if volunteer_data_record and volunteer_data_record.experience:
@@ -974,6 +1041,9 @@ class MatchService:
             treatments=treatments,
             experiences=experiences,
             overview=overview,
+            loved_one_diagnosis=loved_one_diagnosis,
+            loved_one_treatments=loved_one_treatments,
+            loved_one_experiences=loved_one_experiences,
         )
 
         suggested_blocks = [

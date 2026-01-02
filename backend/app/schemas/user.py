@@ -128,6 +128,7 @@ class UserCreateResponse(BaseModel):
     auth_id: str
     approved: bool
     active: bool
+    pending_volunteer_request: bool
     form_status: FormStatus
     language: Language
 
@@ -148,12 +149,14 @@ class UserResponse(BaseModel):
     auth_id: str
     approved: bool
     active: bool
+    pending_volunteer_request: bool
     role: "RoleResponse"
     form_status: FormStatus
     user_data: Optional[UserDataResponse] = None
     volunteer_data: Optional[VolunteerDataResponse] = None
     availability: List[AvailabilityTemplateSlot] = []
     language: Language
+    match_count: int = Field(default=0, description="Number of active matches for this user")
 
     model_config = ConfigDict(from_attributes=True)
 

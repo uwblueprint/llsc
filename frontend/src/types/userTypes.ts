@@ -73,6 +73,7 @@ export interface UserResponse {
   authId: string;
   approved: boolean;
   active: boolean;
+  pendingVolunteerRequest: boolean;
   formStatus: string;
   language: string;
   role: {
@@ -82,4 +83,5 @@ export interface UserResponse {
   userData?: UserData | null;
   volunteerData?: VolunteerData | null;
   availability?: AvailabilityTemplate[];
+  matchCount?: number;
 }

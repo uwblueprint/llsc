@@ -23,6 +23,7 @@ from app.models import (
     UserData,
 )
 from app.models.SuggestedTime import suggested_times
+from app.models.User import Language
 from app.schemas.availability import AvailabilityTemplateSlot
 from app.schemas.user import (
     SignUpMethod,
@@ -349,6 +350,34 @@ class UserService(IUserService):
                 .all()
             )
 
+            # Pre-calculate match counts for all users in one query
+            # Count all non-deleted matches (regardless of status)
+            user_ids = [user.id for user in users]
+
+            # Count matches for participants (as participant)
+            participant_match_counts = (
+                self.db.query(Match.participant_id, func.count(Match.id).label("count"))
+                .filter(
+                    Match.participant_id.in_(user_ids),
+                    Match.deleted_at.is_(None),
+                )
+                .group_by(Match.participant_id)
+                .all()
+            )
+            participant_counts_dict = {str(pid): count for pid, count in participant_match_counts}
+
+            # Count matches for volunteers (as volunteer)
+            volunteer_match_counts = (
+                self.db.query(Match.volunteer_id, func.count(Match.id).label("count"))
+                .filter(
+                    Match.volunteer_id.in_(user_ids),
+                    Match.deleted_at.is_(None),
+                )
+                .group_by(Match.volunteer_id)
+                .all()
+            )
+            volunteer_counts_dict = {str(vid): count for vid, count in volunteer_match_counts}
+
             # Convert templates to AvailabilityTemplateSlot for each user
             user_responses = []
             for user in users:
@@ -363,12 +392,21 @@ class UserService(IUserService):
                             )
                         )
 
+                # Calculate match count based on role
+                user_id_str = str(user.id)
+                match_count = 0
+                if user.role_id == 1:  # Participant
+                    match_count = participant_counts_dict.get(user_id_str, 0)
+                elif user.role_id == 2:  # Volunteer
+                    match_count = volunteer_counts_dict.get(user_id_str, 0)
+
                 user_dict = {
                     **{c.name: getattr(user, c.name) for c in user.__table__.columns},
                     "availability": availability_templates,
                     "role": user.role,
                     "user_data": user.user_data,
                     "volunteer_data": user.volunteer_data,
+                    "match_count": match_count,
                 }
                 user_responses.append(UserResponse.model_validate(user_dict))
 
@@ -542,6 +580,15 @@ class UserService(IUserService):
             # Handle ethnic_group (array field)
             if "ethnic_group" in update_data:
                 user_data.ethnic_group = update_data["ethnic_group"]
+
+            # Handle language (stored on User model, not UserData)
+            if "language" in update_data:
+                try:
+                    language_value = update_data["language"]
+                    if language_value in ["en", "fr"]:
+                        db_user.language = Language(language_value)
+                except (ValueError, AttributeError):
+                    pass  # Invalid language value, skip
 
             # Handle treatments (many-to-many)
             if "treatments" in update_data:

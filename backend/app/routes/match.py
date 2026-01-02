@@ -89,8 +89,24 @@ async def get_matches_for_participant(
     match_service: MatchService = Depends(get_match_service),
     _authorized: bool = has_roles([UserRole.ADMIN]),
 ):
+    """Get matches for a participant (admin only). Includes all matches including awaiting_volunteer_acceptance."""
     try:
-        return await match_service.get_matches_for_participant(participant_id)
+        return await match_service.get_all_matches_for_participant_admin(participant_id)
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/volunteer/{volunteer_id}", response_model=MatchListForVolunteerResponse)
+async def get_matches_for_volunteer_admin(
+    volunteer_id: UUID,
+    match_service: MatchService = Depends(get_match_service),
+    _authorized: bool = has_roles([UserRole.ADMIN]),
+):
+    """Get all matches for a volunteer (admin only)."""
+    try:
+        return await match_service.get_matches_for_volunteer(volunteer_id)
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:

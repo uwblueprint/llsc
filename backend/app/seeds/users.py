@@ -357,7 +357,7 @@ def seed_users(session: Session) -> None:
                 "city": "Calgary",
                 "province": "Alberta",
                 "postal_code": "T2P 1J4",
-                "gender_identity": "Man",
+                "gender_identity": "Male",
                 "pronouns": ["he", "him"],
                 "ethnic_group": ["White/Caucasian"],
                 "marital_status": "Single",
@@ -366,10 +366,15 @@ def seed_users(session: Session) -> None:
                 "diagnosis": "Non-Hodgkin Lymphoma",
                 "date_of_diagnosis": date(2019, 6, 10),
                 "has_blood_cancer": "yes",
-                "caring_for_someone": "no",
+                "caring_for_someone": "yes",
+                "loved_one_age": "26",
+                "loved_one_diagnosis": "Blood Cancer",
+                "loved_one_date_of_diagnosis": date(2023, 2, 20),
             },
             "treatments": [3, 6, 14],  # Chemotherapy, Radiation, BTK Inhibitors
             "experiences": [1, 3, 4, 7],  # Brain Fog, Feeling Overwhelmed, Fatigue, Returning to work
+            "loved_one_treatments": [3, 6],  # Chemotherapy, Radiation
+            "loved_one_experiences": [1, 3, 4, 7],  # Brain Fog, Feeling Overwhelmed, Fatigue, Returning to work
         },
         {
             "role": "volunteer",

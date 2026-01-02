@@ -9,6 +9,8 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.interfaces.matching_service import IMatchingService
 from app.models.Experience import Experience
+from app.models.Match import Match
+from app.models.MatchStatus import MatchStatus
 from app.models.Quality import Quality
 from app.models.RankingPreference import RankingPreference
 from app.models.Role import Role
@@ -51,7 +53,10 @@ class MatchingService(IMatchingService):
             if not participant_preferences:
                 raise ValueError(f"User with ID {participant_id} has no ranking form data")
 
-            # Get all active, approved volunteers with their data
+            # Get participant's language preference
+            participant_language = user.language
+
+            # Get all active, approved volunteers with their data and matching language
             volunteers_with_data = (
                 self.db.query(User, UserData)
                 .join(User.role)
@@ -59,6 +64,7 @@ class MatchingService(IMatchingService):
                 .filter(Role.name == UserRole.VOLUNTEER)
                 .filter(User.active)
                 .filter(User.approved)
+                .filter(User.language == participant_language)
                 .all()
             )
 
@@ -124,8 +130,12 @@ class MatchingService(IMatchingService):
             if not participant_preferences:
                 raise ValueError(f"User with ID {participant_id} has no ranking form data")
 
+            # Get participant's language preference
+            participant_language = user.language
+
             # Get all active, approved volunteers with their data and relationships
             # Eagerly load user_data, treatments, and experiences to avoid N+1 queries
+            # Filter by matching language
             volunteers = (
                 self.db.query(User)
                 .join(User.role)
@@ -136,6 +146,7 @@ class MatchingService(IMatchingService):
                 .filter(Role.name == UserRole.VOLUNTEER)
                 .filter(User.active)
                 .filter(User.approved)
+                .filter(User.language == participant_language)
                 .all()
             )
 
@@ -166,6 +177,56 @@ class MatchingService(IMatchingService):
 
                 experience_names = [experience.name for experience in volunteer_data.experiences]
 
+                # Loved one data
+                loved_one_treatment_names = [treatment.name for treatment in volunteer_data.loved_one_treatments]
+                loved_one_experience_names = [experience.name for experience in volunteer_data.loved_one_experiences]
+
+                # Format ethnic_group as list if it's a list, otherwise None
+                ethnic_group_list = None
+                if volunteer_data.ethnic_group:
+                    if isinstance(volunteer_data.ethnic_group, list):
+                        ethnic_group_list = volunteer_data.ethnic_group
+                    else:
+                        ethnic_group_list = [volunteer_data.ethnic_group]
+
+                # Count active matches for this volunteer
+                # Active statuses: pending, requesting_new_times, requesting_new_volunteers, confirmed, awaiting_volunteer_acceptance
+                active_statuses = (
+                    self.db.query(MatchStatus)
+                    .filter(
+                        MatchStatus.name.in_(
+                            [
+                                "pending",
+                                "requesting_new_times",
+                                "requesting_new_volunteers",
+                                "confirmed",
+                                "awaiting_volunteer_acceptance",
+                            ]
+                        )
+                    )
+                    .all()
+                )
+                active_status_ids = [status.id for status in active_statuses]
+
+                match_count = (
+                    self.db.query(Match)
+                    .filter(
+                        Match.volunteer_id == volunteer_user.id,
+                        Match.deleted_at.is_(None),
+                        Match.match_status_id.in_(active_status_ids),
+                    )
+                    .count()
+                )
+
+                # Format dates as ISO strings if they exist
+                date_of_diagnosis_str = None
+                if volunteer_data.date_of_diagnosis:
+                    date_of_diagnosis_str = volunteer_data.date_of_diagnosis.isoformat()
+
+                loved_one_date_of_diagnosis_str = None
+                if volunteer_data.loved_one_date_of_diagnosis:
+                    loved_one_date_of_diagnosis_str = volunteer_data.loved_one_date_of_diagnosis.isoformat()
+
                 match_candidate = {
                     "volunteer_id": volunteer_user.id,
                     "first_name": volunteer_user.first_name,
@@ -174,9 +235,21 @@ class MatchingService(IMatchingService):
                     "timezone": volunteer_data.timezone,
                     "age": age,
                     "diagnosis": volunteer_data.diagnosis,
+                    "date_of_diagnosis": date_of_diagnosis_str,
                     "treatments": treatment_names,
                     "experiences": experience_names,
                     "match_score": round(score * 100, 2),
+                    "match_count": match_count,
+                    # Additional fields for dynamic columns
+                    "marital_status": volunteer_data.marital_status,
+                    "gender_identity": volunteer_data.gender_identity,
+                    "ethnic_group": ethnic_group_list,
+                    "has_kids": volunteer_data.has_kids,
+                    "loved_one_age": volunteer_data.loved_one_age,
+                    "loved_one_diagnosis": volunteer_data.loved_one_diagnosis,
+                    "loved_one_date_of_diagnosis": loved_one_date_of_diagnosis_str,
+                    "loved_one_treatments": loved_one_treatment_names,
+                    "loved_one_experiences": loved_one_experience_names,
                 }
                 scored_volunteers.append((match_candidate, score))
 
@@ -224,11 +297,24 @@ class MatchingService(IMatchingService):
 
         return preference_data
 
+    def _is_patient_volunteer(self, volunteer_data: UserData) -> bool:
+        """Check if volunteer is a patient (has cancer and not a caregiver)."""
+        has_cancer = (volunteer_data.has_blood_cancer or "").lower() == "yes"
+        is_caregiver = (volunteer_data.caring_for_someone or "").lower() == "yes"
+        return has_cancer and not is_caregiver
+
+    def _is_caregiver_volunteer(self, volunteer_data: UserData) -> bool:
+        """Check if volunteer is a caregiver."""
+        return (volunteer_data.caring_for_someone or "").lower() == "yes"
+
     def _calculate_match_score(
         self, participant_data: UserData, volunteer_data: UserData, preferences: List[Dict[str, Any]]
     ) -> float:
         """
         Calculate match score using complex preference system with target roles, kinds, and scopes.
+        Each preference's own scope field is used for the participant scope.
+        Volunteer scope is determined based on the matching case.
+        Volunteers are filtered by type: patient volunteers for Cases 1 & 2, caregiver volunteers for Case 3.
         """
 
         # Group preferences by target role
@@ -241,20 +327,31 @@ class MatchingService(IMatchingService):
         wants_patient = has_cancer and not is_caregiver
 
         # Case 1: Participant (patient) wants cancer patient volunteer
+        # Only consider patient volunteers (has cancer, not a caregiver)
         if patient_prefs and wants_patient:
-            return self._score_preferences(patient_prefs, participant_data, volunteer_data, "self", "self")
+            if not self._is_patient_volunteer(volunteer_data):
+                return 0.0
+            return self._score_preferences_with_individual_scopes(
+                patient_prefs, participant_data, volunteer_data, "self"
+            )
 
-        # Case 2: Participant (caregiver) wants ONLY cancer patient volunteers
-        # Match caregiver's loved one data with volunteer's patient data
-        if patient_prefs and is_caregiver and not caregiver_prefs:
-            return self._score_preferences(patient_prefs, participant_data, volunteer_data, "loved_one", "self")
+        # Case 2: Participant (caregiver) wants cancer patient volunteers
+        # Only consider patient volunteers (has cancer, not a caregiver)
+        if patient_prefs and is_caregiver:
+            if not self._is_patient_volunteer(volunteer_data):
+                return 0.0
+            return self._score_preferences_with_individual_scopes(
+                patient_prefs, participant_data, volunteer_data, "self"
+            )
 
         # Case 3: Participant (caregiver) wants caregiver volunteers
-        # Match based on both patient and caregiver qualities
-        if caregiver_prefs and is_caregiver and not patient_prefs:
-            return self._score_preferences(
-                caregiver_prefs, participant_data, volunteer_data, "self", "self"
-            ) + self._score_preferences(patient_prefs, participant_data, volunteer_data, "loved_one", "loved_one")
+        # Only consider caregiver volunteers
+        if caregiver_prefs and is_caregiver:
+            if not self._is_caregiver_volunteer(volunteer_data):
+                return 0.0
+            return self._score_preferences_with_individual_scopes(
+                caregiver_prefs, participant_data, volunteer_data, None
+            )
 
         return 0.0
 
@@ -361,6 +458,53 @@ class MatchingService(IMatchingService):
             "loved_one_date_of_diagnosis": serialize_value(user_data.loved_one_date_of_diagnosis),
         }
 
+    def _score_preferences_with_individual_scopes(
+        self,
+        preferences: List[Dict[str, Any]],
+        participant_data: UserData,
+        volunteer_data: UserData,
+        volunteer_scope_override: Optional[str],
+    ) -> float:
+        """
+        Score preferences using each preference's own scope field.
+        Each preference's scope determines which participant data to use.
+        Volunteer scope is determined by override (if provided) or matches participant scope.
+        """
+        if not preferences:
+            return 0.0
+
+        total_score = 0.0
+        max_possible_score = 0.0
+
+        for pref in preferences:
+            # Calculate preference weight (higher rank = lower weight)
+            rank = pref["rank"]
+            weight = 1.0 / rank  # Simple inverse ranking
+
+            # Use the preference's own scope for participant
+            participant_scope = pref.get("scope", "self")
+
+            # For volunteer scope: use override if provided, otherwise match participant scope
+            # This handles cases where caregiver wants patient volunteer (volunteer_scope="self")
+            # vs caregiver wants caregiver volunteer (volunteer_scope matches participant_scope)
+            volunteer_scope = volunteer_scope_override if volunteer_scope_override is not None else participant_scope
+
+            # Check if volunteer matches this preference using the scopes
+            match_score = self._check_preference_match(
+                participant_data, volunteer_data, pref, participant_scope, volunteer_scope
+            )
+
+            # Handle both boolean and float returns
+            if isinstance(match_score, bool):
+                match_score = 1.0 if match_score else 0.0
+
+            total_score += weight * match_score
+
+            max_possible_score += weight
+
+        # Return normalized score (0.0 to 1.0)
+        return total_score / max_possible_score if max_possible_score > 0 else 0.0
+
     def _score_preferences(
         self,
         preferences: List[Dict[str, Any]],
@@ -444,6 +588,8 @@ class MatchingService(IMatchingService):
                 participant_value = participant_data.marital_status
             elif quality_slug == "same_parental_status":
                 participant_value = participant_data.has_kids
+            elif quality_slug == "same_ethnic_or_cultural_group":
+                participant_value = participant_data.ethnic_group
             else:
                 return False
         elif participant_scope == "loved_one":
@@ -473,6 +619,8 @@ class MatchingService(IMatchingService):
                 volunteer_value = volunteer_data.marital_status
             elif quality_slug == "same_parental_status":
                 volunteer_value = volunteer_data.has_kids
+            elif quality_slug == "same_ethnic_or_cultural_group":
+                volunteer_value = volunteer_data.ethnic_group
             else:
                 return False
         elif volunteer_scope == "loved_one":
@@ -494,8 +642,14 @@ class MatchingService(IMatchingService):
         # Compare values
         if quality_slug == "same_age":
             return self._check_age_similarity(participant_value, volunteer_value)
+        elif quality_slug == "same_ethnic_or_cultural_group":
+            return self._check_ethnic_group_overlap(participant_value, volunteer_value)
         else:
-            return participant_value == volunteer_value
+            # For string comparisons, normalize to handle case sensitivity
+            if isinstance(participant_value, str) and isinstance(volunteer_value, str):
+                return participant_value.strip().lower() == volunteer_value.strip().lower()
+            else:
+                return participant_value == volunteer_value
 
     def _check_treatment_match(self, volunteer_data: UserData, treatment: Treatment, volunteer_scope: str) -> bool:
         """Check if volunteer has experience with the specific treatment."""
@@ -539,6 +693,26 @@ class MatchingService(IMatchingService):
             return [1.0 / len(values)] * len(values)
 
         return [exp_val / sum_exp for exp_val in exp_values]
+
+    def _check_ethnic_group_overlap(self, participant_ethnic_groups, volunteer_ethnic_groups) -> bool:
+        """Check if there's at least one overlapping ethnic group between participant and volunteer."""
+        if not participant_ethnic_groups or not volunteer_ethnic_groups:
+            return False
+
+        # Normalize to lists
+        participant_list = (
+            participant_ethnic_groups if isinstance(participant_ethnic_groups, list) else [participant_ethnic_groups]
+        )
+        volunteer_list = (
+            volunteer_ethnic_groups if isinstance(volunteer_ethnic_groups, list) else [volunteer_ethnic_groups]
+        )
+
+        # Convert to sets for efficient intersection check
+        participant_set = {str(g).strip().lower() for g in participant_list if g}
+        volunteer_set = {str(g).strip().lower() for g in volunteer_list if g}
+
+        # Check if there's at least one overlap
+        return len(participant_set & volunteer_set) > 0
 
     def _check_age_similarity(self, participant_age, volunteer_age) -> float:
         """Calculate age similarity from age values directly."""

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Text, VStack, HStack, Flex, Badge } from '@chakra-ui/react';
+import { Box, Text, VStack, HStack, Badge } from '@chakra-ui/react';
 import { FiUser, FiHeart } from 'react-icons/fi';
 import { UserData } from '@/types/userTypes';
 import { rankingAPIClient, RankingPreference } from '@/APIClients/rankingAPIClient';
@@ -10,7 +10,7 @@ interface ProfileSummaryCardProps {
   userId?: string | string[] | undefined;
 }
 
-export function ProfileSummaryCard({ userData, userEmail, userId }: ProfileSummaryCardProps) {
+export function ProfileSummaryCard({ userData, userId }: ProfileSummaryCardProps) {
   const [preferences, setPreferences] = useState<RankingPreference[]>([]);
   const [loadingPreferences, setLoadingPreferences] = useState(false);
 
@@ -53,6 +53,72 @@ export function ProfileSummaryCard({ userData, userEmail, userId }: ProfileSumma
     if (rank === 3) return { bg: '#E3FFE0', color: '#157909' };
     if (rank === 4) return { bg: '#FDF2FA', color: '#C11574' };
     return { bg: '#EEF4FF', color: '#3538CD' };
+  };
+
+  const getPreferenceDisplayName = (pref: RankingPreference): string => {
+    // For static qualities, show the actual value instead of generic label
+    if (pref.kind === 'quality') {
+      const scope = pref.scope;
+      const isLovedOne = scope === 'loved_one';
+
+      // Map quality IDs to userData fields
+      // Quality IDs: 1=same_age, 2=same_gender_identity, 3=same_ethnic_or_cultural_group,
+      // 4=same_marital_status, 5=same_parental_status, 6=same_diagnosis
+      if (pref.id === 1) {
+        // same_age
+        if (isLovedOne && userData?.lovedOneAge) {
+          return `LO: ${userData.lovedOneAge}`;
+        } else if (!isLovedOne && userData?.dateOfBirth) {
+          // Calculate age from date of birth
+          const birthDate = new Date(userData.dateOfBirth);
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const monthDiff = today.getMonth() - birthDate.getMonth();
+          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
+          return `${age}`;
+        }
+      } else if (pref.id === 2) {
+        // same_gender_identity
+        if (isLovedOne && userData?.lovedOneGenderIdentity) {
+          return `LO: ${userData.lovedOneGenderIdentity}`;
+        } else if (!isLovedOne && userData?.genderIdentity) {
+          return userData.genderIdentity;
+        }
+      } else if (pref.id === 3) {
+        // same_ethnic_or_cultural_group
+        if (
+          userData?.ethnicGroup &&
+          Array.isArray(userData.ethnicGroup) &&
+          userData.ethnicGroup.length > 0
+        ) {
+          return userData.ethnicGroup.join(', ');
+        } else if (userData?.ethnicGroup && typeof userData.ethnicGroup === 'string') {
+          return userData.ethnicGroup;
+        }
+      } else if (pref.id === 4) {
+        // same_marital_status
+        if (userData?.maritalStatus) {
+          return userData.maritalStatus;
+        }
+      } else if (pref.id === 5) {
+        // same_parental_status
+        if (userData?.hasKids) {
+          return userData.hasKids === 'yes' ? 'Has kids' : 'No kids';
+        }
+      } else if (pref.id === 6) {
+        // same_diagnosis
+        if (isLovedOne && userData?.lovedOneDiagnosis) {
+          return `LO: ${userData.lovedOneDiagnosis}`;
+        } else if (!isLovedOne && userData?.diagnosis) {
+          return userData.diagnosis;
+        }
+      }
+    }
+
+    // For dynamic options (treatments/experiences) or if we can't find the value, return the original name
+    return pref.name;
   };
 
   return (
@@ -98,22 +164,43 @@ export function ProfileSummaryCard({ userData, userEmail, userId }: ProfileSumma
 
             {/* Role Badges */}
             <HStack gap={2} flexWrap="wrap">
-              <Badge
-                bg="rgba(179, 206, 209, 0.3)"
-                color="#056067"
-                borderRadius="16px"
-                px={2.5}
-                py={1}
-                fontSize="10px"
-                fontWeight={400}
-                lineHeight="2em"
-                display="flex"
-                alignItems="center"
-                gap={1}
-              >
-                <FiUser size={12} />
-                Match with: Person with Cancer
-              </Badge>
+              {/* Match with badge - show based on preferences and user data */}
+              {preferences.length > 0 && (
+                <Badge
+                  bg="rgba(179, 206, 209, 0.3)"
+                  color="#056067"
+                  borderRadius="16px"
+                  px={2.5}
+                  py={1}
+                  fontSize="10px"
+                  fontWeight={400}
+                  lineHeight="2em"
+                  display="flex"
+                  alignItems="center"
+                  gap={1}
+                >
+                  <FiUser size={12} />
+                  Match with:{' '}
+                  {userData?.caringForSomeone === 'yes' ? 'Caregiver' : 'Person with Cancer'}
+                </Badge>
+              )}
+              {userData?.hasBloodCancer === 'yes' && (
+                <Badge
+                  bg="rgba(179, 206, 209, 0.3)"
+                  color="#056067"
+                  borderRadius="16px"
+                  px={2.5}
+                  py={1}
+                  fontSize="10px"
+                  fontWeight={400}
+                  lineHeight="2em"
+                  display="flex"
+                  alignItems="center"
+                  gap={1}
+                >
+                  Has Blood Cancer
+                </Badge>
+              )}
               {userData?.caringForSomeone === 'yes' && (
                 <Badge
                   bg="rgba(179, 206, 209, 0.3)"
@@ -149,7 +236,10 @@ export function ProfileSummaryCard({ userData, userEmail, userId }: ProfileSumma
             <HStack gap={2.5} flexWrap="wrap">
               {preferences.map((pref) => {
                 const colors = getBadgeColor(pref.rank);
-                const scopePrefix = pref.scope === 'loved_one' ? 'LO: ' : '';
+                const displayName = getPreferenceDisplayName(pref);
+                const isLovedOne = pref.scope === 'loved_one';
+                // Only show LO: prefix if it's not already in the display name
+                const scopePrefix = isLovedOne && !displayName.startsWith('LO:') ? 'LO: ' : '';
                 return (
                   <Badge
                     key={`${pref.kind}-${pref.id}-${pref.rank}`}
@@ -180,8 +270,9 @@ export function ProfileSummaryCard({ userData, userEmail, userId }: ProfileSumma
                     >
                       {pref.rank}
                     </Box>
+                    {isLovedOne && <FiHeart size={10} />}
                     {scopePrefix}
-                    {pref.name}
+                    {displayName}
                   </Badge>
                 );
               })}

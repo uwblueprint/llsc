@@ -62,7 +62,11 @@ const DIRECTORY_COLORS = {
   applyButtonBg: '#056067', // Teal from Figma
 } as const;
 
-const formStatusMap: Record<FormStatus, { status: string; label: string; progress: number }> = {
+// Base form status map (without completed status which depends on match count)
+const baseFormStatusMap: Record<
+  Exclude<FormStatus, 'completed'>,
+  { status: string; label: string; progress: number }
+> = {
   'intake-todo': {
     // when participant/volunteer has made an account and is in progress of completing intake form
     status: 'Not started',
@@ -84,10 +88,10 @@ const formStatusMap: Record<FormStatus, { status: string; label: string; progres
   },
   'ranking-submitted': {
     // PARTICIPANT ONLY
-    // after all onboarding has been completed OR participant rematches
+    // participant has submitted ranking form, awaiting admin approval
     status: 'In-progress',
-    label: 'Matching',
-    progress: 75,
+    label: 'Ranking submitted',
+    progress: 50,
   },
   'secondary-application-todo': {
     // VOLUNTEER ONLY
@@ -98,22 +102,50 @@ const formStatusMap: Record<FormStatus, { status: string; label: string; progres
   },
   'secondary-application-submitted': {
     // VOLUNTEER ONLY
-    // when the volunteer does not have any scheduled calls
+    // volunteer has submitted secondary application form, awaiting admin approval
     status: 'In-progress',
-    label: 'Matching',
-    progress: 75,
-  },
-  completed: {
-    // when participant/volunteer has a match
-    status: 'Completed',
-    label: 'Matched',
-    progress: 100,
+    label: 'Secondary application submitted',
+    progress: 50,
   },
   rejected: {
     status: 'Rejected',
     label: 'Rejected',
     progress: 100,
   },
+};
+
+// Function to get form status config based on form_status and match count
+const getFormStatusConfig = (
+  formStatus: FormStatus,
+  matchCount: number = 0,
+): { status: string; label: string; progress: number } => {
+  // For completed status, check match count
+  if (formStatus === 'completed') {
+    if (matchCount === 0) {
+      // User is completed but has no matches - they're in matching phase
+      return {
+        status: 'In-progress',
+        label: 'Matching',
+        progress: 75,
+      };
+    } else {
+      // User has at least one match - they're matched
+      return {
+        status: 'Completed',
+        label: 'Matched',
+        progress: 100,
+      };
+    }
+  }
+
+  // For all other statuses, use the base map
+  return (
+    baseFormStatusMap[formStatus as Exclude<FormStatus, 'completed'>] || {
+      status: 'Not started',
+      label: 'Intake form',
+      progress: 0,
+    }
+  );
 };
 
 const getStatusColor = (step: string): { bg: string; color: string } => {
@@ -201,6 +233,8 @@ export default function Directory() {
               appliedStatusFilters.matched ||
               appliedStatusFilters.rejected;
             const userFormStatus = user.formStatus as FormStatus | undefined;
+            const userMatchCount = user.matchCount ?? 0;
+
             const matchesStatus =
               !hasStatusFilter ||
               (appliedStatusFilters.intakeForm && userFormStatus === FormStatus.INTAKE_TODO) ||
@@ -211,8 +245,11 @@ export default function Directory() {
                 userFormStatus === FormStatus.SECONDARY_APPLICATION_TODO) ||
               (appliedStatusFilters.matching &&
                 (userFormStatus === FormStatus.RANKING_SUBMITTED ||
-                  userFormStatus === FormStatus.SECONDARY_APPLICATION_SUBMITTED)) ||
-              (appliedStatusFilters.matched && userFormStatus === FormStatus.COMPLETED) ||
+                  userFormStatus === FormStatus.SECONDARY_APPLICATION_SUBMITTED ||
+                  (userFormStatus === FormStatus.COMPLETED && userMatchCount === 0))) ||
+              (appliedStatusFilters.matched &&
+                userFormStatus === FormStatus.COMPLETED &&
+                userMatchCount > 0) ||
               (appliedStatusFilters.rejected && userFormStatus === FormStatus.REJECTED);
 
             return matchesSearch && matchesUserType && matchesStatus;
@@ -228,9 +265,11 @@ export default function Directory() {
               return sortBy === 'nameAsc' ? comparison : -comparison;
             } else {
               // Sort by status (using progress values)
-              const progressA = formStatusMap[a.formStatus as FormStatus]?.progress ?? 0;
-              const progressB = formStatusMap[b.formStatus as FormStatus]?.progress ?? 0;
-              const comparison = progressA - progressB;
+              const matchCountA = a.matchCount ?? 0;
+              const matchCountB = b.matchCount ?? 0;
+              const statusConfigA = getFormStatusConfig(a.formStatus as FormStatus, matchCountA);
+              const statusConfigB = getFormStatusConfig(b.formStatus as FormStatus, matchCountB);
+              const comparison = statusConfigA.progress - statusConfigB.progress;
               return sortBy === 'statusAsc' ? comparison : -comparison;
             }
           });
@@ -502,15 +541,24 @@ export default function Directory() {
                           </Badge>
                         </Table.Cell>
                         <Table.Cell py={1.5} verticalAlign="middle">
-                          <DirectoryProgressSlider
-                            value={formStatusMap[user.formStatus as FormStatus]?.progress ?? 0}
-                          />
+                          {(() => {
+                            const userMatchCount = user.matchCount ?? 0;
+                            const statusConfig = getFormStatusConfig(
+                              user.formStatus as FormStatus,
+                              userMatchCount,
+                            );
+                            return <DirectoryProgressSlider value={statusConfig.progress} />;
+                          })()}
                         </Table.Cell>
                         <Table.Cell py={1.5} verticalAlign="middle">
                           {(() => {
-                            const statusConfig = formStatusMap[user.formStatus as FormStatus];
-                            const statusLabel = statusConfig?.label ?? 'Intake form';
-                            const statusLevel = statusConfig?.status ?? 'Not started';
+                            const userMatchCount = user.matchCount ?? 0;
+                            const statusConfig = getFormStatusConfig(
+                              user.formStatus as FormStatus,
+                              userMatchCount,
+                            );
+                            const statusLabel = statusConfig.label;
+                            const statusLevel = statusConfig.status;
                             const statusColors = getStatusColor(statusLevel);
                             return (
                               <Badge

@@ -13,6 +13,7 @@ export interface ProfileEditData {
   hasKids?: string;
   lovedOneGenderIdentity?: string;
   lovedOneAge?: string;
+  language?: string;
 }
 
 export interface CancerEditData {
