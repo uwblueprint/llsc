@@ -91,6 +91,7 @@ class UserDataUpdateRequest(BaseModel):
     marital_status: Optional[str] = None
     has_kids: Optional[str] = None
     timezone: Optional[str] = None
+    language: Optional[str] = Field(None, description="Preferred language (en or fr)")
 
     # User's Cancer Experience
     diagnosis: Optional[str] = None

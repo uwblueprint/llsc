@@ -55,6 +55,12 @@ export const AdminRankingFormView: React.FC<AdminRankingFormViewProps> = ({
   const isDirtyRef = useRef(false);
   const latestFormDataRef = useRef<ParticipantRankingAnswers>(formData);
 
+  // Reset form data when initial answers change (e.g., after save/reload)
+  useEffect(() => {
+    setFormData(initialDataWithTarget);
+    setBaselineData(initialDataWithTarget);
+  }, [initialDataWithTarget]);
+
   // Determine target (patient or caregiver)
   const rankingTarget = useMemo<'patient' | 'caregiver'>(() => {
     if (formData.target) {
@@ -134,7 +140,12 @@ export const AdminRankingFormView: React.FC<AdminRankingFormViewProps> = ({
             })
             .sort((a, b) => a.rank - b.rank);
 
+          // Update both formData and baselineData to prevent false dirty detection
           setFormData((prev) => ({
+            ...prev,
+            rankings: updatedRankings,
+          }));
+          setBaselineData((prev) => ({
             ...prev,
             rankings: updatedRankings,
           }));

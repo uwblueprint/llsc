@@ -12,9 +12,21 @@ export interface AdminMatchCandidate {
   timezone: string | null;
   age: number | null;
   diagnosis: string | null;
+  dateOfDiagnosis?: string | null;
   treatments: string[];
   experiences: string[];
   matchScore: number;
+  matchCount: number;
+  // Additional fields for dynamic columns
+  maritalStatus?: string | null;
+  genderIdentity?: string | null;
+  ethnicGroup?: string[] | null;
+  hasKids?: string | null;
+  lovedOneAge?: string | null;
+  lovedOneDiagnosis?: string | null;
+  lovedOneDateOfDiagnosis?: string | null;
+  lovedOneTreatments?: string[];
+  lovedOneExperiences?: string[];
 }
 
 export interface AdminMatchesResponse {

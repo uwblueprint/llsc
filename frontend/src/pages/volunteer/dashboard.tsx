@@ -9,6 +9,7 @@ import { getCurrentUser } from '@/APIClients/authAPIClient';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { FormStatus, UserRole } from '@/types/authTypes';
 import type { TimeSlot } from '@/components/dashboard/types';
+import { MatchStatusScreen } from '@/components/matches/MatchStatusScreen';
 
 interface MatchedParticipant {
   id: number;
@@ -25,6 +26,7 @@ interface MatchedParticipant {
 const VolunteerDashboardPage: React.FC = () => {
   const [userName, setUserName] = useState('');
   const [matchedParticipants, setMatchedParticipants] = useState<MatchedParticipant[]>([]);
+  const [allMatches, setAllMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<MatchedParticipant | null>(null);
@@ -42,6 +44,9 @@ const VolunteerDashboardPage: React.FC = () => {
       try {
         const response = await baseAPIClient.get('/matches/volunteer/me');
         const matches = response.data.matches || [];
+
+        // Store all matches for status screen
+        setAllMatches(matches);
 
         // Filter matches that need to be scheduled (only awaiting_volunteer_acceptance)
         const matchesNeedingScheduling = matches.filter((match: any) => {
@@ -127,9 +132,23 @@ const VolunteerDashboardPage: React.FC = () => {
           >
             {matchedParticipants.length > 0
               ? 'Please schedule calls with your matches.'
-              : "Keep an eye out on your inbox! We'll notify you when we match you with a participant."}
+              : allMatches.length > 0
+                ? 'View your matches below.'
+                : "Keep an eye out on your inbox! We'll notify you when we match you with a participant."}
           </Text>
 
+          {/* Show status screen with all matches */}
+          {allMatches.length > 0 && (
+            <Box mb={8}>
+              <MatchStatusScreen
+                matches={allMatches}
+                userRole={UserRole.VOLUNTEER}
+                userName={userName}
+              />
+            </Box>
+          )}
+
+          {/* Show ProfileCards for matches that need acceptance */}
           {matchedParticipants.length > 0 && (
             <VStack gap={6} align="flex-start">
               {matchedParticipants.map((participant) => (
@@ -159,12 +178,38 @@ const VolunteerDashboardPage: React.FC = () => {
                   // Accept the match - this will attach the volunteer's availability templates as suggested times
                   await baseAPIClient.post(`/matches/${selectedParticipant.id}/accept-volunteer`);
 
-                  console.log('Successfully sent availability to', selectedParticipant.name);
+                  // Reload all matches to update the status screen
+                  const response = await baseAPIClient.get('/matches/volunteer/me');
+                  const matches = response.data.matches || [];
+                  setAllMatches(matches);
 
-                  // Remove the participant from the list since they've been accepted
-                  setMatchedParticipants((prev) =>
-                    prev.filter((p) => p.id !== selectedParticipant.id),
-                  );
+                  // Filter matches that need to be scheduled (only awaiting_volunteer_acceptance)
+                  const matchesNeedingScheduling = matches.filter((match: any) => {
+                    const status = match.matchStatus?.toLowerCase() || '';
+                    return status === 'awaiting_volunteer_acceptance';
+                  });
+
+                  // Transform API response to match ProfileCard format
+                  const transformedMatches = matchesNeedingScheduling.map((match: any) => {
+                    const participant = match.participant;
+                    const firstName = participant.firstName || '';
+                    const lastName = participant.lastName || '';
+                    const fullName = `${firstName} ${lastName}`.trim();
+
+                    return {
+                      id: match.id,
+                      name: fullName || participant.email,
+                      pronouns: participant.pronouns?.join('/') || '',
+                      age: participant.age || 0,
+                      timezone: participant.timezone || 'N/A',
+                      diagnosis: participant.diagnosis || 'N/A',
+                      treatments: participant.treatments || [],
+                      experiences: participant.experiences || [],
+                      initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
+                    };
+                  });
+
+                  setMatchedParticipants(transformedMatches);
 
                   setIsScheduleModalOpen(false);
                   setSelectedParticipant(null);

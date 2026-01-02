@@ -30,6 +30,25 @@ export function useProfileEditing({
 
   const userData = user?.userData;
 
+  // Helper to convert language from DB to display format
+  const languageToDisplay = (dbValue: string | undefined): string => {
+    if (!dbValue) return 'English';
+    if (dbValue.toLowerCase() === 'en' || dbValue.toLowerCase() === 'english') return 'English';
+    if (
+      dbValue.toLowerCase() === 'fr' ||
+      dbValue.toLowerCase() === 'français' ||
+      dbValue.toLowerCase() === 'francais'
+    )
+      return 'Français';
+    return dbValue;
+  };
+
+  // Helper to convert language from display to DB format
+  const languageToDb = (displayValue: string): string => {
+    if (displayValue === 'Français') return 'fr';
+    return 'en';
+  };
+
   const handleStartEditProfileSummary = () => {
     if (userData) {
       setProfileEditData({
@@ -45,6 +64,7 @@ export function useProfileEditing({
         hasKids: userData.hasKids || '',
         lovedOneGenderIdentity: userData.lovedOneGenderIdentity || '',
         lovedOneAge: userData.lovedOneAge || '',
+        language: languageToDisplay(user?.language),
       });
     }
     setIsEditingProfileSummary(true);
@@ -68,6 +88,7 @@ export function useProfileEditing({
         hasKids: profileEditData.hasKids,
         lovedOneGenderIdentity: profileEditData.lovedOneGenderIdentity,
         lovedOneAge: profileEditData.lovedOneAge,
+        language: profileEditData.language ? languageToDb(profileEditData.language) : undefined,
       });
 
       setUser(updatedUser);

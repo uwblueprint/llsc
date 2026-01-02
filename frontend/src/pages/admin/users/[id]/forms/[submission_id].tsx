@@ -358,9 +358,10 @@ export default function FormViewPage() {
       setEditError(null);
       setEditSuccess(null);
       const sanitizedAnswers = updatedAnswers as unknown as Record<string, unknown>;
-      const updated = await intakeAPIClient.updateFormSubmission(submission.id, sanitizedAnswers);
-      setSubmission(updated);
+      await intakeAPIClient.updateFormSubmission(submission.id, sanitizedAnswers);
       setEditSuccess('Form saved successfully.');
+      // Reload submission to get updated data and reset dirty state
+      await loadSubmission(submission.id);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to save form.';
       setEditError(message);

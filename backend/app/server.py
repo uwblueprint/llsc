@@ -27,6 +27,7 @@ from .routes import (
 )
 from .services.implementations.match_completion_service import MatchCompletionService
 from .utilities.constants import LOGGER_NAME
+from .utilities.db_utils import engine
 from .utilities.firebase_init import initialize_firebase
 from .utilities.ses.ses_init import ensure_ses_templates
 
@@ -87,6 +88,11 @@ async def lifespan(_: FastAPI):
     # Shutdown scheduler gracefully
     log.info("Shutting down scheduler...")
     scheduler.shutdown()
+
+    # Dispose database engine to close all connection pools
+    # This prevents async generator cleanup errors during shutdown
+    log.info("Disposing database engine...")
+    engine.dispose()
     log.info("Shutting down...")
 
 

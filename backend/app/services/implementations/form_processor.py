@@ -106,10 +106,10 @@ class FormProcessor:
         if not target:
             raise ValueError("Ranking form missing 'target' field")
 
-        # Delete existing preferences for this user/target
+        # Delete ALL existing preferences for this user (not just for this target_role)
+        # This ensures a user can only have preferences for one target_role at a time
         self.db.query(RankingPreference).filter(
             RankingPreference.user_id == user.id,
-            RankingPreference.target_role == target,
         ).delete(synchronize_session=False)
 
         # Create new preference records
@@ -134,6 +134,9 @@ class FormProcessor:
         # Update form_status to completed after ranking form is approved
         if user.form_status in (FormStatus.RANKING_TODO, FormStatus.RANKING_SUBMITTED):
             user.form_status = FormStatus.COMPLETED
+
+            # Set pending_volunteer_request flag so admin knows to create matches
+            user.pending_volunteer_request = True
 
             # Create a MATCHING task so admins know this participant is ready to be matched
             try:

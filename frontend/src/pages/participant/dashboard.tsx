@@ -29,11 +29,13 @@ import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClien
 import { getCurrentUser } from '@/APIClients/authAPIClient';
 import { AuthenticatedUser, FormStatus, UserRole } from '@/types/authTypes';
 import { Match } from '@/types/matchTypes';
+import { MatchStatusScreen } from '@/components/matches/MatchStatusScreen';
 
 export default function ParticipantDashboardPage() {
   const router = useRouter();
   const [matches, setMatches] = useState<Match[]>([]);
   const [confirmedMatches, setConfirmedMatches] = useState<Match[]>([]);
+  const [allMatches, setAllMatches] = useState<Match[]>([]);
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,6 +79,9 @@ export default function ParticipantDashboardPage() {
       setMatches(pendingMatches);
       setConfirmedMatches(confirmed);
       setHasPendingRequest(data.hasPendingRequest || false);
+
+      // Store all matches for status screen
+      setAllMatches(data.matches);
     } catch (err) {
       console.error('Error loading matches:', err);
       const errorMessage =
@@ -217,7 +222,7 @@ export default function ParticipantDashboardPage() {
 
     // Show request new matches screen when there are no active matches
     // This includes: completed matches, cancelled matches, or brand new users
-    if (confirmedMatches.length === 0 && matches.length === 0) {
+    if (allMatches.length === 0) {
       return (
         <VStack align="stretch" gap={6}>
           {/* Additional Notes Section */}
@@ -271,27 +276,14 @@ export default function ParticipantDashboardPage() {
       );
     }
 
-    // Show confirmed matches (upcoming calls)
-    if (confirmedMatches.length > 0) {
-      return (
-        <VStack align="stretch" gap={6}>
-          {confirmedMatches.map((match) => (
-            <ConfirmedMatchCard
-              key={match.id}
-              match={match}
-              onCancelCall={handleCancelCall}
-              onViewContactDetails={handleViewContactDetails}
-            />
-          ))}
-        </VStack>
-      );
-    }
-
+    // Show status screen with all matches
     return (
       <VStack align="stretch" gap={6}>
-        {matches.map((match) => (
-          <VolunteerCard key={match.id} match={match} onSchedule={handleSchedule} />
-        ))}
+        <MatchStatusScreen
+          matches={allMatches}
+          userRole={UserRole.PARTICIPANT}
+          userName={userName}
+        />
 
         {/* Request New Matches Button */}
         <Button

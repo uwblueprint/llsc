@@ -20,6 +20,9 @@ export interface VolunteerSummary {
   treatments: string[];
   experiences: string[];
   overview: string | null; // Volunteer experience/overview from volunteer_data
+  lovedOneDiagnosis?: string | null;
+  lovedOneTreatments?: string[];
+  lovedOneExperiences?: string[];
 }
 
 export interface Match {

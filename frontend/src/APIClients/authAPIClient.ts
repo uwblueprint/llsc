@@ -465,6 +465,7 @@ export const updateUserData = async (
     lovedOneDateOfDiagnosis?: string;
     lovedOneTreatments?: string[];
     lovedOneExperiences?: string[];
+    language?: string;
   },
 ): Promise<UserResponse> => {
   // Convert camelCase to snake_case for backend
@@ -511,6 +512,7 @@ export const updateUserData = async (
     backendData.loved_one_treatments = userDataUpdate.lovedOneTreatments;
   if (userDataUpdate.lovedOneExperiences !== undefined)
     backendData.loved_one_experiences = userDataUpdate.lovedOneExperiences;
+  if (userDataUpdate.language !== undefined) backendData.language = userDataUpdate.language;
 
   const response = await baseAPIClient.patch<UserResponse>(
     `/users/${userId}/user-data`,

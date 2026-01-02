@@ -55,6 +55,9 @@ class MatchVolunteerSummary(BaseModel):
     treatments: List[str] = Field(default_factory=list)
     experiences: List[str] = Field(default_factory=list)
     overview: Optional[str] = None  # Volunteer experience/overview from volunteer_data
+    loved_one_diagnosis: Optional[str] = None
+    loved_one_treatments: List[str] = Field(default_factory=list)
+    loved_one_experiences: List[str] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -70,6 +73,9 @@ class MatchParticipantSummary(BaseModel):
     treatments: List[str] = Field(default_factory=list)
     experiences: List[str] = Field(default_factory=list)
     timezone: Optional[str] = None
+    loved_one_diagnosis: Optional[str] = None
+    loved_one_treatments: List[str] = Field(default_factory=list)
+    loved_one_experiences: List[str] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 

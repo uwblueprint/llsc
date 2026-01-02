@@ -15,8 +15,17 @@ import { ProfileNavigation } from '@/components/admin/userProfile/ProfileNavigat
 import { SuccessMessage } from '@/components/admin/userProfile/SuccessMessage';
 import { ProfileSummary } from '@/components/admin/userProfile/ProfileSummary';
 import { ProfileContent } from '@/components/admin/userProfile/ProfileContent';
+import { MatchesContent } from '@/components/admin/userProfile/MatchesContent';
+import { MatchStatusScreen } from '@/components/matches/MatchStatusScreen';
 import { SaveMessage } from '@/types/userProfileTypes';
 import { intakeAPIClient, FormSubmission } from '@/APIClients/intakeAPIClient';
+import {
+  matchAPIClient,
+  MatchDetailResponse,
+  MatchDetailForVolunteerResponse,
+} from '@/APIClients/matchAPIClient';
+import { Match } from '@/types/matchTypes';
+import { VolunteerMatch } from '@/components/matches/MatchStatusScreen';
 
 const statusColors = {
   pending_approval: {
@@ -63,6 +72,9 @@ export default function AdminUserProfile() {
   const [formsLoading, setFormsLoading] = useState(true);
   const [formsError, setFormsError] = useState<string | null>(null);
   const [creatingFormId, setCreatingFormId] = useState<string | null>(null);
+  const [existingMatchesCount, setExistingMatchesCount] = useState<number>(0);
+  const [existingMatches, setExistingMatches] = useState<Match[] | VolunteerMatch[]>([]);
+  const [matchesLoading, setMatchesLoading] = useState(false);
 
   // Custom hooks
   const { user, loading, setUser } = useUserProfile(id);
@@ -133,6 +145,115 @@ export default function AdminUserProfile() {
     void loadUserForms();
   }, [loadUserForms]);
 
+  const loadExistingMatches = useCallback(async () => {
+    if (!id || typeof id !== 'string' || !user) {
+      return;
+    }
+
+    try {
+      setMatchesLoading(true);
+      const currentRole = roleIdToUserRole(user.roleId);
+
+      if (currentRole === UserRole.VOLUNTEER) {
+        // Fetch volunteer matches
+        const response = await matchAPIClient.getMatchesForVolunteer(id);
+        setExistingMatchesCount(response.matches.length);
+
+        // Transform MatchDetailForVolunteerResponse[] to VolunteerMatch[] format
+        const transformedMatches: VolunteerMatch[] = response.matches.map(
+          (match: MatchDetailForVolunteerResponse) => ({
+            id: match.id,
+            participantId: match.participantId,
+            volunteerId: match.volunteerId,
+            participant: {
+              id: match.participant.id,
+              firstName: match.participant.firstName,
+              lastName: match.participant.lastName,
+              email: match.participant.email,
+              pronouns: match.participant.pronouns || null,
+              diagnosis: match.participant.diagnosis || null,
+              age: match.participant.age || null,
+              timezone: match.participant.timezone || null,
+              treatments: match.participant.treatments || [],
+              experiences: match.participant.experiences || [],
+              lovedOneDiagnosis: match.participant.lovedOneDiagnosis || null,
+              lovedOneTreatments: match.participant.lovedOneTreatments || [],
+              lovedOneExperiences: match.participant.lovedOneExperiences || [],
+            },
+            matchStatus: match.matchStatus as Match['matchStatus'],
+            createdAt: match.createdAt,
+            updatedAt: match.updatedAt || null,
+            chosenTimeBlock: match.chosenTimeBlock
+              ? {
+                  id: match.chosenTimeBlock.id,
+                  startTime: match.chosenTimeBlock.startTime,
+                }
+              : null,
+            suggestedTimeBlocks: match.suggestedTimeBlocks || [],
+          }),
+        );
+
+        setExistingMatches(transformedMatches);
+      } else {
+        // Fetch participant matches
+        const response = await matchAPIClient.getMatchesForParticipant(id);
+        setExistingMatchesCount(response.matches.length);
+
+        // Transform MatchDetailResponse[] to Match[] format for MatchStatusScreen
+        const transformedMatches: Match[] = response.matches.map((match: MatchDetailResponse) => ({
+          id: match.id,
+          participantId: match.participantId,
+          volunteer: {
+            id: match.volunteer.id,
+            firstName: match.volunteer.firstName,
+            lastName: match.volunteer.lastName,
+            email: match.volunteer.email,
+            phone: match.volunteer.phone || null,
+            pronouns: match.volunteer.pronouns || null,
+            diagnosis: match.volunteer.diagnosis || null,
+            age: match.volunteer.age || null,
+            timezone: match.volunteer.timezone || null,
+            treatments: match.volunteer.treatments || [],
+            experiences: match.volunteer.experiences || [],
+            overview: match.volunteer.overview || null,
+            lovedOneDiagnosis: match.volunteer.lovedOneDiagnosis || null,
+            lovedOneTreatments: match.volunteer.lovedOneTreatments || [],
+            lovedOneExperiences: match.volunteer.lovedOneExperiences || [],
+          },
+          matchStatus: match.matchStatus as Match['matchStatus'],
+          chosenTimeBlock: match.chosenTimeBlock
+            ? {
+                id: match.chosenTimeBlock.id,
+                startTime: match.chosenTimeBlock.startTime,
+              }
+            : null,
+          suggestedTimeBlocks: match.suggestedTimeBlocks.map((tb) => ({
+            id: tb.id,
+            startTime: tb.startTime,
+          })),
+          createdAt: match.createdAt,
+          updatedAt: match.updatedAt || null,
+        }));
+
+        setExistingMatches(transformedMatches);
+      }
+    } catch (error) {
+      console.error('[loadExistingMatches] Failed to fetch existing matches:', error);
+      setExistingMatchesCount(0);
+      setExistingMatches([]);
+    } finally {
+      setMatchesLoading(false);
+    }
+  }, [id, user]);
+
+  const activeTab = (router.query.tab as string) || 'profile';
+
+  useEffect(() => {
+    if (activeTab === 'matches') {
+      void loadExistingMatches();
+    }
+  }, [activeTab, loadExistingMatches]);
+
   const role = user ? roleIdToUserRole(user.roleId) : null;
 
   const formStatus = user?.formStatus;
@@ -197,7 +318,7 @@ export default function AdminUserProfile() {
         showCreateButton: formStatus === 'completed',
       },
     ];
-  }, [role]);
+  }, [role, formStatus]);
 
   const groupedForms = useMemo(() => {
     const grouped: Record<string, FormSubmission[]> = {};
@@ -305,9 +426,6 @@ export default function AdminUserProfile() {
   const userData = user.userData;
   const volunteerData = user.volunteerData;
 
-  // Determine active tab based on route or query param
-  const activeTab = (router.query.tab as string) || 'profile';
-
   const handleTabChange = (tab: string) => {
     router.push({ pathname: router.pathname, query: { ...router.query, tab } }, undefined, {
       shallow: true,
@@ -368,6 +486,7 @@ export default function AdminUserProfile() {
           <ProfileSummary
             userData={userData}
             userEmail={user.email}
+            userLanguage={user.language}
             isEditing={isEditingProfileSummary}
             isSaving={isSaving}
             editData={profileEditData}
@@ -542,8 +661,31 @@ export default function AdminUserProfile() {
             )}
           </Box>
         ) : activeTab === 'matches' ? (
-          <Box flex="1" p={8} bg="white">
-            <Text>Matches content coming soon...</Text>
+          <Box flex="1" p={8} bg="white" minW="0">
+            {matchesLoading ? (
+              <Flex align="center" justify="center" py={20}>
+                <Spinner size="lg" color={COLORS.teal} />
+                <Text ml={4} color={COLORS.gray500}>
+                  Loading matches...
+                </Text>
+              </Flex>
+            ) : user &&
+              role === UserRole.PARTICIPANT &&
+              user.pendingVolunteerRequest &&
+              existingMatchesCount === 0 ? (
+              <MatchesContent participantId={id} />
+            ) : (
+              <Box>
+                <Text fontSize="28px" fontWeight="600" color={COLORS.veniceBlue} mb={4}>
+                  Matches
+                </Text>
+                <MatchStatusScreen
+                  matches={existingMatches}
+                  userRole={role || UserRole.PARTICIPANT}
+                  userName={user?.userData?.firstName || undefined}
+                />
+              </Box>
+            )}
           </Box>
         ) : null}
       </Flex>
