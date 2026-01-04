@@ -33,7 +33,7 @@ def create_app():
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[
-            "http://localhost:3000",
+            os.getenv("FRONTEND_URL", "http://localhost:3000"),
             "https://uw-blueprint-starter-code.firebaseapp.com",
             "https://uw-blueprint-starter-code.web.app",
             # TODO: create a separate middleware function to dynamically

@@ -217,7 +217,7 @@ class SESEmailService:
 
         # Default to dashboard if no specific URL provided
         if not matches_url:
-            matches_url = "http://localhost:3000/participant/dashboard"
+            matches_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard"
 
         template_data = {"first_name": first_name if first_name else "there", "matches_url": matches_url}
 
@@ -260,7 +260,7 @@ class SESEmailService:
 
         # Default to dashboard if no specific URL provided
         if not scheduled_calls_url:
-            scheduled_calls_url = "http://localhost:3000/participant/dashboard"
+            scheduled_calls_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard"
 
         template_data = {
             "first_name": first_name if first_name else "there",
@@ -304,7 +304,7 @@ class SESEmailService:
 
         # Default to dashboard if no specific URL provided
         if not matches_url:
-            matches_url = "http://localhost:3000/volunteer/dashboard"
+            matches_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard"
 
         template_data = {
             "first_name": first_name if first_name else "there",
@@ -351,7 +351,7 @@ class SESEmailService:
 
         # Default to dashboard if no specific URL provided
         if not scheduled_calls_url:
-            scheduled_calls_url = "http://localhost:3000/participant/dashboard"
+            scheduled_calls_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard"
 
         template_data = {
             "first_name": first_name if first_name else "there",
@@ -401,7 +401,7 @@ class SESEmailService:
 
         # Default to dashboard if no specific URL provided
         if not dashboard_url:
-            dashboard_url = "http://localhost:3000/volunteer/dashboard"
+            dashboard_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard"
 
         template_data = {
             "first_name": first_name if first_name else "there",
@@ -451,7 +451,7 @@ class SESEmailService:
 
         # Default to dashboard if no specific URL provided
         if not request_matches_url:
-            request_matches_url = "http://localhost:3000/participant/dashboard"
+            request_matches_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard"
 
         template_data = {
             "first_name": first_name if first_name else "there",

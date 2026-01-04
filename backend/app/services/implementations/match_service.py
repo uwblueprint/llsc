@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import date, datetime, timedelta, timezone
 from typing import List, Optional
 from uuid import UUID
@@ -106,7 +107,7 @@ class MatchService:
                         language = volunteer.language.value if volunteer.language else "en"
 
                         first_name = volunteer.first_name if volunteer.first_name else None
-                        matches_url = "http://localhost:3000/volunteer/dashboard"
+                        matches_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard"
 
                         ses_service.send_matches_available_email(
                             to_email=volunteer.email,
@@ -342,7 +343,7 @@ class MatchService:
                             time=participant_time_str,
                             timezone=participant_tz_abbr,
                             first_name=participant.first_name,
-                            scheduled_calls_url="http://localhost:3000/participant/dashboard",
+                            scheduled_calls_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard",
                             language=participant_language,
                         )
 
@@ -357,7 +358,7 @@ class MatchService:
                             time=volunteer_time_str,
                             timezone=volunteer_tz_abbr,
                             first_name=volunteer.first_name,
-                            scheduled_calls_url="http://localhost:3000/volunteer/dashboard",
+                            scheduled_calls_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard",
                             language=volunteer_language,
                         )
 
@@ -446,7 +447,7 @@ class MatchService:
                         to_email=volunteer.email,
                         participant_name=participant_name,
                         first_name=volunteer.first_name,
-                        matches_url="http://localhost:3000/volunteer/dashboard",
+                        matches_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard",
                         language=volunteer_language,
                     )
             except Exception as e:
@@ -532,7 +533,7 @@ class MatchService:
                             time=volunteer_time_str,
                             timezone=volunteer_tz_abbr,
                             first_name=volunteer.first_name,
-                            dashboard_url="http://localhost:3000/volunteer/dashboard",
+                            dashboard_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard",
                             language=volunteer_language,
                         )
             except Exception as e:
@@ -623,7 +624,7 @@ class MatchService:
                             time=participant_time_str,
                             timezone=participant_tz_abbr,
                             first_name=participant.first_name,
-                            request_matches_url="http://localhost:3000/participant/dashboard",
+                            request_matches_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard",
                             language=participant_language,
                         )
             except Exception as e:
@@ -829,7 +830,7 @@ class MatchService:
                     language = participant.language.value if participant.language else "en"
 
                     first_name = participant.first_name if participant.first_name else None
-                    matches_url = "http://localhost:3000/participant/dashboard"
+                    matches_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard"
 
                     ses_service = SESEmailService()
                     ses_service.send_matches_available_email(

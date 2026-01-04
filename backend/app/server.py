@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 from typing import Union
 
@@ -87,7 +88,7 @@ async def lifespan(_: FastAPI):
 
     # Shutdown scheduler gracefully
     log.info("Shutting down scheduler...")
-    scheduler.shutdown()
+    scheduler.shutdown(wait=False)  # Don't wait for running jobs to prevent interpreter shutdown race condition
 
     # Dispose database engine to close all connection pools
     # This prevents async generator cleanup errors during shutdown
@@ -104,8 +105,7 @@ app.add_middleware(AuthMiddleware, public_paths=PUBLIC_PATHS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3002",
+        os.getenv("FRONTEND_URL", "http://localhost:3000"),
         "https://uw-blueprint-starter-code.firebaseapp.com",
         "https://uw-blueprint-starter-code.web.app",
         # TODO: create a separate middleware function to dynamically
