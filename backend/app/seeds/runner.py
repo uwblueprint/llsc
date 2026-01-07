@@ -45,23 +45,39 @@ def seed_database(verbose: bool = True) -> None:
     Args:
         verbose: Whether to print detailed output
     """
+    # Check environment to determine if we should seed test data
+    env = os.getenv("ENV", "development").lower()
+    is_production = env == "production"
+
     if verbose:
         print("🌱 Starting database seeding...")
+        if is_production:
+            print("⚠️  Production mode: Skipping test data (Users, Ranking Preferences)")
+        else:
+            print(f"🔧 {env.capitalize()} mode: Including test data")
 
     session = get_database_session()
 
     try:
         # Run all seed functions in dependency order
+        # Reference data - always seed these
         seed_functions = [
             ("Roles", seed_roles),
             ("Treatments", seed_treatments),
             ("Experiences", seed_experiences),
             ("Qualities", seed_qualities),
             ("Forms", seed_forms),
-            ("Users", seed_users),
-            ("Ranking Preferences", seed_ranking_preferences),
             ("Match Status", seed_match_status),
         ]
+
+        # Test data - only seed in non-production environments
+        if not is_production:
+            seed_functions.extend(
+                [
+                    ("Users", seed_users),
+                    ("Ranking Preferences", seed_ranking_preferences),
+                ]
+            )
 
         for name, seed_func in seed_functions:
             if verbose:

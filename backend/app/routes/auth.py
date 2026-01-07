@@ -19,15 +19,21 @@ security = HTTPBearer()
 # TODO: ADD RATE LIMITING
 @router.post("/register", response_model=UserCreateResponse)
 async def register_user(user: UserCreateRequest, user_service: UserService = Depends(get_user_service)):
-    allowed_Admins = [
+    allowed_admins = {
         "umair.hkar@gmail.com",
         "umairmhundekar@gmail.com",
         "yash@kotharigroup.com",
         "evan.beiduo.wu@gmail.com",
         "richardbai@uwblueprint.org",
-    ]
+        "brooke.dewhurst@lls.org",
+        "jennifer.heroux-bourduas@lls.org",
+        "caroline.mitchell@lls.org",
+        "jolyane.pelletier@lls.org",
+        "megan.norrish@lls.org",
+    }
     if user.role == UserRole.ADMIN:
-        if user.email not in allowed_Admins:
+        normalized_email = user.email.lower() if user.email else ""
+        if normalized_email not in allowed_admins:
             raise HTTPException(status_code=403, detail="Access denied. Admin privileges required for admin portal")
 
     try:
