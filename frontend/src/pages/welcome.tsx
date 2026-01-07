@@ -7,11 +7,18 @@ import { AuthenticatedUser, FormStatus, UserRole } from '@/types/authTypes';
 import { roleIdToUserRole } from '@/utils/roleUtils';
 import { getRedirectRoute } from '@/constants/formStatusRoutes';
 import { AuthPageLayout } from '@/components/layout';
+import { detectUserLanguage, getProgramInfoUrl } from '@/utils/languageDetection';
 
 export default function WelcomePage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<AuthenticatedUser>(null);
   const [loading, setLoading] = useState(true);
+  const [userLanguage, setUserLanguage] = useState<'en' | 'fr'>('en');
+
+  // Detect user's preferred language on client-side only
+  useEffect(() => {
+    setUserLanguage(detectUserLanguage());
+  }, []);
 
   useEffect(() => {
     const evaluate = async () => {
@@ -107,7 +114,9 @@ export default function WelcomePage() {
           <Text color="brand.navy" fontSize="md">
             You can learn more about the program{' '}
             <a
-              href="#"
+              href={getProgramInfoUrl(userLanguage)}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{ color: 'var(--chakra-colors-brand-primary)', textDecoration: 'underline' }}
             >
               here

@@ -79,7 +79,7 @@ class AuthService(IAuthService):
 
             # Use Firebase Admin SDK to generate password reset link
             action_code_settings = firebase_admin.auth.ActionCodeSettings(
-                url="http://localhost:3000/set-new-password",
+                url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/set-new-password",
                 handle_code_in_app=True,
             )
 
@@ -152,7 +152,7 @@ class AuthService(IAuthService):
 
             # Use Firebase Admin SDK to generate email verification link
             action_code_settings = firebase_admin.auth.ActionCodeSettings(
-                url="http://localhost:3000/action",  # URL to redirect after verification
+                url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/action",  # URL to redirect after verification
                 handle_code_in_app=True,
             )
 
