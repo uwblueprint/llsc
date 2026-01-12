@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 import { VStack, Heading, Text, Button, Spinner } from '@chakra-ui/react';
 import { verifyEmailWithCode } from '@/APIClients/authAPIClient';
 import { AuthPageLayout } from '@/components/layout';
+import { getAuth, applyActionCode, verifyPasswordResetCode } from "firebase/auth";
+
+const auth = getAuth();
 
 export default function ActionPage() {
   const router = useRouter();
@@ -29,22 +32,19 @@ export default function ActionPage() {
 
       if (normalizedMode === 'verifyEmail') {
         try {
-          const result = await verifyEmailWithCode(normalizedCode);
-
-          if (result.success) {
-            router.replace(`/?verified=true&mode=verifyEmail`);
-          } else {
-            setError(result.error || 'Verification failed');
-            setIsProcessing(false);
-          }
-        } catch {
-          setError('An error occurred during verification');
+          await applyActionCode(auth, normalizedCode);
+          router.replace("/?verified=true");
+        } catch (err: any) {
+          setError(err.message || "Verification failed");
           setIsProcessing(false);
         }
       } else if (normalizedMode === 'resetPassword') {
-        const targetUrl = `/set-new-password?oobCode=${normalizedCode}`;
-        if (router.asPath !== targetUrl) {
-          router.replace(targetUrl);
+        try {
+          await verifyPasswordResetCode(auth, normalizedCode);
+          router.replace(`/set-new-password?oobCode=${normalizedCode}`);
+        } catch (err) {
+          setError("Invalid or expired password reset code");
+          setIsProcessing(false);
         }
       } else {
         setError('Invalid action mode');
