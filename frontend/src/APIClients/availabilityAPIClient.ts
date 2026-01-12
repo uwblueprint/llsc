@@ -110,9 +110,11 @@ const updateAvailability = async (
   }
 };
 
-export default {
+const availabilityAPIClient = {
   getAvailability,
   createAvailability,
   deleteAvailability,
   updateAvailability,
 };
+
+export default availabilityAPIClient;

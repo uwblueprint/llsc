@@ -63,11 +63,6 @@ const languageToDisplay = (dbValue: string | undefined): string => {
   return dbValue;
 };
 
-const languageToDb = (displayValue: string): string => {
-  if (displayValue === 'Français') return 'fr';
-  return 'en';
-};
-
 interface ProfileSummaryProps {
   userData: UserData | null | undefined;
   userEmail?: string;

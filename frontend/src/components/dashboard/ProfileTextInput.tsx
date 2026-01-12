@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Box, Text, Textarea, Button, Flex } from '@chakra-ui/react';
+import React from 'react';
+import { Box, Text, Textarea, Flex } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 
 interface ProfileTextInputProps {
   label: string;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   placeholder?: string;
   isTextarea?: boolean;
   rows?: number;
@@ -98,7 +98,7 @@ const ProfileTextInput: React.FC<ProfileTextInputProps> = ({
       <Field label={styledLabel} flex={flex}>
         <Textarea
           value={value}
-          onChange={onChange as any}
+          onChange={onChange as React.ChangeEventHandler<HTMLTextAreaElement>}
           placeholder={placeholder}
           rows={rows}
           style={{

@@ -86,7 +86,6 @@ export function ProfileContent({
   const [wasReactivated, setWasReactivated] = useState(false);
 
   const isReactivate = !user.active;
-  const isVolunteer = role === UserRole.VOLUNTEER;
 
   const handleDeactivateClick = () => {
     setShowConfirmModal(true);

@@ -5,7 +5,7 @@ import { Field } from '@/components/ui/field';
 interface ProfileDropdownProps {
   label: string;
   value: string;
-  onChange: (e: any) => void;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   options: readonly { readonly value: string; readonly label: string }[];
   flex?: string;
   icon?: React.ReactNode;

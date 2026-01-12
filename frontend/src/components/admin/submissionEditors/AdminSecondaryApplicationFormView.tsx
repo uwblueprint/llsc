@@ -86,13 +86,6 @@ export const AdminSecondaryApplicationFormView: React.FC<
     }));
   };
 
-  const handleAdditionalCommentsChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      volunteerAdditionalComments: value,
-    }));
-  };
-
   const wordCount = (formData.volunteerExperience || '')
     .trim()
     .split(/\s+/)

@@ -67,7 +67,7 @@ export const login = async (
     // Attempt backend login
     try {
       const loginRequest: LoginRequest = { email, password };
-      const headers: any = { withCredentials: true };
+      const headers: Record<string, unknown> = { withCredentials: true };
 
       // Add admin portal header if this is an admin login
       if (isAdminPortal) {
