@@ -25,20 +25,29 @@ class AmazonSESEmailProvider(IEmailServiceProvider):
 
     def __init__(
         self,
-        aws_access_key: str,
-        aws_secret_key: str,
+        aws_access_key: str | None,
+        aws_secret_key: str | None,
         region: str,
         source_email: str,
         is_sandbox: bool = True,
     ):
         self.source_email = source_email
         self.is_sandbox = is_sandbox
-        self.ses_client = boto3.client(
-            "ses",
-            region_name=region,
-            aws_access_key_id=aws_access_key,
-            aws_secret_access_key=aws_secret_key,
-        )
+
+        # If access keys are provided, use them. Otherwise, boto3 will use IAM role credentials
+        if aws_access_key and aws_secret_key:
+            self.ses_client = boto3.client(
+                "ses",
+                region_name=region,
+                aws_access_key_id=aws_access_key,
+                aws_secret_access_key=aws_secret_key,
+            )
+        else:
+            # Use IAM role credentials (automatic in ECS)
+            self.ses_client = boto3.client(
+                "ses",
+                region_name=region,
+            )
 
         self.verified_emails = None
         if self.is_sandbox:

@@ -75,16 +75,25 @@ def ensure_ses_templates(force_update=False):
     aws_access_key = os.getenv("AWS_ACCESS_KEY")
     aws_secret_key = os.getenv("AWS_SECRET_KEY")
 
-    if not all([aws_region, aws_access_key, aws_secret_key]):
-        print("AWS credentials not set. Skipping SES template setup.")
+    if not aws_region:
+        print("AWS_REGION not set. Skipping SES template setup.")
         return
 
-    ses_client = boto3.client(
-        "ses",
-        region_name=aws_region,
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
-    )
+    # If access keys are provided, use them. Otherwise, boto3 will use IAM role credentials
+    if aws_access_key and aws_secret_key:
+        ses_client = boto3.client(
+            "ses",
+            region_name=aws_region,
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
+        )
+    else:
+        # Use IAM role credentials (automatic in ECS)
+        print("Using IAM role credentials for SES template setup.")
+        ses_client = boto3.client(
+            "ses",
+            region_name=aws_region,
+        )
 
     for template_metadata in templates_metadata:
         create_or_update_ses_template(template_metadata, ses_client, force_update=force_update)

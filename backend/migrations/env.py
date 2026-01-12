@@ -35,7 +35,8 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-config.set_main_option("sqlalchemy.url", os.environ["POSTGRES_DATABASE_URL"])
+# Don't use set_main_option to avoid ConfigParser interpolation issues with % in passwords
+# We'll use the environment variable directly in run_migrations_online()
 log.info("Finished migration env config setup")
 
 
@@ -51,7 +52,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = os.environ["POSTGRES_DATABASE_URL"]
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -71,6 +72,7 @@ def run_migrations_online() -> None:
 
     """
     alembic_config = config.get_section(config.config_ini_section, {})
+    alembic_config["sqlalchemy.url"] = os.environ["POSTGRES_DATABASE_URL"]
     connectable = engine_from_config(
         alembic_config,
         prefix="sqlalchemy.",

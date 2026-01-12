@@ -23,17 +23,26 @@ class SESEmailService:
         # Use English source email as default for backwards compatibility
         self.source_email = self.source_email_en
 
-        if not all([self.aws_region, self.aws_access_key, self.aws_secret_key, self.source_email_en]):
+        if not self.aws_region or not self.source_email_en:
             self.logger.warning("SES credentials not fully configured. Email sending will be disabled.")
             self.ses_client = None
         else:
             try:
-                self.ses_client = boto3.client(
-                    "ses",
-                    region_name=self.aws_region,
-                    aws_access_key_id=self.aws_access_key,
-                    aws_secret_access_key=self.aws_secret_key,
-                )
+                # If access keys are provided, use them. Otherwise, boto3 will use IAM role credentials
+                if self.aws_access_key and self.aws_secret_key:
+                    self.ses_client = boto3.client(
+                        "ses",
+                        region_name=self.aws_region,
+                        aws_access_key_id=self.aws_access_key,
+                        aws_secret_access_key=self.aws_secret_key,
+                    )
+                else:
+                    # Use IAM role credentials (automatic in ECS)
+                    self.logger.info("Using IAM role credentials for SES email service")
+                    self.ses_client = boto3.client(
+                        "ses",
+                        region_name=self.aws_region,
+                    )
                 self.logger.info("SES client initialized successfully")
             except Exception as e:
                 self.logger.error(f"Failed to initialize SES client: {str(e)}")

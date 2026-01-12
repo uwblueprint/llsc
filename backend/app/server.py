@@ -58,6 +58,17 @@ async def lifespan(_: FastAPI):
     log.info("Starting up...")
     ensure_ses_templates()
     models.run_migrations()
+
+    # Run database seeds to ensure reference data exists
+    try:
+        from app.seeds.runner import seed_database
+        log.info("Running database seeds...")
+        seed_database(verbose=False)
+        log.info("Database seeds completed")
+    except Exception as e:
+        log.error(f"Failed to seed database: {e}")
+        # Don't fail startup if seeding fails (data might already exist)
+
     initialize_firebase()
 
     # Initialize and start the background scheduler for match completion
