@@ -47,7 +47,7 @@ const waitForAuthInit = (): Promise<User | null> => {
 };
 
 const baseAPIClient = axios.create({
-  baseURL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080',
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080',
 });
 
 // Python API uses snake_case, frontend uses camelCase
@@ -94,7 +94,7 @@ baseAPIClient.interceptors.request.use(async (config: InternalAxiosRequestConfig
         decodedToken.exp <= Math.round(new Date().getTime() / 1000))
     ) {
       const { data } = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/auth/refresh`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh`,
         {},
         { withCredentials: true },
       );
