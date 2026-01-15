@@ -19,6 +19,7 @@ import {
 } from '../utils/LocalStorageUtils';
 import { signInWithEmailAndPassword, applyActionCode, checkActionCode } from 'firebase/auth';
 import { auth } from '@/config/firebase';
+import { clearAuthCache } from '@/hooks/useAuthGuard';
 
 // Validation helper
 const validateEmail = (email: string): boolean => {
@@ -158,6 +159,7 @@ export const logout = async (): Promise<boolean> => {
   } finally {
     // Always clear localStorage and sign out from Firebase regardless of backend API success/failure
     localStorage.removeItem(AUTHENTICATED_USER_KEY);
+    clearAuthCache();
     try {
       await firebaseSignOut(auth);
     } catch (firebaseError) {

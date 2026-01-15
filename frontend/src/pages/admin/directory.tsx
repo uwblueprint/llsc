@@ -484,7 +484,7 @@ export default function Directory() {
                             _hover={{ color: COLORS.veniceBlue }}
                             onClick={() => router.push(`/admin/users/${user.id}`)}
                           >
-                            {displayName}
+                            {displayName || user.email}
                           </Text>
                         </Table.Cell>
                         <Table.Cell py={1.5} verticalAlign="middle">
