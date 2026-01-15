@@ -29,7 +29,7 @@ router = APIRouter(
 
 
 # admin only manually create user, not sure if this is needed
-@router.post("/", response_model=UserCreateResponse)
+@router.post("", response_model=UserCreateResponse)
 async def create_user(
     user: UserCreateRequest,
     user_service: UserService = Depends(get_user_service),
@@ -44,7 +44,7 @@ async def create_user(
 
 
 # admin only get all users
-@router.get("/", response_model=UserListResponse)
+@router.get("", response_model=UserListResponse)
 async def get_users(
     admin: Optional[bool] = Query(False, description="If true, returns admin users only"),
     user_service: UserService = Depends(get_user_service),

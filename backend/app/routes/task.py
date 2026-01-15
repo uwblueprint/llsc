@@ -21,7 +21,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=TaskResponse)
+@router.post("", response_model=TaskResponse)
 async def create_task(
     task: TaskCreateRequest,
     task_service: TaskService = Depends(get_task_service),
@@ -39,7 +39,7 @@ async def create_task(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/", response_model=TaskListResponse)
+@router.get("", response_model=TaskListResponse)
 async def get_tasks(
     status: Optional[str] = Query(None, description="Filter by task status"),
     priority: Optional[str] = Query(None, description="Filter by task priority"),

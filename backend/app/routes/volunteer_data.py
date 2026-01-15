@@ -64,7 +64,7 @@ async def submit_volunteer_data(
 
 
 # Admin only - create volunteer data
-@router.post("/", response_model=VolunteerDataResponse)
+@router.post("", response_model=VolunteerDataResponse)
 async def create_volunteer_data(
     volunteer_data: VolunteerDataCreateRequest,
     volunteer_data_service: VolunteerDataService = Depends(get_volunteer_data_service),
@@ -79,7 +79,7 @@ async def create_volunteer_data(
 
 
 # Admin only - get all volunteer data
-@router.get("/", response_model=VolunteerDataListResponse)
+@router.get("", response_model=VolunteerDataListResponse)
 async def get_all_volunteer_data(
     volunteer_data_service: VolunteerDataService = Depends(get_volunteer_data_service),
     authorized: bool = has_roles([UserRole.ADMIN]),

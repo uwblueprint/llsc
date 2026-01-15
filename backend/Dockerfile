@@ -15,4 +15,4 @@ RUN chmod +x /app/entrypoint.sh
 EXPOSE 8080
 
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["pdm", "run", "fastapi", "run", "app/server.py", "--port", "8080"]
+CMD ["pdm", "run", "uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8080"]

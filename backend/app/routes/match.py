@@ -33,7 +33,7 @@ def get_match_service(db: Session = Depends(get_db)) -> MatchService:
     return MatchService(db)
 
 
-@router.post("/", response_model=MatchCreateResponse)
+@router.post("", response_model=MatchCreateResponse)
 async def create_matches(
     payload: MatchCreateRequest,
     match_service: MatchService = Depends(get_match_service),

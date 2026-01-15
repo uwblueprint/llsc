@@ -26,7 +26,7 @@ def get_availability_service(db: Session = Depends(get_db)):
     return AvailabilityService(db)
 
 
-@router.get("/", response_model=AvailabilityEntity)
+@router.get("", response_model=AvailabilityEntity)
 async def get_availability(
     user_id: UUID = Query(..., description="User ID to fetch availability"),
     availability_service: AvailabilityService = Depends(get_availability_service),
@@ -43,7 +43,7 @@ async def get_availability(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/", response_model=CreateAvailabilityResponse)
+@router.post("", response_model=CreateAvailabilityResponse)
 async def create_availability(
     availability: CreateAvailabilityRequest,
     availability_service: AvailabilityService = Depends(get_availability_service),
@@ -60,7 +60,7 @@ async def create_availability(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/", response_model=CreateAvailabilityResponse)
+@router.put("", response_model=CreateAvailabilityResponse)
 async def update_availability(
     availability: CreateAvailabilityRequest,
     availability_service: AvailabilityService = Depends(get_availability_service),
@@ -80,7 +80,7 @@ async def update_availability(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/", response_model=DeleteAvailabilityResponse)
+@router.delete("", response_model=DeleteAvailabilityResponse)
 async def delete_availability(
     availability: DeleteAvailabilityRequest,
     availability_service: AvailabilityService = Depends(get_availability_service),

@@ -24,7 +24,7 @@ def get_suggested_times_service(db: Session = Depends(get_db)):
     return SuggestedTimesService(db)
 
 
-@router.post("/", response_model=SuggestedTimeCreateResponse)
+@router.post("", response_model=SuggestedTimeCreateResponse)
 async def create_suggested_times(
     suggested_time: SuggestedTimeCreateRequest,
     time_service: SuggestedTimesService = Depends(get_suggested_times_service),
@@ -40,7 +40,7 @@ async def create_suggested_times(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/", response_model=SuggestedTimeGetResponse)
+@router.get("", response_model=SuggestedTimeGetResponse)
 async def get_suggested_times(
     match_id: int,
     time_service: SuggestedTimesService = Depends(get_suggested_times_service),
@@ -57,7 +57,7 @@ async def get_suggested_times(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/", response_model=SuggestedTimeDeleteResponse)
+@router.delete("", response_model=SuggestedTimeDeleteResponse)
 async def delete_suggested_times(
     match_id: int,
     time_service: SuggestedTimesService = Depends(get_suggested_times_service),

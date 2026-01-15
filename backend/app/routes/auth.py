@@ -23,7 +23,8 @@ async def register_user(user: UserCreateRequest, user_service: UserService = Dep
         "umair.hkar@gmail.com",
         "umairmhundekar@gmail.com",
         "yash@kotharigroup.com",
-        "evan.beiduo.wu@gmail.com",
+        "ebwu@uwaterloo.ca",
+        "cam.donoahue@lls.org"
         "richardbai@uwblueprint.org",
         "brooke.dewhurst@lls.org",
         "jennifer.heroux-bourduas@lls.org",
