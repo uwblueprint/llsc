@@ -102,7 +102,7 @@ export const matchAPIClient = {
    * @returns Created matches
    */
   createMatches: async (request: MatchCreateRequest): Promise<MatchCreateResponse> => {
-    const response = await baseAPIClient.post<MatchCreateResponse>('/matches/', request);
+    const response = await baseAPIClient.post<MatchCreateResponse>('/matches', request);
     return response.data;
   },
 
