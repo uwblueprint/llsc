@@ -1,6 +1,7 @@
 import { Box, Button, Flex, Text, VStack, HStack } from '@chakra-ui/react';
 import { Match } from '@/types/matchTypes';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 interface ViewContactDetailsModalProps {
   isOpen: boolean;
@@ -9,6 +10,8 @@ interface ViewContactDetailsModalProps {
 }
 
 export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactDetailsModalProps) {
+  const t = useTranslations('dashboard');
+
   if (!isOpen || !match) {
     return null;
   }
@@ -19,7 +22,7 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
     volunteer.firstName && volunteer.lastName
       ? `${volunteer.firstName} ${volunteer.lastName[0]}.`
       : volunteerName;
-  const phoneNumber = volunteer.phone || 'Not available';
+  const phoneNumber = volunteer.phone || t('notProvided');
 
   return (
     <Box
@@ -71,7 +74,7 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
                 fontFamily="'Open Sans', sans-serif"
                 lineHeight="1.4em"
               >
-                Your call is set!
+                {t('yourCallIsSet')}
               </Text>
               <Text
                 fontSize="16px"
@@ -80,7 +83,7 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
                 fontFamily="'Open Sans', sans-serif"
                 lineHeight="1.36181640625em"
               >
-                You will get a call from your volunteer at your scheduled time.
+                {t('youWillGetCall')}
               </Text>
             </VStack>
 
@@ -97,7 +100,7 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
                   w="118px"
                   flexShrink={0}
                 >
-                  Name
+                  {t('name')}
                 </Text>
                 <Text
                   fontSize="18px"
@@ -121,7 +124,7 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
                   w="118px"
                   flexShrink={0}
                 >
-                  Phone Number
+                  {t('phoneNumber')}
                 </Text>
                 <Text
                   fontSize="18px"
@@ -155,7 +158,7 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
                   bg: '#033a3e',
                 }}
               >
-                Okay!
+                {t('okay')}
               </Button>
             </Flex>
           </VStack>

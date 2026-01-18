@@ -7,6 +7,7 @@ import {
   updateMyAvailability,
   AvailabilityTemplateResponse,
 } from '@/APIClients/userDataAPIClient';
+import { useTranslations } from 'next-intl';
 
 interface ScheduleCallModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
   participantName,
   onSend,
 }) => {
+  const t = useTranslations('dashboard');
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([]);
   const [additionalInfo, setAdditionalInfo] = useState('');
   const [isEditingAvailability, setIsEditingAvailability] = useState(false);
@@ -193,11 +195,11 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
           setAvailabilityTimeSlots(timeSlots);
         }
       } else {
-        alert('Failed to save availability. Please try again.');
+        alert(t('failedToSaveAvailability'));
       }
     } catch (err) {
       console.error('Error updating availability:', err);
-      alert('An error occurred while saving. Please try again.');
+      alert(t('errorSavingAvailability'));
     } finally {
       setSavingAvailability(false);
     }
@@ -224,7 +226,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
               fontFamily="'Open Sans', sans-serif"
               fontWeight={400}
             >
-              Back
+              {t('back')}
             </Text>
           </HStack>
 
@@ -236,7 +238,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
             letterSpacing="-1.5%"
             mb="8px"
           >
-            Schedule call with your availability
+            {t('scheduleCallWithAvailability')}
           </Heading>
 
           {loadingAvailability ? (
@@ -250,7 +252,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
               justifyContent="center"
             >
               <Text fontSize="16px" color="#6B7280" fontFamily="'Open Sans', sans-serif">
-                Loading availability...
+                {t('loadingAvailability')}
               </Text>
             </Box>
           ) : !isEditingAvailability ? (
@@ -262,7 +264,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
                 fontWeight={400}
                 mb={6}
               >
-                Please review your general availability before sending.
+                {t('reviewAvailabilityBeforeSending')}
               </Text>
 
               <Box h="700px" w="100%" minW={0} mt="49px">
@@ -275,7 +277,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
               </Box>
 
               <Textarea
-                placeholder="Additional information (optional)"
+                placeholder={t('additionalInfoOptional')}
                 value={additionalInfo}
                 onChange={(e) => setAdditionalInfo(e.target.value)}
                 mt={4}
@@ -312,7 +314,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
                   boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
                   _hover={{ bg: '#A0BFC2' }}
                 >
-                  Edit General Availability
+                  {t('editGeneralAvailability')}
                 </Button>
                 <Button
                   bg="#056067"
@@ -327,7 +329,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
                   _hover={{ bg: '#044d4d' }}
                   onClick={handleSend}
                 >
-                  Send
+                  {t('send')}
                 </Button>
               </HStack>
             </>
@@ -342,8 +344,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
                 lineHeight="100%"
                 mb={6}
               >
-                Drag to select all the times you will usually be available to meet with
-                participants.
+                {t('dragToSelectAvailability')}
               </Text>
 
               <Box h="700px" w="100%" minW={0} mt="49px">
@@ -366,7 +367,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
                   py={2}
                   h="44px"
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
                 <Button
                   bg="#056067"
@@ -381,7 +382,7 @@ const ScheduleCallModal: React.FC<ScheduleCallModalProps> = ({
                   onClick={handleSaveAvailability}
                   disabled={savingAvailability}
                 >
-                  {savingAvailability ? 'Saving...' : 'Save Changes'}
+                  {savingAvailability ? t('saving') : t('saveChanges')}
                 </Button>
               </HStack>
             </>

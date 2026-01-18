@@ -1,6 +1,7 @@
 import { Box, Button, Flex, Text, VStack } from '@chakra-ui/react';
 import { Icon } from '@chakra-ui/react';
 import { FiAlertCircle } from 'react-icons/fi';
+import { useTranslations } from 'next-intl';
 
 interface CancelCallConfirmationModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ export function CancelCallConfirmationModal({
   onConfirm,
   isCancelling = false,
 }: CancelCallConfirmationModalProps) {
+  const t = useTranslations('dashboard');
+
   if (!isOpen) {
     return null;
   }
@@ -67,7 +70,7 @@ export function CancelCallConfirmationModal({
               lineHeight="1.4em"
               textAlign="center"
             >
-              Are you sure you want to cancel your call?
+              {t('areYouSureCancelCall')}
             </Text>
             <Text
               fontSize="16px"
@@ -77,7 +80,7 @@ export function CancelCallConfirmationModal({
               lineHeight="1.36181640625em"
               textAlign="center"
             >
-              You can request new matches if you&apos;d like to connect with other volunteers.
+              {t('canRequestNewMatches')}
             </Text>
           </VStack>
 
@@ -99,7 +102,7 @@ export function CancelCallConfirmationModal({
                 bg: 'rgba(179, 206, 209, 0.4)',
               }}
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
               flex={1}
@@ -114,7 +117,7 @@ export function CancelCallConfirmationModal({
               borderRadius="8px"
               onClick={onConfirm}
               loading={isCancelling}
-              loadingText="Cancelling..."
+              loadingText={t('cancelling')}
               disabled={isCancelling}
               _hover={{
                 bg: '#8B0000',
@@ -123,7 +126,7 @@ export function CancelCallConfirmationModal({
                 bg: '#750000',
               }}
             >
-              Cancel Call
+              {t('cancelCall')}
             </Button>
           </Flex>
         </VStack>

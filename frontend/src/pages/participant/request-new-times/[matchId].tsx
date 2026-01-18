@@ -11,10 +11,12 @@ import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClien
 import { FormStatus, UserRole } from '@/types/authTypes';
 import { Match } from '@/types/matchTypes';
 import type { TimeSlot } from '@/components/dashboard/types';
+import { useTranslations } from 'next-intl';
 
 type Step = 'select-days' | 'select-times';
 
 export default function RequestNewTimesPage() {
+  const t = useTranslations('dashboard');
   const router = useRouter();
   const { matchId } = router.query;
 
@@ -227,7 +229,7 @@ export default function RequestNewTimesPage() {
                 lineHeight="1.25em"
               >
                 <FiChevronLeft size={20} />
-                <Text>Back</Text>
+                <Text>{t('back')}</Text>
               </Flex>
 
               {/* Header */}
@@ -240,7 +242,7 @@ export default function RequestNewTimesPage() {
                   lineHeight="1.36181640625em"
                   letterSpacing="-1.5%"
                 >
-                  Request a new time
+                  {t('requestNewTime')}
                 </Heading>
                 <Text
                   fontSize="18px"
@@ -251,8 +253,7 @@ export default function RequestNewTimesPage() {
                   letterSpacing="-1.5%"
                   opacity={0.85}
                 >
-                  If the volunteer&apos;s available times don&apos;t work, you&apos;re able to send
-                  a request with your available times.
+                  {t('ifTimesDoNotWork')}
                 </Text>
               </VStack>
 
@@ -284,7 +285,7 @@ export default function RequestNewTimesPage() {
                         bg: '#033a3e',
                       }}
                     >
-                      Select these days
+                      {t('selectTheseDays')}
                     </Button>
                   </Flex>
                 </VStack>
@@ -322,7 +323,7 @@ export default function RequestNewTimesPage() {
                         bg: 'rgba(179, 206, 209, 0.4)',
                       }}
                     >
-                      Back
+                      {t('back')}
                     </Button>
                     <Button
                       bg="#056067"
@@ -337,7 +338,7 @@ export default function RequestNewTimesPage() {
                       onClick={handleTimesSelected}
                       disabled={selectedTimeSlots.length === 0 || isSubmitting}
                       loading={isSubmitting}
-                      loadingText="Sending..."
+                      loadingText={t('sending')}
                       _hover={{
                         bg: '#044d52',
                       }}
@@ -345,7 +346,7 @@ export default function RequestNewTimesPage() {
                         bg: '#033a3e',
                       }}
                     >
-                      Confirm availability
+                      {t('confirmAvailability')}
                     </Button>
                   </Flex>
                 </VStack>

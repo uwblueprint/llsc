@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Box, Button, Container, Flex, Heading, Text, Textarea, VStack } from '@chakra-ui/react';
 import { FiChevronLeft } from 'react-icons/fi';
 import { Icon } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 interface RequestNewMatchesModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export function RequestNewMatchesModal({
   onSubmit,
   isSubmitting = false,
 }: RequestNewMatchesModalProps) {
+  const t = useTranslations('dashboard');
   const [message, setMessage] = useState('');
 
   const handleSubmit = async () => {
@@ -65,7 +67,7 @@ export function RequestNewMatchesModal({
               aria-disabled={isSubmitting}
             >
               <Icon as={FiChevronLeft} boxSize={5} />
-              <Text>Back</Text>
+              <Text>{t('back')}</Text>
             </Flex>
           </Flex>
 
@@ -74,10 +76,10 @@ export function RequestNewMatchesModal({
             {/* Heading */}
             <VStack align="stretch" gap={2}>
               <Heading fontSize="2xl" fontWeight="600" color="#1D3448">
-                Do you want to request new volunteers?
+                {t('doYouWantNewVolunteers')}
               </Heading>
               <Text fontSize="md" color="#697380" lineHeight="1.5">
-                This process may take a few days.
+                {t('processMayTakeDays')}
               </Text>
             </VStack>
 
@@ -85,17 +87,16 @@ export function RequestNewMatchesModal({
             <VStack align="stretch" gap={3}>
               <VStack align="stretch" gap={1}>
                 <Heading fontSize="md" fontWeight="600" color="#1D3448">
-                  Any additional notes?
+                  {t('anyAdditionalNotes')}
                 </Heading>
                 <Text fontSize="sm" color="#697380" lineHeight="1.5">
-                  Please provide any additional information you would like us to consider when
-                  finding volunteers.
+                  {t('pleaseProvideAdditionalInfo')}
                 </Text>
               </VStack>
               <Textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Share your thoughts!"
+                placeholder={t('shareYourThoughts')}
                 minH="200px"
                 resize="vertical"
                 border="1px solid"
@@ -124,7 +125,7 @@ export function RequestNewMatchesModal({
                 _hover={{ bg: '#B3CED14D', opacity: 0.8 }}
                 px={6}
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button
                 bg="#056067"
@@ -133,11 +134,11 @@ export function RequestNewMatchesModal({
                 _active={{ bg: '#033a3e' }}
                 onClick={handleSubmit}
                 loading={isSubmitting}
-                loadingText="Submitting..."
+                loadingText={t('submitting')}
                 disabled={isSubmitting}
                 px={6}
               >
-                Submit Request
+                {t('submitRequest')}
               </Button>
             </Flex>
           </VStack>

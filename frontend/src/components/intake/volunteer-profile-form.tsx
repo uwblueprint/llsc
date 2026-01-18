@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Heading, Text, Button, VStack, Flex, Textarea } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { StepIndicator } from '@/components/ui';
 
 interface VolunteerProfileFormData {
@@ -13,6 +14,7 @@ interface VolunteerProfileFormProps {
 }
 
 export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormProps) {
+  const t = useTranslations('intake');
   const [wordCount, setWordCount] = useState(0);
   const maxWords = 300;
 
@@ -63,7 +65,7 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
         fontSize={{ base: '24px', md: '28px' }}
         mb={8}
       >
-        Volunteer Profile Form
+        {t('volunteerProfileForm')}
       </Heading>
 
       {/* Progress Bar */}
@@ -79,7 +81,7 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
           fontSize={{ base: '18px', md: '20px' }}
           mb={3}
         >
-          Your Experience
+          {t('yourExperience')}
         </Heading>
 
         <Text
@@ -88,8 +90,7 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
           color="brand.fieldText"
           mb={6}
         >
-          This information will serve as your biography and will encourage potential matches to
-          speak with you.
+          {t('experienceInfoWillServe')}
         </Text>
 
         <VStack gap={5} align="stretch">
@@ -101,19 +102,17 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
               color="brand.navy"
               mb={2}
             >
-              Tell us about yourself: include your age, diagnosis and treatments. Include personal
-              details like if you&apos;re married or have kids, what you struggled with at diagnosis
-              and/or treatment, and how you are doing now.
+              {t('tellUsAboutYourself')}
             </Text>
 
             <Controller
               name="experience"
               control={control}
               rules={{
-                required: 'Please tell us about your experience',
+                required: t('experienceRequired'),
                 validate: (value) => {
                   if (!value || value.trim() === '') {
-                    return 'Please tell us about your experience';
+                    return t('experienceRequired');
                   }
 
                   // Use the same accurate word counting logic as the display
@@ -123,7 +122,7 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
                     .filter((word) => word.length > 0 && word.match(/\S/));
 
                   if (words.length > maxWords) {
-                    return `Please limit your response to ${maxWords} words`;
+                    return t('wordLimitExceeded', { maxWords });
                   }
                   return true;
                 },
@@ -132,7 +131,7 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
                 <Box position="relative">
                   <Textarea
                     {...field}
-                    placeholder="Type here...."
+                    placeholder={t('typeHere')}
                     fontFamily="system-ui, -apple-system, sans-serif"
                     fontSize="14px"
                     color="brand.navy"
@@ -159,7 +158,7 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
                     fontFamily="system-ui, -apple-system, sans-serif"
                     pointerEvents="none"
                   >
-                    {wordCount}/{maxWords} words
+                    {wordCount}/{maxWords} {t('words')}
                   </Text>
                 </Box>
               )}
@@ -191,7 +190,7 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
               bg: 'brand.primaryAlpha',
             }}
           >
-            Back
+            {t('back')}
           </Button>
         ) : (
           <Box />
@@ -210,7 +209,7 @@ export function VolunteerProfileForm({ onNext, onBack }: VolunteerProfileFormPro
           fontWeight={500}
           px={6}
         >
-          Next Section →
+          {t('nextSection')}
         </Button>
       </Flex>
     </form>

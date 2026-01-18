@@ -8,9 +8,11 @@ import { roleIdToUserRole } from '@/utils/roleUtils';
 import { getRedirectRoute } from '@/constants/formStatusRoutes';
 import { AuthPageLayout } from '@/components/layout';
 import { detectUserLanguage, getProgramInfoUrl } from '@/utils/languageDetection';
+import { useTranslations } from 'next-intl';
 
 export default function WelcomePage() {
   const router = useRouter();
+  const t = useTranslations('auth');
   const [currentUser, setCurrentUser] = useState<AuthenticatedUser>(null);
   const [loading, setLoading] = useState(true);
   const [userLanguage, setUserLanguage] = useState<'en' | 'fr'>('en');
@@ -59,7 +61,18 @@ export default function WelcomePage() {
     void evaluate();
   }, [router]);
 
-  const handleContinueInEnglish = () => {
+  // Helper to set language cookie
+  const setLanguageCookie = (locale: 'en' | 'fr') => {
+    if (typeof document === 'undefined') return;
+    const expires = new Date();
+    expires.setFullYear(expires.getFullYear() + 1);
+    document.cookie = `NEXT_LOCALE=${locale}; expires=${expires.toUTCString()}; path=/`;
+  };
+
+  const handleContinue = (language: 'en' | 'fr') => {
+    // Set language cookie
+    setLanguageCookie(language);
+
     const role = roleIdToUserRole(currentUser?.user?.roleId ?? null);
     const status = currentUser?.user?.formStatus as FormStatus | undefined;
 
@@ -103,32 +116,31 @@ export default function WelcomePage() {
             fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}
             lineHeight="1.25"
           >
-            First Connection Peer Support Program
+            {t('programTitle')}
           </Heading>
           <Heading fontWeight={600} color="brand.navy" fontSize={{ base: 'xl', md: '2xl' }} mt={4}>
-            Welcome to our application portal!
+            {t('welcomePortal')}
           </Heading>
         </Box>
 
         <VStack spacing={4} align="stretch">
           <Text color="brand.navy" fontSize="md">
-            You can learn more about the program{' '}
+            {t('learnMoreAboutProgram')}{' '}
             <a
               href={getProgramInfoUrl(userLanguage)}
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: 'var(--chakra-colors-brand-primary)', textDecoration: 'underline' }}
             >
-              here
+              {t('here')}
             </a>
             .
           </Text>
           <Text color="brand.navy" fontSize="md">
-            We&apos;re going to ask you a few questions to get started.
+            {t('askFewQuestions')}
           </Text>
           <Text color="brand.navy" fontSize="md">
-            This form takes ~10 minutes to complete. Your responses will not be saved if you close
-            the tab, or exit this web page.
+            {t('formTakes10Minutes')}
           </Text>
         </VStack>
 
@@ -146,9 +158,9 @@ export default function WelcomePage() {
           _hover={{ bg: 'brand.primaryEmphasis' }}
           px={8}
           py={3}
-          onClick={handleContinueInEnglish}
+          onClick={() => handleContinue('en')}
         >
-          Continue in English &nbsp; &rarr;
+          {t('continueInEnglish')} &nbsp; &rarr;
         </Button>
         <Button
           w="full"
@@ -164,13 +176,13 @@ export default function WelcomePage() {
           _hover={{ bg: 'gray.50' }}
           px={8}
           py={3}
-          onClick={handleContinueInEnglish}
+          onClick={() => handleContinue('fr')}
         >
-          Continue en Francais &nbsp; &rarr;
+          {t('continueInFrench')} &nbsp; &rarr;
         </Button>
 
         <Text color="brand.navy" fontSize="md" fontWeight={600}>
-          Already have an account?{' '}
+          {t('alreadyHaveAccount')}{' '}
           <Link
             href="/"
             style={{
@@ -179,7 +191,7 @@ export default function WelcomePage() {
               fontWeight: 600,
             }}
           >
-            Sign In
+            {t('signInLink')}
           </Link>
         </Text>
       </VStack>

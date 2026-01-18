@@ -1,6 +1,7 @@
 import { Box, Button, Flex, Text, VStack } from '@chakra-ui/react';
 import { Icon } from '@chakra-ui/react';
 import { FiCheckCircle } from 'react-icons/fi';
+import { useTranslations } from 'next-intl';
 
 interface ContactSuccessModalProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface ContactSuccessModalProps {
 }
 
 export function ContactSuccessModal({ isOpen, onClose }: ContactSuccessModalProps) {
+  const t = useTranslations('dashboard');
+
   if (!isOpen) {
     return null;
   }
@@ -60,7 +63,7 @@ export function ContactSuccessModal({ isOpen, onClose }: ContactSuccessModalProp
               lineHeight="1.4em"
               textAlign="center"
             >
-              Message sent!
+              {t('messageSent')}
             </Text>
             <Text
               fontSize="16px"
@@ -70,7 +73,7 @@ export function ContactSuccessModal({ isOpen, onClose }: ContactSuccessModalProp
               lineHeight="1.36181640625em"
               textAlign="center"
             >
-              A staff member will get back to you as soon as possible.
+              {t('staffWillGetBack')}
             </Text>
           </VStack>
 
@@ -95,7 +98,7 @@ export function ContactSuccessModal({ isOpen, onClose }: ContactSuccessModalProp
                 bg: '#033a3e',
               }}
             >
-              Okay!
+              {t('okay')}
             </Button>
           </Flex>
         </VStack>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronRightIcon, CheckCircleIcon, UserIcon } from '@heroicons/react/24/outline';
+import { useTranslations } from 'next-intl';
 
 interface Reference {
   name: string;
@@ -8,6 +9,7 @@ interface Reference {
 }
 
 export default function VolunteerSecondary() {
+  const t = useTranslations('dashboard');
   const [currentStep, setCurrentStep] = useState(0);
   const [experience, setExperience] = useState('');
   const [references, setReferences] = useState<Reference[]>([
@@ -64,7 +66,7 @@ export default function VolunteerSecondary() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to submit volunteer data');
+        throw new Error(errorData.detail || t('failedToSubmitVolunteerData'));
       }
 
       const result = await response.json();
@@ -72,7 +74,7 @@ export default function VolunteerSecondary() {
       setCurrentStep(4); // Go to success page
     } catch (err) {
       console.error('Error submitting volunteer data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to submit data');
+      setError(err instanceof Error ? err.message : t('failedToSubmitVolunteerData'));
     } finally {
       setIsSubmitting(false);
     }
@@ -101,13 +103,11 @@ export default function VolunteerSecondary() {
           </div>
 
           <h1 className="text-xl font-semibold text-gray-800 mb-4 leading-tight">
-            Let's setup your public volunteer profile
+            {t('letsSetupProfile')}
           </h1>
 
           <p className="text-sm text-gray-600 mb-8 leading-relaxed">
-            Your experience provided in this form will
-            <br />
-            be shared with potential matches.
+            {t('experienceSharedWithMatches')}
           </p>
 
           <button
@@ -117,7 +117,7 @@ export default function VolunteerSecondary() {
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#044950')}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#056067')}
           >
-            Continue
+            {t('continue')}
             <ChevronRightIcon className="w-4 h-4" />
           </button>
         </div>
@@ -130,7 +130,7 @@ export default function VolunteerSecondary() {
     return (
       <div className="min-h-screen bg-white py-12 px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-8">Volunteer Profile Form</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-8">{t('volunteerProfileForm')}</h1>
 
           {/* Progress Bar */}
           <div className="mb-12">
@@ -142,15 +142,13 @@ export default function VolunteerSecondary() {
 
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Experience</h2>
-              <p className="text-gray-600 mb-8">
-                This information will serve as your biography to be shared with potential matches.
-              </p>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('yourExperience')}</h2>
+              <p className="text-gray-600 mb-8">{t('bioDescription')}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-4">
-                Tell us your story behind your diagnosis:
+                {t('tellUsAboutYourself')}
               </label>
               <textarea
                 value={experience}
@@ -176,7 +174,7 @@ export default function VolunteerSecondary() {
                     setExperience(trimmedText);
                   }
                 }}
-                placeholder="Type here...."
+                placeholder={t('typeHere')}
                 className="w-3/5 h-56 p-4 border border-gray-300 rounded-lg resize-none outline-none bg-white text-gray-900 placeholder-gray-400"
                 style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '16px' }}
                 onFocus={handleInputFocus}
@@ -186,7 +184,7 @@ export default function VolunteerSecondary() {
                 <span
                   className={`text-sm ${wordCount >= MAX_WORDS ? 'text-red-500' : 'text-gray-500'}`}
                 >
-                  {wordCount}/{MAX_WORDS} words
+                  {wordCount}/{MAX_WORDS} {t('words')}
                 </span>
               </div>
             </div>
@@ -199,7 +197,7 @@ export default function VolunteerSecondary() {
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#044950')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#056067')}
               >
-                Next Section
+                {t('nextSection')}
                 <ChevronRightIcon className="w-4 h-4" />
               </button>
             </div>
@@ -214,7 +212,7 @@ export default function VolunteerSecondary() {
     return (
       <div className="min-h-screen bg-white py-12 px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-8">Volunteer Profile Form</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-8">{t('volunteerProfileForm')}</h1>
 
           {/* Progress Bar */}
           <div className="mb-12">
@@ -232,36 +230,23 @@ export default function VolunteerSecondary() {
 
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">References</h2>
-              <p className="text-gray-600 mb-8">
-                These references will be used to confirm your alignment with the program.
-              </p>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('references')}</h2>
+              <p className="text-gray-600 mb-8">{t('referencesDescription')}</p>
             </div>
 
             {/* Reference 1 */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Reference 1:</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">{t('reference1')}:</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('fullName')}
+                  </label>
                   <input
                     type="text"
                     value={references[0]?.name || ''}
                     onChange={(e) => handleReferenceChange(0, 'name', e.target.value)}
-                    placeholder="John Doe"
-                    className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
-                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={references[0]?.email || ''}
-                    onChange={(e) => handleReferenceChange(0, 'email', e.target.value)}
-                    placeholder="john.doe@gmail.com"
+                    placeholder={t('namePlaceholder')}
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
                     style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                     onFocus={handleInputFocus}
@@ -270,13 +255,28 @@ export default function VolunteerSecondary() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
+                    {t('email')}
+                  </label>
+                  <input
+                    type="email"
+                    value={references[0]?.email || ''}
+                    onChange={(e) => handleReferenceChange(0, 'email', e.target.value)}
+                    placeholder={t('emailPlaceholder')}
+                    className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
+                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('phoneNumber')}
                   </label>
                   <input
                     type="tel"
                     value={references[0]?.phone || ''}
                     onChange={(e) => handleReferenceChange(0, 'phone', e.target.value)}
-                    placeholder="###-###-####"
+                    placeholder={t('phonePlaceholder')}
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
                     style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                     onFocus={handleInputFocus}
@@ -288,28 +288,17 @@ export default function VolunteerSecondary() {
 
             {/* Reference 2 */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Reference 2:</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">{t('reference2')}:</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('fullName')}
+                  </label>
                   <input
                     type="text"
                     value={references[1]?.name || ''}
                     onChange={(e) => handleReferenceChange(1, 'name', e.target.value)}
-                    placeholder="John Doe"
-                    className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
-                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={references[1]?.email || ''}
-                    onChange={(e) => handleReferenceChange(1, 'email', e.target.value)}
-                    placeholder="john.doe@gmail.com"
+                    placeholder={t('namePlaceholder')}
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
                     style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                     onFocus={handleInputFocus}
@@ -318,13 +307,28 @@ export default function VolunteerSecondary() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
+                    {t('email')}
+                  </label>
+                  <input
+                    type="email"
+                    value={references[1]?.email || ''}
+                    onChange={(e) => handleReferenceChange(1, 'email', e.target.value)}
+                    placeholder={t('emailPlaceholder')}
+                    className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
+                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('phoneNumber')}
                   </label>
                   <input
                     type="tel"
                     value={references[1]?.phone || ''}
                     onChange={(e) => handleReferenceChange(1, 'phone', e.target.value)}
-                    placeholder="###-###-####"
+                    placeholder={t('phonePlaceholder')}
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none bg-white text-gray-900"
                     style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                     onFocus={handleInputFocus}
@@ -337,12 +341,12 @@ export default function VolunteerSecondary() {
             {/* Additional Comments */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Anything else to share?
+                {t('anythingElseToShare')}
               </label>
               <textarea
                 value={additionalComments}
                 onChange={(e) => setAdditionalComments(e.target.value)}
-                placeholder="Type here...."
+                placeholder={t('typeHere')}
                 className="w-2/3 h-32 p-4 border border-gray-300 rounded-lg resize-none outline-none bg-white text-gray-900 placeholder-gray-400"
                 style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                 onFocus={handleInputFocus}
@@ -363,7 +367,7 @@ export default function VolunteerSecondary() {
                   !isSubmitting && (e.currentTarget.style.backgroundColor = '#056067')
                 }
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Volunteer Profile Form'}
+                {isSubmitting ? t('submitting') : t('submitVolunteerProfileForm')}
                 <ChevronRightIcon className="w-4 h-4" />
               </button>
             </div>
@@ -382,14 +386,11 @@ export default function VolunteerSecondary() {
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
               <CheckCircleIcon className="w-8 h-8" style={{ color: '#056067' }} />
             </div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-4">Success!</h1>
-            <p className="text-gray-600 mb-6">
-              Thank you for sharing your references and experiences with us.
-            </p>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-4">{t('success')}</h1>
+            <p className="text-gray-600 mb-6">{t('successThankYou')}</p>
             <div className="text-gray-600 space-y-2">
               <p>
-                We will reach out in the next 5-7 business days with the next steps. For immediate
-                help, please reach us at{' '}
+                {t('weWillReachOut5to7Days')}{' '}
                 <a
                   href="mailto:FirstConnection@lls.org"
                   className="hover:opacity-80"
@@ -406,5 +407,5 @@ export default function VolunteerSecondary() {
     );
   }
 
-  return <div>Loading...</div>;
+  return <div>{t('loading')}</div>;
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Text } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
+import { useTranslations } from 'next-intl';
 import { UserIcon, WelcomeScreen } from '@/components/ui';
 import {
   VolunteerMatchingForm,
@@ -66,6 +67,7 @@ export default function ParticipantRankingPage({
   participantType = 'caregiver',
   caregiverHasCancer = true,
 }: ParticipantRankingPageProps) {
+  const t = useTranslations('ranking');
   const router = useRouter();
   const [derivedParticipantType, setDerivedParticipantType] = useState<
     'cancerPatient' | 'caregiver' | null
@@ -148,13 +150,13 @@ export default function ParticipantRankingPage({
         const scopes = q.allowedScopes || [];
         return scopes.map((s) => ({
           key: `quality:${q.qualityId}:${s}`,
-          label: `${q.label} ${s === 'self' ? 'me' : 'my loved one'}`,
+          label: `${q.label} ${s === 'self' ? t('me') : t('myLovedOne')}`,
           meta: { kind: 'quality', id: q.qualityId, scope: s },
         }));
       });
       const dynamicOptions: DisplayOption[] = (data.dynamicOptions || []).map((o) => ({
         key: `${o.kind}:${o.id}:${o.scope}`,
-        label: `experience with ${o.name}`,
+        label: t('experienceWithName', { name: o.name }),
         meta: { kind: o.kind, id: o.id, scope: o.scope },
       }));
 
@@ -174,7 +176,7 @@ export default function ParticipantRankingPage({
       setLeftColumnOptions(left);
       setRightColumnOptions(right);
     } catch {
-      setOptionsError('Failed to load options. Please try again.');
+      setOptionsError(t('failedToLoadOptions'));
     } finally {
       setIsLoadingOptions(false);
     }
@@ -201,8 +203,8 @@ export default function ParticipantRankingPage({
   const WelcomeScreenStep = () => (
     <WelcomeScreen
       icon={<UserIcon />}
-      title="Welcome to the Peer Support Program!"
-      description="Let's begin by selecting<br />your preferences in a volunteer."
+      title={t('welcomeToProgram')}
+      description={t('letsBeginSelecting')}
       onContinue={() => setCurrentStep(2)}
     />
   );

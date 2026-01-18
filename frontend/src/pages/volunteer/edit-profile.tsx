@@ -16,8 +16,10 @@ import {
   AvailabilityTemplateResponse,
 } from '@/APIClients/userDataAPIClient';
 import { extractTimezoneAbbreviation, getTimezoneDisplayName } from '@/utils/timezoneUtils';
+import { useTranslations } from 'next-intl';
 
 const EditProfile: React.FC = () => {
+  const t = useTranslations('dashboard');
   const { user, loading: authLoading } = useAuth();
   const [isEditingAvailability, setIsEditingAvailability] = useState(false);
   const router = useRouter();
@@ -110,7 +112,7 @@ const EditProfile: React.FC = () => {
           // Format date from ISO (YYYY-MM-DD) to display format (DD/MM/YYYY)
           const formatDate = (isoDate: string | undefined | null): string => {
             if (!isoDate) {
-              return 'Not provided';
+              return '';
             }
             try {
               const date = new Date(isoDate);
@@ -121,28 +123,26 @@ const EditProfile: React.FC = () => {
               return formatted;
             } catch (error) {
               console.error('formatDate error:', error);
-              return 'Not provided';
+              return '';
             }
           };
 
           // Populate personal details (using camelCase after axios conversion)
           const formattedBirthday = formatDate(userData.dateOfBirth);
-          const formattedPronouns = userData.pronouns?.join(', ') || 'Not provided';
+          const formattedPronouns = userData.pronouns?.join(', ') || '';
 
           setPersonalDetails({
             name:
-              `${userData.firstName || ''} ${userData.lastName || ''}`.trim() ||
-              user?.email ||
-              'Not provided',
-            email: userData.email || user?.email || 'Not provided',
+              `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || user?.email || '',
+            email: userData.email || user?.email || '',
             birthday: formattedBirthday,
-            gender: userData.genderIdentity || 'Not provided',
+            gender: userData.genderIdentity || '',
             pronouns: formattedPronouns,
             timezone: userData.timezone ? getTimezoneDisplayName(userData.timezone) : 'EST',
             overview:
               userData.volunteerExperience && userData.volunteerExperience.trim()
                 ? userData.volunteerExperience
-                : 'Not provided',
+                : '',
           });
 
           // Populate cancer experience
@@ -155,8 +155,8 @@ const EditProfile: React.FC = () => {
 
           // Populate loved one details if caring for someone
           if (userData.caringForSomeone) {
-            const lovedOneBirthday = userData.lovedOneAge || 'Not provided';
-            const lovedOneGender = userData.lovedOneGenderIdentity || 'Not provided';
+            const lovedOneBirthday = userData.lovedOneAge || '';
+            const lovedOneGender = userData.lovedOneGenderIdentity || '';
 
             setLovedOneDetails({
               birthday: lovedOneBirthday,
@@ -165,8 +165,8 @@ const EditProfile: React.FC = () => {
 
             // Populate loved one cancer experience
             setLovedOneCancerExperience({
-              diagnosis: userData.lovedOneDiagnosis || 'Not provided',
-              dateOfDiagnosis: userData.lovedOneDateOfDiagnosis || 'Not provided',
+              diagnosis: userData.lovedOneDiagnosis || '',
+              dateOfDiagnosis: userData.lovedOneDateOfDiagnosis || '',
               treatments: userData.lovedOneTreatments || [],
               experiences: userData.lovedOneExperiences || [],
             });
@@ -230,7 +230,7 @@ const EditProfile: React.FC = () => {
 
     const result = await updateUserData(updateData);
     if (!result) {
-      throw new Error('Failed to update');
+      throw new Error(t('failedToUpdate'));
     }
   };
 
@@ -240,7 +240,7 @@ const EditProfile: React.FC = () => {
       treatments: cancerExperience.treatments,
     });
     if (!result) {
-      alert('Failed to save treatments');
+      alert(t('failedToSave'));
     }
   };
 
@@ -250,7 +250,7 @@ const EditProfile: React.FC = () => {
       experiences: cancerExperience.experiences,
     });
     if (!result) {
-      alert('Failed to save experiences');
+      alert(t('failedToSave'));
     }
   };
 
@@ -261,7 +261,7 @@ const EditProfile: React.FC = () => {
       lovedOneTreatments: lovedOneCancerExperience.treatments,
     });
     if (!result) {
-      alert('Failed to save loved one treatments');
+      alert(t('failedToSave'));
     }
   };
 
@@ -272,7 +272,7 @@ const EditProfile: React.FC = () => {
       lovedOneExperiences: lovedOneCancerExperience.experiences,
     });
     if (!result) {
-      alert('Failed to save loved one experiences');
+      alert(t('failedToSave'));
     }
   };
 
@@ -380,11 +380,11 @@ const EditProfile: React.FC = () => {
         }
       } else {
         console.error('❌ Failed to update availability');
-        alert('Failed to save availability. Please try again.');
+        alert(t('failedToSaveAvailability'));
       }
     } catch (err) {
       console.error('❌ Error updating availability:', err);
-      alert('An error occurred while saving. Please try again.');
+      alert(t('errorSavingAvailability'));
     } finally {
       setSavingAvailability(false);
     }
@@ -402,7 +402,7 @@ const EditProfile: React.FC = () => {
         alignItems="center"
       >
         <Text fontSize="lg" color={COLORS.fieldGray}>
-          Loading...
+          {t('loading')}
         </Text>
       </Box>
     );
@@ -421,7 +421,7 @@ const EditProfile: React.FC = () => {
           <HStack gap={2} align="center" cursor="pointer" onClick={handleBack}>
             <BiArrowBack color={COLORS.veniceBlue} />
             <Text fontSize="sm" color={COLORS.fieldGray} fontFamily="'Open Sans', sans-serif">
-              Back
+              {t('back')}
             </Text>
           </HStack>
 
@@ -439,7 +439,7 @@ const EditProfile: React.FC = () => {
                 color={COLORS.veniceBlue}
                 fontFamily="'Open Sans', sans-serif"
               >
-                Edit Profile
+                {t('editProfile')}
               </Heading>
 
               <Box mt="48px">
@@ -474,10 +474,10 @@ const EditProfile: React.FC = () => {
                         fontFamily="'Open Sans', sans-serif"
                         mb="8px"
                       >
-                        Your availability
+                        {t('yourAvailabilityHeading')}
                       </Heading>
                       {!isEditingAvailability ? (
-                        <ActionButton onClick={handleEditAvailability}>Edit</ActionButton>
+                        <ActionButton onClick={handleEditAvailability}>{t('edit')}</ActionButton>
                       ) : (
                         <HStack gap={3}>
                           <Button
@@ -493,7 +493,7 @@ const EditProfile: React.FC = () => {
                             _active={{ bg: '#7F1D1D' }}
                             onClick={handleClearAvailability}
                           >
-                            Clear Availability
+                            {t('clearAvailability')}
                           </Button>
                           <Button
                             bg="#6B7280"
@@ -508,7 +508,7 @@ const EditProfile: React.FC = () => {
                             _active={{ bg: '#374151' }}
                             onClick={handleCancelEdit}
                           >
-                            Cancel
+                            {t('cancel')}
                           </Button>
                           <Button
                             bg="#056067"
@@ -524,7 +524,7 @@ const EditProfile: React.FC = () => {
                             onClick={handleSaveAvailability}
                             disabled={savingAvailability}
                           >
-                            {savingAvailability ? 'Saving...' : 'Save'}
+                            {savingAvailability ? t('saving') : t('save')}
                           </Button>
                         </HStack>
                       )}
@@ -540,7 +540,7 @@ const EditProfile: React.FC = () => {
                       mt={0}
                       fontFamily="'Open Sans', sans-serif"
                     >
-                      We require that availability be provided in sessions of at least 2 hours.
+                      {t('weRequire2Hours')}
                     </Text>
 
                     <Box h="900px" w="100%" mr={0}>

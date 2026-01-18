@@ -2,8 +2,11 @@ import React from 'react';
 import Link from 'next/link';
 import { Heading, Text, Button, VStack } from '@chakra-ui/react';
 import { AuthPageLayout } from '@/components/layout';
+import { useTranslations } from 'next-intl';
 
 export default function Unauthorized() {
+  const t = useTranslations('auth');
+
   return (
     <AuthPageLayout>
       <VStack spacing={6} textAlign="center" align="center">
@@ -17,13 +20,13 @@ export default function Unauthorized() {
         </Heading>
 
         <Heading as="h2" size="xl" color="brand.navy">
-          Access Denied
+          {t('accessDenied')}
         </Heading>
 
         <Text color="gray.500" fontSize="lg">
-          You don&apos;t have permission to access this page.
+          {t('noPermission')}
           <br />
-          Please contact your administrator if you believe this is an error.
+          {t('contactAdministrator')}
         </Text>
 
         <Button
@@ -37,7 +40,7 @@ export default function Unauthorized() {
           maxW="320px"
           _hover={{ bg: 'brand.navy' }}
         >
-          Go to Home Page
+          {t('goToHomePage')}
         </Button>
       </VStack>
     </AuthPageLayout>

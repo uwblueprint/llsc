@@ -6,6 +6,7 @@ import AccountSettings from '@/components/participant/AccountSettings';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData, updateUserData } from '@/APIClients/userDataAPIClient';
 import { Language } from '@/types/authTypes';
+import { useTranslations } from 'next-intl';
 
 interface ParticipantEditProfileModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
   isOpen,
   onClose,
 }) => {
+  const t = useTranslations('dashboard');
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
 
@@ -72,7 +74,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
           // Format date from ISO (YYYY-MM-DD) to display format (DD/MM/YYYY)
           const formatDate = (isoDate: string | undefined | null): string => {
             if (!isoDate) {
-              return 'Not provided';
+              return '';
             }
             try {
               const date = new Date(isoDate);
@@ -83,7 +85,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
               return formatted;
             } catch (error) {
               console.error('formatDate error:', error);
-              return 'Not provided';
+              return '';
             }
           };
 
@@ -105,20 +107,18 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
 
           // Populate personal details (using camelCase after axios conversion)
           const formattedBirthday = formatDate(userData.dateOfBirth);
-          const formattedPronouns = userData.pronouns?.join(', ') || 'Not provided';
+          const formattedPronouns = userData.pronouns?.join(', ') || '';
           const userLanguage = user?.language || 'en';
 
           setPersonalDetails({
             name:
-              `${userData.firstName || ''} ${userData.lastName || ''}`.trim() ||
-              user?.email ||
-              'Not provided',
-            email: userData.email || user?.email || 'Not provided',
+              `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || user?.email || '',
+            email: userData.email || user?.email || '',
             birthday: formattedBirthday,
-            gender: userData.genderIdentity || 'Not provided',
+            gender: userData.genderIdentity || '',
             pronouns: formattedPronouns,
             timezone: 'Eastern Standard Time (EST)', // TODO: Add timezone field to backend
-            overview: 'Not provided', // Participants don't have overview
+            overview: '', // Participants don't have overview
             preferredLanguage: userLanguage === 'fr' ? Language.FRENCH : Language.ENGLISH,
           });
 
@@ -134,8 +134,8 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
 
           // Populate loved one details if caring for someone
           if (userCaringForSomeone) {
-            const lovedOneBirthday = userData.lovedOneAge || 'Not provided';
-            const lovedOneGender = userData.lovedOneGenderIdentity || 'Not provided';
+            const lovedOneBirthday = userData.lovedOneAge || '';
+            const lovedOneGender = userData.lovedOneGenderIdentity || '';
 
             setLovedOneDetails({
               birthday: lovedOneBirthday,
@@ -144,8 +144,8 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
 
             // Populate loved one cancer experience
             setLovedOneCancerExperience({
-              diagnosis: userData.lovedOneDiagnosis || 'Not provided',
-              dateOfDiagnosis: userData.lovedOneDateOfDiagnosis || 'Not provided',
+              diagnosis: userData.lovedOneDiagnosis || '',
+              dateOfDiagnosis: userData.lovedOneDateOfDiagnosis || '',
               treatments: userData.lovedOneTreatments || [],
               experiences: userData.lovedOneExperiences || [],
             });
@@ -195,7 +195,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
 
     const result = await updateUserData(updateData);
     if (!result) {
-      throw new Error('Failed to update');
+      throw new Error(t('failedToUpdate'));
     }
   };
 
@@ -205,7 +205,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
       treatments: cancerExperience.treatments,
     });
     if (!result) {
-      alert('Failed to save treatments');
+      alert(t('failedToSave'));
     }
   };
 
@@ -215,7 +215,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
       experiences: cancerExperience.experiences,
     });
     if (!result) {
-      alert('Failed to save experiences');
+      alert(t('failedToSave'));
     }
   };
 
@@ -226,7 +226,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
       lovedOneTreatments: lovedOneCancerExperience.treatments,
     });
     if (!result) {
-      alert('Failed to save loved one treatments');
+      alert(t('failedToSave'));
     }
   };
 
@@ -237,7 +237,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
       lovedOneExperiences: lovedOneCancerExperience.experiences,
     });
     if (!result) {
-      alert('Failed to save loved one experiences');
+      alert(t('failedToSave'));
     }
   };
 
@@ -265,7 +265,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
           alignItems="center"
         >
           <Text fontSize="16px" color="#6B7280" fontFamily="'Open Sans', sans-serif">
-            Loading...
+            {t('loading')}
           </Text>
         </Box>
       </Box>
@@ -286,14 +286,14 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
       <Box minH="100vh" bg="white" p={12}>
         <Box w="70%" mx="auto" overflowX="hidden">
           <HStack gap={2} mb={4} cursor="pointer" onClick={onClose}>
-            <Image src="/icons/chevron-left.png" alt="Back" w="20px" h="20px" />
+            <Image src="/icons/chevron-left.png" alt={t('back')} w="20px" h="20px" />
             <Text
               fontSize="16px"
               color="#1D3448"
               fontFamily="'Open Sans', sans-serif"
               fontWeight={400}
             >
-              Back
+              {t('back')}
             </Text>
           </HStack>
 
@@ -305,7 +305,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
             letterSpacing="-1.5%"
             mb="48px"
           >
-            Edit Profile
+            {t('editProfile')}
           </Heading>
 
           <VStack gap={0} align="stretch">

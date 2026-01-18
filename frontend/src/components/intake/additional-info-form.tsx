@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Heading, Button, VStack, Flex, Text, Textarea } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { StepIndicator } from '@/components/ui';
 import { getIntakeFormTitle, IntakeFormType } from '@/constants/form';
 
@@ -15,6 +16,7 @@ interface AdditionalInfoFormProps {
 }
 
 export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInfoFormProps) {
+  const t = useTranslations('intake');
   const {
     control,
     handleSubmit,
@@ -29,7 +31,7 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
     onSubmit(data);
   };
 
-  const formTitle = getIntakeFormTitle(formType);
+  const formTitle = formType === 'volunteer' ? t('volunteerForm') : t('serviceUserForm');
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
@@ -58,7 +60,7 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
           fontSize="20px"
           mb={3}
         >
-          Additional Information
+          {t('additionalInformation')}
         </Heading>
         <Text
           color="brand.fieldText"
@@ -66,7 +68,7 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
           fontSize="15px"
           mb={8}
         >
-          Is there anything else you&apos;d like to share with us?
+          {t('additionalInfoDescription')}
         </Text>
 
         <VStack gap={5} align="stretch">
@@ -78,7 +80,7 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
               color="brand.navy"
               mb={2}
             >
-              Additional Information (Optional)
+              {t('experienceNotListed')}
             </Text>
 
             <Controller
@@ -87,7 +89,7 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
               render={({ field }) => (
                 <Textarea
                   {...field}
-                  placeholder="Please share any additional information that might be helpful..."
+                  placeholder={t('typeHere')}
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
                   color="brand.navy"
@@ -132,7 +134,7 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
               bg: 'brand.primaryLight',
             }}
           >
-            Back
+            {t('back')}
           </Button>
         ) : (
           <Box />
@@ -145,14 +147,14 @@ export function AdditionalInfoForm({ formType, onSubmit, onBack }: AdditionalInf
           _hover={{ bg: 'brand.primaryEmphasis' }}
           _active={{ bg: 'brand.primaryEmphasis' }}
           loading={isSubmitting}
-          loadingText="Submitting..."
+          loadingText={t('submitting')}
           w="auto"
           h="40px"
           fontSize="14px"
           fontWeight={500}
           px={6}
         >
-          Submit Form →
+          {t('submitForm')}
         </Button>
       </Flex>
     </form>

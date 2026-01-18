@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, VStack, HStack, Text, Image, Button, Icon, Container, Flex } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { FiLogOut } from 'react-icons/fi';
+import { useTranslations } from 'next-intl';
 
 import { Avatar } from '@/components/ui/avatar';
 import { getCurrentUser, logout } from '@/APIClients/authAPIClient';
@@ -12,6 +13,7 @@ interface VolunteerDashboardLayoutProps {
 }
 
 export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> = ({ children }) => {
+  const t = useTranslations('dashboard');
   const [userName, setUserName] = useState('');
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
@@ -29,19 +31,19 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
   const navigationItems = [
     {
       icon: '/icons/user-primary.png',
-      label: 'Matches',
+      label: t('matches'),
       path: '/volunteer/dashboard',
       isActive: currentPath === '/volunteer/dashboard',
     },
     {
       icon: '/icons/phone-call.png',
-      label: 'Scheduled Calls',
+      label: t('scheduledCalls'),
       path: '/volunteer/dashboard/scheduled-calls',
       isActive: currentPath === '/volunteer/dashboard/scheduled-calls',
     },
     {
       icon: '/icons/calendar.png',
-      label: 'Contact',
+      label: t('contact'),
       path: '/volunteer/dashboard/contact',
       isActive: currentPath === '/volunteer/dashboard/contact',
     },
@@ -145,7 +147,7 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
               >
                 <HStack gap="8px" align="center">
                   <Icon as={FiLogOut} w="14px" h="14px" />
-                  <Text>Sign Out</Text>
+                  <Text>{t('signOut')}</Text>
                 </HStack>
               </Button>
             </VStack>

@@ -3,6 +3,7 @@ import { Box, Text, VStack, HStack, Button } from '@chakra-ui/react';
 import { Avatar } from '@/components/ui/avatar';
 import Badge from './Badge';
 import { COLORS } from '@/constants/form';
+import { useTranslations } from 'next-intl';
 
 interface ProfileCardProps {
   participant: {
@@ -29,6 +30,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   onScheduleCall,
   onViewContact,
 }) => {
+  const t = useTranslations('dashboard');
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -78,6 +80,18 @@ const ProfileCardContent: React.FC<{
   onScheduleCall?: () => void;
   onViewContact?: () => void;
 }> = ({ participant, onScheduleCall, onViewContact }) => {
+  const t = useTranslations('dashboard');
+  const tOptions = useTranslations('options');
+
+  // Helper to translate medical terms with fallback to original value
+  const translateOption = (category: 'treatments' | 'experiences' | 'diagnoses', value: string) => {
+    try {
+      return tOptions(`${category}.${value}`);
+    } catch {
+      return value; // Fallback to original if translation not found
+    }
+  };
+
   return (
     <Box
       w="675px"
@@ -128,9 +142,15 @@ const ProfileCardContent: React.FC<{
             </HStack>
 
             <HStack gap={2} align="center" wrap="wrap" mt="16px">
-              <Badge iconSrc="/icons/user-secondary.png">Current Age: {participant.age}</Badge>
-              <Badge iconSrc="/icons/clock-secondary.png">Timezone: {participant.timezone}</Badge>
-              <Badge iconSrc="/icons/activity-secondary.png">{participant.diagnosis}</Badge>
+              <Badge iconSrc="/icons/user-secondary.png">
+                {t('currentAge')} {participant.age}
+              </Badge>
+              <Badge iconSrc="/icons/clock-secondary.png">
+                {t('timeZone')} {participant.timezone}
+              </Badge>
+              <Badge iconSrc="/icons/activity-secondary.png">
+                {translateOption('diagnoses', participant.diagnosis)}
+              </Badge>
             </HStack>
           </VStack>
         </HStack>
@@ -146,12 +166,12 @@ const ProfileCardContent: React.FC<{
             letterSpacing="0%"
             mb="16px"
           >
-            Treatment Information
+            {t('treatmentInformation')}
           </Text>
           <HStack gap={2} wrap="wrap">
             {participant.treatments.map((treatment: string, index: number) => (
               <Badge key={index} bgColor="#EEF4FF" textColor="#3538CD">
-                {treatment}
+                {translateOption('treatments', treatment)}
               </Badge>
             ))}
           </HStack>
@@ -169,12 +189,12 @@ const ProfileCardContent: React.FC<{
               letterSpacing="0%"
               mb="16px"
             >
-              Experience Information
+              {t('experienceInformation')}
             </Text>
             <HStack gap={2} wrap="wrap">
               {participant.experiences.map((experience: string, index: number) => (
                 <Badge key={index} bgColor="#FDF2FA" textColor="#C11574">
-                  {experience}
+                  {translateOption('experiences', experience)}
                 </Badge>
               ))}
             </HStack>
@@ -203,7 +223,7 @@ const ProfileCardContent: React.FC<{
         }}
         onClick={onViewContact || onScheduleCall}
       >
-        {onViewContact ? 'View Contact Details' : 'Schedule Call'}
+        {onViewContact ? t('viewContactDetails') : t('scheduleCall')}
       </Button>
     </Box>
   );

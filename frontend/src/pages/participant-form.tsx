@@ -9,8 +9,10 @@ import { register } from '@/APIClients/authAPIClient';
 import { useRouter } from 'next/router';
 import { UserRole, SignUpMethod } from '@/types/authTypes';
 import { AuthPageLayout } from '@/components/layout';
+import { useTranslations } from 'next-intl';
 
 export function ParticipantFormPage() {
+  const t = useTranslations('auth');
   const [signupType, setSignupType] = useState('volunteer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,18 +25,16 @@ export function ParticipantFormPage() {
   const validatePasswordFrontend = (password: string): string[] => {
     const errors: string[] = [];
     if (password.length < 8) {
-      errors.push('Password must be at least 8 characters long');
+      errors.push('long');
     }
     if (!/[A-Z]/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter');
+      errors.push('uppercase');
     }
     if (!/[a-z]/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter');
+      errors.push('lowercase');
     }
     if (!/[!@#$%^&*]/.test(password)) {
-      errors.push(
-        'Password must contain at least one special character (!, @, #, $, %, ^, &, or *)',
-      );
+      errors.push('special');
     }
     return errors;
   };
@@ -43,12 +43,12 @@ export function ParticipantFormPage() {
     e.preventDefault();
     setError('');
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('passwordsDoNotMatch'));
       return;
     }
 
     if (passwordValidationErrors.length > 0) {
-      setError('Please fix the password requirements above');
+      setError(t('pleaseFixPasswordRequirements'));
       return;
     }
 
@@ -74,6 +74,13 @@ export function ParticipantFormPage() {
     }
   };
 
+  const passwordRequirements = [
+    { text: t('passwordRequirements.atLeast8'), key: 'long' },
+    { text: t('passwordRequirements.uppercase'), key: 'uppercase' },
+    { text: t('passwordRequirements.lowercase'), key: 'lowercase' },
+    { text: t('passwordRequirements.specialChar'), key: 'special' },
+  ];
+
   return (
     <AuthPageLayout
       illustration={{ src: '/login.png', alt: 'First Connection Peer Support', priority: true }}
@@ -86,18 +93,18 @@ export function ParticipantFormPage() {
             fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}
             lineHeight="1.25"
           >
-            First Connection Peer Support Program
+            {t('programTitle')}
           </Heading>
           <Heading fontWeight={600} color="brand.navy" fontSize={{ base: 'xl', md: '2xl' }} mt={4}>
-            Welcome to our application portal!
+            {t('welcomePortal')}
           </Heading>
           <Text mt={3} color="brand.navy" fontWeight={400} fontSize={{ base: 'md', md: 'lg' }}>
-            Let&apos;s start by creating an account.
+            {t('letsStart')}
           </Text>
         </Box>
 
         <VStack as="form" spacing={6} align="stretch" onSubmit={handleSubmit}>
-          <Field label={<FormLabel>Email</FormLabel>}>
+          <Field label={<FormLabel>{t('email')}</FormLabel>}>
             <InputGroup w="100%">
               <Input
                 type="email"
@@ -117,7 +124,7 @@ export function ParticipantFormPage() {
             </InputGroup>
           </Field>
 
-          <Field label={<FormLabel>Password</FormLabel>}>
+          <Field label={<FormLabel>{t('password')}</FormLabel>}>
             <InputGroup w="100%">
               <Input
                 type="password"
@@ -142,7 +149,7 @@ export function ParticipantFormPage() {
             </InputGroup>
           </Field>
 
-          <Field label={<FormLabel>Confirm Password</FormLabel>}>
+          <Field label={<FormLabel>{t('confirmPassword')}</FormLabel>}>
             <InputGroup w="100%">
               <Input
                 type="password"
@@ -165,22 +172,8 @@ export function ParticipantFormPage() {
           {password.length > 0 && (
             <Box mb={4}>
               <Box display="flex" flexDirection="column" gap="6px">
-                {[
-                  { text: 'At least 8 characters', key: 'long' },
-                  { text: 'At least 1 uppercase letter', key: 'uppercase' },
-                  { text: 'At least 1 lowercase letter', key: 'lowercase' },
-                  {
-                    text: 'At least 1 special character (!, @, #, $, %, ^, &, or *)',
-                    key: 'special',
-                  },
-                ].map((requirement, index) => {
-                  const hasError = passwordValidationErrors.some((error) => {
-                    if (requirement.key === 'uppercase' && error.includes('uppercase')) return true;
-                    if (requirement.key === 'lowercase' && error.includes('lowercase')) return true;
-                    if (requirement.key === 'long' && error.includes('long')) return true;
-                    if (requirement.key === 'special' && error.includes('special')) return true;
-                    return false;
-                  });
+                {passwordRequirements.map((requirement, index) => {
+                  const hasError = passwordValidationErrors.includes(requirement.key);
 
                   return (
                     <Box key={index} display="flex" alignItems="center" gap="8px">
@@ -224,14 +217,14 @@ export function ParticipantFormPage() {
 
           <Box>
             <Text mb={4} color="brand.fieldText" fontWeight={600} fontSize="sm">
-              I am signing up:
+              {t('iAmSigningUp')}
             </Text>
             <CustomRadioGroup
               value={signupType}
               onChange={setSignupType}
               options={[
-                { value: 'volunteer', label: 'As a Peer Support Volunteer' },
-                { value: 'request', label: 'To Request Peer Support' },
+                { value: 'volunteer', label: t('asVolunteer') },
+                { value: 'request', label: t('toRequestSupport') },
               ]}
             />
           </Box>
@@ -261,12 +254,12 @@ export function ParticipantFormPage() {
             alignItems="center"
             justifyContent="center"
           >
-            Continue <span style={{ fontSize: 22, marginLeft: 8 }}>&rarr;</span>
+            {t('continue')} <span style={{ fontSize: 22, marginLeft: 8 }}>&rarr;</span>
           </Button>
         </VStack>
 
         <Text color="brand.navy" fontSize="md" fontWeight={600}>
-          Already have an account?{' '}
+          {t('alreadyHaveAccount')}{' '}
           <Link
             href="/"
             style={{
@@ -275,7 +268,7 @@ export function ParticipantFormPage() {
               fontWeight: 600,
             }}
           >
-            Sign in
+            {t('signInLink')}
           </Link>
         </Text>
       </VStack>

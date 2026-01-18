@@ -1,6 +1,7 @@
 import { Box, Button, Flex, Text, VStack } from '@chakra-ui/react';
 import { Icon } from '@chakra-ui/react';
 import { FiCheckCircle } from 'react-icons/fi';
+import { useTranslations } from 'next-intl';
 
 interface CancelCallSuccessModalProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface CancelCallSuccessModalProps {
 }
 
 export function CancelCallSuccessModal({ isOpen, onClose }: CancelCallSuccessModalProps) {
+  const t = useTranslations('dashboard');
+
   if (!isOpen) {
     return null;
   }
@@ -60,7 +63,7 @@ export function CancelCallSuccessModal({ isOpen, onClose }: CancelCallSuccessMod
               lineHeight="1.4em"
               textAlign="center"
             >
-              Your call is cancelled
+              {t('yourCallIsCancelled')}
             </Text>
             <Text
               fontSize="16px"
@@ -70,7 +73,7 @@ export function CancelCallSuccessModal({ isOpen, onClose }: CancelCallSuccessMod
               lineHeight="1.36181640625em"
               textAlign="center"
             >
-              We&apos;ve notified the participant about the cancellation.
+              {t('notifiedParticipant')}
             </Text>
           </VStack>
 
@@ -95,7 +98,7 @@ export function CancelCallSuccessModal({ isOpen, onClose }: CancelCallSuccessMod
                 bg: '#033a3e',
               }}
             >
-              Okay!
+              {t('okay')}
             </Button>
           </Flex>
         </VStack>
