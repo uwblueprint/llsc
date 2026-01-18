@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
+import { useTranslations } from 'next-intl';
 
 const MatchHistoryPage: React.FC = () => {
+  const t = useTranslations('dashboard');
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
@@ -28,7 +30,8 @@ const MatchHistoryPage: React.FC = () => {
             textAlign="left"
             mb={2}
           >
-            Match History{userName ? `, ${userName}` : ''}
+            {t('matchHistoryTitle')}
+            {userName ? `, ${userName}` : ''}
           </Heading>
 
           <Text
@@ -38,7 +41,7 @@ const MatchHistoryPage: React.FC = () => {
             textAlign="left"
             mb={8}
           >
-            View your past matches and completed calls.
+            {t('viewPastMatches')}
           </Text>
 
           <Text
@@ -48,7 +51,7 @@ const MatchHistoryPage: React.FC = () => {
             textAlign="center"
             mt={16}
           >
-            Match history coming soon...
+            {t('matchHistoryComingSoon')}
           </Text>
         </Box>
       </Box>

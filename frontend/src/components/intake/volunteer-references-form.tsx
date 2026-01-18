@@ -11,6 +11,7 @@ import {
   SimpleGrid,
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { InputGroup } from '@/components/ui/input-group';
 import { StepIndicator } from '@/components/ui';
 import { VALIDATION } from '@/constants/form';
@@ -56,6 +57,7 @@ export function VolunteerReferencesForm({
   isSubmitting = false,
   submitError,
 }: VolunteerReferencesFormProps) {
+  const t = useTranslations('intake');
   const {
     control,
     handleSubmit,
@@ -80,7 +82,7 @@ export function VolunteerReferencesForm({
         fontSize={{ base: '24px', md: '28px' }}
         mb={8}
       >
-        Volunteer Profile Form
+        {t('volunteerProfileForm')}
       </Heading>
 
       {/* Progress Bar */}
@@ -96,7 +98,7 @@ export function VolunteerReferencesForm({
           fontSize={{ base: '18px', md: '20px' }}
           mb={3}
         >
-          References
+          {t('references')}
         </Heading>
 
         <VStack gap={6} align="stretch">
@@ -109,7 +111,7 @@ export function VolunteerReferencesForm({
               color="brand.navy"
               mb={4}
             >
-              Reference 1:
+              {t('reference1')}
             </Text>
 
             <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
@@ -121,17 +123,17 @@ export function VolunteerReferencesForm({
                   color="brand.navy"
                   mb={2}
                 >
-                  Full Name
+                  {t('fullName')}
                 </Text>
                 <Controller
                   name="reference1.fullName"
                   control={control}
-                  rules={{ required: 'Full name is required' }}
+                  rules={{ required: t('referenceFullNameRequired') }}
                   render={({ field }) => (
                     <InputGroup>
                       <Input
                         {...field}
-                        placeholder="John Doe"
+                        placeholder={t('enterFullName')}
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
                         color="brand.navy"
@@ -163,23 +165,23 @@ export function VolunteerReferencesForm({
                   color="brand.navy"
                   mb={2}
                 >
-                  Email
+                  {t('email')}
                 </Text>
                 <Controller
                   name="reference1.email"
                   control={control}
                   rules={{
-                    required: 'Email is required',
+                    required: t('referenceEmailRequired'),
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Please enter a valid email address',
+                      message: t('invalidEmail'),
                     },
                   }}
                   render={({ field }) => (
                     <InputGroup>
                       <Input
                         {...field}
-                        placeholder="john.doe@gmail.com"
+                        placeholder={t('enterEmail')}
                         type="email"
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
@@ -212,23 +214,23 @@ export function VolunteerReferencesForm({
                   color="brand.navy"
                   mb={2}
                 >
-                  Phone Number
+                  {t('phoneNumber')}
                 </Text>
                 <Controller
                   name="reference1.phoneNumber"
                   control={control}
                   rules={{
-                    required: 'Phone number is required',
+                    required: t('referencePhoneRequired'),
                     pattern: {
                       value: VALIDATION.PHONE,
-                      message: 'Please enter a valid phone number',
+                      message: t('validation.invalidPhoneNumber'),
                     },
                   }}
                   render={({ field }) => (
                     <InputGroup>
                       <Input
                         {...field}
-                        placeholder="###-###-####"
+                        placeholder={t('enterPhoneNumber')}
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
                         color="brand.navy"
@@ -263,7 +265,7 @@ export function VolunteerReferencesForm({
               color="brand.navy"
               mb={4}
             >
-              Reference 2:
+              {t('reference2')}
             </Text>
 
             <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
@@ -275,17 +277,17 @@ export function VolunteerReferencesForm({
                   color="brand.navy"
                   mb={2}
                 >
-                  Full Name
+                  {t('fullName')}
                 </Text>
                 <Controller
                   name="reference2.fullName"
                   control={control}
-                  rules={{ required: 'Full name is required' }}
+                  rules={{ required: t('referenceFullNameRequired') }}
                   render={({ field }) => (
                     <InputGroup>
                       <Input
                         {...field}
-                        placeholder="John Doe"
+                        placeholder={t('enterFullName')}
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
                         color="brand.navy"
@@ -317,23 +319,23 @@ export function VolunteerReferencesForm({
                   color="brand.navy"
                   mb={2}
                 >
-                  Email
+                  {t('email')}
                 </Text>
                 <Controller
                   name="reference2.email"
                   control={control}
                   rules={{
-                    required: 'Email is required',
+                    required: t('referenceEmailRequired'),
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Please enter a valid email address',
+                      message: t('invalidEmail'),
                     },
                   }}
                   render={({ field }) => (
                     <InputGroup>
                       <Input
                         {...field}
-                        placeholder="john.doe@gmail.com"
+                        placeholder={t('enterEmail')}
                         type="email"
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
@@ -366,23 +368,23 @@ export function VolunteerReferencesForm({
                   color="brand.navy"
                   mb={2}
                 >
-                  Phone Number
+                  {t('phoneNumber')}
                 </Text>
                 <Controller
                   name="reference2.phoneNumber"
                   control={control}
                   rules={{
-                    required: 'Phone number is required',
+                    required: t('referencePhoneRequired'),
                     pattern: {
                       value: VALIDATION.PHONE,
-                      message: 'Please enter a valid phone number',
+                      message: t('validation.invalidPhoneNumber'),
                     },
                   }}
                   render={({ field }) => (
                     <InputGroup>
                       <Input
                         {...field}
-                        placeholder="###-###-####"
+                        placeholder={t('enterPhoneNumber')}
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
                         color="brand.navy"
@@ -417,7 +419,7 @@ export function VolunteerReferencesForm({
               color="brand.navy"
               mb={2}
             >
-              Anything else to share?
+              {t('anythingElseToShare')}
             </Text>
 
             <Controller
@@ -426,7 +428,7 @@ export function VolunteerReferencesForm({
               render={({ field }) => (
                 <Textarea
                   {...field}
-                  placeholder="Type here...."
+                  placeholder={t('typeHere')}
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
                   color="brand.navy"
@@ -474,7 +476,7 @@ export function VolunteerReferencesForm({
               bg: 'brand.primaryAlpha',
             }}
           >
-            Back
+            {t('back')}
           </Button>
         ) : (
           <Box />
@@ -494,7 +496,7 @@ export function VolunteerReferencesForm({
           fontWeight={500}
           px={6}
         >
-          Submit Volunteer Profile Form →
+          {t('submitVolunteerProfileForm')}
         </Button>
       </Flex>
     </form>

@@ -13,6 +13,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { FiPlus } from 'react-icons/fi';
+import { useTranslations } from 'next-intl';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { DashboardSidebar } from '@/components/participant/DashboardSidebar';
@@ -32,6 +33,7 @@ import { Match } from '@/types/matchTypes';
 import { MatchStatusScreen } from '@/components/matches/MatchStatusScreen';
 
 export default function ParticipantDashboardPage() {
+  const t = useTranslations('dashboard');
   const router = useRouter();
   const [matches, setMatches] = useState<Match[]>([]);
   const [confirmedMatches, setConfirmedMatches] = useState<Match[]>([]);
@@ -97,7 +99,7 @@ export default function ParticipantDashboardPage() {
         err.response.data !== null &&
         'detail' in err.response.data
           ? String((err.response as { data: { detail: unknown } }).data.detail)
-          : 'Failed to load matches. Please try again.';
+          : t('failedToLoadMatches');
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -139,7 +141,7 @@ export default function ParticipantDashboardPage() {
         err.response.data !== null &&
         'detail' in err.response.data
           ? String((err.response as { data: { detail: unknown } }).data.detail)
-          : 'Failed to cancel call. Please try again.';
+          : t('failedToCancelCall');
       setError(errorMessage);
       setIsCancelCallConfirmationOpen(false);
       setMatchToCancel(null);
@@ -184,7 +186,7 @@ export default function ParticipantDashboardPage() {
         err.response.data !== null &&
         'detail' in err.response.data
           ? String((err.response as { data: { detail: unknown } }).data.detail)
-          : 'Failed to request new matches. Please try again.';
+          : t('failedToRequestMatches');
       setError(errorMessage);
       setIsRequestModalOpen(false);
     } finally {
@@ -229,17 +231,16 @@ export default function ParticipantDashboardPage() {
           <VStack align="stretch" gap={3}>
             <VStack align="stretch" gap={1}>
               <Heading fontSize="md" fontWeight="600" color="#1D3448">
-                Any additional notes?
+                {t('anyAdditionalNotes')}
               </Heading>
               <Text fontSize="sm" color="#697380" lineHeight="1.5">
-                Please provide any additional information you would like us to consider when finding
-                volunteers.
+                {t('pleaseProvideAdditionalInfo')}
               </Text>
             </VStack>
             <Textarea
               value={requestMessage}
               onChange={(e) => setRequestMessage(e.target.value)}
-              placeholder="Share your thoughts!"
+              placeholder={t('shareYourThoughts')}
               minH="200px"
               resize="vertical"
               border="1px solid"
@@ -265,11 +266,11 @@ export default function ParticipantDashboardPage() {
               _active={{ bg: '#033a3e' }}
               onClick={() => handleSubmitRequest(requestMessage.trim() || undefined)}
               loading={isSubmitting}
-              loadingText="Submitting..."
+              loadingText={t('submitting')}
               disabled={isSubmitting}
               px={6}
             >
-              Submit Request
+              {t('submitRequest')}
             </Button>
           </Flex>
         </VStack>
@@ -305,7 +306,7 @@ export default function ParticipantDashboardPage() {
         >
           <Flex align="center" gap={2}>
             <Icon as={FiPlus} boxSize={5} />
-            <Text>Request New Matches</Text>
+            <Text>{t('requestNewMatches')}</Text>
           </Flex>
         </Button>
       </VStack>
@@ -331,10 +332,10 @@ export default function ParticipantDashboardPage() {
                     <Flex justify="space-between" align="flex-start">
                       <Box flex={1}>
                         <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
-                          Your request is pending!
+                          {t('yourRequestIsPending')}
                         </Heading>
                         <Text fontSize="md" color="#6B7280" opacity={0.85}>
-                          Check back in a few days.
+                          {t('checkBackInFewDays')}
                         </Text>
                       </Box>
                       {/* User Avatar in top right */}
@@ -361,11 +362,10 @@ export default function ParticipantDashboardPage() {
                     <Flex justify="space-between" align="flex-start">
                       <Box flex={1}>
                         <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
-                          Thanks for scheduling your call!
+                          {t('thanksForScheduling')}
                         </Heading>
                         <Text fontSize="md" color="#6B7280" opacity={0.85}>
-                          Unfortunately, you can&apos;t schedule another call until your current
-                          call is done. Check your volunteer details here.
+                          {t('viewContactDetails')}
                         </Text>
                       </Box>
                       {/* User Avatar in top right */}
@@ -392,11 +392,10 @@ export default function ParticipantDashboardPage() {
                     <Flex justify="space-between" align="flex-start">
                       <Box flex={1}>
                         <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
-                          Request to match with new volunteers?
+                          {t('requestNewVolunteers')}
                         </Heading>
                         <Text fontSize="md" color="#6B7280" opacity={0.85}>
-                          Would you like our team to find you new matches? This process may take a
-                          few days.
+                          {t('wouldYouLikeNewMatches')}
                         </Text>
                       </Box>
                       {/* User Avatar in top right */}
@@ -423,10 +422,10 @@ export default function ParticipantDashboardPage() {
                     <Flex justify="space-between" align="flex-start">
                       <Box flex={1}>
                         <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
-                          Who would you like to chat with, {userName}?
+                          {t('whoWouldYouLikeToChat', { name: userName })}
                         </Heading>
                         <Text fontSize="md" color="#6B7280" opacity={0.85}>
-                          We&apos;ve carefully selected volunteers who we think fit your needs best.
+                          {t('carefullySelectedVolunteers')}
                         </Text>
                       </Box>
                       {/* User Avatar in top right */}

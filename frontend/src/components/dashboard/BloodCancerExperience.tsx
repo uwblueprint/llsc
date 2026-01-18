@@ -7,6 +7,7 @@ import ActionButton from './EditButton';
 import ReadOnlyDiagnosisField from './ReadOnlyDiagnosisField';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TREATMENT_OPTIONS, EXPERIENCE_OPTIONS, COLORS } from '@/constants/form';
+import { useTranslations } from 'next-intl';
 
 interface BloodCancerExperienceProps {
   cancerExperience: {
@@ -55,6 +56,18 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
   onEditLovedOneExperiences,
   hasBloodCancer = false,
 }) => {
+  const t = useTranslations('dashboard');
+  const tOptions = useTranslations('options');
+
+  // Helper to translate medical terms with fallback to original value
+  const translateOption = (category: 'treatments' | 'experiences' | 'diagnoses', value: string) => {
+    try {
+      return tOptions(`${category}.${value}`);
+    } catch {
+      return value; // Fallback to original if translation not found
+    }
+  };
+
   const [isEditingTreatments, setIsEditingTreatments] = useState(false);
   const [isEditingExperiences, setIsEditingExperiences] = useState(false);
   const [isEditingLovedOneTreatments, setIsEditingLovedOneTreatments] = useState(false);
@@ -128,7 +141,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
 
   return (
     <Box bg="white" p={0} mt="116px" minH="288px">
-      <ProfileHeader>Blood cancer experience information</ProfileHeader>
+      <ProfileHeader>{t('bloodCancerExperienceInfo')}</ProfileHeader>
 
       <VStack gap={8} mt="32px" align="stretch">
         {/* Only show user's cancer info if they have cancer */}
@@ -136,13 +149,13 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
           <>
             <Flex gap="6.5%" align="start">
               <ReadOnlyDiagnosisField
-                label="Your Diagnosis"
+                label={t('yourDiagnosis')}
                 value={
                   cancerExperience.diagnosis.length > 0 ? cancerExperience.diagnosis.join(', ') : ''
                 }
               />
               <ReadOnlyDiagnosisField
-                label="Your Date of Diagnosis"
+                label={t('yourDateOfDiagnosis')}
                 value={cancerExperience.dateOfDiagnosis}
                 fullWidth
               />
@@ -159,7 +172,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                     color={COLORS.veniceBlue}
                     fontFamily="'Open Sans', sans-serif"
                   >
-                    Treatments you have done
+                    {t('treatmentsRecommended')}
                   </Box>
                   <ActionButton
                     onClick={async () => {
@@ -169,7 +182,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                       setIsEditingTreatments(!isEditingTreatments);
                     }}
                   >
-                    {isEditingTreatments ? 'Save' : 'Edit'}
+                    {isEditingTreatments ? t('save') : t('edit')}
                   </ActionButton>
                 </HStack>
 
@@ -182,11 +195,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                         fontFamily="'Open Sans', sans-serif"
                         fontWeight={400}
                       >
-                        You can select a{' '}
-                        <Text as="span" fontWeight={700}>
-                          maximum of 2
-                        </Text>
-                        .
+                        {t('selectMaximum2')}
                       </Text>
                     </Box>
                     {treatmentOptionsWithOther.map((treatment) => {
@@ -215,7 +224,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                               color="#495D6C"
                               fontFamily="'Open Sans', sans-serif"
                             >
-                              {treatment}
+                              {translateOption('treatments', treatment)}
                             </Text>
                           </HStack>
                           {treatment === 'Other' && isSelected && (
@@ -224,7 +233,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                                 label=""
                                 value={otherTreatment}
                                 onChange={(e) => setOtherTreatment(e.target.value)}
-                                placeholder="Please specify..."
+                                placeholder={t('pleaseSpecify')}
                               />
                             </Box>
                           )}
@@ -244,7 +253,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                         color="#495D6C"
                         fontFamily="'Open Sans', sans-serif"
                       >
-                        {treatment}
+                        {translateOption('treatments', treatment)}
                       </Text>
                     ))}
                   </VStack>
@@ -261,7 +270,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                     color={COLORS.veniceBlue}
                     fontFamily="'Open Sans', sans-serif"
                   >
-                    Experiences you had
+                    {t('experiencesYouHad')}
                   </Box>
                   <ActionButton
                     onClick={async () => {
@@ -271,7 +280,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                       setIsEditingExperiences(!isEditingExperiences);
                     }}
                   >
-                    {isEditingExperiences ? 'Save' : 'Edit'}
+                    {isEditingExperiences ? t('save') : t('edit')}
                   </ActionButton>
                 </HStack>
 
@@ -284,11 +293,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                         fontFamily="'Open Sans', sans-serif"
                         fontWeight={400}
                       >
-                        You can select a{' '}
-                        <Text as="span" fontWeight={700}>
-                          maximum of 5
-                        </Text>
-                        .
+                        {t('selectMaximum5')}
                       </Text>
                     </Box>
                     {experienceOptionsWithOther.map((experience) => {
@@ -317,7 +322,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                               color="#495D6C"
                               fontFamily="'Open Sans', sans-serif"
                             >
-                              {experience}
+                              {translateOption('experiences', experience)}
                             </Text>
                           </HStack>
                           {experience === 'Other' && isSelected && (
@@ -326,7 +331,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                                 label=""
                                 value={otherExperience}
                                 onChange={(e) => setOtherExperience(e.target.value)}
-                                placeholder="Please specify..."
+                                placeholder={t('pleaseSpecify')}
                               />
                             </Box>
                           )}
@@ -346,7 +351,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                         color="#495D6C"
                         fontFamily="'Open Sans', sans-serif"
                       >
-                        {experience}
+                        {translateOption('experiences', experience)}
                       </Text>
                     ))}
                   </VStack>
@@ -363,12 +368,12 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
 
             <Flex gap="6.5%" align="start">
               <ReadOnlyDiagnosisField
-                label="Loved One's Diagnosis"
+                label={t('lovedOneDiagnosis')}
                 value={lovedOneCancerExperience.diagnosis}
                 showHeartIcon
               />
               <ReadOnlyDiagnosisField
-                label="Loved One's Date of Diagnosis"
+                label={t('lovedOneDateOfDiagnosis')}
                 value={lovedOneCancerExperience.dateOfDiagnosis}
                 showHeartIcon
                 fullWidth
@@ -388,7 +393,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                       color={COLORS.veniceBlue}
                       fontFamily="'Open Sans', sans-serif"
                     >
-                      Treatments Loved One Has Done
+                      {t('lovedOneTreatments')}
                     </Box>
                   </Flex>
                   <ActionButton
@@ -399,7 +404,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                       setIsEditingLovedOneTreatments(!isEditingLovedOneTreatments);
                     }}
                   >
-                    {isEditingLovedOneTreatments ? 'Save' : 'Edit'}
+                    {isEditingLovedOneTreatments ? t('save') : t('edit')}
                   </ActionButton>
                 </HStack>
 
@@ -412,11 +417,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                         fontFamily="'Open Sans', sans-serif"
                         fontWeight={400}
                       >
-                        You can select a{' '}
-                        <Text as="span" fontWeight={700}>
-                          maximum of 2
-                        </Text>
-                        .
+                        {t('selectMaximum2')}
                       </Text>
                     </Box>
                     {treatmentOptionsWithOther.map((treatment) => {
@@ -446,7 +447,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                               color="#495D6C"
                               fontFamily="'Open Sans', sans-serif"
                             >
-                              {treatment}
+                              {translateOption('treatments', treatment)}
                             </Text>
                           </HStack>
                           {treatment === 'Other' && isSelected && (
@@ -455,7 +456,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                                 label=""
                                 value={otherLovedOneTreatment}
                                 onChange={(e) => setOtherLovedOneTreatment(e.target.value)}
-                                placeholder="Please specify..."
+                                placeholder={t('pleaseSpecify')}
                               />
                             </Box>
                           )}
@@ -475,7 +476,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                         color="#495D6C"
                         fontFamily="'Open Sans', sans-serif"
                       >
-                        {treatment}
+                        {translateOption('treatments', treatment)}
                       </Text>
                     ))}
                   </VStack>
@@ -494,7 +495,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                       color={COLORS.veniceBlue}
                       fontFamily="'Open Sans', sans-serif"
                     >
-                      Experiences Loved One Had
+                      {t('lovedOneExperiences')}
                     </Box>
                   </Flex>
                   <ActionButton
@@ -505,7 +506,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                       setIsEditingLovedOneExperiences(!isEditingLovedOneExperiences);
                     }}
                   >
-                    {isEditingLovedOneExperiences ? 'Save' : 'Edit'}
+                    {isEditingLovedOneExperiences ? t('save') : t('edit')}
                   </ActionButton>
                 </HStack>
 
@@ -518,11 +519,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                         fontFamily="'Open Sans', sans-serif"
                         fontWeight={400}
                       >
-                        You can select a{' '}
-                        <Text as="span" fontWeight={700}>
-                          maximum of 5
-                        </Text>
-                        .
+                        {t('selectMaximum5')}
                       </Text>
                     </Box>
                     {lovedOneExperienceOptions.map((experience) => {
@@ -552,7 +549,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                             color="#495D6C"
                             fontFamily="'Open Sans', sans-serif"
                           >
-                            {experience}
+                            {translateOption('experiences', experience)}
                           </Text>
                         </HStack>
                       );
@@ -570,7 +567,7 @@ const BloodCancerExperience: React.FC<BloodCancerExperienceProps> = ({
                         color="#495D6C"
                         fontFamily="'Open Sans', sans-serif"
                       >
-                        {experience}
+                        {translateOption('experiences', experience)}
                       </Text>
                     ))}
                   </VStack>

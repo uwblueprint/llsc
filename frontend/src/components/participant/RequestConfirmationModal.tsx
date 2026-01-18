@@ -1,6 +1,7 @@
 import { Box, Button, Container, Flex, Heading, Text, VStack } from '@chakra-ui/react';
 import { FiCheck } from 'react-icons/fi';
 import { Icon } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 interface RequestConfirmationModalProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface RequestConfirmationModalProps {
 }
 
 export function RequestConfirmationModal({ isOpen, onClose }: RequestConfirmationModalProps) {
+  const t = useTranslations('dashboard');
+
   if (!isOpen) return null;
 
   return (
@@ -45,10 +48,10 @@ export function RequestConfirmationModal({ isOpen, onClose }: RequestConfirmatio
           {/* Success Message */}
           <VStack align="stretch" gap={3}>
             <Heading fontSize="2xl" fontWeight="600" color="#1D3448">
-              Success!
+              {t('success')}
             </Heading>
             <Text fontSize="md" color="#697380" lineHeight="1.5">
-              We have received your request.
+              {t('weHaveReceivedRequest')}
             </Text>
           </VStack>
 
@@ -62,7 +65,7 @@ export function RequestConfirmationModal({ isOpen, onClose }: RequestConfirmatio
               onClick={onClose}
               px={8}
             >
-              Back to dashboard
+              {t('backToDashboard')}
             </Button>
           </Flex>
         </VStack>

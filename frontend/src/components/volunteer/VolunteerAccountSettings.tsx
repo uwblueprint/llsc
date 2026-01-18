@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Box, Text, VStack, Button } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import ProfileHeader from '@/components/dashboard/ProfileHeader';
 import {
   getCurrentUser,
@@ -11,6 +12,7 @@ import {
 import { UserResponse } from '@/types/userTypes';
 
 const VolunteerAccountSettings: React.FC = () => {
+  const t = useTranslations('dashboard');
   const router = useRouter();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -51,7 +53,7 @@ const VolunteerAccountSettings: React.FC = () => {
       setUser(updatedUser);
     } catch (error) {
       console.error('Error toggling account status:', error);
-      alert('Failed to update account status. Please try again or contact support.');
+      alert(t('failedToUpdateStatus'));
     } finally {
       setIsProcessing(false);
     }
@@ -59,7 +61,7 @@ const VolunteerAccountSettings: React.FC = () => {
 
   return (
     <Box bg="white" p={0} mt="116px" minH="200px">
-      <ProfileHeader>Account settings</ProfileHeader>
+      <ProfileHeader>{t('accountSettings')}</ProfileHeader>
 
       <VStack gap={6} mt="32px" align="stretch">
         {/* Becoming a Participant */}
@@ -73,7 +75,7 @@ const VolunteerAccountSettings: React.FC = () => {
             fontFamily="'Open Sans', sans-serif"
             mb={2}
           >
-            Becoming a Participant
+            {t('becomingParticipant')}
           </Text>
           <Text
             fontSize="0.875rem"
@@ -83,8 +85,7 @@ const VolunteerAccountSettings: React.FC = () => {
             fontFamily="'Open Sans', sans-serif"
             mb={4}
           >
-            Complete the participant application to express your interest and confirm these details
-            are correct. Once submitted, we&apos;ll follow up by email with next steps.
+            {t('completeParticipantApplication')}
           </Text>
           <Button
             bg="#056067"
@@ -99,7 +100,7 @@ const VolunteerAccountSettings: React.FC = () => {
             _active={{ bg: '#033e42' }}
             onClick={handleBecomeParticipant}
           >
-            Participant Application Form
+            {t('participantApplicationForm')}
           </Button>
         </Box>
 
@@ -115,9 +116,7 @@ const VolunteerAccountSettings: React.FC = () => {
               fontFamily="'Open Sans', sans-serif"
               mb={2}
             >
-              {user.active
-                ? 'Opt Out of the First Connections Program'
-                : 'Opt In to the First Connections Program'}
+              {user.active ? t('optOutTitle') : t('optInToProgram')}
             </Text>
             <Text
               fontSize="0.875rem"
@@ -127,16 +126,7 @@ const VolunteerAccountSettings: React.FC = () => {
               fontFamily="'Open Sans', sans-serif"
               mb={4}
             >
-              Your experience is important to us. Our volunteers are the most important part of
-              First Connection. Volunteers are encouraged to take the time they need away from the
-              program when they need it. By opting out you are removing yourself from the matching
-              algorithm and cannot be connected with a potential participant.
-              <br />
-              <br />
-              When you are ready to volunteer with us again, please sign back in and click the Opt
-              In. You do not need to re-register or create a new profile. If you would like to talk
-              with a staff member about your time away or remove yourself completely from the
-              program please reach out, we are here to help.
+              {t('optOutVolunteerDescription')}
             </Text>
             <Button
               bg={user.active ? '#A70000' : '#059669'}
@@ -155,11 +145,11 @@ const VolunteerAccountSettings: React.FC = () => {
             >
               {isProcessing
                 ? user.active
-                  ? 'Opting Out...'
-                  : 'Opting In...'
+                  ? t('optingOut')
+                  : t('optingIn')
                 : user.active
-                  ? 'Opt Out'
-                  : 'Opt In'}
+                  ? t('optOut')
+                  : t('optIn')}
             </Button>
           </Box>
         )}

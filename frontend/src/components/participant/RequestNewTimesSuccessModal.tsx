@@ -1,6 +1,7 @@
 import { Box, Button, Flex, Text, VStack } from '@chakra-ui/react';
 import { Icon } from '@chakra-ui/react';
 import { FiCheckCircle } from 'react-icons/fi';
+import { useTranslations } from 'next-intl';
 
 interface RequestNewTimesSuccessModalProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface RequestNewTimesSuccessModalProps {
 }
 
 export function RequestNewTimesSuccessModal({ isOpen, onClose }: RequestNewTimesSuccessModalProps) {
+  const t = useTranslations('dashboard');
+
   if (!isOpen) {
     return null;
   }
@@ -60,7 +63,7 @@ export function RequestNewTimesSuccessModal({ isOpen, onClose }: RequestNewTimes
               lineHeight="1.4em"
               textAlign="center"
             >
-              Success!
+              {t('success')}
             </Text>
             <Text
               fontSize="16px"
@@ -70,8 +73,7 @@ export function RequestNewTimesSuccessModal({ isOpen, onClose }: RequestNewTimes
               lineHeight="1.36181640625em"
               textAlign="center"
             >
-              Your new availability has been sent. Please wait until your volunteer confirms a new
-              time. If no dates work for your volunteer, then you will be matched with a new one.
+              {t('newAvailabilitySent')}
             </Text>
           </VStack>
 
@@ -96,7 +98,7 @@ export function RequestNewTimesSuccessModal({ isOpen, onClose }: RequestNewTimes
                 bg: '#033a3e',
               }}
             >
-              Okay!
+              {t('okay')}
             </Button>
           </Flex>
         </VStack>

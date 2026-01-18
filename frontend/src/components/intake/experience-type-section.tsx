@@ -3,6 +3,7 @@ import { Box, Heading, Text, VStack, HStack } from '@chakra-ui/react';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import { CustomRadio } from '@/components/CustomRadio';
 import { COLORS } from '@/constants/form';
+import { useTranslations } from 'next-intl';
 
 interface ExperienceFields extends FieldValues {
   hasBloodCancer: 'yes' | 'no' | '';
@@ -18,6 +19,8 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({
   control,
   errors,
 }: ExperienceTypeSectionProps<T>) => {
+  const t = useTranslations('intake');
+
   return (
     <Box mb={12}>
       <Heading
@@ -28,7 +31,7 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({
         fontSize="20px"
         mb={3}
       >
-        Experience Type
+        {t('experienceType')}
       </Heading>
       <Text
         color={COLORS.fieldGray}
@@ -36,7 +39,7 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({
         fontSize="15px"
         mb={8}
       >
-        Help us learn more about your experience with cancer.
+        {t('experienceTypeDescription')}
       </Text>
 
       <VStack align="start" gap={8}>
@@ -51,12 +54,12 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({
               fontSize="14px"
               mb={4}
             >
-              Do you have blood cancer?
+              {t('doYouHaveBloodCancer')}
             </Text>
             <Controller
               name={'hasBloodCancer' as Path<T>}
               control={control}
-              rules={{ required: 'This field is required' }}
+              rules={{ required: t('validation.experienceTypeRequired') }}
               render={({ field }) => (
                 <VStack align="start" gap={1}>
                   <CustomRadio
@@ -70,7 +73,7 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({
                       fontSize="14px"
                       color={COLORS.veniceBlue}
                     >
-                      Yes
+                      {t('yes')}
                     </Text>
                   </CustomRadio>
                   <CustomRadio
@@ -84,7 +87,7 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({
                       fontSize="14px"
                       color={COLORS.veniceBlue}
                     >
-                      No
+                      {t('no')}
                     </Text>
                   </CustomRadio>
                   {errors.hasBloodCancer && (
@@ -106,12 +109,12 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({
               fontSize="14px"
               mb={4}
             >
-              Are you caring for anyone with blood cancer?
+              {t('areYouCaringForSomeone')}
             </Text>
             <Controller
               name={'caringForSomeone' as Path<T>}
               control={control}
-              rules={{ required: 'This field is required' }}
+              rules={{ required: t('validation.experienceTypeRequired') }}
               render={({ field }) => (
                 <VStack align="start" gap={1}>
                   <CustomRadio
@@ -125,7 +128,7 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({
                       fontSize="14px"
                       color={COLORS.veniceBlue}
                     >
-                      Yes
+                      {t('yes')}
                     </Text>
                   </CustomRadio>
                   <CustomRadio
@@ -139,7 +142,7 @@ export const ExperienceTypeSection = <T extends ExperienceFields>({
                       fontSize="14px"
                       color={COLORS.veniceBlue}
                     >
-                      No
+                      {t('no')}
                     </Text>
                   </CustomRadio>
                   {errors.caringForSomeone && (

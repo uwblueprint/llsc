@@ -17,6 +17,24 @@ import {
 } from '@/constants/form';
 import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useTranslations } from 'next-intl';
+
+// Province keys (English) - these are stored in database
+const PROVINCE_KEYS = [
+  'Alberta',
+  'British Columbia',
+  'Manitoba',
+  'New Brunswick',
+  'Newfoundland and Labrador',
+  'Nova Scotia',
+  'Ontario',
+  'Prince Edward Island',
+  'Quebec',
+  'Saskatchewan',
+  'Northwest Territories',
+  'Nunavut',
+  'Yukon',
+] as const;
 
 interface PersonalInfoFormData {
   hasBloodCancer: 'yes' | 'no' | '';
@@ -52,6 +70,32 @@ export function PersonalInfoForm({
   onSubmit,
   onDropdownOpenChange,
 }: PersonalInfoFormProps) {
+  const t = useTranslations('intake');
+  const tOptions = useTranslations('options');
+
+  // Helper to translate option keys
+  const translateOption = (category: string, key: string): string => {
+    try {
+      return tOptions(`${category}.${key}`);
+    } catch {
+      return key;
+    }
+  };
+
+  // Create translated province options for display
+  const provinceOptions = PROVINCE_KEYS.map((key) => translateOption('provinces', key));
+
+  // Helpers to convert between display values and keys
+  const displayToKey = (options: string[], keys: readonly string[], display: string): string => {
+    const index = options.indexOf(display);
+    return index >= 0 ? keys[index] : display;
+  };
+
+  const keyToDisplay = (options: string[], keys: readonly string[], key: string): string => {
+    const index = keys.indexOf(key);
+    return index >= 0 ? options[index] : key;
+  };
+
   const {
     control,
     handleSubmit,
@@ -117,7 +161,10 @@ export function PersonalInfoForm({
     onSubmit(experienceData, personalData);
   };
 
-  const formTitle = getIntakeFormTitle(formType);
+  const formTitle =
+    formType === 'volunteer' || formType === 'become_volunteer'
+      ? t('volunteerForm')
+      : t('serviceUserForm');
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
@@ -149,7 +196,7 @@ export function PersonalInfoForm({
           fontSize="20px"
           mb={3}
         >
-          Personal Information
+          {t('personalInformation')}
         </Heading>
         <Text
           color="brand.fieldText"
@@ -157,22 +204,22 @@ export function PersonalInfoForm({
           fontSize="15px"
           mb={8}
         >
-          Please provide your contact details and address.
+          {t('personalInfoDescription')}
         </Text>
 
         <VStack gap={5} align="stretch">
           {/* Name Fields */}
           <ResponsiveFieldGroup>
-            <FormField label="First Name" error={errors.firstName?.message}>
+            <FormField label={t('firstName')} error={errors.firstName?.message}>
               <Controller
                 name="firstName"
                 control={control}
-                rules={{ required: 'First name is required' }}
+                rules={{ required: t('validation.firstNameRequired') }}
                 render={({ field }) => (
                   <InputGroup>
                     <Input
                       {...field}
-                      placeholder="Enter your first name"
+                      placeholder={t('placeholders.enterFirstName')}
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color="brand.navy"
@@ -191,16 +238,16 @@ export function PersonalInfoForm({
               />
             </FormField>
 
-            <FormField label="Last Name" error={errors.lastName?.message}>
+            <FormField label={t('lastName')} error={errors.lastName?.message}>
               <Controller
                 name="lastName"
                 control={control}
-                rules={{ required: 'Last name is required' }}
+                rules={{ required: t('validation.lastNameRequired') }}
                 render={({ field }) => (
                   <InputGroup>
                     <Input
                       {...field}
-                      placeholder="Enter your last name"
+                      placeholder={t('placeholders.enterLastName')}
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color="brand.navy"
@@ -222,16 +269,16 @@ export function PersonalInfoForm({
 
           {/* Date of Birth and Phone Number */}
           <ResponsiveFieldGroup>
-            <FormField label="Date of Birth" error={errors.dateOfBirth?.message}>
+            <FormField label={t('dateOfBirth')} error={errors.dateOfBirth?.message}>
               <Controller
                 name="dateOfBirth"
                 control={control}
-                rules={{ required: 'Date of birth is required' }}
+                rules={{ required: t('validation.dateOfBirthRequired') }}
                 render={({ field }) => (
                   <InputGroup>
                     <Input
                       {...field}
-                      placeholder="DD/MM/YYYY"
+                      placeholder={t('placeholders.dateFormat')}
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color="brand.navy"
@@ -249,22 +296,22 @@ export function PersonalInfoForm({
               />
             </FormField>
 
-            <FormField label="Phone Number" error={errors.phoneNumber?.message}>
+            <FormField label={t('phoneNumber')} error={errors.phoneNumber?.message}>
               <Controller
                 name="phoneNumber"
                 control={control}
                 rules={{
-                  required: 'Phone number is required',
+                  required: t('validation.phoneNumberRequired'),
                   pattern: {
                     value: VALIDATION.PHONE,
-                    message: 'Please enter a valid phone number',
+                    message: t('validation.invalidPhoneNumber'),
                   },
                 }}
                 render={({ field }) => (
                   <InputGroup>
                     <Input
                       {...field}
-                      placeholder="###-###-####"
+                      placeholder={t('placeholders.phoneFormat')}
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color="brand.navy"
@@ -285,22 +332,22 @@ export function PersonalInfoForm({
 
           {/* Postal Code and City */}
           <ResponsiveFieldGroup>
-            <FormField label="Postal Code" error={errors.postalCode?.message}>
+            <FormField label={t('postalCode')} error={errors.postalCode?.message}>
               <Controller
                 name="postalCode"
                 control={control}
                 rules={{
-                  required: 'Postal code is required',
+                  required: t('validation.postalCodeRequired'),
                   pattern: {
                     value: VALIDATION.POSTAL_CODE,
-                    message: 'Please enter a valid postal code',
+                    message: t('validation.invalidPostalCode'),
                   },
                 }}
                 render={({ field }) => (
                   <InputGroup>
                     <Input
                       {...field}
-                      placeholder="ZIP Code"
+                      placeholder={t('placeholders.postalCode')}
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color="brand.navy"
@@ -318,16 +365,16 @@ export function PersonalInfoForm({
               />
             </FormField>
 
-            <FormField label="City" error={errors.city?.message}>
+            <FormField label={t('city')} error={errors.city?.message}>
               <Controller
                 name="city"
                 control={control}
-                rules={{ required: 'City is required' }}
+                rules={{ required: t('validation.cityRequired') }}
                 render={({ field }) => (
                   <InputGroup>
                     <Input
                       {...field}
-                      placeholder="City"
+                      placeholder={t('placeholders.city')}
                       fontFamily="system-ui, -apple-system, sans-serif"
                       fontSize="14px"
                       color="brand.navy"
@@ -348,17 +395,19 @@ export function PersonalInfoForm({
           </ResponsiveFieldGroup>
 
           {/* Province */}
-          <FormField label="Province" error={errors.province?.message}>
+          <FormField label={t('province')} error={errors.province?.message}>
             <Controller
               name="province"
               control={control}
-              rules={{ required: 'Province is required' }}
+              rules={{ required: t('validation.provinceRequired') }}
               render={({ field }) => (
                 <SingleSelectDropdown
-                  options={[...PROVINCES]}
-                  selectedValue={field.value || ''}
-                  onSelectionChange={field.onChange}
-                  placeholder="Province"
+                  options={provinceOptions}
+                  selectedValue={keyToDisplay(provinceOptions, PROVINCE_KEYS, field.value || '')}
+                  onSelectionChange={(display) =>
+                    field.onChange(displayToKey(provinceOptions, PROVINCE_KEYS, display))
+                  }
+                  placeholder={t('placeholders.selectProvince')}
                   error={!!errors.province}
                   onOpenChange={onDropdownOpenChange}
                 />
@@ -379,7 +428,7 @@ export function PersonalInfoForm({
             fontSize="20px"
             mb={3}
           >
-            Eligibility Criteria
+            {t('eligibilityCriteria')}
           </Heading>
           <Text
             color="brand.fieldText"
@@ -387,8 +436,7 @@ export function PersonalInfoForm({
             fontSize="15px"
             mb={6}
           >
-            Our volunteers are a valuable part of our organization and vital to this program. Before
-            continuing, please ensure you meet the criteria below.{' '}
+            {t('eligibilityIntro')}
           </Text>
           <Text
             fontFamily="system-ui, -apple-system, sans-serif"
@@ -397,8 +445,7 @@ export function PersonalInfoForm({
             mb={3}
             fontWeight={600}
           >
-            Please review the criteria and check off all that apply. You must agree with all
-            statements to become a First Connections volunteer.
+            {t('eligibilityDescription')}
           </Text>
           <Controller
             name="eligibilityCriteria"
@@ -407,7 +454,7 @@ export function PersonalInfoForm({
               validate: (value) => {
                 if (isVolunteerFlow) {
                   const allChecked = Object.values(value).every((checked) => checked === true);
-                  return allChecked || 'All eligibility criteria must be checked to continue';
+                  return allChecked || t('validation.allEligibilityRequired');
                 }
                 return true;
               },
@@ -425,7 +472,7 @@ export function PersonalInfoForm({
                     fontSize="14px"
                     color="brand.navy"
                   >
-                    18 years of age or older
+                    {t('eligibility.18OrOlder')}
                   </Text>
                 </Checkbox>
                 <Checkbox
@@ -439,7 +486,7 @@ export function PersonalInfoForm({
                     fontSize="14px"
                     color="brand.navy"
                   >
-                    No criminal record
+                    {t('eligibility.noCriminalRecord')}
                   </Text>
                 </Checkbox>
                 <Checkbox
@@ -453,7 +500,7 @@ export function PersonalInfoForm({
                     fontSize="14px"
                     color="brand.navy"
                   >
-                    Reside in Canada
+                    {t('eligibility.resideInCanada')}
                   </Text>
                 </Checkbox>
                 <Checkbox
@@ -467,9 +514,7 @@ export function PersonalInfoForm({
                     fontSize="14px"
                     color="brand.navy"
                   >
-                    It has been at least 1 year since yours or your loved one&apos;s blood cancer
-                    treatment. For people and their caregivers who are on active surveillance or
-                    daily medication, it has been at least 1 year since diagnosis.
+                    {t('eligibility.oneYearSinceTreatment')}
                   </Text>
                 </Checkbox>
                 <Checkbox
@@ -483,7 +528,7 @@ export function PersonalInfoForm({
                     fontSize="14px"
                     color="brand.navy"
                   >
-                    Have had a blood cancer, or is a caregiver of a loved one with a blood cancer
+                    {t('eligibility.hadBloodCancer')}
                   </Text>
                 </Checkbox>
                 <Checkbox
@@ -497,7 +542,7 @@ export function PersonalInfoForm({
                     fontSize="14px"
                     color="brand.navy"
                   >
-                    Willing to participate in a pre-screening intake
+                    {t('eligibility.willingToPrescreen')}
                   </Text>
                 </Checkbox>
                 <Checkbox
@@ -511,7 +556,7 @@ export function PersonalInfoForm({
                     fontSize="14px"
                     color="brand.navy"
                   >
-                    Willing to attend a virtual 3-hour peer support training
+                    {t('eligibility.willingToTraining')}
                   </Text>
                 </Checkbox>
                 <Checkbox
@@ -525,7 +570,7 @@ export function PersonalInfoForm({
                     fontSize="14px"
                     color="brand.navy"
                   >
-                    Have access and comfortable using the phone and computer
+                    {t('eligibility.haveAccessToPhone')}
                   </Text>
                 </Checkbox>
                 <Checkbox
@@ -542,7 +587,7 @@ export function PersonalInfoForm({
                     fontSize="14px"
                     color="brand.navy"
                   >
-                    Comfortable sharing your personal blood cancer experience with others
+                    {t('eligibility.comfortableSharingExperience')}
                   </Text>
                 </Checkbox>
                 {errors.eligibilityCriteria && (
@@ -565,14 +610,14 @@ export function PersonalInfoForm({
           _hover={{ bg: 'brand.primaryEmphasis' }}
           _active={{ bg: 'brand.primaryEmphasis' }}
           loading={isSubmitting}
-          loadingText="Submitting..."
+          loadingText={t('submitting')}
           w="auto"
           h="40px"
           fontSize="14px"
           fontWeight={500}
           px={6}
         >
-          Next Section →
+          {t('nextSection')}
         </Button>
       </Box>
     </form>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Heading, Button, VStack, HStack, Text } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import { DragIcon } from '@/components/ui';
 
 interface VolunteerRankingFormProps {
@@ -17,6 +18,7 @@ export function VolunteerRankingForm({
   itemScopes,
   itemKinds,
 }: VolunteerRankingFormProps) {
+  const t = useTranslations('ranking');
   const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = React.useState<number | null>(null);
 
@@ -27,10 +29,10 @@ export function VolunteerRankingForm({
     const isLovedOneDynamic =
       (kind === 'treatment' || kind === 'experience') && scope === 'loved_one';
     const prefix = isLovedOneQuality
-      ? 'I would prefer a volunteer whose loved one is '
+      ? t('preferVolunteerLovedOneSame')
       : isLovedOneDynamic
-        ? 'I would prefer a volunteer whose loved one has '
-        : 'I would prefer a volunteer with ';
+        ? t('preferVolunteerLovedOneHas')
+        : t('preferVolunteerSame');
     return (
       <>
         {prefix}
@@ -80,7 +82,7 @@ export function VolunteerRankingForm({
         fontSize={{ base: '24px', md: '28px' }}
         mb={8}
       >
-        Volunteer Matching Preferences
+        {t('volunteerMatchingPreferences')}
       </Heading>
 
       <Box mb={10}>
@@ -103,7 +105,7 @@ export function VolunteerRankingForm({
           fontSize={{ base: '18px', md: '20px' }}
           mb={3}
         >
-          Ranking Match Preferences
+          {t('rankingMatchPreferences')}
         </Heading>
         <Text
           color="brand.fieldText"
@@ -111,7 +113,7 @@ export function VolunteerRankingForm({
           fontSize="15px"
           mb={2}
         >
-          This information will be used to match you with a suitable volunteer.
+          {t('informationUsedToMatch')}
         </Text>
         <Text
           color="brand.navy"
@@ -120,8 +122,7 @@ export function VolunteerRankingForm({
           fontWeight={600}
           mb={8}
         >
-          Note that your volunteer is guaranteed to speak your language and have the same
-          availability.
+          {t('volunteerGuaranteed')}
         </Text>
 
         <VStack gap={5}>
@@ -132,7 +133,7 @@ export function VolunteerRankingForm({
               fontSize="14px"
               mb={2}
             >
-              Rank the following statements in the order that you agree with them:
+              {t('rankStatements')}
             </Text>
             <Text
               color="brand.fieldText"
@@ -140,7 +141,7 @@ export function VolunteerRankingForm({
               fontSize="12px"
               mb={6}
             >
-              1 is most agreed, 5 is least agreed.
+              {t('1MostAgreed5LeastAgreed')}
             </Text>
 
             <VStack gap={{ base: 6, md: 3 }} align="start">
@@ -226,7 +227,7 @@ export function VolunteerRankingForm({
           fontWeight={500}
           px={6}
         >
-          Submit Preferences →
+          {t('submitPreferences')} →
         </Button>
       </Box>
     </Box>

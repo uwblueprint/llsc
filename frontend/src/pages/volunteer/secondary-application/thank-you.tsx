@@ -1,10 +1,13 @@
 import { Box, Flex, Heading, Text, VStack } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { CheckMarkIcon } from '@/components/ui';
 import { FormStatus, UserRole } from '@/types/authTypes';
 
 export default function VolunteerSecondaryApplicationThankYouPage() {
+  const t = useTranslations('dashboard');
+
   return (
     <ProtectedPage allowedRoles={[UserRole.VOLUNTEER, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.SECONDARY_APPLICATION_SUBMITTED]}>
@@ -29,7 +32,7 @@ export default function VolunteerSecondaryApplicationThankYouPage() {
                 fontSize={{ base: '28px', md: '32px' }}
                 mb={2}
               >
-                Success!
+                {t('success')}
               </Heading>
               <Heading
                 as="h1"
@@ -39,7 +42,7 @@ export default function VolunteerSecondaryApplicationThankYouPage() {
                 fontSize={{ base: '28px', md: '32px' }}
                 mb={4}
               >
-                Thank you for sharing your references and experiences with us.
+                {t('successThankYou')}
               </Heading>
 
               <Text
@@ -50,12 +53,11 @@ export default function VolunteerSecondaryApplicationThankYouPage() {
                 maxW="600px"
                 textAlign="center"
               >
-                We will reach out in the next 5-7 business days with the next steps. For immediate
-                help, please reach us at{' '}
+                {t('weWillReachOut5to7Days')}{' '}
                 <Text as="span" color="brand.primary" fontWeight={500}>
                   FirstConnections@lls.org
                 </Text>
-                . Please note LLSC&apos;s working days are Monday-Thursday.
+                . {t('llscWorkingDays')}
               </Text>
             </VStack>
           </Box>

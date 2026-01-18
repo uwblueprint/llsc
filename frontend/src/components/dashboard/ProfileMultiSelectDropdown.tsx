@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Box, VStack, HStack, Text, Button } from '@chakra-ui/react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useTranslations } from 'next-intl';
 
 interface ProfileMultiSelectDropdownProps {
   label: string;
@@ -23,6 +24,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const badgeContainerRef = useRef<HTMLDivElement>(null);
   const [dropdownHeight, setDropdownHeight] = useState(44);
+  const t = useTranslations('dashboard');
 
   const handleOptionToggle = (optionValue: string) => {
     const newValue = value.includes(optionValue)
@@ -166,7 +168,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
           {value.length > 0 ? (
             renderSelectedBadges()
           ) : (
-            <Text color="#9CA3AF">Select diagnoses...</Text>
+            <Text color="#9CA3AF">{t('selectDiagnoses')}</Text>
           )}
           <Box
             position="absolute"
@@ -241,7 +243,7 @@ const ProfileMultiSelectDropdown: React.FC<ProfileMultiSelectDropdownProps> = ({
 
             <Box px={4} pt={2} mt={2} borderTop="1px solid #E2E8F0">
               <Text fontSize="xs" color="#6B7280" fontFamily="'Open Sans', sans-serif">
-                You can select a maximum of {maxSelections}.
+                {t('maxSelectionsMessage', { max: maxSelections })}
               </Text>
             </Box>
           </Box>

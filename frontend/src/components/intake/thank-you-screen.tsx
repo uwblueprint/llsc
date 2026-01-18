@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Heading, Text, VStack } from '@chakra-ui/react';
 import { UserRole } from '@/types/authTypes';
+import { useTranslations } from 'next-intl';
 
 // Check mark icon component
 const CheckMarkIcon: React.FC = () => (
@@ -33,6 +34,7 @@ interface ThankYouScreenProps {
 }
 
 export function ThankYouScreen({ userRole }: ThankYouScreenProps) {
+  const t = useTranslations('intake');
   const isParticipant = userRole === UserRole.PARTICIPANT;
 
   return (
@@ -64,7 +66,7 @@ export function ThankYouScreen({ userRole }: ThankYouScreenProps) {
             fontSize="32px"
             mb={2}
           >
-            Thank you!
+            {t('thankYouRequestReceived').split('!')[0]}!
           </Heading>
 
           <Heading
@@ -75,7 +77,9 @@ export function ThankYouScreen({ userRole }: ThankYouScreenProps) {
             fontSize="20px"
             mb={4}
           >
-            Your request has been received.
+            {t('thankYouRequestReceived').includes('!')
+              ? t('thankYouRequestReceived').split('!')[1]?.trim() || t('thankYouRequestReceived')
+              : t('thankYouRequestReceived')}
           </Heading>
 
           <Text
@@ -86,13 +90,12 @@ export function ThankYouScreen({ userRole }: ThankYouScreenProps) {
             maxW="600px"
             textAlign="center"
           >
-            You will receive a confirmation email. A staff member will call you within 1-2 business
-            days{isParticipant ? ' to better understand your match preferences' : ''}. For any
-            inquiries, please reach us at{' '}
+            {t('confirmationEmail')} {t('staffWillCall')}{' '}
+            {isParticipant ? t('betterUnderstandPreferences') : ''} {t('inquiriesReachUs')}{' '}
             <Text as="span" color="brand.primary" fontWeight={500}>
-              FirstConnections@lls.org
+              {t('contactEmail')}
             </Text>
-            . Please note LLSC&apos;s working days are Monday-Thursday.
+            . {t('llscWorkingDays')} {t('workingDaysMonThurs')}
           </Text>
         </VStack>
       </Box>

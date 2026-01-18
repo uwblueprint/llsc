@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Box, Button, Grid, HStack, Input, Textarea, Text, VStack } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import { Field } from '@/components/ui/field';
 import { InputGroup } from '@/components/ui/input-group';
 import { submitContactForm } from '@/APIClients/contactAPIClient';
@@ -12,6 +13,7 @@ interface ContactFormProps {
 }
 
 export function ContactForm({ redirectPath }: ContactFormProps) {
+  const t = useTranslations('dashboard');
   const router = useRouter();
 
   const [name, setName] = useState('');
@@ -49,7 +51,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
 
     // Validate form
     if (!name.trim() || !email.trim() || !message.trim()) {
-      setError('Please fill in all fields');
+      setError(t('pleaseFillAllFields'));
       return;
     }
 
@@ -69,11 +71,11 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
         // Show success modal
         setShowSuccessModal(true);
       } else {
-        setError('Failed to send message. Please try again later.');
+        setError(t('failedToSendMessage'));
       }
     } catch (err) {
       console.error('Error submitting contact form:', err);
-      setError('An error occurred. Please try again.');
+      setError(t('anErrorOccurred'));
     } finally {
       setIsLoading(false);
     }
@@ -100,7 +102,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
               color="#181D27"
               fontFamily="'Open Sans', sans-serif"
             >
-              Get in touch!
+              {t('getInTouch')}
             </Text>
             <Text
               fontSize="16px"
@@ -108,8 +110,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
               color="#535862"
               fontFamily="'Open Sans', sans-serif"
             >
-              Any questions? Fill out this contact form and a staff member will get back to you as
-              soon as possible.
+              {t('anyQuestions')}
             </Text>
           </VStack>
 
@@ -134,7 +135,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
                   fontFamily="'Open Sans', sans-serif"
                   mb={4}
                 >
-                  Personal details
+                  {t('personalDetails')}
                 </Text>
 
                 <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
@@ -148,7 +149,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
                         fontFamily="'Open Sans', sans-serif"
                         mb={2}
                       >
-                        Name
+                        {t('name')}
                       </Text>
                     }
                   >
@@ -156,7 +157,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
                       <Input
                         value={name}
                         readOnly
-                        placeholder="John Doe"
+                        placeholder={t('namePlaceholder')}
                         fontSize="16px"
                         fontFamily="'Open Sans', sans-serif"
                         bg="#F9FAFB"
@@ -179,7 +180,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
                         fontFamily="'Open Sans', sans-serif"
                         mb={2}
                       >
-                        Email Address
+                        {t('emailAddress')}
                       </Text>
                     }
                   >
@@ -188,7 +189,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
                         type="email"
                         value={email}
                         readOnly
-                        placeholder="john@llsc.ca"
+                        placeholder={t('emailPlaceholder')}
                         fontSize="16px"
                         fontFamily="'Open Sans', sans-serif"
                         bg="#F9FAFB"
@@ -214,13 +215,13 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
                   fontFamily="'Open Sans', sans-serif"
                   mb={4}
                 >
-                  Message
+                  {t('message')}
                 </Text>
 
                 <Textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="How can we help?"
+                  placeholder={t('howCanWeHelp')}
                   fontSize="16px"
                   fontFamily="'Open Sans', sans-serif"
                   bg="white"
@@ -257,7 +258,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
                   boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
                   _hover={{ bg: 'rgba(179, 206, 209, 0.4)' }}
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
                 <Button
                   type="submit"
@@ -277,7 +278,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
                   loading={isLoading}
                   disabled={isLoading}
                 >
-                  Send message
+                  {t('sendMessage')}
                 </Button>
               </HStack>
             </VStack>
