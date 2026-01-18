@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Box, VStack, Flex, Button } from '@chakra-ui/react';
 import { FiHeart } from 'react-icons/fi';
+import { useTranslations } from 'next-intl';
 import ProfileTextInput from './ProfileTextInput';
 import ProfileDropdown from './ProfileDropdown';
 import ProfileHeader from './ProfileHeader';
@@ -52,9 +53,19 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
   onSave,
   isVolunteer = false,
 }) => {
+  const t = useTranslations('dashboard');
+  const tOptions = useTranslations('options');
   const [editingField, setEditingField] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Translate gender options - store English value, display translated label
+  const translatedGenderOptions = useMemo(() => {
+    return GENDER_DROPDOWN_OPTIONS.map((option) => ({
+      value: option.value, // Keep English value for storage
+      label: tOptions(`genders.${option.value}`), // Display translated label
+    }));
+  }, [tOptions]);
 
   const handleInputFocus = (fieldName: string) => {
     setEditingField(fieldName);
@@ -75,11 +86,11 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
       case 'lovedOneBirthday':
         // Age field - just validate it's not empty and is a reasonable number
         if (!value || !value.trim()) {
-          validation = { isValid: false, error: 'Age is required' };
+          validation = { isValid: false, error: t('ageRequired') };
         } else {
           const ageNum = parseInt(value, 10);
           if (isNaN(ageNum) || ageNum < 0 || ageNum > 1000) {
-            validation = { isValid: false, error: 'Please enter a valid age (0-1000)' };
+            validation = { isValid: false, error: t('ageInvalid') };
           } else {
             validation = { isValid: true };
           }
@@ -90,7 +101,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
         break;
       case 'name':
         if (!value || !value.trim()) {
-          setErrors((prev) => ({ ...prev, [fieldName]: 'Name is required' }));
+          setErrors((prev) => ({ ...prev, [fieldName]: t('nameRequired') }));
           return false;
         }
         validation = { isValid: true };
@@ -100,7 +111,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
     }
 
     if (!validation.isValid) {
-      setErrors((prev) => ({ ...prev, [fieldName]: validation.error || 'Invalid value' }));
+      setErrors((prev) => ({ ...prev, [fieldName]: validation.error || t('invalidValue') }));
       return false;
     }
 
@@ -149,7 +160,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
       setErrors((prev) => ({ ...prev, [editingField]: '' }));
     } catch (error) {
       console.error('Error saving field:', error);
-      alert('Failed to save changes. Please try again.');
+      alert(t('failedToSaveChanges'));
     } finally {
       setSaving(false);
     }
@@ -157,12 +168,12 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
 
   return (
     <Box bg="white" p={0} minH="556px">
-      <ProfileHeader>Personal details</ProfileHeader>
+      <ProfileHeader>{t('personalDetails')}</ProfileHeader>
 
       <Flex gap="6.5%" mt="32px" align="start">
         <VStack gap={8} flex="1" align="stretch">
           <ProfileTextInput
-            label="Name"
+            label={t('name')}
             value={personalDetails.name}
             onChange={(e) => setPersonalDetails((prev) => ({ ...prev, name: e.target.value }))}
             onFocus={() => handleInputFocus('name')}
@@ -185,19 +196,19 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 _active={{ bg: '#033e42' }}
                 disabled={saving}
               >
-                {saving ? 'Saving...' : 'Save'}
+                {saving ? t('saving') : t('save')}
               </Button>
             </Box>
           )}
 
           <ProfileTextInput
-            label="Birthday"
+            label={t('birthday')}
             value={personalDetails.birthday}
             onChange={(e) => setPersonalDetails((prev) => ({ ...prev, birthday: e.target.value }))}
             onFocus={() => handleInputFocus('birthday')}
             onBlur={() => handleBlur('birthday')}
             error={errors.birthday}
-            placeholder="DD/MM/YYYY"
+            placeholder={t('dateFormatPlaceholder')}
           />
           {editingField === 'birthday' && (
             <Box mt={2} display="flex" justifyContent="flex-end">
@@ -215,13 +226,13 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 _active={{ bg: '#033e42' }}
                 disabled={saving}
               >
-                {saving ? 'Saving...' : 'Save'}
+                {saving ? t('saving') : t('save')}
               </Button>
             </Box>
           )}
 
           <ProfileTextInput
-            label="Pronouns"
+            label={t('pronouns')}
             value={personalDetails.pronouns}
             onChange={(e) => setPersonalDetails((prev) => ({ ...prev, pronouns: e.target.value }))}
             onFocus={() => handleInputFocus('pronouns')}
@@ -244,7 +255,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 _active={{ bg: '#033e42' }}
                 disabled={saving}
               >
-                {saving ? 'Saving...' : 'Save'}
+                {saving ? t('saving') : t('save')}
               </Button>
             </Box>
           )}
@@ -252,7 +263,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
 
         <VStack gap={8} flex="1" align="stretch">
           <ProfileTextInput
-            label="Email Address"
+            label={t('emailAddress')}
             value={personalDetails.email}
             onChange={(e) => setPersonalDetails((prev) => ({ ...prev, email: e.target.value }))}
             readOnly={true}
@@ -260,12 +271,12 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
           />
 
           <ProfileDropdown
-            label="Gender"
+            label={t('gender')}
             value={personalDetails.gender}
             onChange={(e) => setPersonalDetails((prev) => ({ ...prev, gender: e.target.value }))}
             onFocus={() => handleInputFocus('gender')}
             onBlur={() => handleBlur('gender')}
-            options={GENDER_DROPDOWN_OPTIONS}
+            options={translatedGenderOptions}
           />
           {editingField === 'gender' && (
             <Box mt={2} display="flex" justifyContent="flex-end">
@@ -283,13 +294,13 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 _active={{ bg: '#033e42' }}
                 disabled={saving}
               >
-                {saving ? 'Saving...' : 'Save'}
+                {saving ? t('saving') : t('save')}
               </Button>
             </Box>
           )}
 
           <ProfileDropdown
-            label="Timezone"
+            label={t('timezone')}
             value={personalDetails.timezone}
             onChange={(e) => {
               setPersonalDetails((prev) => ({ ...prev, timezone: e.target.value }));
@@ -336,12 +347,12 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 _active={{ bg: '#033e42' }}
                 disabled={saving}
               >
-                {saving ? 'Saving...' : 'Save'}
+                {saving ? t('saving') : t('save')}
               </Button>
             </Box>
           )}
           <ProfileDropdown
-            label="Preferred Language"
+            label={t('preferredLanguage')}
             value={personalDetails.preferredLanguage || 'en'}
             onChange={(e) => {
               setPersonalDetails((prev) => ({ ...prev, preferredLanguage: e.target.value }));
@@ -370,7 +381,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 _active={{ bg: '#033e42' }}
                 disabled={saving}
               >
-                {saving ? 'Saving...' : 'Save'}
+                {saving ? t('saving') : t('save')}
               </Button>
             </Box>
           )}
@@ -381,12 +392,12 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
       {isVolunteer && (
         <Box mt={8}>
           <ProfileTextInput
-            label="Overview"
+            label={t('overview')}
             value={personalDetails.overview}
             onChange={(e) => setPersonalDetails((prev) => ({ ...prev, overview: e.target.value }))}
             isTextarea={true}
             rows={2}
-            helperText="Explain your story! Participants will be able to learn more about you."
+            helperText={t('explainYourStory')}
             onFocus={() => handleInputFocus('overview')}
           />
           {editingField === 'overview' && (
@@ -404,7 +415,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 _hover={{ bg: '#044d52' }}
                 _active={{ bg: '#033e42' }}
               >
-                Save
+                {t('save')}
               </Button>
             </Box>
           )}
@@ -419,7 +430,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
           <Flex gap="6.5%" mt="32px" align="start">
             <VStack gap={8} flex="1" align="stretch">
               <ProfileTextInput
-                label="Your Loved One's Age"
+                label={t('lovedOneAge')}
                 value={lovedOneDetails.birthday}
                 onChange={(e) =>
                   setLovedOneDetails &&
@@ -430,7 +441,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 onFocus={() => handleInputFocus('lovedOneBirthday')}
                 onBlur={() => handleBlur('lovedOneBirthday')}
                 error={errors.lovedOneBirthday}
-                placeholder="Age"
+                placeholder={t('agePlaceholder')}
                 icon={<FiHeart size={14} color="#1D3448" />}
               />
               {editingField === 'lovedOneBirthday' && (
@@ -449,7 +460,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                     _active={{ bg: '#033e42' }}
                     disabled={saving}
                   >
-                    {saving ? 'Saving...' : 'Save'}
+                    {saving ? t('saving') : t('save')}
                   </Button>
                 </Box>
               )}
@@ -457,7 +468,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
 
             <VStack gap={8} flex="1" align="stretch">
               <ProfileDropdown
-                label="Your Loved One's Gender"
+                label={t('lovedOneGender')}
                 value={lovedOneDetails.gender}
                 onChange={(e) =>
                   setLovedOneDetails &&
@@ -465,7 +476,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                 }
                 onFocus={() => handleInputFocus('lovedOneGender')}
                 onBlur={() => handleBlur('lovedOneGender')}
-                options={GENDER_DROPDOWN_OPTIONS}
+                options={translatedGenderOptions}
                 icon={<FiHeart size={14} color="#1D3448" />}
               />
               {editingField === 'lovedOneGender' && (
@@ -484,7 +495,7 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
                     _active={{ bg: '#033e42' }}
                     disabled={saving}
                   >
-                    {saving ? 'Saving...' : 'Save'}
+                    {saving ? t('saving') : t('save')}
                   </Button>
                 </Box>
               )}

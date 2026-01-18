@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { FiFolder, FiLoader, FiLogOut } from 'react-icons/fi';
 import { LabelSmall } from '@/components/ui/text-styles';
 import { COLORS, shadow } from '@/constants/colors';
+import { logout } from '@/APIClients/authAPIClient';
 
 export const AdminHeader: React.FC = () => {
   const router = useRouter();
@@ -15,6 +16,10 @@ export const AdminHeader: React.FC = () => {
 
   const handleProgressTrackerClick = () => {
     router.push('/admin/directory');
+  };
+
+  const handleSignOut = async () => {
+    await logout();
   };
 
   return (
@@ -62,7 +67,14 @@ export const AdminHeader: React.FC = () => {
             <FiLoader size="16px" color={COLORS.gray700} />
             <LabelSmall color={COLORS.gray700}>Progress Tracker</LabelSmall>
           </Flex>
-          <Flex align="center" gap="8px" cursor="pointer">
+          <Flex
+            align="center"
+            gap="8px"
+            cursor="pointer"
+            onClick={handleSignOut}
+            _hover={{ opacity: 0.7 }}
+            transition="opacity 0.2s"
+          >
             <FiLogOut size="16px" color={COLORS.gray700} />
             <LabelSmall color={COLORS.gray700}>Sign Out</LabelSmall>
           </Flex>

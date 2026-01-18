@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Heading, Button, VStack, HStack, Text } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const MATCHING_QUALITIES = [
@@ -32,6 +33,7 @@ export function VolunteerMatchingForm({
   onNext,
   options,
 }: VolunteerMatchingFormProps) {
+  const t = useTranslations('ranking');
   const qualities: DisplayOption[] =
     options && options.length > 0
       ? options
@@ -46,7 +48,7 @@ export function VolunteerMatchingForm({
         fontSize={{ base: '24px', md: '28px' }}
         mb={8}
       >
-        Volunteer Matching Preferences
+        {t('volunteerMatchingPreferences')}
       </Heading>
 
       <Box mb={10}>
@@ -69,7 +71,7 @@ export function VolunteerMatchingForm({
           fontSize={{ base: '18px', md: '20px' }}
           mb={3}
         >
-          Relevant Qualities in a Volunteer
+          {t('relevantQualities')}
         </Heading>
         <Text
           color="brand.fieldText"
@@ -77,7 +79,7 @@ export function VolunteerMatchingForm({
           fontSize="15px"
           mb={2}
         >
-          You will be ranking these qualities in the next step.
+          {t('youWillRankQualities')}
         </Text>
         <Text
           color="brand.navy"
@@ -86,8 +88,7 @@ export function VolunteerMatchingForm({
           fontWeight={600}
           mb={8}
         >
-          Note that your volunteer is guaranteed to speak your language and have the same
-          availability.
+          {t('volunteerGuaranteed')}
         </Text>
 
         <VStack gap={5}>
@@ -99,7 +100,7 @@ export function VolunteerMatchingForm({
               fontSize="14px"
               mb={2}
             >
-              I would prefer a volunteer with...
+              {t('iWouldPreferVolunteerWith')}
             </Text>
             <Text
               color="brand.fieldText"
@@ -107,7 +108,7 @@ export function VolunteerMatchingForm({
               fontSize="12px"
               mb={4}
             >
-              You can select a maximum of 5. Please select at least one quality.
+              {t('selectMaximum5')}
             </Text>
 
             <VStack align="start" gap={3}>
@@ -146,7 +147,7 @@ export function VolunteerMatchingForm({
           fontWeight={500}
           px={6}
         >
-          Next Section →
+          {t('nextSection')} →
         </Button>
       </Box>
     </Box>

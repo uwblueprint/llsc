@@ -3,6 +3,7 @@ import { Box, Text, VStack, HStack, Badge, Button, Flex, Icon } from '@chakra-ui
 import { FiChevronDown, FiChevronUp, FiUser, FiClock, FiActivity, FiHeart } from 'react-icons/fi';
 import { Match, MatchStatus, VolunteerSummary } from '@/types/matchTypes';
 import { UserRole } from '@/types/authTypes';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface MatchStatusScreenProps {
   matches: Match[] | VolunteerMatch[];
@@ -56,6 +57,8 @@ interface MatchWithDisplayStatus {
 
 export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusScreenProps) {
   const [expandedMatches, setExpandedMatches] = useState<Set<number>>(new Set());
+  const t = useTranslations('dashboard');
+  const locale = useLocale();
 
   const toggleMatchExpansion = (matchId: number) => {
     const newExpanded = new Set(expandedMatches);
@@ -103,7 +106,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
     if (!dateStr) return null;
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
+      return date.toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -117,7 +120,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
     if (!dateStr) return null;
     try {
       const date = new Date(dateStr);
-      return date.toLocaleTimeString('en-US', {
+      return date.toLocaleTimeString(locale === 'fr' ? 'fr-CA' : 'en-US', {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true,
@@ -174,10 +177,10 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
           <Icon as={FiUser} boxSize={10} color="#9CA3AF" />
         </Box>
         <Text fontSize="20px" fontWeight={600} color="#1D3448" mb={2}>
-          Not Matched
+          {t('notMatched')}
         </Text>
         <Text fontSize="14px" color="#6B7280">
-          {userName ? `${userName} has` : 'You have'} no active matches.
+          {userName ? t('hasNoActiveMatches', { name: userName }) : t('youHaveNoActiveMatches')}
         </Text>
       </Box>
     );
@@ -226,7 +229,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
               color="#181D27"
               fontFamily="Open Sans, sans-serif"
             >
-              Currently Matched
+              {t('currentlyMatched')}
             </Text>
             <Text
               fontSize="14px"
@@ -234,8 +237,9 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
               color="#535862"
               fontFamily="Open Sans, sans-serif"
             >
-              {userName ? `${userName} has` : 'You have'} {processedMatches.length} active{' '}
-              {processedMatches.length === 1 ? 'match' : 'matches'}.
+              {userName
+                ? t('nameHasActiveMatches', { name: userName, count: processedMatches.length })
+                : t('youHaveActiveMatches', { count: processedMatches.length })}
             </Text>
           </VStack>
         </VStack>
@@ -254,7 +258,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                   color="#414651"
                   fontFamily="Inter, sans-serif"
                 >
-                  Name
+                  {t('name')}
                 </Text>
                 <Icon as={FiChevronDown} boxSize="16px" color="#414651" />
               </HStack>
@@ -267,14 +271,14 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                   color="#414651"
                   fontFamily="Inter, sans-serif"
                 >
-                  Date
+                  {t('date')}
                 </Text>
                 <Icon as={FiChevronDown} boxSize="16px" color="#414651" />
               </HStack>
             </Box>
             <Box w="100px">
               <Text fontSize="16px" fontWeight={500} color="#414651" fontFamily="Inter, sans-serif">
-                Time
+                {t('time')}
               </Text>
             </Box>
             <Box w="140px" />
@@ -290,7 +294,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
 
             const fullName = person
               ? `${person.firstName || ''} ${person.lastName || ''}`.trim() || person.email
-              : 'Unknown';
+              : t('unknown');
 
             const pronounsText =
               person?.pronouns && person.pronouns.length > 0 ? person.pronouns.join('/') : '';
@@ -377,7 +381,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                           onClick={() => toggleMatchExpansion(match.id)}
                         >
                           <Flex align="center" gap="6px">
-                            <Text>Details</Text>
+                            <Text>{t('details')}</Text>
                             <Icon
                               as={isExpanded ? FiChevronUp : FiChevronDown}
                               boxSize="20px"
@@ -409,7 +413,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                                 color="#1D3448"
                                 fontFamily="Open Sans, sans-serif"
                               >
-                                Overview
+                                {t('overview')}
                               </Text>
                               <VStack align="flex-start" gap="8px" w="full">
                                 {typeof person?.age === 'number' && (
@@ -428,7 +432,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                                     fontFamily="Open Sans, sans-serif"
                                   >
                                     <Icon as={FiUser} boxSize="10.53px" strokeWidth="1.32px" />
-                                    Current Age: {person.age}
+                                    {t('currentAge')} {person.age}
                                   </Badge>
                                 )}
                                 {person?.timezone && (
@@ -447,7 +451,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                                     fontFamily="Open Sans, sans-serif"
                                   >
                                     <Icon as={FiClock} boxSize="10.53px" strokeWidth="1.32px" />
-                                    Time Zone: {person.timezone}
+                                    {t('timeZone')} {person.timezone}
                                   </Badge>
                                 )}
                                 {person?.diagnosis && (
@@ -485,7 +489,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                                     fontFamily="Open Sans, sans-serif"
                                   >
                                     <Icon as={FiActivity} boxSize="10.53px" strokeWidth="1.32px" />
-                                    Loved One: {person.lovedOneDiagnosis}
+                                    {t('lovedOneLabel')} {person.lovedOneDiagnosis}
                                   </Badge>
                                 )}
                                 {!person?.age &&
@@ -493,7 +497,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                                   !person?.diagnosis &&
                                   !person?.lovedOneDiagnosis && (
                                     <Text fontSize="14px" color="#6B7280">
-                                      No overview information available
+                                      {t('noOverviewInfo')}
                                     </Text>
                                   )}
                               </VStack>
@@ -507,7 +511,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                                 color="#1D3448"
                                 fontFamily="Open Sans, sans-serif"
                               >
-                                Treatment Information
+                                {t('treatmentInformation')}
                               </Text>
                               <HStack gap="8px" flexWrap="wrap">
                                 {regularTreatments.length > 0 || lovedOneTreatments.length > 0 ? (
@@ -551,7 +555,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                                   </>
                                 ) : (
                                   <Text fontSize="14px" color="#6B7280">
-                                    No treatment information available
+                                    {t('noTreatmentInfo')}
                                   </Text>
                                 )}
                               </HStack>
@@ -565,7 +569,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                                 color="#1D3448"
                                 fontFamily="Open Sans, sans-serif"
                               >
-                                Experience Information
+                                {t('experienceInformation')}
                               </Text>
                               <HStack gap="8px" flexWrap="wrap">
                                 {regularExperiences.length > 0 || lovedOneExperiences.length > 0 ? (
@@ -609,7 +613,7 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
                                   </>
                                 ) : (
                                   <Text fontSize="14px" color="#6B7280">
-                                    No experience information available
+                                    {t('noExperienceInfo')}
                                   </Text>
                                 )}
                               </HStack>

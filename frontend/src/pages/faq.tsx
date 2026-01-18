@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { COLORS } from '@/constants/form';
 import { useRouter } from 'next/router';
+import { useTranslations } from 'next-intl';
 
 interface FAQItem {
   id: string;
@@ -20,35 +21,33 @@ const SHADOW_COLOR = '#B3CED1';
 export default function FAQPage() {
   const [expandedFAQs, setExpandedFAQs] = useState<string[]>([]);
   const router = useRouter();
+  const t = useTranslations('dashboard');
 
   const faqData: FAQItem[] = [
     {
       id: 'contact-staff',
-      question: 'How can I contact a staff member?',
-      answer:
-        'Click the button below to fill out a short form, it only takes a minute! Once submitted, a staff member will follow up via email within 2 business days to support your needs from FirstConnections@lls.org.',
+      question: t('faqContactStaffQuestion'),
+      answer: t('faqContactStaffAnswer'),
       actionButton: {
-        text: 'Contact Us!',
+        text: t('faqContactUs'),
         action: () => true,
       },
     },
     {
       id: 'become-volunteer',
-      question: 'How can I apply to become a volunteer?',
-      answer:
-        "Complete the volunteer application to express your interest and confirm these details are correct. Once submitted, we'll follow up by email with next steps.",
+      question: t('faqBecomeVolunteerQuestion'),
+      answer: t('faqBecomeVolunteerAnswer'),
       actionButton: {
-        text: 'Become a volunteer!',
+        text: t('faqBecomeVolunteer'),
         action: () => router.push('/volunteer/intake'),
       },
     },
     {
       id: 'opt-out',
-      question: 'How can I opt out of the First Connections program?',
-      answer:
-        'Your experience is important to us. Our volunteers are the most important part of First Connection. Volunteers are encouraged to take the time they need away from the program when they need it.  By opting out you are removing yourself from the matching algorithm and cannot be connected with a potential participant.\n\nWhen you are ready to volunteer with us again, please sign back in and click the Opt In. You do not need to re-register or create a new profile. If you would like to talk with a staff member about your time away or remove yourself completely from the program please reach out, we are here to help.',
+      question: t('faqOptOutQuestion'),
+      answer: t('faqOptOutAnswer'),
       actionButton: {
-        text: 'Opt out',
+        text: t('optOut'),
         action: () => true,
       },
     },
@@ -68,7 +67,7 @@ export default function FAQPage() {
               marginBottom: '48px',
             }}
           >
-            Frequently asked questions
+            {t('frequentlyAskedQuestions')}
           </h1>
 
           <div className="flex flex-col gap-4">

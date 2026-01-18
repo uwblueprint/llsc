@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, VStack } from '@chakra-ui/react';
+import { useTranslations, useLocale } from 'next-intl';
 import type { TimeSlot, TimeSchedulerProps } from './types';
 
-const days = ['Mon', 'Tues', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+// English day names for data storage (these are used as keys in the database)
 const daysFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const hours = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
 
@@ -14,6 +15,10 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
   visibleDays,
   selectedDaysDates,
 }) => {
+  const t = useTranslations('dashboard');
+  const locale = useLocale();
+  // Translated day names for display
+  const days = [t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat'), t('sun')];
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>(initialTimeSlots);
   const [isDragging, setIsDragging] = useState(false);
   const [dragValue, setDragValue] = useState<boolean | null>(null);
@@ -53,12 +58,14 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
   };
 
   const formatTime = (hour: number) => {
+    const amLabel = t('am');
+    const pmLabel = t('pm');
     if (hour <= 11) {
-      return `${hour} AM`;
+      return `${hour} ${amLabel}`;
     } else if (hour === 12) {
-      return '12 PM';
+      return `12 ${pmLabel}`;
     } else {
-      return `${hour - 12} PM`;
+      return `${hour - 12} ${pmLabel}`;
     }
   };
 
@@ -75,7 +82,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
     };
 
     const getPeriod = (hour: number) => {
-      return hour < 12 ? 'AM' : 'PM';
+      return hour < 12 ? t('am') : t('pm');
     };
 
     const startFormatted = formatHour(startHour);
@@ -207,16 +214,17 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
           alignItems="center"
           opacity={0.4}
         >
-          EST
+          {t('timezoneLabel')}
         </Box>
         {filteredDays.map((day, index) => {
           // Format day header with date if we have selected days dates
+          const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-US';
           const dayHeader =
             visibleDays &&
             visibleDays.length > 0 &&
             selectedDaysDates &&
             selectedDaysDates.length > index
-              ? `${day}, ${selectedDaysDates[index].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+              ? `${day}, ${selectedDaysDates[index].toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}`
               : day;
           return (
             <Box
@@ -306,7 +314,7 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
               mb={3}
               mt={0}
             >
-              Your Availability
+              {t('yourAvailabilityHeading')}
             </Text>
 
             <VStack gap={3} align="stretch">

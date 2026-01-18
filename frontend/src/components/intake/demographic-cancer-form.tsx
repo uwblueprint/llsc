@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Heading, Button, VStack, Text, Input, SimpleGrid } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { FormField } from '@/components/ui/form-field';
 import { InputGroup } from '@/components/ui/input-group';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
@@ -41,7 +42,8 @@ const getDefaultValues = (): DemographicCancerFormData => ({
   experiences: [],
 });
 
-const DIAGNOSIS_OPTIONS = [
+// Diagnosis keys (English) - these are stored in database
+const DIAGNOSIS_KEYS = [
   'Unknown',
   'Acute Myeloid Leukemia',
   'Acute Lymphoblastic Leukemia',
@@ -62,8 +64,8 @@ interface DemographicCancerFormProps {
   caringForSomeone?: 'yes' | 'no' | '';
 }
 
-// Updated options to match Figma design - moved Self-describe to bottom
-const GENDER_IDENTITY_OPTIONS = [
+// Option keys (English) - these are stored in database
+const GENDER_IDENTITY_KEYS = [
   'Male',
   'Female',
   'Non-binary',
@@ -72,7 +74,7 @@ const GENDER_IDENTITY_OPTIONS = [
   'Self-describe',
 ];
 
-const PRONOUNS_OPTIONS = [
+const PRONOUNS_KEYS = [
   'He/Him',
   'She/Her',
   'They/Them',
@@ -83,11 +85,11 @@ const PRONOUNS_OPTIONS = [
 
 const TIMEZONE_OPTIONS = ['NST', 'AST', 'EST', 'CST', 'MST', 'PST'];
 
-const MARITAL_STATUS_OPTIONS = ['Single', 'Married/Common Law', 'Divorced', 'Widowed'];
+const MARITAL_STATUS_KEYS = ['Single', 'Married/Common Law', 'Divorced', 'Widowed'];
 
-const HAS_KIDS_OPTIONS = ['Yes', 'No', 'Prefer not to answer'];
+const HAS_KIDS_KEYS = ['Yes', 'No', 'Prefer not to answer'];
 
-const ETHNIC_OPTIONS = [
+const ETHNIC_KEYS = [
   'Black (including African and Caribbean descent)',
   'Middle Eastern, Western or Central Asian',
   'East Asian',
@@ -118,17 +120,49 @@ export function DemographicCancerForm({
   hasBloodCancer,
   caringForSomeone,
 }: DemographicCancerFormProps) {
+  const t = useTranslations('intake');
+  const tOptions = useTranslations('options');
   const { control, handleSubmit, formState, watch } = useForm<DemographicCancerFormData>({
     defaultValues: getDefaultValues(),
   });
   const { errors, isSubmitting } = formState;
 
+  // Helper to translate option keys
+  const translateOption = (category: string, key: string): string => {
+    try {
+      return tOptions(`${category}.${key}`);
+    } catch {
+      return key;
+    }
+  };
+
+  // Create translated option arrays for display
+  const genderIdentityOptions = GENDER_IDENTITY_KEYS.map((key) => translateOption('genders', key));
+  const pronounsOptions = PRONOUNS_KEYS.map((key) => translateOption('pronouns', key));
+  const maritalStatusOptions = MARITAL_STATUS_KEYS.map((key) =>
+    translateOption('maritalStatus', key),
+  );
+  const hasKidsOptions = HAS_KIDS_KEYS.map((key) => translateOption('yesNoOptions', key));
+  const ethnicOptions = ETHNIC_KEYS.map((key) => translateOption('ethnicGroups', key));
+  const diagnosisOptions = DIAGNOSIS_KEYS.map((key) => translateOption('diagnoses', key));
+
+  // Helpers to convert between display values and keys
+  const displayToKey = (options: string[], keys: string[], display: string): string => {
+    const index = options.indexOf(display);
+    return index >= 0 ? keys[index] : display;
+  };
+
+  const keyToDisplay = (options: string[], keys: string[], key: string): string => {
+    const index = keys.indexOf(key);
+    return index >= 0 ? options[index] : key;
+  };
+
   // Local state for custom values
   const [genderIdentityCustom, setGenderIdentityCustom] = useState('');
   const [pronounsCustom, setPronounsCustom] = useState('');
   const [ethnicGroupCustom, setEthnicGroupCustom] = useState('');
-  const [treatmentOptions, setTreatmentOptions] = useState([]);
-  const [experienceOptions, setExperienceOptions] = useState([]);
+  const [treatmentKeys, setTreatmentKeys] = useState<string[]>([]);
+  const [experienceKeys, setExperienceKeys] = useState<string[]>([]);
 
   useEffect(() => {
     const run = async () => {
@@ -149,22 +183,16 @@ export function DemographicCancerForm({
             `Received hasBloodCancer="${hasBloodCancer}", caringForSomeone="${caringForSomeone}". ` +
             'This Demographic Cancer form expects at least one to be "yes".',
         );
-        alert(
-          'We hit an unexpected state.\n\n' +
-            'This step is only shown if you have blood cancer or are caring for someone with blood cancer. ' +
-            'Please go back to the previous step and select "Yes" for one of those questions, or navigate to the basic demographics form.',
-        );
+        alert(t('unexpectedStateError'));
         return;
       }
 
       const options = await getOptions(target);
       console.log(options);
 
-      setTreatmentOptions(options.treatments.map((treatment: IntakeTreatment) => treatment.name));
+      setTreatmentKeys(options.treatments.map((treatment: IntakeTreatment) => treatment.name));
 
-      setExperienceOptions(
-        options.experiences.map((experience: IntakeExperience) => experience.name),
-      );
+      setExperienceKeys(options.experiences.map((experience: IntakeExperience) => experience.name));
     };
 
     run();
@@ -203,11 +231,11 @@ export function DemographicCancerForm({
       onNext(finalData);
     } catch (err) {
       console.error('Error submitting form:', err);
-      alert('Error submitting form. Please try again later.');
+      alert(t('errorSubmittingForm'));
     }
   };
 
-  const formTitle = getIntakeFormTitle(formType);
+  const formTitle = formType === 'volunteer' ? t('volunteerForm') : t('serviceUserForm');
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -236,7 +264,7 @@ export function DemographicCancerForm({
           fontSize="20px"
           mb={3}
         >
-          Your Demographic Information
+          {t('yourDemographicInformation')}
         </Heading>
 
         <Text
@@ -246,32 +274,40 @@ export function DemographicCancerForm({
           mb={6}
         >
           {formType === 'volunteer'
-            ? 'This information can be taken into account when matching you with a service user.'
-            : 'This information can be taken into account when matching you with a volunteer.'}
+            ? t('serviceUserDemographicInfo')
+            : t('demographicCanBeTakenIntoAccount')}
         </Text>
 
         <VStack gap={5} align="stretch">
           {/* Gender Identity with conditional Self-describe */}
           <ResponsiveFieldGroup>
-            <FormField label="Gender Identity" error={errors.genderIdentity?.message}>
+            <FormField label={t('genderIdentity')} error={errors.genderIdentity?.message}>
               <Controller
                 name="genderIdentity"
                 control={control}
                 rules={{
                   validate: (value) => {
-                    if (!value) return 'Gender identity is required';
+                    if (!value) return t('validation.genderRequired');
                     if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
-                      return 'Please specify your gender identity when selecting Self-describe';
+                      return t('validation.genderSpecifyRequired');
                     }
                     return true;
                   },
                 }}
                 render={({ field }) => (
                   <SingleSelectDropdown
-                    options={GENDER_IDENTITY_OPTIONS}
-                    selectedValue={field.value || ''}
-                    onSelectionChange={field.onChange}
-                    placeholder="Gender Identity"
+                    options={genderIdentityOptions}
+                    selectedValue={keyToDisplay(
+                      genderIdentityOptions,
+                      GENDER_IDENTITY_KEYS,
+                      field.value || '',
+                    )}
+                    onSelectionChange={(display) =>
+                      field.onChange(
+                        displayToKey(genderIdentityOptions, GENDER_IDENTITY_KEYS, display),
+                      )
+                    }
+                    placeholder={t('genderIdentity')}
                     error={!!errors.genderIdentity}
                   />
                 )}
@@ -279,11 +315,11 @@ export function DemographicCancerForm({
             </FormField>
 
             {genderIdentity === 'Self-describe' && (
-              <FormField label="Please specify">
+              <FormField label={t('placeholders.pleaseSpecify')}>
                 <Input
                   value={genderIdentityCustom}
                   onChange={(e) => setGenderIdentityCustom(e.target.value)}
-                  placeholder="Please specify"
+                  placeholder={t('placeholders.pleaseSpecify')}
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
                   color="brand.navy"
@@ -305,27 +341,33 @@ export function DemographicCancerForm({
 
           {/* Pronouns with conditional Self-describe */}
           <ResponsiveFieldGroup>
-            <FormField label="Pronouns" error={errors.pronouns?.message}>
+            <FormField label={t('pronouns')} error={errors.pronouns?.message}>
               <Controller
                 name="pronouns"
                 control={control}
                 rules={{
                   validate: (value) => {
                     if (!value || value.length === 0) {
-                      return 'Please select at least one pronoun option';
+                      return t('validation.pronounsRequired');
                     }
                     if (value.includes('Self-describe') && !pronounsCustom.trim()) {
-                      return 'Please specify your pronouns when selecting Self-describe';
+                      return t('validation.pronounsSpecifyRequired');
                     }
                     return true;
                   },
                 }}
                 render={({ field }) => (
                   <MultiSelectDropdown
-                    options={PRONOUNS_OPTIONS}
-                    selectedValues={field.value || []}
-                    onSelectionChange={field.onChange}
-                    placeholder="Pronouns"
+                    options={pronounsOptions}
+                    selectedValues={(field.value || []).map((key) =>
+                      keyToDisplay(pronounsOptions, PRONOUNS_KEYS, key),
+                    )}
+                    onSelectionChange={(displays) =>
+                      field.onChange(
+                        displays.map((d) => displayToKey(pronounsOptions, PRONOUNS_KEYS, d)),
+                      )
+                    }
+                    placeholder={t('pronouns')}
                     error={!!errors.pronouns}
                   />
                 )}
@@ -333,11 +375,11 @@ export function DemographicCancerForm({
             </FormField>
 
             {pronouns.includes('Self-describe') && (
-              <FormField label="Please specify">
+              <FormField label={t('placeholders.pleaseSpecify')}>
                 <Input
                   value={pronounsCustom}
                   onChange={(e) => setPronounsCustom(e.target.value)}
-                  placeholder="Please specify"
+                  placeholder={t('placeholders.pleaseSpecify')}
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
                   color="brand.navy"
@@ -358,17 +400,17 @@ export function DemographicCancerForm({
           </ResponsiveFieldGroup>
 
           {/* Time Zone */}
-          <FormField label="Time Zone" error={errors.timezone?.message}>
+          <FormField label={t('timeZone')} error={errors.timezone?.message}>
             <Controller
               name="timezone"
               control={control}
-              rules={{ required: 'Time zone is required' }}
+              rules={{ required: t('validation.timeZoneRequired') }}
               render={({ field }) => (
                 <SingleSelectDropdown
                   options={TIMEZONE_OPTIONS}
                   selectedValue={field.value || ''}
                   onSelectionChange={field.onChange}
-                  placeholder="Time Zone"
+                  placeholder={t('timeZone')}
                   error={!!errors.timezone}
                 />
               )}
@@ -377,14 +419,14 @@ export function DemographicCancerForm({
 
           {/* Ethnic Group + Preferred Language */}
           <ResponsiveFieldGroup>
-            <FormField label="Ethnic or Cultural Group" error={errors.ethnicGroup?.message}>
+            <FormField label={t('ethnicGroup')} error={errors.ethnicGroup?.message}>
               <Controller
                 name="ethnicGroup"
                 control={control}
                 rules={{
                   validate: (value) => {
                     if (!value || value.length === 0) {
-                      return 'Please select at least one ethnic or cultural group';
+                      return t('validation.ethnicGroupRequired');
                     }
                     if (
                       value.includes(
@@ -392,17 +434,23 @@ export function DemographicCancerForm({
                       ) &&
                       !ethnicGroupCustom.trim()
                     ) {
-                      return 'Please specify your ethnic or cultural group when selecting self-describe';
+                      return t('validation.ethnicGroupRequired');
                     }
                     return true;
                   },
                 }}
                 render={({ field }) => (
                   <MultiSelectDropdown
-                    options={ETHNIC_OPTIONS}
-                    selectedValues={field.value || []}
-                    onSelectionChange={field.onChange}
-                    placeholder="Ethnic or Cultural Group"
+                    options={ethnicOptions}
+                    selectedValues={(field.value || []).map((key) =>
+                      keyToDisplay(ethnicOptions, ETHNIC_KEYS, key),
+                    )}
+                    onSelectionChange={(displays) =>
+                      field.onChange(
+                        displays.map((d) => displayToKey(ethnicOptions, ETHNIC_KEYS, d)),
+                      )
+                    }
+                    placeholder={t('ethnicGroup')}
                     error={!!errors.ethnicGroup}
                   />
                 )}
@@ -412,11 +460,11 @@ export function DemographicCancerForm({
             {ethnicGroup.includes(
               'Another background/Prefer to self-describe (please specify):',
             ) && (
-              <FormField label="Please specify">
+              <FormField label={t('placeholders.pleaseSpecify')}>
                 <Input
                   value={ethnicGroupCustom}
                   onChange={(e) => setEthnicGroupCustom(e.target.value)}
-                  placeholder="Please specify"
+                  placeholder={t('placeholders.pleaseSpecify')}
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
                   color="brand.navy"
@@ -435,17 +483,17 @@ export function DemographicCancerForm({
               </FormField>
             )}
 
-            <FormField label="Preferred Language" error={errors.preferredLanguage?.message}>
+            <FormField label={t('preferredLanguage')} error={errors.preferredLanguage?.message}>
               <Controller
                 name="preferredLanguage"
                 control={control}
-                rules={{ required: 'Please select your preferred language' }}
+                rules={{ required: t('validation.languageRequired') }}
                 render={({ field }) => (
                   <SingleSelectDropdown
                     options={LANGUAGE_OPTIONS}
                     selectedValue={codeToLanguage(field.value || '')}
                     onSelectionChange={(language) => field.onChange(languageToCode(language))}
-                    placeholder="Preferred Language"
+                    placeholder={t('preferredLanguage')}
                     error={!!errors.preferredLanguage}
                   />
                 )}
@@ -455,11 +503,11 @@ export function DemographicCancerForm({
 
           {/* Self-describe input for Ethnic Group (conditional, full width) */}
           {ethnicGroup.includes('Self-describe') && (
-            <FormField label="Please specify your ethnic or cultural group">
+            <FormField label={t('placeholders.pleaseSpecify')}>
               <Input
                 value={ethnicGroupCustom}
                 onChange={(e) => setEthnicGroupCustom(e.target.value)}
-                placeholder="Please specify"
+                placeholder={t('placeholders.pleaseSpecify')}
                 fontFamily="system-ui, -apple-system, sans-serif"
                 fontSize="14px"
                 color="brand.navy"
@@ -479,34 +527,44 @@ export function DemographicCancerForm({
 
           {/* Marital Status and Kids */}
           <ResponsiveFieldGroup>
-            <FormField label="Marital Status" error={errors.maritalStatus?.message}>
+            <FormField label={t('maritalStatus')} error={errors.maritalStatus?.message}>
               <Controller
                 name="maritalStatus"
                 control={control}
-                rules={{ required: 'Marital status is required' }}
+                rules={{ required: t('validation.maritalStatusRequired') }}
                 render={({ field }) => (
                   <SingleSelectDropdown
-                    options={MARITAL_STATUS_OPTIONS}
-                    selectedValue={field.value || ''}
-                    onSelectionChange={field.onChange}
-                    placeholder="Marital Status"
+                    options={maritalStatusOptions}
+                    selectedValue={keyToDisplay(
+                      maritalStatusOptions,
+                      MARITAL_STATUS_KEYS,
+                      field.value || '',
+                    )}
+                    onSelectionChange={(display) =>
+                      field.onChange(
+                        displayToKey(maritalStatusOptions, MARITAL_STATUS_KEYS, display),
+                      )
+                    }
+                    placeholder={t('maritalStatus')}
                     error={!!errors.maritalStatus}
                   />
                 )}
               />
             </FormField>
 
-            <FormField label="Do you have kids?" error={errors.hasKids?.message}>
+            <FormField label={t('doYouHaveKids')} error={errors.hasKids?.message}>
               <Controller
                 name="hasKids"
                 control={control}
-                rules={{ required: 'Please specify if you have kids' }}
+                rules={{ required: t('validation.hasKidsRequired') }}
                 render={({ field }) => (
                   <SingleSelectDropdown
-                    options={HAS_KIDS_OPTIONS}
-                    selectedValue={field.value || ''}
-                    onSelectionChange={field.onChange}
-                    placeholder="Do you have kids?"
+                    options={hasKidsOptions}
+                    selectedValue={keyToDisplay(hasKidsOptions, HAS_KIDS_KEYS, field.value || '')}
+                    onSelectionChange={(display) =>
+                      field.onChange(displayToKey(hasKidsOptions, HAS_KIDS_KEYS, display))
+                    }
+                    placeholder={t('doYouHaveKids')}
                     error={!!errors.hasKids}
                   />
                 )}
@@ -527,7 +585,7 @@ export function DemographicCancerForm({
             fontSize="20px"
             mb={3}
           >
-            Your Cancer Experience
+            {t('yourCancerExperience')}
           </Heading>
 
           <Text
@@ -537,46 +595,52 @@ export function DemographicCancerForm({
             mb={6}
           >
             {formType === 'volunteer'
-              ? 'This information can also be taken into account when matching you with a service user.'
-              : 'This information can also be taken into account when matching you with a volunteer.'}
+              ? t('serviceUserBloodCancerDescription')
+              : t('demographicCanAlsoBeTakenIntoAccount')}
           </Text>
 
           <VStack gap={6} align="stretch">
             {/* Diagnosis and Date */}
             <ResponsiveFieldGroup>
-              <FormField label="Your Diagnosis" error={errors.diagnosis?.message}>
+              <FormField label={t('yourDiagnosis')} error={errors.diagnosis?.message}>
                 <Controller
                   name="diagnosis"
                   control={control}
-                  rules={{ required: 'Diagnosis is required' }}
+                  rules={{ required: t('validation.diagnosisRequired') }}
                   render={({ field }) => (
                     <SingleSelectDropdown
-                      options={DIAGNOSIS_OPTIONS}
-                      selectedValue={field.value || ''}
-                      onSelectionChange={field.onChange}
-                      placeholder="Select your diagnosis"
+                      options={diagnosisOptions}
+                      selectedValue={keyToDisplay(
+                        diagnosisOptions,
+                        DIAGNOSIS_KEYS,
+                        field.value || '',
+                      )}
+                      onSelectionChange={(display) =>
+                        field.onChange(displayToKey(diagnosisOptions, DIAGNOSIS_KEYS, display))
+                      }
+                      placeholder={t('yourDiagnosis')}
                       error={!!errors.diagnosis}
                     />
                   )}
                 />
               </FormField>
 
-              <FormField label="Your Date of Diagnosis" error={errors.dateOfDiagnosis?.message}>
+              <FormField label={t('yourDateOfDiagnosis')} error={errors.dateOfDiagnosis?.message}>
                 <Controller
                   name="dateOfDiagnosis"
                   control={control}
                   rules={{
-                    required: 'Date of diagnosis is required',
+                    required: t('validation.dateOfDiagnosisRequired'),
                     pattern: {
                       value: VALIDATION.DATE,
-                      message: 'Please enter a valid date (DD/MM/YYYY)',
+                      message: t('validation.invalidDateFormat'),
                     },
                   }}
                   render={({ field }) => (
                     <InputGroup>
                       <Input
                         {...field}
-                        placeholder="DD/MM/YYYY"
+                        placeholder={t('placeholders.dateFormat')}
                         fontFamily="system-ui, -apple-system, sans-serif"
                         fontSize="14px"
                         color="brand.navy"
@@ -606,7 +670,7 @@ export function DemographicCancerForm({
                   color="brand.navy"
                   mb={2}
                 >
-                  Which of the following treatments have you done?
+                  {t('treatmentsDone')}
                 </Text>
                 <Text
                   fontFamily="system-ui, -apple-system, sans-serif"
@@ -614,20 +678,32 @@ export function DemographicCancerForm({
                   color="brand.fieldText"
                   mb={4}
                 >
-                  You can select a maximum of 2.
+                  {t('selectMaximum2')}
                 </Text>
 
                 <Controller
                   name="treatments"
                   control={control}
-                  render={({ field }) => (
-                    <CheckboxGroup
-                      options={treatmentOptions}
-                      selectedValues={field.value || []}
-                      onValueChange={field.onChange}
-                      maxSelections={2}
-                    />
-                  )}
+                  render={({ field }) => {
+                    const translatedTreatmentOptions = treatmentKeys.map((key) =>
+                      translateOption('treatments', key),
+                    );
+                    return (
+                      <CheckboxGroup
+                        options={translatedTreatmentOptions}
+                        selectedValues={(field.value || []).map((key: string) =>
+                          translateOption('treatments', key),
+                        )}
+                        onValueChange={(displays) => {
+                          const keys = displays.map((d) =>
+                            displayToKey(translatedTreatmentOptions, treatmentKeys, d),
+                          );
+                          field.onChange(keys);
+                        }}
+                        maxSelections={2}
+                      />
+                    );
+                  }}
                 />
                 {errors.treatments && (
                   <Text color="red.500" fontSize="12px" mt={2}>
@@ -645,7 +721,7 @@ export function DemographicCancerForm({
                   color="brand.navy"
                   mb={2}
                 >
-                  Which of the following do you have experience with?
+                  {t('experiencesYouHad')}
                 </Text>
                 <Text
                   fontFamily="system-ui, -apple-system, sans-serif"
@@ -653,20 +729,32 @@ export function DemographicCancerForm({
                   color="brand.fieldText"
                   mb={4}
                 >
-                  You can select a maximum of 5.
+                  {t('selectMaximum5')}
                 </Text>
 
                 <Controller
                   name="experiences"
                   control={control}
-                  render={({ field }) => (
-                    <CheckboxGroup
-                      options={experienceOptions}
-                      selectedValues={field.value || []}
-                      onValueChange={field.onChange}
-                      maxSelections={5}
-                    />
-                  )}
+                  render={({ field }) => {
+                    const translatedExperienceOptions = experienceKeys.map((key) =>
+                      translateOption('experiences', key),
+                    );
+                    return (
+                      <CheckboxGroup
+                        options={translatedExperienceOptions}
+                        selectedValues={(field.value || []).map((key: string) =>
+                          translateOption('experiences', key),
+                        )}
+                        onValueChange={(displays) => {
+                          const keys = displays.map((d) =>
+                            displayToKey(translatedExperienceOptions, experienceKeys, d),
+                          );
+                          field.onChange(keys);
+                        }}
+                        maxSelections={5}
+                      />
+                    );
+                  }}
                 />
                 {errors.experiences && (
                   <Text color="red.500" fontSize="12px" mt={2}>
@@ -688,14 +776,14 @@ export function DemographicCancerForm({
           _hover={{ bg: 'brand.primaryEmphasis' }}
           _active={{ bg: 'brand.primaryEmphasis' }}
           loading={isSubmitting}
-          loadingText="Submitting..."
+          loadingText={t('submitting')}
           w="auto"
           h="40px"
           fontSize="14px"
           fontWeight={500}
           px={6}
         >
-          Next Section →
+          {t('nextSection')}
         </Button>
       </Box>
     </form>
@@ -729,6 +817,8 @@ interface BasicDemographicsFormProps {
 }
 
 export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFormProps) {
+  const t = useTranslations('intake');
+  const tOptions = useTranslations('options');
   const {
     control,
     handleSubmit,
@@ -737,6 +827,35 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
   } = useForm<BasicDemographicsFormData>({
     defaultValues: getBasicDefaultValues(),
   });
+
+  // Helper to translate option keys
+  const translateOption = (category: string, key: string): string => {
+    try {
+      return tOptions(`${category}.${key}`);
+    } catch {
+      return key;
+    }
+  };
+
+  // Create translated option arrays for display
+  const genderIdentityOptions = GENDER_IDENTITY_KEYS.map((key) => translateOption('genders', key));
+  const pronounsOptions = PRONOUNS_KEYS.map((key) => translateOption('pronouns', key));
+  const maritalStatusOptions = MARITAL_STATUS_KEYS.map((key) =>
+    translateOption('maritalStatus', key),
+  );
+  const hasKidsOptions = HAS_KIDS_KEYS.map((key) => translateOption('yesNoOptions', key));
+  const ethnicOptions = ETHNIC_KEYS.map((key) => translateOption('ethnicGroups', key));
+
+  // Helpers to convert between display values and keys
+  const displayToKey = (options: string[], keys: string[], display: string): string => {
+    const index = options.indexOf(display);
+    return index >= 0 ? keys[index] : display;
+  };
+
+  const keyToDisplay = (options: string[], keys: string[], key: string): string => {
+    const index = keys.indexOf(key);
+    return index >= 0 ? options[index] : key;
+  };
 
   // Local state for custom values
   const [genderIdentityCustom, setGenderIdentityCustom] = useState('');
@@ -772,11 +891,11 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
       onNext(finalData);
     } catch (err) {
       console.error('Error submitting form:', err);
-      alert('Error submitting form. Please try again later.');
+      alert(t('errorSubmittingForm'));
     }
   };
 
-  const formTitle = getIntakeFormTitle(formType);
+  const formTitle = formType === 'volunteer' ? t('volunteerForm') : t('serviceUserForm');
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -805,7 +924,7 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
           fontSize="20px"
           mb={3}
         >
-          Your Demographic Information
+          {t('yourDemographicInformation')}
         </Heading>
 
         <Text
@@ -815,32 +934,40 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
           mb={6}
         >
           {formType === 'volunteer'
-            ? 'This information helps us understand how you might be able to support others in the future.'
-            : 'This information helps us understand your background and how we might be able to support you.'}
+            ? t('serviceUserDemographicInfo')
+            : t('demographicCanBeTakenIntoAccount')}
         </Text>
 
         <VStack gap={5} align="stretch">
           {/* Gender Identity */}
           <ResponsiveFieldGroup>
-            <FormField label="Gender Identity" error={errors.genderIdentity?.message}>
+            <FormField label={t('genderIdentity')} error={errors.genderIdentity?.message}>
               <Controller
                 name="genderIdentity"
                 control={control}
                 rules={{
                   validate: (value) => {
-                    if (!value) return 'Gender identity is required';
+                    if (!value) return t('validation.genderRequired');
                     if (value === 'Self-describe' && !genderIdentityCustom.trim()) {
-                      return 'Please specify your gender identity when selecting Self-describe';
+                      return t('validation.genderSpecifyRequired');
                     }
                     return true;
                   },
                 }}
                 render={({ field }) => (
                   <SingleSelectDropdown
-                    options={GENDER_IDENTITY_OPTIONS}
-                    selectedValue={field.value || ''}
-                    onSelectionChange={field.onChange}
-                    placeholder="Gender Identity"
+                    options={genderIdentityOptions}
+                    selectedValue={keyToDisplay(
+                      genderIdentityOptions,
+                      GENDER_IDENTITY_KEYS,
+                      field.value || '',
+                    )}
+                    onSelectionChange={(display) =>
+                      field.onChange(
+                        displayToKey(genderIdentityOptions, GENDER_IDENTITY_KEYS, display),
+                      )
+                    }
+                    placeholder={t('genderIdentity')}
                     error={!!errors.genderIdentity}
                   />
                 )}
@@ -848,11 +975,11 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
             </FormField>
 
             {genderIdentity === 'Self-describe' && (
-              <FormField label="Please specify">
+              <FormField label={t('placeholders.pleaseSpecify')}>
                 <Input
                   value={genderIdentityCustom}
                   onChange={(e) => setGenderIdentityCustom(e.target.value)}
-                  placeholder="Please specify"
+                  placeholder={t('placeholders.pleaseSpecify')}
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
                   color="brand.navy"
@@ -874,27 +1001,33 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
 
           {/* Pronouns */}
           <ResponsiveFieldGroup>
-            <FormField label="Pronouns" error={errors.pronouns?.message}>
+            <FormField label={t('pronouns')} error={errors.pronouns?.message}>
               <Controller
                 name="pronouns"
                 control={control}
                 rules={{
                   validate: (value) => {
                     if (!value || value.length === 0) {
-                      return 'Please select at least one pronoun option';
+                      return t('validation.pronounsRequired');
                     }
                     if (value.includes('Self-describe') && !pronounsCustom.trim()) {
-                      return 'Please specify your pronouns when selecting Self-describe';
+                      return t('validation.pronounsSpecifyRequired');
                     }
                     return true;
                   },
                 }}
                 render={({ field }) => (
                   <MultiSelectDropdown
-                    options={PRONOUNS_OPTIONS}
-                    selectedValues={field.value || []}
-                    onSelectionChange={field.onChange}
-                    placeholder="Pronouns"
+                    options={pronounsOptions}
+                    selectedValues={(field.value || []).map((key) =>
+                      keyToDisplay(pronounsOptions, PRONOUNS_KEYS, key),
+                    )}
+                    onSelectionChange={(displays) =>
+                      field.onChange(
+                        displays.map((d) => displayToKey(pronounsOptions, PRONOUNS_KEYS, d)),
+                      )
+                    }
+                    placeholder={t('pronouns')}
                     error={!!errors.pronouns}
                   />
                 )}
@@ -902,11 +1035,11 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
             </FormField>
 
             {pronouns.includes('Self-describe') && (
-              <FormField label="Please specify">
+              <FormField label={t('placeholders.pleaseSpecify')}>
                 <Input
                   value={pronounsCustom}
                   onChange={(e) => setPronounsCustom(e.target.value)}
-                  placeholder="Please specify"
+                  placeholder={t('placeholders.pleaseSpecify')}
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
                   color="brand.navy"
@@ -927,17 +1060,17 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
           </ResponsiveFieldGroup>
 
           {/* Time Zone */}
-          <FormField label="Time Zone" error={errors.timezone?.message}>
+          <FormField label={t('timeZone')} error={errors.timezone?.message}>
             <Controller
               name="timezone"
               control={control}
-              rules={{ required: 'Time zone is required' }}
+              rules={{ required: t('validation.timeZoneRequired') }}
               render={({ field }) => (
                 <SingleSelectDropdown
                   options={TIMEZONE_OPTIONS}
                   selectedValue={field.value || ''}
                   onSelectionChange={field.onChange}
-                  placeholder="Time Zone"
+                  placeholder={t('timeZone')}
                   error={!!errors.timezone}
                 />
               )}
@@ -946,14 +1079,14 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
 
           {/* Ethnic or Cultural Group (Left) and Preferred Language (Right) */}
           <ResponsiveFieldGroup>
-            <FormField label="Ethnic or Cultural Group" error={errors.ethnicGroup?.message}>
+            <FormField label={t('ethnicGroup')} error={errors.ethnicGroup?.message}>
               <Controller
                 name="ethnicGroup"
                 control={control}
                 rules={{
                   validate: (value) => {
                     if (!value || value.length === 0) {
-                      return 'Please select at least one ethnic or cultural group';
+                      return t('validation.ethnicGroupRequired');
                     }
                     if (
                       value.includes(
@@ -961,17 +1094,23 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
                       ) &&
                       !ethnicGroupCustom.trim()
                     ) {
-                      return 'Please specify your ethnic or cultural group when selecting self-describe';
+                      return t('validation.ethnicGroupRequired');
                     }
                     return true;
                   },
                 }}
                 render={({ field }) => (
                   <MultiSelectDropdown
-                    options={ETHNIC_OPTIONS}
-                    selectedValues={field.value || []}
-                    onSelectionChange={field.onChange}
-                    placeholder="Ethnic or Cultural Group"
+                    options={ethnicOptions}
+                    selectedValues={(field.value || []).map((key) =>
+                      keyToDisplay(ethnicOptions, ETHNIC_KEYS, key),
+                    )}
+                    onSelectionChange={(displays) =>
+                      field.onChange(
+                        displays.map((d) => displayToKey(ethnicOptions, ETHNIC_KEYS, d)),
+                      )
+                    }
+                    placeholder={t('ethnicGroup')}
                     error={!!errors.ethnicGroup}
                   />
                 )}
@@ -981,11 +1120,11 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
             {ethnicGroup.includes(
               'Another background/Prefer to self-describe (please specify):',
             ) && (
-              <FormField label="Please specify">
+              <FormField label={t('placeholders.pleaseSpecify')}>
                 <Input
                   value={ethnicGroupCustom}
                   onChange={(e) => setEthnicGroupCustom(e.target.value)}
-                  placeholder="Please specify"
+                  placeholder={t('placeholders.pleaseSpecify')}
                   fontFamily="system-ui, -apple-system, sans-serif"
                   fontSize="14px"
                   color="brand.navy"
@@ -1004,17 +1143,17 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
               </FormField>
             )}
 
-            <FormField label="Preferred Language" error={errors.preferredLanguage?.message}>
+            <FormField label={t('preferredLanguage')} error={errors.preferredLanguage?.message}>
               <Controller
                 name="preferredLanguage"
                 control={control}
-                rules={{ required: 'Please select your preferred language' }}
+                rules={{ required: t('validation.languageRequired') }}
                 render={({ field }) => (
                   <SingleSelectDropdown
                     options={LANGUAGE_OPTIONS}
                     selectedValue={codeToLanguage(field.value || '')}
                     onSelectionChange={(language) => field.onChange(languageToCode(language))}
-                    placeholder="Preferred Language"
+                    placeholder={t('preferredLanguage')}
                     error={!!errors.preferredLanguage}
                   />
                 )}
@@ -1024,11 +1163,11 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
 
           {/* Self-describe input for Ethnic Group (conditional, full width) */}
           {ethnicGroup.includes('Self-describe') && (
-            <FormField label="Please specify your ethnic or cultural group">
+            <FormField label={t('placeholders.pleaseSpecify')}>
               <Input
                 value={ethnicGroupCustom}
                 onChange={(e) => setEthnicGroupCustom(e.target.value)}
-                placeholder="Please specify"
+                placeholder={t('placeholders.pleaseSpecify')}
                 fontFamily="system-ui, -apple-system, sans-serif"
                 fontSize="14px"
                 color="brand.navy"
@@ -1048,34 +1187,44 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
 
           {/* Marital Status and Kids */}
           <ResponsiveFieldGroup>
-            <FormField label="Marital Status" error={errors.maritalStatus?.message}>
+            <FormField label={t('maritalStatus')} error={errors.maritalStatus?.message}>
               <Controller
                 name="maritalStatus"
                 control={control}
-                rules={{ required: 'Marital status is required' }}
+                rules={{ required: t('validation.maritalStatusRequired') }}
                 render={({ field }) => (
                   <SingleSelectDropdown
-                    options={MARITAL_STATUS_OPTIONS}
-                    selectedValue={field.value || ''}
-                    onSelectionChange={field.onChange}
-                    placeholder="Marital Status"
+                    options={maritalStatusOptions}
+                    selectedValue={keyToDisplay(
+                      maritalStatusOptions,
+                      MARITAL_STATUS_KEYS,
+                      field.value || '',
+                    )}
+                    onSelectionChange={(display) =>
+                      field.onChange(
+                        displayToKey(maritalStatusOptions, MARITAL_STATUS_KEYS, display),
+                      )
+                    }
+                    placeholder={t('maritalStatus')}
                     error={!!errors.maritalStatus}
                   />
                 )}
               />
             </FormField>
 
-            <FormField label="Do you have kids?" error={errors.hasKids?.message}>
+            <FormField label={t('doYouHaveKids')} error={errors.hasKids?.message}>
               <Controller
                 name="hasKids"
                 control={control}
-                rules={{ required: 'Please specify if you have kids' }}
+                rules={{ required: t('validation.hasKidsRequired') }}
                 render={({ field }) => (
                   <SingleSelectDropdown
-                    options={HAS_KIDS_OPTIONS}
-                    selectedValue={field.value || ''}
-                    onSelectionChange={field.onChange}
-                    placeholder="Do you have kids?"
+                    options={hasKidsOptions}
+                    selectedValue={keyToDisplay(hasKidsOptions, HAS_KIDS_KEYS, field.value || '')}
+                    onSelectionChange={(display) =>
+                      field.onChange(displayToKey(hasKidsOptions, HAS_KIDS_KEYS, display))
+                    }
+                    placeholder={t('doYouHaveKids')}
                     error={!!errors.hasKids}
                   />
                 )}
@@ -1094,14 +1243,14 @@ export function BasicDemographicsForm({ formType, onNext }: BasicDemographicsFor
           _hover={{ bg: 'brand.primaryEmphasis' }}
           _active={{ bg: 'brand.primaryEmphasis' }}
           loading={isSubmitting}
-          loadingText="Submitting..."
+          loadingText={t('submitting')}
           w="auto"
           h="40px"
           fontSize="14px"
           fontWeight={500}
           px={6}
         >
-          Complete Registration →
+          {t('completeRegistration')}
         </Button>
       </Box>
     </form>

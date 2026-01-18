@@ -8,9 +8,11 @@ import {
   setEmailForSignIn,
 } from '@/services/firebaseAuthService';
 import { AuthPageLayout } from '@/components/layout';
+import { useTranslations } from 'next-intl';
 
 export default function VerifyPage() {
   const router = useRouter();
+  const t = useTranslations('auth');
   const { email } = router.query;
   const [displayEmail, setDisplayEmail] = useState<string>('');
   const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({
@@ -53,9 +55,9 @@ export default function VerifyPage() {
 
   useEffect(() => {
     if (success) {
-      setMessage({ type: 'success', text: 'Email sent successfully! Please check your inbox.' });
+      setMessage({ type: 'success', text: t('emailSentSuccess') });
     }
-  }, [success]);
+  }, [success, t]);
 
   useEffect(() => {
     if (error) {
@@ -85,13 +87,13 @@ export default function VerifyPage() {
             fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}
             lineHeight="1.25"
           >
-            First Connection Peer Support Program
+            {t('programTitle')}
           </Heading>
           <Heading fontWeight={600} color="brand.navy" fontSize={{ base: 'xl', md: '2xl' }} mt={4}>
-            Welcome. Let&apos;s start by creating an account.
+            {t('welcome')}
           </Heading>
           <Text mt={3} color="brand.navy" fontWeight={400} fontSize={{ base: 'md', md: 'lg' }}>
-            We sent a confirmation link to <b>{displayEmail}</b>
+            {t('confirmationSent')} <b>{displayEmail}</b>
           </Text>
         </Box>
 
@@ -106,7 +108,7 @@ export default function VerifyPage() {
         )}
 
         <Text color="brand.navy" fontSize="md">
-          Didn&apos;t get a link?{' '}
+          {t('didntGetLink')}{' '}
           <Link
             color="brand.primary"
             fontWeight={600}
@@ -116,7 +118,7 @@ export default function VerifyPage() {
             onClick={isLoading ? undefined : handleResendEmail}
             _hover={{ color: 'brand.primaryEmphasis' }}
           >
-            Resend link.
+            {t('resendLink')}
           </Link>
         </Text>
 
@@ -127,7 +129,7 @@ export default function VerifyPage() {
           _hover={{ bg: 'brand.navyMuted' }}
           onClick={handleBackToLogin}
         >
-          Back to Login
+          {t('backToLogin')}
         </Button>
       </VStack>
     </AuthPageLayout>

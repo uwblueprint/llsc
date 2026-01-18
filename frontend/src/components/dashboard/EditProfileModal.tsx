@@ -14,6 +14,7 @@ import {
   AvailabilityTemplateResponse,
 } from '@/APIClients/userDataAPIClient';
 import { extractTimezoneAbbreviation, getTimezoneDisplayName } from '@/utils/timezoneUtils';
+import { useTranslations } from 'next-intl';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ interface EditProfileModalProps {
 }
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) => {
+  const t = useTranslations('dashboard');
   const { user, loading: authLoading } = useAuth();
   const [isEditingAvailability, setIsEditingAvailability] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -118,7 +120,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
           // Format date from ISO (YYYY-MM-DD) to display format (DD/MM/YYYY)
           const formatDate = (isoDate: string | undefined | null): string => {
             if (!isoDate) {
-              return 'Not provided';
+              return '';
             }
             try {
               const date = new Date(isoDate);
@@ -129,29 +131,27 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
               return formatted;
             } catch (error) {
               console.error('formatDate error:', error);
-              return 'Not provided';
+              return '';
             }
           };
 
           // Populate personal details (using camelCase after axios conversion)
           const formattedBirthday = formatDate(userData.dateOfBirth);
-          const formattedPronouns = userData.pronouns?.join(', ') || 'Not provided';
+          const formattedPronouns = userData.pronouns?.join(', ') || '';
           const userLanguage = user?.language || undefined;
 
           setPersonalDetails({
             name:
-              `${userData.firstName || ''} ${userData.lastName || ''}`.trim() ||
-              user?.email ||
-              'Not provided',
-            email: userData.email || user?.email || 'Not provided',
+              `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || user?.email || '',
+            email: userData.email || user?.email || '',
             birthday: formattedBirthday,
-            gender: userData.genderIdentity || 'Not provided',
+            gender: userData.genderIdentity || '',
             pronouns: formattedPronouns,
             timezone: userData.timezone ? getTimezoneDisplayName(userData.timezone) : 'EST',
             overview:
               userData.volunteerExperience && userData.volunteerExperience.trim()
                 ? userData.volunteerExperience
-                : 'Not provided',
+                : '',
             preferredLanguage:
               userLanguage === 'fr' ? 'fr' : userLanguage === 'en' ? 'en' : undefined,
           });
@@ -178,8 +178,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
 
           // Populate loved one details if caring for someone
           if (userData.caringForSomeone) {
-            const lovedOneBirthday = userData.lovedOneAge || 'Not provided';
-            const lovedOneGender = userData.lovedOneGenderIdentity || 'Not provided';
+            const lovedOneBirthday = userData.lovedOneAge || '';
+            const lovedOneGender = userData.lovedOneGenderIdentity || '';
 
             setLovedOneDetails({
               birthday: lovedOneBirthday,
@@ -188,8 +188,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
 
             // Populate loved one cancer experience
             setLovedOneCancerExperience({
-              diagnosis: userData.lovedOneDiagnosis || 'Not provided',
-              dateOfDiagnosis: userData.lovedOneDateOfDiagnosis || 'Not provided',
+              diagnosis: userData.lovedOneDiagnosis || '',
+              dateOfDiagnosis: userData.lovedOneDateOfDiagnosis || '',
               treatments: userData.lovedOneTreatments || [],
               experiences: userData.lovedOneExperiences || [],
             });
@@ -255,7 +255,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
 
     const result = await updateUserData(updateData);
     if (!result) {
-      throw new Error('Failed to update');
+      throw new Error(t('failedToUpdate'));
     }
   };
 
@@ -265,7 +265,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       treatments: cancerExperience.treatments,
     });
     if (!result) {
-      alert('Failed to save treatments');
+      alert(t('failedToSave'));
     }
   };
 
@@ -275,7 +275,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       experiences: cancerExperience.experiences,
     });
     if (!result) {
-      alert('Failed to save experiences');
+      alert(t('failedToSave'));
     }
   };
 
@@ -286,7 +286,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       lovedOneTreatments: lovedOneCancerExperience.treatments,
     });
     if (!result) {
-      alert('Failed to save loved one treatments');
+      alert(t('failedToSave'));
     }
   };
 
@@ -297,7 +297,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       lovedOneExperiences: lovedOneCancerExperience.experiences,
     });
     if (!result) {
-      alert('Failed to save loved one experiences');
+      alert(t('failedToSave'));
     }
   };
 
@@ -399,11 +399,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
           setProfileTimeSlots(timeSlots);
         }
       } else {
-        alert('Failed to save availability. Please try again.');
+        alert(t('failedToSaveAvailability'));
       }
     } catch (err) {
       console.error('❌ Error updating availability:', err);
-      alert('An error occurred while saving. Please try again.');
+      alert(t('errorSavingAvailability'));
     } finally {
       setSavingAvailability(false);
     }
@@ -433,7 +433,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
           alignItems="center"
         >
           <Text fontSize="16px" color="#6B7280" fontFamily="'Open Sans', sans-serif">
-            Loading...
+            {t('loading')}
           </Text>
         </Box>
       </Box>
@@ -454,14 +454,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       <Box minH="100vh" bg="white" p={12}>
         <Box w="70%" mx="auto" overflowX="hidden">
           <HStack gap={2} mb={4} cursor="pointer" onClick={onClose}>
-            <Image src="/icons/chevron-left.png" alt="Back" w="20px" h="20px" />
+            <Image src="/icons/chevron-left.png" alt={t('back')} w="20px" h="20px" />
             <Text
               fontSize="16px"
               color="#1D3448"
               fontFamily="'Open Sans', sans-serif"
               fontWeight={400}
             >
-              Back
+              {t('back')}
             </Text>
           </HStack>
 
@@ -473,7 +473,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
             letterSpacing="-1.5%"
             mb="48px"
           >
-            Edit Profile
+            {t('editProfile')}
           </Heading>
 
           <VStack gap={0} align="stretch">
@@ -509,10 +509,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                   fontFamily="'Open Sans', sans-serif"
                   mb="8px"
                 >
-                  Your availability
+                  {t('yourAvailabilityHeading')}
                 </Heading>
                 {!isEditingAvailability ? (
-                  <ActionButton onClick={handleEditAvailability}>Edit</ActionButton>
+                  <ActionButton onClick={handleEditAvailability}>{t('edit')}</ActionButton>
                 ) : (
                   <HStack gap={3}>
                     <Button
@@ -528,7 +528,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                       _active={{ bg: '#7F1D1D' }}
                       onClick={handleClearAvailability}
                     >
-                      Clear Availability
+                      {t('clearAvailability')}
                     </Button>
                     <Button
                       bg="#6B7280"
@@ -543,7 +543,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                       _active={{ bg: '#374151' }}
                       onClick={handleCancelEdit}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                     <Button
                       bg="#056067"
@@ -559,7 +559,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                       onClick={handleSaveAvailability}
                       disabled={savingAvailability}
                     >
-                      {savingAvailability ? 'Saving...' : 'Save'}
+                      {savingAvailability ? t('saving') : t('save')}
                     </Button>
                   </HStack>
                 )}
@@ -575,7 +575,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                 mt={0}
                 fontFamily="'Open Sans', sans-serif"
               >
-                We require that availability be provided in sessions of at least 2 hours.
+                {t('weRequire2Hours')}
               </Text>
 
               <Box h="900px" w="100%" mr={0}>

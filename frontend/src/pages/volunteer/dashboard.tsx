@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text, VStack } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
@@ -24,6 +25,7 @@ interface MatchedParticipant {
 }
 
 const VolunteerDashboardPage: React.FC = () => {
+  const t = useTranslations('dashboard');
   const [userName, setUserName] = useState('');
   const [matchedParticipants, setMatchedParticipants] = useState<MatchedParticipant[]>([]);
   const [allMatches, setAllMatches] = useState<any[]>([]);
@@ -66,8 +68,8 @@ const VolunteerDashboardPage: React.FC = () => {
             name: fullName || participant.email,
             pronouns: participant.pronouns?.join('/') || '',
             age: participant.age || 0,
-            timezone: participant.timezone || 'N/A',
-            diagnosis: participant.diagnosis || 'N/A',
+            timezone: participant.timezone || t('notAvailable'),
+            diagnosis: participant.diagnosis || t('notAvailable'),
             treatments: participant.treatments || [],
             experiences: participant.experiences || [],
             initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
@@ -96,7 +98,7 @@ const VolunteerDashboardPage: React.FC = () => {
               fontFamily="'Open Sans', sans-serif"
               textAlign="left"
             >
-              Loading matches...
+              {t('loading')}
             </Text>
           </VolunteerDashboardLayout>
         </FormStatusGuard>
@@ -119,8 +121,8 @@ const VolunteerDashboardPage: React.FC = () => {
             mb={2}
           >
             {matchedParticipants.length > 0
-              ? `Participants have matched with you, ${userName}!`
-              : `No New Matches${userName ? `, ${userName}` : ''}`}
+              ? t('participantsMatched', { name: userName })
+              : t('noNewMatchesYet', { name: userName })}
           </Heading>
 
           <Text
@@ -131,10 +133,10 @@ const VolunteerDashboardPage: React.FC = () => {
             mb={8}
           >
             {matchedParticipants.length > 0
-              ? 'Please schedule calls with your matches.'
+              ? t('pleaseScheduleCalls')
               : allMatches.length > 0
-                ? 'View your matches below.'
-                : "Keep an eye out on your inbox! We'll notify you when we match you with a participant."}
+                ? t('matches')
+                : t('keepEyeOnInboxParticipant')}
           </Text>
 
           {/* Show status screen with all matches */}
@@ -201,8 +203,8 @@ const VolunteerDashboardPage: React.FC = () => {
                       name: fullName || participant.email,
                       pronouns: participant.pronouns?.join('/') || '',
                       age: participant.age || 0,
-                      timezone: participant.timezone || 'N/A',
-                      diagnosis: participant.diagnosis || 'N/A',
+                      timezone: participant.timezone || t('notAvailable'),
+                      diagnosis: participant.diagnosis || t('notAvailable'),
                       treatments: participant.treatments || [],
                       experiences: participant.experiences || [],
                       initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
@@ -216,7 +218,7 @@ const VolunteerDashboardPage: React.FC = () => {
                 } catch (error) {
                   console.error('Error accepting match:', error);
                   // TODO: Show error message to user
-                  alert('Failed to send availability. Please try again.');
+                  alert(t('failedToSendAvailability'));
                 }
               }}
             />

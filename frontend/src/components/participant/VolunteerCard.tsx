@@ -4,6 +4,7 @@ import { Avatar } from '@/components/ui/avatar';
 import Badge from '@/components/dashboard/Badge';
 import { COLORS } from '@/constants/form';
 import { FiLoader } from 'react-icons/fi';
+import { useTranslations } from 'next-intl';
 
 interface VolunteerCardProps {
   match: Match;
@@ -11,7 +12,18 @@ interface VolunteerCardProps {
 }
 
 export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
+  const t = useTranslations('dashboard');
+  const tOptions = useTranslations('options');
   const { volunteer } = match;
+
+  // Helper to translate medical terms with fallback to original value
+  const translateOption = (category: 'treatments' | 'experiences' | 'diagnoses', value: string) => {
+    try {
+      return tOptions(`${category}.${value}`);
+    } catch {
+      return value; // Fallback to original if translation not found
+    }
+  };
 
   // Format full name
   const fullName = `${volunteer.firstName || ''} ${volunteer.lastName || ''}`.trim();
@@ -60,7 +72,7 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
               fontFamily="'Open Sans', sans-serif"
               lineHeight="1.4285714285714286em"
             >
-              Pending
+              {t('pending')}
             </Text>
           </HStack>
         </Box>
@@ -100,13 +112,19 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
 
             <HStack gap={2} align="center" wrap="wrap" mt="16px">
               {typeof volunteer.age === 'number' && (
-                <Badge iconSrc="/icons/user-secondary.png">Current Age: {volunteer.age}</Badge>
+                <Badge iconSrc="/icons/user-secondary.png">
+                  {t('currentAge')} {volunteer.age}
+                </Badge>
               )}
               {volunteer.timezone && (
-                <Badge iconSrc="/icons/clock-secondary.png">Time Zone: {volunteer.timezone}</Badge>
+                <Badge iconSrc="/icons/clock-secondary.png">
+                  {t('timeZone')} {volunteer.timezone}
+                </Badge>
               )}
               {volunteer.diagnosis && (
-                <Badge iconSrc="/icons/activity-secondary.png">{volunteer.diagnosis}</Badge>
+                <Badge iconSrc="/icons/activity-secondary.png">
+                  {translateOption('diagnoses', volunteer.diagnosis)}
+                </Badge>
               )}
             </HStack>
           </VStack>
@@ -124,7 +142,7 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
               letterSpacing="0%"
               mb="16px"
             >
-              Overview
+              {t('overview')}
             </Text>
             <Text
               fontSize="1rem"
@@ -150,12 +168,12 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
               letterSpacing="0%"
               mb="16px"
             >
-              Treatment Information
+              {t('treatmentInformation')}
             </Text>
             <HStack gap={2} wrap="wrap">
               {volunteer.treatments.map((treatment: string, index: number) => (
                 <Badge key={index} bgColor="#EEF4FF" textColor="#3538CD">
-                  {treatment}
+                  {translateOption('treatments', treatment)}
                 </Badge>
               ))}
             </HStack>
@@ -174,12 +192,12 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
               letterSpacing="0%"
               mb="16px"
             >
-              Experience Information
+              {t('experienceInformation')}
             </Text>
             <HStack gap={2} wrap="wrap">
               {volunteer.experiences.map((experience: string, index: number) => (
                 <Badge key={index} bgColor="#FDF2FA" textColor="#C11574">
-                  {experience}
+                  {translateOption('experiences', experience)}
                 </Badge>
               ))}
             </HStack>
@@ -209,7 +227,7 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
           }}
           onClick={() => onSchedule(match.id)}
         >
-          Schedule call
+          {t('scheduleCall')}
         </Button>
       )}
     </Box>

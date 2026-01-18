@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
+import { useTranslations } from 'next-intl';
 
 const FAQsPage: React.FC = () => {
+  const t = useTranslations('dashboard');
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
@@ -28,7 +30,8 @@ const FAQsPage: React.FC = () => {
             textAlign="left"
             mb={2}
           >
-            Frequently Asked Questions{userName ? `, ${userName}` : ''}
+            {t('faqsTitle')}
+            {userName ? `, ${userName}` : ''}
           </Heading>
 
           <Text
@@ -38,7 +41,7 @@ const FAQsPage: React.FC = () => {
             textAlign="left"
             mb={8}
           >
-            Find answers to common questions about the volunteer program.
+            {t('findAnswers')}
           </Text>
 
           <Text
@@ -48,7 +51,7 @@ const FAQsPage: React.FC = () => {
             textAlign="center"
             mt={16}
           >
-            FAQs coming soon...
+            {t('faqsComingSoon')}
           </Text>
         </Box>
       </Box>

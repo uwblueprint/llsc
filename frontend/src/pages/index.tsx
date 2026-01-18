@@ -7,9 +7,11 @@ import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
 import { login } from '@/APIClients/authAPIClient';
 import { AuthPageLayout } from '@/components/layout';
+import { useTranslations } from 'next-intl';
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -37,10 +39,10 @@ export default function LoginPage() {
       } else if (result.errorCode === 'auth/email-not-verified') {
         router.push(`/verify?email=${encodeURIComponent(email)}`);
       } else {
-        setError(result.error || 'Login failed. Please try again.');
+        setError(result.error || t('loginFailed'));
       }
     } catch {
-      setError('An unexpected error occurred. Please try again.');
+      setError(t('unexpectedError'));
     } finally {
       setIsLoading(false);
     }
@@ -58,20 +60,18 @@ export default function LoginPage() {
             fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}
             lineHeight="1.25"
           >
-            First Connection Peer Support Program
+            {t('programTitle')}
           </Heading>
           <Heading fontWeight={600} color="brand.navy" fontSize={{ base: 'xl', md: '2xl' }} mt={4}>
-            {isFromEmailVerification ? 'Thank you for confirming!' : 'Welcome Back!'}
+            {isFromEmailVerification ? t('thankYouConfirming') : t('welcomeBack')}
           </Heading>
           <Text mt={3} color="brand.navy" fontWeight={400} fontSize={{ base: 'md', md: 'lg' }}>
-            {isFromEmailVerification
-              ? 'Your email has been successfully verified. Please sign in again to continue.'
-              : 'Sign in with your email and password.'}
+            {isFromEmailVerification ? t('emailVerified') : t('signInMessage')}
           </Text>
         </Box>
 
         <VStack as="form" spacing={6} align="stretch" onSubmit={handleSubmit}>
-          <Field label={<FormLabel>Email</FormLabel>}>
+          <Field label={<FormLabel>{t('email')}</FormLabel>}>
             <InputGroup w="100%">
               <Input
                 type="email"
@@ -91,7 +91,7 @@ export default function LoginPage() {
             </InputGroup>
           </Field>
 
-          <Field label={<FormLabel>Password</FormLabel>}>
+          <Field label={<FormLabel>{t('password')}</FormLabel>}>
             <InputGroup w="100%">
               <Input
                 type="password"
@@ -123,7 +123,7 @@ export default function LoginPage() {
               h="auto"
               _hover={{ color: 'brand.navy' }}
             >
-              Forgot Password?
+              {t('forgotPassword')}
             </Button>
           </Box>
 
@@ -150,12 +150,12 @@ export default function LoginPage() {
             py={3}
             isLoading={isLoading}
           >
-            Sign In
+            {t('signIn')}
           </Button>
         </VStack>
 
         <Text color="brand.navy" fontSize="md" fontWeight={600}>
-          Don&apos;t have an account?{' '}
+          {t('noAccount')}{' '}
           <Link
             href="/participant-form"
             style={{
@@ -164,7 +164,7 @@ export default function LoginPage() {
               fontWeight: 600,
             }}
           >
-            Complete our First Connection Participant Form.
+            {t('completeForm')}
           </Link>
         </Text>
       </VStack>

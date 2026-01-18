@@ -1,4 +1,5 @@
 import { Box, Button, Flex, Text, VStack, HStack } from '@chakra-ui/react';
+import { useTranslations, useLocale } from 'next-intl';
 import { Match } from '@/types/matchTypes';
 import { formatDateRelative, formatDateShort, formatTime } from '@/utils/dateUtils';
 import { Avatar } from '@/components/ui/avatar';
@@ -15,15 +16,25 @@ export function ConfirmedMatchCard({
   onCancelCall,
   onViewContactDetails,
 }: ConfirmedMatchCardProps) {
+  const t = useTranslations('dashboard');
+  const locale = useLocale();
   const { volunteer, chosenTimeBlock } = match;
 
   if (!chosenTimeBlock) {
     return null;
   }
 
-  const dateLabel = formatDateRelative(chosenTimeBlock.startTime);
-  const dateShort = formatDateShort(chosenTimeBlock.startTime);
-  const timeFormatted = formatTime(chosenTimeBlock.startTime);
+  const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-US';
+  const rawDateLabel = formatDateRelative(chosenTimeBlock.startTime, dateLocale);
+  // Translate TODAY/TOMORROW keys, otherwise use the locale-formatted day name
+  const dateLabel =
+    rawDateLabel === 'TODAY'
+      ? t('today')
+      : rawDateLabel === 'TOMORROW'
+        ? t('tomorrow')
+        : rawDateLabel;
+  const dateShort = formatDateShort(chosenTimeBlock.startTime, dateLocale);
+  const timeFormatted = formatTime(chosenTimeBlock.startTime, dateLocale);
 
   // Format pronouns for display
   const pronounsText =
@@ -35,7 +46,7 @@ export function ConfirmedMatchCard({
   };
 
   // Get volunteer timezone or use placeholder
-  const volunteerTimezone = volunteer.timezone ? formatTimezone(volunteer.timezone) : 'TBD';
+  const volunteerTimezone = volunteer.timezone ? formatTimezone(volunteer.timezone) : t('tbd');
 
   return (
     <VStack align="stretch" gap={4}>
@@ -123,7 +134,7 @@ export function ConfirmedMatchCard({
                       bgColor="rgba(179, 206, 209, 0.3)"
                       textColor="#056067"
                     >
-                      Current Age: {volunteer.age}
+                      {t('currentAge')} {volunteer.age}
                     </Badge>
                   )}
                   <Badge
@@ -131,7 +142,7 @@ export function ConfirmedMatchCard({
                     bgColor="rgba(179, 206, 209, 0.3)"
                     textColor="#056067"
                   >
-                    Time Zone: {volunteerTimezone}
+                    {t('timeZone')} {volunteerTimezone}
                   </Badge>
                   {volunteer.diagnosis && (
                     <Badge
@@ -157,7 +168,7 @@ export function ConfirmedMatchCard({
                   lineHeight="1.875rem"
                   mb={4}
                 >
-                  Overview
+                  {t('overview')}
                 </Text>
                 <Text
                   fontSize="1rem"
@@ -182,7 +193,7 @@ export function ConfirmedMatchCard({
                   lineHeight="1.875rem"
                   mb={4}
                 >
-                  Treatment Information
+                  {t('treatmentInformation')}
                 </Text>
                 <HStack gap={2} wrap="wrap">
                   {volunteer.treatments.map((treatment: string, index: number) => (
@@ -205,7 +216,7 @@ export function ConfirmedMatchCard({
                   lineHeight="1.875rem"
                   mb={4}
                 >
-                  Experience Information
+                  {t('experienceInformation')}
                 </Text>
                 <HStack gap={2} wrap="wrap">
                   {volunteer.experiences.map((experience: string, index: number) => (
@@ -233,7 +244,7 @@ export function ConfirmedMatchCard({
                   _active={{ bg: '#991B1B' }}
                   onClick={() => onCancelCall(match.id)}
                 >
-                  Cancel Call
+                  {t('cancelCall')}
                 </Button>
               )}
               {onViewContactDetails && (
@@ -250,7 +261,7 @@ export function ConfirmedMatchCard({
                   _active={{ bg: '#033a3e' }}
                   onClick={() => onViewContactDetails(match.id)}
                 >
-                  View Contact Details
+                  {t('viewContactDetails')}
                 </Button>
               )}
             </Flex>

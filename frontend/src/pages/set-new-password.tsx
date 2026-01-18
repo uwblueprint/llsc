@@ -7,8 +7,10 @@ import { InputGroup } from '@/components/ui/input-group';
 import { useRouter } from 'next/router';
 import firebaseApp from '@/config/firebase';
 import { AuthPageLayout } from '@/components/layout';
+import { useTranslations } from 'next-intl';
 
 export default function SetNewPasswordPage() {
+  const t = useTranslations('auth');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,11 +30,11 @@ export default function SetNewPasswordPage() {
   useEffect(() => {
     const { oobCode } = router.query;
     if (!oobCode) {
-      setError('Invalid or expired password reset link. Please request a new one.');
+      setError(t('invalidResetLink'));
     } else {
       setError('');
     }
-  }, [router.query]);
+  }, [router.query, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,13 +48,13 @@ export default function SetNewPasswordPage() {
     setIsLoading(true);
 
     if (password !== confirmPassword) {
-      setPasswordError('Passwords do not match. Please try again.');
+      setPasswordError(t('passwordsDoNotMatch'));
       setIsLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      setError(t('passwordMinLength'));
       setIsLoading(false);
       return;
     }
@@ -60,7 +62,7 @@ export default function SetNewPasswordPage() {
     try {
       const { oobCode } = router.query;
       if (!oobCode) {
-        setError('Invalid password reset link. Please request a new one.');
+        setError(t('invalidResetLink'));
         setIsLoading(false);
         return;
       }
@@ -81,14 +83,14 @@ export default function SetNewPasswordPage() {
       if (response.ok && !data.error) {
         setError('');
         setTimeout(() => {
-          router.push('/');
-        }, 2000);
+          router.push('/password-changed');
+        }, 500);
       } else {
-        const errorMessage = data.error?.message || 'Failed to reset password. Please try again.';
+        const errorMessage = data.error?.message || t('failedToResetPassword');
         setError(errorMessage);
       }
     } catch {
-      setError('An error occurred while resetting your password. Please try again.');
+      setError(t('errorResettingPassword'));
     } finally {
       setIsLoading(false);
     }
@@ -109,13 +111,13 @@ export default function SetNewPasswordPage() {
             fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}
             lineHeight="1.25"
           >
-            First Connection Peer Support Program
+            {t('programTitle')}
           </Heading>
           <Heading fontWeight={600} color="brand.navy" fontSize={{ base: 'xl', md: '2xl' }} mt={4}>
-            Reset Your Password
+            {t('resetPassword')}
           </Heading>
           <Text mt={3} color="brand.navy" fontWeight={400} fontSize={{ base: 'md', md: 'lg' }}>
-            Set a new password to restore access to your account.
+            {t('setNewPassword')}
           </Text>
         </Box>
 
@@ -127,12 +129,12 @@ export default function SetNewPasswordPage() {
 
         {showForm && (
           <VStack as="form" spacing={4} onSubmit={handleSubmit}>
-            <Field label={<FormLabel>New Password</FormLabel>}>
+            <Field label={<FormLabel>{t('newPassword')}</FormLabel>}>
               <InputGroup w="100%">
                 <Input
                   ref={passwordRef}
                   type="password"
-                  placeholder="Enter your new password"
+                  placeholder={t('enterNewPassword')}
                   required
                   autoComplete="new-password"
                   w="100%"
@@ -149,12 +151,12 @@ export default function SetNewPasswordPage() {
               </InputGroup>
             </Field>
 
-            <Field label={<FormLabel>Confirm New Password</FormLabel>}>
+            <Field label={<FormLabel>{t('confirmNewPassword')}</FormLabel>}>
               <InputGroup w="100%">
                 <Input
                   ref={confirmPasswordRef}
                   type="password"
-                  placeholder="Confirm your new password"
+                  placeholder={t('confirmYourNewPassword')}
                   required
                   autoComplete="new-password"
                   w="100%"
@@ -208,13 +210,13 @@ export default function SetNewPasswordPage() {
               isLoading={isLoading}
               isDisabled={isLoading}
             >
-              Reset Password
+              {t('resetPasswordButton')}
             </Button>
           </VStack>
         )}
 
         <Text color="brand.navy" fontSize="md" fontWeight={600}>
-          Return to{' '}
+          {t('returnTo')}{' '}
           <Link
             href="/"
             style={{
@@ -223,7 +225,7 @@ export default function SetNewPasswordPage() {
               fontWeight: 600,
             }}
           >
-            login
+            {t('login')}
           </Link>
           .
         </Text>

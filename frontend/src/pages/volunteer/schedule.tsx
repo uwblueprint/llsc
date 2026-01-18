@@ -6,8 +6,10 @@ import TimeScheduler from '@/components/dashboard/TimeScheduler';
 import type { TimeSlot } from '@/components/dashboard/types';
 import { createAvailability, AvailabilityTemplate } from '@/APIClients/authAPIClient';
 import { getCurrentUserId } from '@/utils/AuthUtils';
+import { useTranslations } from 'next-intl';
 
 const SchedulePage: React.FC = () => {
+  const t = useTranslations('dashboard');
   const router = useRouter();
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([]);
   const [additionalInfo, setAdditionalInfo] = useState('');
@@ -94,7 +96,7 @@ const SchedulePage: React.FC = () => {
 
   const handleSend = async () => {
     if (selectedTimeSlots.length === 0) {
-      alert('Please select at least one time slot');
+      alert(t('selectAtLeastOneTimeSlot'));
       return;
     }
 
@@ -102,7 +104,7 @@ const SchedulePage: React.FC = () => {
     try {
       const userId = getCurrentUserId();
       if (!userId) {
-        alert('User not authenticated. Please log in again.');
+        alert(t('userNotAuthenticated'));
         return;
       }
 
@@ -115,11 +117,11 @@ const SchedulePage: React.FC = () => {
       if (result) {
         router.push('/volunteer/edit-profile');
       } else {
-        alert('Failed to save availability. Please try again.');
+        alert(t('failedToSaveAvailability'));
       }
     } catch (error) {
       console.error('Error saving availability:', error);
-      alert('Failed to save availability. Please try again.');
+      alert(t('failedToSaveAvailability'));
     } finally {
       setLoading(false);
     }
@@ -140,7 +142,7 @@ const SchedulePage: React.FC = () => {
               letterSpacing="-1.5%"
               mb="19px"
             >
-              Select your availability
+              {t('selectYourAvailability')}
             </Heading>
             <VStack align="start" gap={2}>
               <Text
@@ -151,19 +153,7 @@ const SchedulePage: React.FC = () => {
                 letterSpacing="-1.5%"
                 lineHeight="100%"
               >
-                Drag to select all the times you will usually be available to meet with
-                participants. We require that availability be provided in sessions of at least 2
-                hours.
-              </Text>
-              <Text
-                color="#1D3448"
-                fontSize="16px"
-                fontFamily="'Open Sans', sans-serif"
-                fontWeight={400}
-                letterSpacing="-1.5%"
-                lineHeight="100%"
-              >
-                You will also be able to edit later in your profile.
+                {t('dragToSelect')}
               </Text>
             </VStack>
           </Box>
@@ -192,7 +182,7 @@ const SchedulePage: React.FC = () => {
               onClick={handleSend}
               disabled={loading}
             >
-              {loading ? 'Saving...' : 'Confirm Availability'}
+              {loading ? t('saving') : t('confirmAvailability')}
             </Button>
           </Box>
         </VStack>

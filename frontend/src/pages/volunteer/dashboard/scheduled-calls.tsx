@@ -7,6 +7,7 @@ import ProfileCard from '@/components/dashboard/ProfileCard';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { FormStatus, UserRole } from '@/types/authTypes';
+import { useTranslations } from 'next-intl';
 
 interface ScheduledCall {
   id: number;
@@ -22,6 +23,7 @@ interface ScheduledCall {
 }
 
 const ScheduledCallsPage: React.FC = () => {
+  const t = useTranslations('dashboard');
   const [userName, setUserName] = useState('');
   const [scheduledCalls, setScheduledCalls] = useState<ScheduledCall[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,8 +60,8 @@ const ScheduledCallsPage: React.FC = () => {
             name: fullName || participant.email,
             pronouns: participant.pronouns?.join('/') || '',
             age: participant.age || 0,
-            timezone: participant.timezone || 'N/A',
-            diagnosis: participant.diagnosis || 'N/A',
+            timezone: participant.timezone || t('notAvailable'),
+            diagnosis: participant.diagnosis || t('notAvailable'),
             treatments: participant.treatments || [],
             experiences: participant.experiences || [],
             initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
@@ -89,7 +91,7 @@ const ScheduledCallsPage: React.FC = () => {
               fontFamily="'Open Sans', sans-serif"
               textAlign="left"
             >
-              Loading scheduled calls...
+              {t('loadingScheduledCalls')}
             </Text>
           </VolunteerDashboardLayout>
         </FormStatusGuard>
@@ -112,8 +114,8 @@ const ScheduledCallsPage: React.FC = () => {
             mb={2}
           >
             {scheduledCalls.length > 0
-              ? `Your Scheduled Calls${userName ? `, ${userName}` : ''}`
-              : `No Scheduled Calls${userName ? `, ${userName}` : ''}`}
+              ? `${t('yourScheduledCalls')}${userName ? `, ${userName}` : ''}`
+              : `${t('noScheduledCalls')}${userName ? `, ${userName}` : ''}`}
           </Heading>
 
           <Text
@@ -123,9 +125,7 @@ const ScheduledCallsPage: React.FC = () => {
             textAlign="left"
             mb={8}
           >
-            {scheduledCalls.length > 0
-              ? 'Here are your upcoming calls with participants.'
-              : "You don't have any scheduled calls yet. Check the Matches tab to schedule calls with your matched participants."}
+            {scheduledCalls.length > 0 ? t('hereAreUpcomingCalls') : t('noScheduledCallsYet')}
           </Text>
 
           {scheduledCalls.length > 0 && (

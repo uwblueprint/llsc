@@ -5,6 +5,7 @@ import type { AuthenticatedUser, UserRole } from '@/types/authTypes';
 import { UserRole as UserRoleEnum } from '@/types/authTypes';
 import { getCurrentUser, syncCurrentUser } from '@/APIClients/authAPIClient';
 import { roleIdToUserRole } from '@/utils/roleUtils';
+import { useTranslations } from 'next-intl';
 
 // X mark icon component
 const XMarkIcon: React.FC = () => (
@@ -32,6 +33,7 @@ const XMarkIcon: React.FC = () => (
 );
 
 export function RejectionScreen() {
+  const t = useTranslations('intake');
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
@@ -57,27 +59,8 @@ export function RejectionScreen() {
     void hydrateRole();
   }, []);
 
-  const content = useMemo(() => {
-    if (userRole === UserRoleEnum.VOLUNTEER) {
-      return {
-        title: "You're unable to continue this application.",
-        body: [
-          'Thank you for your interest in becoming a peer support volunteer.',
-          'You must meet all of the eligibility criteria to continue.',
-          'Please reach out to FirstConnections@lls.org for more information about volunteering with LLSC.',
-        ],
-      };
-    }
-
-    return {
-      title: "You're unable to continue this application.",
-      body: [
-        'Thank you for your interest in First Connections.',
-        'To continue as a participant you must meet each of the eligibility requirements.',
-        'Please reach out to FirstConnections@lls.org if you have questions or need help finding other support options.',
-      ],
-    };
-  }, [userRole]);
+  const isVolunteer = userRole === UserRoleEnum.VOLUNTEER;
+  const contactEmail = t('contactEmail');
 
   return (
     <Box minH="100vh" bg="white" display="flex" alignItems="center" justifyContent="center" py={12}>
@@ -91,49 +74,45 @@ export function RejectionScreen() {
           color={COLORS.veniceBlue}
           mb={2}
         >
-          {content.title}
+          {t('unableToContinue')}
         </Text>
 
         <VStack gap={1} maxW="640px">
-          {content.body.map((sentence, index) => {
-            const EMAIL_TOKEN = 'FirstConnections@lls.org';
-            const hasEmail = sentence.includes(EMAIL_TOKEN);
-            let prefix = '';
-            let suffix = '';
-            if (hasEmail) {
-              const parts = sentence.split(EMAIL_TOKEN);
-              prefix = parts[0] ?? '';
-              suffix = parts[1] ?? '';
-            }
-
-            return (
-              <Text
-                key={`${sentence}-${index}`}
-                fontFamily="system-ui, -apple-system, sans-serif"
-                fontSize="18px"
-                color={COLORS.fieldGray}
-                lineHeight="1.6"
-                textAlign="center"
-              >
-                {hasEmail ? (
-                  <>
-                    {prefix}
-                    <Link
-                      href="mailto:FirstConnections@lls.org"
-                      color={COLORS.teal}
-                      textDecoration="underline"
-                      fontWeight={600}
-                    >
-                      FirstConnections@lls.org
-                    </Link>
-                    {suffix}
-                  </>
-                ) : (
-                  sentence
-                )}
-              </Text>
-            );
-          })}
+          <Text
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontSize="18px"
+            color={COLORS.fieldGray}
+            lineHeight="1.6"
+            textAlign="center"
+          >
+            {isVolunteer ? (
+              <>
+                {t('thankYouForInterestVolunteer').split(contactEmail)[0]}
+                <Link
+                  href={`mailto:${contactEmail}`}
+                  color={COLORS.teal}
+                  textDecoration="underline"
+                  fontWeight={600}
+                >
+                  {contactEmail}
+                </Link>
+                {t('thankYouForInterestVolunteer').split(contactEmail)[1]}
+              </>
+            ) : (
+              <>
+                {t('thankYouForInterestParticipant').split(contactEmail)[0]}
+                <Link
+                  href={`mailto:${contactEmail}`}
+                  color={COLORS.teal}
+                  textDecoration="underline"
+                  fontWeight={600}
+                >
+                  {contactEmail}
+                </Link>
+                {t('thankYouForInterestParticipant').split(contactEmail)[1]}
+              </>
+            )}
+          </Text>
         </VStack>
       </VStack>
     </Box>

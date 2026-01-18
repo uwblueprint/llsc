@@ -2,9 +2,12 @@ import React from 'react';
 import { Box, Heading, Text, Button, VStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { AuthPageLayout } from '@/components/layout';
+import { useTranslations } from 'next-intl';
 
 export default function PasswordChangedPage() {
   const router = useRouter();
+  const t = useTranslations('auth');
+
   return (
     <AuthPageLayout>
       <VStack spacing={6} textAlign="center" align="center">
@@ -34,10 +37,10 @@ export default function PasswordChangedPage() {
           </svg>
         </Box>
         <Heading color="brand.navy" fontWeight={700}>
-          Password changed!
+          {t('passwordChanged')}
         </Heading>
         <Text color="brand.navy" fontSize="lg">
-          You can now sign in with your new password.
+          {t('canSignInNow')}
         </Text>
         <Button
           bg="brand.primary"
@@ -53,7 +56,7 @@ export default function PasswordChangedPage() {
           _hover={{ bg: 'brand.primaryEmphasis' }}
           w={{ base: '100%', md: '320px' }}
         >
-          Return to Log In &nbsp; &rarr;
+          {t('returnToLogIn')} &nbsp; &rarr;
         </Button>
       </VStack>
     </AuthPageLayout>

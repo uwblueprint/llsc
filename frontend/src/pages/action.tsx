@@ -3,12 +3,14 @@ import { useEffect, useState } from 'react';
 import { VStack, Heading, Text, Button, Spinner } from '@chakra-ui/react';
 import { verifyEmailWithCode } from '@/APIClients/authAPIClient';
 import { AuthPageLayout } from '@/components/layout';
-import { getAuth, applyActionCode, verifyPasswordResetCode } from "firebase/auth";
+import { getAuth, applyActionCode, verifyPasswordResetCode } from 'firebase/auth';
+import { useTranslations } from 'next-intl';
 
 const auth = getAuth();
 
 export default function ActionPage() {
   const router = useRouter();
+  const t = useTranslations('auth');
   const [isProcessing, setIsProcessing] = useState(true);
   const [error, setError] = useState('');
 
@@ -25,7 +27,7 @@ export default function ActionPage() {
       const normalizedCode = Array.isArray(queryCode) ? queryCode[0] : queryCode;
 
       if (!normalizedMode || !normalizedCode) {
-        setError('Invalid verification link');
+        setError(t('invalidVerificationLink'));
         setIsProcessing(false);
         return;
       }
@@ -33,9 +35,9 @@ export default function ActionPage() {
       if (normalizedMode === 'verifyEmail') {
         try {
           await applyActionCode(auth, normalizedCode);
-          router.replace("/?verified=true");
+          router.replace('/?verified=true&mode=verifyEmail');
         } catch (err: any) {
-          setError(err.message || "Verification failed");
+          setError(err.message || t('verificationFailed'));
           setIsProcessing(false);
         }
       } else if (normalizedMode === 'resetPassword') {
@@ -43,22 +45,22 @@ export default function ActionPage() {
           await verifyPasswordResetCode(auth, normalizedCode);
           router.replace(`/set-new-password?oobCode=${normalizedCode}`);
         } catch (err) {
-          setError("Invalid or expired password reset code");
+          setError(t('invalidOrExpiredCode'));
           setIsProcessing(false);
         }
       } else {
-        setError('Invalid action mode');
+        setError(t('invalidActionMode'));
         setIsProcessing(false);
       }
     };
 
     handleAction();
-  }, [router.isReady, router.query.mode, router.query.oobCode, router.asPath, router]);
+  }, [router.isReady, router.query.mode, router.query.oobCode, router.asPath, router, t]);
 
   const LoadingState = (
     <VStack spacing={4} textAlign="center" align="center">
-      <Heading size="lg">Processing...</Heading>
-      <Text>Please wait while we process your request.</Text>
+      <Heading size="lg">{t('processing')}</Heading>
+      <Text>{t('pleaseWait')}</Text>
       {isProcessing && <Spinner thickness="4px" speed="0.65s" color="brand.primary" size="xl" />}
     </VStack>
   );
@@ -68,7 +70,7 @@ export default function ActionPage() {
       <AuthPageLayout>
         <VStack spacing={4} textAlign="center" align="center">
           <Heading size="lg" color="red.500">
-            Verification Failed
+            {t('verificationFailed')}
           </Heading>
           <Text color="gray.600">{error}</Text>
           <Button
@@ -77,7 +79,7 @@ export default function ActionPage() {
             _hover={{ bg: 'brand.primaryEmphasis' }}
             onClick={() => router.push('/')}
           >
-            Return to Login
+            {t('returnToLogIn')}
           </Button>
         </VStack>
       </AuthPageLayout>

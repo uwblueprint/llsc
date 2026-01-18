@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Heading, Button, VStack, HStack, Text, SimpleGrid } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface CaregiverTwoColumnQualitiesFormProps {
@@ -44,6 +45,7 @@ export function CaregiverTwoColumnQualitiesForm({
   leftOptions,
   rightOptions,
 }: CaregiverTwoColumnQualitiesFormProps) {
+  const t = useTranslations('ranking');
   const maxSelected = 5;
   const reachedMax = selectedQualities.length >= maxSelected;
   const volunteerOptions =
@@ -65,7 +67,7 @@ export function CaregiverTwoColumnQualitiesForm({
         fontSize={{ base: '24px', md: '28px' }}
         mb={8}
       >
-        Volunteer Matching Preferences
+        {t('volunteerMatchingPreferences')}
       </Heading>
 
       <Box mb={10}>
@@ -91,7 +93,7 @@ export function CaregiverTwoColumnQualitiesForm({
           fontSize={{ base: '18px', md: '20px' }}
           mb={3}
         >
-          Relevant Qualities in a Volunteer
+          {t('relevantQualities')}
         </Heading>
         <Text
           color="brand.fieldText"
@@ -99,7 +101,7 @@ export function CaregiverTwoColumnQualitiesForm({
           fontSize="15px"
           mb={2}
         >
-          You will be ranking these qualities in the next step.
+          {t('youWillRankQualities')}
         </Text>
         <Text
           color="brand.navy"
@@ -108,8 +110,7 @@ export function CaregiverTwoColumnQualitiesForm({
           fontWeight={600}
           mb={8}
         >
-          Note that your volunteer is guaranteed to speak your language and have the same
-          availability.
+          {t('volunteerGuaranteed')}
         </Text>
 
         <VStack gap={5} align="start">
@@ -121,7 +122,7 @@ export function CaregiverTwoColumnQualitiesForm({
               fontSize="14px"
               mb={1}
             >
-              I would prefer that...
+              {t('iWouldPreferThat')}
             </Text>
             <Text
               color="brand.fieldText"
@@ -129,8 +130,7 @@ export function CaregiverTwoColumnQualitiesForm({
               fontSize="12px"
               mb={4}
             >
-              You can select a maximum of 5 across both categories. Please select at least one
-              quality.
+              {t('selectMaximum5Qualities')}
             </Text>
 
             <SimpleGrid columns={{ base: 1, md: 2 }} gap={8} w="full">
@@ -141,7 +141,7 @@ export function CaregiverTwoColumnQualitiesForm({
                   fontSize="12px"
                   mb={3}
                 >
-                  The volunteer is/has...
+                  {t('volunteerIsHas')}
                 </Text>
                 <VStack align="start" gap={3}>
                   {volunteerOptions.map((opt) => (
@@ -170,7 +170,7 @@ export function CaregiverTwoColumnQualitiesForm({
                   fontSize="12px"
                   mb={3}
                 >
-                  Their loved one is/has...
+                  {t('theirLovedOneIsHas')}
                 </Text>
                 <VStack align="start" gap={3}>
                   {lovedOneOptions.map((opt) => (
@@ -210,7 +210,7 @@ export function CaregiverTwoColumnQualitiesForm({
           fontWeight={500}
           px={6}
         >
-          Next Section →
+          {t('nextSection')} →
         </Button>
       </Box>
     </Box>

@@ -6,12 +6,14 @@ import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClient';
 import { FormStatus, UserRole } from '@/types/authTypes';
 import { Match, TimeBlock } from '@/types/matchTypes';
+import { useTranslations } from 'next-intl';
 
 interface GroupedTimeBlocks {
   [date: string]: TimeBlock[];
 }
 
 export default function ScheduleCallPage() {
+  const t = useTranslations('dashboard');
   const router = useRouter();
   const { matchId } = router.query;
 
@@ -180,7 +182,7 @@ export default function ScheduleCallPage() {
                   fontWeight="400"
                   fontFamily="'Open Sans', sans-serif"
                 >
-                  Back
+                  {t('back')}
                 </Text>
               </Flex>
 
@@ -192,10 +194,10 @@ export default function ScheduleCallPage() {
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                 >
-                  Schedule your call with {volunteerName}
+                  {t('scheduleYourCall', { name: volunteerName })}
                 </Heading>
                 <Text fontSize="md" color="#6B7280" fontFamily="'Open Sans', sans-serif">
-                  When you would like to meet with your volunteer?
+                  {t('whenWouldYouLikeToMeet')}
                 </Text>
               </VStack>
 
@@ -207,7 +209,7 @@ export default function ScheduleCallPage() {
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                 >
-                  Select a date
+                  {t('selectDate')}
                 </Text>
                 <Flex gap={3} flexWrap="wrap">
                   {sortedDates.map((dateKey) => (
@@ -248,10 +250,10 @@ export default function ScheduleCallPage() {
                       color="#1D3448"
                       fontFamily="'Open Sans', sans-serif"
                     >
-                      Select a time
+                      {t('selectTime')}
                     </Text>
                     <Text fontSize="sm" color="#6B7280" fontFamily="'Open Sans', sans-serif">
-                      All times are in EST.
+                      {t('allTimesInTimezone', { timezone: 'EST' })}
                     </Text>
                   </Box>
                   <Flex gap={3} flexWrap="wrap">
@@ -301,7 +303,7 @@ export default function ScheduleCallPage() {
                     }}
                     onClick={handleConfirm}
                   >
-                    Confirm
+                    {t('confirm')}
                   </Button>
                 ) : (
                   <Button
@@ -321,7 +323,7 @@ export default function ScheduleCallPage() {
                     }}
                     onClick={() => router.push(`/participant/request-new-times/${matchId}`)}
                   >
-                    Request More Times
+                    {t('requestMoreTimes')}
                   </Button>
                 )}
               </Flex>
@@ -337,6 +339,7 @@ export default function ScheduleCallPage() {
             isSubmitting={isSubmitting}
             onConfirm={handleConfirmBooking}
             onCancel={() => setIsConfirmModalOpen(false)}
+            t={t}
           />
         )}
 
@@ -347,6 +350,7 @@ export default function ScheduleCallPage() {
             time={getSelectedTimeBlock() ? formatTime(getSelectedTimeBlock()!.startTime) : ''}
             phoneNumber={match.volunteer.phone || ''}
             onClose={handleSuccessClose}
+            t={t}
           />
         )}
       </FormStatusGuard>
@@ -361,6 +365,7 @@ interface ConfirmationModalProps {
   isSubmitting: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  t: (key: string, values?: Record<string, string>) => string;
 }
 
 function ConfirmationModal({
@@ -369,6 +374,7 @@ function ConfirmationModal({
   isSubmitting,
   onConfirm,
   onCancel,
+  t,
 }: ConfirmationModalProps) {
   return (
     <Box
@@ -424,7 +430,7 @@ function ConfirmationModal({
             fontWeight={600}
             lineHeight="1.4em"
           >
-            Confirm booking for {date} at {time}?
+            {t('confirmBooking', { dateTime: `${date} at ${time}` })}
           </Text>
 
           <Flex gap={3} w="full">
@@ -445,7 +451,7 @@ function ConfirmationModal({
                 bg: 'rgba(179, 206, 209, 0.4)',
               }}
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
               flex={1}
@@ -466,7 +472,7 @@ function ConfirmationModal({
                 bg: '#033a3e',
               }}
             >
-              Confirm
+              {t('confirm')}
             </Button>
           </Flex>
         </VStack>
@@ -481,9 +487,10 @@ interface SuccessModalProps {
   time: string;
   phoneNumber: string;
   onClose: () => void;
+  t: (key: string, values?: Record<string, string>) => string;
 }
 
-function SuccessModal({ date, time, phoneNumber, onClose }: SuccessModalProps) {
+function SuccessModal({ date, time, phoneNumber, onClose, t }: SuccessModalProps) {
   return (
     <Box
       position="fixed"
@@ -546,7 +553,7 @@ function SuccessModal({ date, time, phoneNumber, onClose }: SuccessModalProps) {
               fontFamily="'Open Sans', sans-serif"
               lineHeight="1.4em"
             >
-              Your call is set for {date} at {time}!
+              {t('yourCallIsSetFor', { dateTime: `${date} at ${time}` })}
             </Text>
             <Text
               fontSize="16px"
@@ -556,11 +563,7 @@ function SuccessModal({ date, time, phoneNumber, onClose }: SuccessModalProps) {
               fontWeight={400}
               lineHeight="1.36181640625em"
             >
-              You will receive a call from{' '}
-              <Text as="span" color="#8B5E3E" fontWeight={400}>
-                {phoneNumber || 'your volunteer'}
-              </Text>{' '}
-              at the scheduled time.
+              {t('youWillReceiveCall', { phoneNumber: phoneNumber || t('notProvided') })}
             </Text>
           </VStack>
 
@@ -582,7 +585,7 @@ function SuccessModal({ date, time, phoneNumber, onClose }: SuccessModalProps) {
               bg: '#033a3e',
             }}
           >
-            Awesome!
+            {t('awesome')}
           </Button>
         </VStack>
       </Box>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Flex, Text, VStack } from '@chakra-ui/react';
+import { useLocale } from 'next-intl';
 
 interface DaySelectionCalendarProps {
   selectedDays: Date[];
@@ -7,27 +8,28 @@ interface DaySelectionCalendarProps {
   maxDays?: number; // Maximum number of days to allow selection (default: 8)
 }
 
-const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-
 export function DaySelectionCalendar({
   selectedDays,
   onDaysChange,
   maxDays = 7,
 }: DaySelectionCalendarProps) {
+  const locale = useLocale();
+
+  // Generate localized day names
+  const DAYS_OF_WEEK = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(2024, 0, i); // Jan 2024 starts on Monday, but we adjust
+    // Adjust to get Sunday=0, Monday=1, etc.
+    const adjustedDate = new Date(2024, 0, i - 1 + 7); // Start from Sunday
+    return adjustedDate.toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA', {
+      weekday: 'short',
+    });
+  });
+
+  // Generate localized month names
+  const MONTHS = Array.from({ length: 12 }, (_, i) => {
+    const date = new Date(2024, i, 1);
+    return date.toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA', { month: 'long' });
+  });
   // Get the next 7 days starting from tomorrow
   const getAvailableDays = (): Date[] => {
     const days: Date[] = [];

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Heading, Button, VStack, HStack, Text } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 import { CustomRadio } from '@/components/CustomRadio';
 
@@ -14,6 +15,7 @@ export function CaregiverMatchingForm({
   onVolunteerTypeChange,
   onNext,
 }: CaregiverMatchingFormProps) {
+  const t = useTranslations('ranking');
   return (
     <Box>
       <Heading
@@ -24,7 +26,7 @@ export function CaregiverMatchingForm({
         fontSize={{ base: '24px', md: '28px' }}
         mb={8}
       >
-        Volunteer Matching Preferences
+        {t('volunteerMatchingPreferences')}
       </Heading>
 
       <Box mb={10}>
@@ -50,7 +52,7 @@ export function CaregiverMatchingForm({
           fontSize={{ base: '18px', md: '20px' }}
           mb={3}
         >
-          Your volunteer
+          {t('yourVolunteer')}
         </Heading>
         <Text
           color="brand.fieldText"
@@ -58,7 +60,7 @@ export function CaregiverMatchingForm({
           fontSize="15px"
           mb={2}
         >
-          This information will be used in the next step.
+          {t('informationUsedNextStep')}
         </Text>
         <Text
           color="brand.navy"
@@ -67,8 +69,7 @@ export function CaregiverMatchingForm({
           fontWeight={600}
           mb={8}
         >
-          Note that your volunteer is guaranteed to speak your language and have the same
-          availability.
+          {t('volunteerGuaranteed')}
         </Text>
 
         <VStack gap={5}>
@@ -80,7 +81,7 @@ export function CaregiverMatchingForm({
               fontSize="14px"
               mb={4}
             >
-              I would like a volunteer that...
+              {t('iWouldLikeVolunteerThat')}
             </Text>
 
             <VStack align="start" gap={3}>
@@ -95,7 +96,7 @@ export function CaregiverMatchingForm({
                   fontSize="14px"
                   color="brand.navy"
                 >
-                  has a similar diagnosis
+                  {t('hasSimilarDiagnosis')}
                 </Text>
               </CustomRadio>
 
@@ -110,7 +111,7 @@ export function CaregiverMatchingForm({
                   fontSize="14px"
                   color="brand.navy"
                 >
-                  is caring for a loved one with blood cancer
+                  {t('isCaringForLovedOne')}
                 </Text>
               </CustomRadio>
             </VStack>
@@ -132,7 +133,7 @@ export function CaregiverMatchingForm({
           fontWeight={500}
           px={6}
         >
-          Next Section →
+          {t('nextSection')} →
         </Button>
       </Box>
     </Box>

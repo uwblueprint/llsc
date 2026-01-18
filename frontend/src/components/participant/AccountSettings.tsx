@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, VStack, Button } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import ProfileHeader from '@/components/dashboard/ProfileHeader';
 import {
   getCurrentUser,
@@ -11,6 +12,7 @@ import { UserResponse } from '@/types/userTypes';
 import { useRouter } from 'next/router';
 
 const AccountSettings: React.FC = () => {
+  const t = useTranslations('dashboard');
   const router = useRouter();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -51,7 +53,7 @@ const AccountSettings: React.FC = () => {
       setUser(updatedUser);
     } catch (error) {
       console.error('Error toggling account status:', error);
-      alert('Failed to update account status. Please try again or contact support.');
+      alert(t('failedToUpdateStatus'));
     } finally {
       setIsProcessing(false);
     }
@@ -59,7 +61,7 @@ const AccountSettings: React.FC = () => {
 
   return (
     <Box bg="white" p={0} mt="116px" minH="200px">
-      <ProfileHeader>Account settings</ProfileHeader>
+      <ProfileHeader>{t('accountSettings')}</ProfileHeader>
 
       <VStack gap={6} mt="32px" align="stretch">
         {/* Preferred Language - This is now in Personal Details, but keeping structure for future fields */}
@@ -75,7 +77,7 @@ const AccountSettings: React.FC = () => {
             fontFamily="'Open Sans', sans-serif"
             mb={2}
           >
-            Becoming a Volunteer
+            {t('becomingVolunteer')}
           </Text>
           <Text
             fontSize="0.875rem"
@@ -85,8 +87,7 @@ const AccountSettings: React.FC = () => {
             fontFamily="'Open Sans', sans-serif"
             mb={4}
           >
-            Complete the volunteer application to express your interest and confirm these details
-            are correct. Once submitted, we&apos;ll follow up by email with next steps.
+            {t('completeVolunteerApplication')}
           </Text>
           <Button
             bg="#056067"
@@ -101,7 +102,7 @@ const AccountSettings: React.FC = () => {
             _active={{ bg: '#033e42' }}
             onClick={handleBecomeVolunteer}
           >
-            Volunteer Application Form
+            {t('volunteerApplicationForm')}
           </Button>
         </Box>
 
@@ -117,9 +118,7 @@ const AccountSettings: React.FC = () => {
               fontFamily="'Open Sans', sans-serif"
               mb={2}
             >
-              {user.active
-                ? 'Opt Out of the First Connections Program'
-                : 'Opt In to the First Connections Program'}
+              {user.active ? t('optOutTitle') : t('optInToProgram')}
             </Text>
             <Text
               fontSize="0.875rem"
@@ -129,14 +128,7 @@ const AccountSettings: React.FC = () => {
               fontFamily="'Open Sans', sans-serif"
               mb={4}
             >
-              Your experience is important to us. By opting out you are removing yourself from the
-              matching algorithm and cannot be connected with a potential volunteer.
-              <br />
-              <br />
-              When you are ready to volunteer with us again, please sign back in and click the Opt
-              In. You do not need to re-register or create a new profile. If you would like to talk
-              with a staff member about your time away or remove yourself completely from the
-              program please reach out, we are here to help.
+              {t('optOutDescription')}
             </Text>
             <Button
               bg={user.active ? '#A70000' : '#059669'}
@@ -155,11 +147,11 @@ const AccountSettings: React.FC = () => {
             >
               {isProcessing
                 ? user.active
-                  ? 'Opting Out...'
-                  : 'Opting In...'
+                  ? t('optingOut')
+                  : t('optingIn')
                 : user.active
-                  ? 'Opt Out'
-                  : 'Opt In'}
+                  ? t('optOut')
+                  : t('optIn')}
             </Button>
           </Box>
         )}

@@ -1,6 +1,7 @@
 import { UserIcon, WelcomeScreen } from '@/components/ui';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { useTranslations } from 'next-intl';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { FormStatus, UserRole } from '@/types/authTypes';
@@ -11,6 +12,7 @@ import { syncCurrentUser } from '@/APIClients/authAPIClient';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 
 export default function SecondaryApplicationPage() {
+  const t = useTranslations('dashboard');
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [profileData, setProfileData] = useState<{ experience: string }>({ experience: '' });
@@ -57,8 +59,8 @@ export default function SecondaryApplicationPage() {
   const WelcomeScreenStep = () => (
     <WelcomeScreen
       icon={<UserIcon />}
-      title="Let's setup your public volunteer profile"
-      description="Your experience provided in this form will be shared with potential matches."
+      title={t('letsSetupProfile')}
+      description={t('experienceSharedWithMatches')}
       onContinue={() => setCurrentStep(2)}
     />
   );
@@ -90,7 +92,7 @@ export default function SecondaryApplicationPage() {
           } catch (error) {
             const message =
               (error as any)?.response?.data?.detail ||
-              (error instanceof Error ? error.message : 'Failed to submit volunteer data');
+              (error instanceof Error ? error.message : t('failedToSubmitVolunteerData'));
             setSubmitError(message);
           } finally {
             setIsSubmitting(false);

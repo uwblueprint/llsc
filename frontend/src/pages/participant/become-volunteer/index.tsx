@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Flex, Text } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { FiChevronLeft } from 'react-icons/fi';
+import { useTranslations } from 'next-intl';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { syncCurrentUser } from '@/APIClients/authAPIClient';
 import { PersonalInfoForm } from '@/components/intake/personal-info-form';
@@ -61,6 +62,7 @@ interface AdditionalInfoFormData {
 }
 
 export default function BecomeVolunteerPage() {
+  const t = useTranslations('dashboard');
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<IntakeFormData>({
@@ -241,7 +243,7 @@ export default function BecomeVolunteerPage() {
             mb={6}
           >
             <FiChevronLeft size={20} />
-            <Text>Back</Text>
+            <Text>{t('back')}</Text>
           </Flex>
 
           {currentStepType === 'experience-personal' && (
