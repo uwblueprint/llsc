@@ -699,24 +699,6 @@ export function MatchesContent({ participantId }: MatchesContentProps) {
                                       >
                                         {match.matchScore.toFixed(0)}
                                       </Badge>
-                                      {match.matchScore >= 80 && (
-                                        <Badge
-                                          bg={scoreColors.bg}
-                                          color={scoreColors.color}
-                                          borderRadius="16px"
-                                          px={2}
-                                          py={1.5}
-                                          fontSize="10px"
-                                          fontWeight={400}
-                                          lineHeight="1.8em"
-                                          display="flex"
-                                          alignItems="center"
-                                          gap={1}
-                                        >
-                                          <FiClock size={10} />
-                                          <Text>2</Text>
-                                        </Badge>
-                                      )}
                                     </HStack>
                                   );
                                 default:

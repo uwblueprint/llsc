@@ -56,14 +56,13 @@ class MatchingService(IMatchingService):
             # Get participant's language preference
             participant_language = user.language
 
-            # Get all active, approved volunteers with their data and matching language
+            # Get all active volunteers with their data and matching language
             volunteers_with_data = (
                 self.db.query(User, UserData)
                 .join(User.role)
                 .join(UserData, User.id == UserData.user_id)
                 .filter(Role.name == UserRole.VOLUNTEER)
                 .filter(User.active)
-                .filter(User.approved)
                 .filter(User.language == participant_language)
                 .all()
             )
@@ -133,7 +132,7 @@ class MatchingService(IMatchingService):
             # Get participant's language preference
             participant_language = user.language
 
-            # Get all active, approved volunteers with their data and relationships
+            # Get all active volunteers with their data and relationships
             # Eagerly load user_data, treatments, and experiences to avoid N+1 queries
             # Filter by matching language
             volunteers = (
@@ -145,7 +144,6 @@ class MatchingService(IMatchingService):
                 )
                 .filter(Role.name == UserRole.VOLUNTEER)
                 .filter(User.active)
-                .filter(User.approved)
                 .filter(User.language == participant_language)
                 .all()
             )
