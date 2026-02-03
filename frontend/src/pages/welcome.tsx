@@ -3,6 +3,7 @@ import { Box, Heading, Text, Button, VStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { getCurrentUser, syncCurrentUser } from '@/APIClients/authAPIClient';
+import baseAPIClient from '@/APIClients/baseAPIClient';
 import { AuthenticatedUser, FormStatus, UserRole } from '@/types/authTypes';
 import { roleIdToUserRole } from '@/utils/roleUtils';
 import { getRedirectRoute } from '@/constants/formStatusRoutes';
@@ -69,9 +70,23 @@ export default function WelcomePage() {
     document.cookie = `NEXT_LOCALE=${locale}; expires=${expires.toUTCString()}; path=/`;
   };
 
-  const handleContinue = (language: 'en' | 'fr') => {
+  const handleContinue = async (language: 'en' | 'fr') => {
     // Set language cookie
     setLanguageCookie(language);
+
+    // Save language preference to database so it persists across reloads
+    if (currentUser?.accessToken) {
+      try {
+        await baseAPIClient.put(
+          '/user-data/me',
+          { language },
+          { headers: { Authorization: `Bearer ${currentUser.accessToken}` } },
+        );
+      } catch (error) {
+        // Continue even if this fails - cookie will still work for this session
+        console.error('Failed to save language preference:', error);
+      }
+    }
 
     const role = roleIdToUserRole(currentUser?.user?.roleId ?? null);
     const status = currentUser?.user?.formStatus as FormStatus | undefined;
