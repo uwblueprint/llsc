@@ -66,8 +66,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // If user is authenticated, update their language preference in the backend
     if (user?.accessToken) {
       try {
-        await baseAPIClient.patch(
-          '/users/me',
+        await baseAPIClient.put(
+          '/user-data/me',
           { language: newLocale }, // Backend expects lowercase 'en' or 'fr'
           {
             headers: { Authorization: `Bearer ${user.accessToken}` },
