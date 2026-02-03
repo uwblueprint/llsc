@@ -76,28 +76,23 @@ export default function WelcomePage() {
     const role = roleIdToUserRole(currentUser?.user?.roleId ?? null);
     const status = currentUser?.user?.formStatus as FormStatus | undefined;
 
+    // Use window.location.href instead of router.push() to force a full page reload.
+    // This ensures _app.tsx re-reads the NEXT_LOCALE cookie and loads the correct translations.
+    let destination = '/';
+
     if (!role || !status) {
-      router.push('/');
-      return;
-    }
-
-    if (role === UserRole.ADMIN) {
-      router.push('/admin/directory');
-      return;
-    }
-
-    if (status !== FormStatus.INTAKE_TODO) {
-      router.push(getRedirectRoute(role, status));
-      return;
-    }
-
-    if (role === UserRole.PARTICIPANT) {
-      router.push('/participant/intake');
+      destination = '/';
+    } else if (role === UserRole.ADMIN) {
+      destination = '/admin/directory';
+    } else if (status !== FormStatus.INTAKE_TODO) {
+      destination = getRedirectRoute(role, status);
+    } else if (role === UserRole.PARTICIPANT) {
+      destination = '/participant/intake';
     } else if (role === UserRole.VOLUNTEER) {
-      router.push('/volunteer/intake');
-    } else {
-      router.push('/');
+      destination = '/volunteer/intake';
     }
+
+    window.location.href = destination;
   };
 
   if (loading) {
