@@ -4,9 +4,11 @@ import PersonalDetails from '@/components/dashboard/PersonalDetails';
 import BloodCancerExperience from '@/components/dashboard/BloodCancerExperience';
 import AccountSettings from '@/components/participant/AccountSettings';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { getUserData, updateUserData } from '@/APIClients/userDataAPIClient';
 import { Language } from '@/types/authTypes';
 import { useTranslations } from 'next-intl';
+import type { Locale } from '@/i18n/config';
 
 interface ParticipantEditProfileModalProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
 }) => {
   const t = useTranslations('dashboard');
   const { user, loading: authLoading } = useAuth();
+  const { locale, setLocale } = useLanguage();
   const [loading, setLoading] = useState(true);
 
   // Personal details state for profile
@@ -185,7 +188,12 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
     } else if (field === 'timezone') {
       updateData.timezone = value;
     } else if (field === 'preferredLanguage') {
-      updateData.language = value; // Backend expects 'language' field
+      // Use LanguageContext to update language - this will update cookie, backend, and reload
+      if (value !== locale) {
+        await setLocale(value as Locale);
+        return; // setLocale will reload the page, so we don't need to continue
+      }
+      return; // Language unchanged, nothing to do
     } else if (field === 'lovedOneBirthday') {
       // Loved one's age/birthday - store as is since backend expects lovedOneAge as string
       updateData.loved_one_age = value;

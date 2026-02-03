@@ -7,6 +7,7 @@ import BloodCancerExperience from '@/components/dashboard/BloodCancerExperience'
 import VolunteerAccountSettings from '@/components/volunteer/VolunteerAccountSettings';
 import ActionButton from '@/components/dashboard/EditButton';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   getUserData,
   updateUserData,
@@ -15,6 +16,7 @@ import {
 } from '@/APIClients/userDataAPIClient';
 import { extractTimezoneAbbreviation, getTimezoneDisplayName } from '@/utils/timezoneUtils';
 import { useTranslations } from 'next-intl';
+import type { Locale } from '@/i18n/config';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -24,6 +26,7 @@ interface EditProfileModalProps {
 const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) => {
   const t = useTranslations('dashboard');
   const { user, loading: authLoading } = useAuth();
+  const { locale, setLocale } = useLanguage();
   const [isEditingAvailability, setIsEditingAvailability] = useState(false);
   const [loading, setLoading] = useState(true);
   const [savingAvailability, setSavingAvailability] = useState(false);
@@ -245,7 +248,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       // Extract abbreviation from full name (e.g., "Eastern Standard Time (EST)" -> "EST")
       updateData.timezone = extractTimezoneAbbreviation(value);
     } else if (field === 'preferredLanguage') {
-      updateData.language = value; // Backend expects 'language' field
+      // Use LanguageContext to update language - this will update cookie, backend, and reload
+      if (value !== locale) {
+        await setLocale(value as Locale);
+        return; // setLocale will reload the page, so we don't need to continue
+      }
+      return; // Language unchanged, nothing to do
     } else if (field === 'lovedOneBirthday') {
       // Loved one's age/birthday - store as is since backend expects lovedOneAge as string
       updateData.loved_one_age = value;
