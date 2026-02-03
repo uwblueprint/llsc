@@ -75,10 +75,11 @@ export default function WelcomePage() {
     setLanguageCookie(language);
 
     // Save language preference to database so it persists across reloads
+    // Uses /auth/me/language which works even for new users without UserData
     if (currentUser?.accessToken) {
       try {
-        await baseAPIClient.put(
-          '/user-data/me',
+        await baseAPIClient.patch(
+          '/auth/me/language',
           { language },
           { headers: { Authorization: `Bearer ${currentUser.accessToken}` } },
         );

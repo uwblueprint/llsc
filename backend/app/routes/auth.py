@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from ..models.User import User
+from ..models.User import Language, User
 from ..schemas.auth import AuthResponse, LoginRequest, RefreshRequest, Token
 from ..schemas.user import UserCreateRequest, UserCreateResponse, UserRole
 from ..services.implementations.auth_service import AuthService
@@ -24,7 +24,7 @@ async def register_user(user: UserCreateRequest, user_service: UserService = Dep
         "umairmhundekar@gmail.com",
         "yash@kotharigroup.com",
         "ebwu@uwaterloo.ca",
-        "cam.donoahue@lls.org"
+        "cam.donoahue@lls.org",
         "richardbai@uwblueprint.org",
         "brooke.dewhurst@lls.org",
         "jennifer.heroux-bourduas@lls.org",
@@ -175,4 +175,41 @@ async def get_current_user(
         raise
     except Exception as e:
         print(f"Error getting current user: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.patch("/me/language")
+async def update_current_user_language(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
+    """Update current user's language preference. Works even if user has no UserData yet."""
+    try:
+        # Get user auth_id from request state (set by auth middleware)
+        user_auth_id = request.state.user_id
+        if not user_auth_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+
+        # Parse request body
+        body = await request.json()
+        language_value = body.get("language")
+
+        if not language_value or language_value not in ["en", "fr"]:
+            raise HTTPException(status_code=400, detail="Invalid language. Must be 'en' or 'fr'")
+
+        # Query user from database
+        user = db.query(User).filter(User.auth_id == user_auth_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Update language
+        user.language = Language(language_value)
+        db.commit()
+
+        return {"success": True, "language": language_value}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error updating user language: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
