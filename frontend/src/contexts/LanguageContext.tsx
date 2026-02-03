@@ -68,7 +68,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         await baseAPIClient.patch(
           '/users/me',
-          { language: newLocale.toUpperCase() },
+          { language: newLocale }, // Backend expects lowercase 'en' or 'fr'
           {
             headers: { Authorization: `Bearer ${user.accessToken}` },
           },
