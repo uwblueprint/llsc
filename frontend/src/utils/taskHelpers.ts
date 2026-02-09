@@ -8,6 +8,7 @@ export const getTypeColor = (type: string): { bg: string; color: string } => {
     'Ranking / Secondary App Review': { bg: COLORS.bgTealLight, color: COLORS.teal },
     Matching: { bg: COLORS.bgPinkLight, color: COLORS.red },
     'Profile Update': { bg: COLORS.bgGrayLight, color: COLORS.gray700 },
+    'User Opt Out': { bg: 'rgba(200, 200, 200, 0.4)', color: COLORS.gray700 },
   };
   return typeColors[type] || { bg: COLORS.bgGrayLight, color: COLORS.gray700 };
 };
@@ -28,6 +29,7 @@ export const getCategoryColor = (categoryKey: string): string => {
     secondary_app: COLORS.bgTealLight,
     matching_requests: COLORS.bgPinkLight,
     profile_updates: COLORS.bgGrayLight,
+    user_opt_outs: 'rgba(200, 200, 200, 0.4)',
   };
   return categoryColors[categoryKey] || COLORS.bgGrayLight;
 };
