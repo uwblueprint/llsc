@@ -2,14 +2,24 @@ export interface Task {
   id: string;
   name: string;
   participantId?: string;
-  type: 'Intake Form Review' | 'Ranking / Secondary App Review' | 'Matching' | 'Profile Update' | 'User Opt Out';
+  type:
+    | 'Intake Form Review'
+    | 'Ranking / Secondary App Review'
+    | 'Matching'
+    | 'Profile Update'
+    | 'User Opt Out';
   startDate: string;
   endDate: string;
   priority: 'High' | 'Medium' | 'Low' | 'Add status';
   assignee?: string;
   completed: boolean;
   userType: 'Participant' | 'Volunteer';
-  category: 'intake_screening' | 'secondary_app' | 'matching_requests' | 'profile_updates' | 'user_opt_outs';
+  category:
+    | 'intake_screening'
+    | 'secondary_app'
+    | 'matching_requests'
+    | 'profile_updates'
+    | 'user_opt_outs';
   description?: string;
 }
 

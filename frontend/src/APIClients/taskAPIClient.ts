@@ -6,7 +6,12 @@ export interface BackendTask {
   participantName: string | null;
   participantEmail: string | null;
   participantRoleId: number | null;
-  type: 'intake_form_review' | 'volunteer_app_review' | 'profile_update' | 'matching' | 'user_opt_out';
+  type:
+    | 'intake_form_review'
+    | 'volunteer_app_review'
+    | 'profile_update'
+    | 'matching'
+    | 'user_opt_out';
   priority: 'no_status' | 'low' | 'medium' | 'high';
   status: 'pending' | 'in_progress' | 'completed';
   assigneeId: string | null;
@@ -26,7 +31,12 @@ export interface TaskListResponse {
 
 export interface UpdateTaskRequest {
   participantId?: string;
-  type?: 'intake_form_review' | 'volunteer_app_review' | 'profile_update' | 'matching' | 'user_opt_out';
+  type?:
+    | 'intake_form_review'
+    | 'volunteer_app_review'
+    | 'profile_update'
+    | 'matching'
+    | 'user_opt_out';
   priority?: 'no_status' | 'low' | 'medium' | 'high';
   status?: 'pending' | 'in_progress' | 'completed';
   assigneeId?: string | null;
