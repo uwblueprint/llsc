@@ -170,7 +170,10 @@ def override_dependencies(session: FakeSession, authorized: bool = True):
             return authorized
 
     app.dependency_overrides[get_db] = _override_db
-    app.dependency_overrides[get_auth_service] = lambda: DummyAuthService()
+    def _override_auth_service(**kwargs):
+        return DummyAuthService()
+
+    app.dependency_overrides[get_auth_service] = _override_auth_service
 
     try:
         yield
