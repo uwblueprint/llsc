@@ -20,6 +20,8 @@ export const getParticipantLink = (task: Task): string => {
     return `${baseUrl}?tab=profile`;
   } else if (task.type === 'Intake Form Review' || task.type === 'Ranking / Secondary App Review') {
     return `${baseUrl}?tab=forms`;
+  } else if (task.type === 'User Opt Out') {
+    return baseUrl;
   } else {
     // Default: profile tab
     return baseUrl;

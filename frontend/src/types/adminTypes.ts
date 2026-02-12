@@ -2,14 +2,24 @@ export interface Task {
   id: string;
   name: string;
   participantId?: string;
-  type: 'Intake Form Review' | 'Ranking / Secondary App Review' | 'Matching' | 'Profile Update';
+  type:
+    | 'Intake Form Review'
+    | 'Ranking / Secondary App Review'
+    | 'Matching'
+    | 'Profile Update'
+    | 'User Opt Out';
   startDate: string;
   endDate: string;
   priority: 'High' | 'Medium' | 'Low' | 'Add status';
   assignee?: string;
   completed: boolean;
   userType: 'Participant' | 'Volunteer';
-  category: 'intake_screening' | 'secondary_app' | 'matching_requests' | 'profile_updates';
+  category:
+    | 'intake_screening'
+    | 'secondary_app'
+    | 'matching_requests'
+    | 'profile_updates'
+    | 'user_opt_outs';
   description?: string;
 }
 
@@ -32,6 +42,7 @@ export const categoryLabels: Record<Task['category'], string> = {
   secondary_app: 'Review secondary application / ranking forms',
   matching_requests: 'Participants requesting a match',
   profile_updates: 'User profile updates',
+  user_opt_outs: 'User opt outs',
 };
 
 export const taskCategories: TaskCategory[] = [
@@ -58,5 +69,11 @@ export const taskCategories: TaskCategory[] = [
     name: 'User profile updates',
     categoryKey: 'profile_updates',
     bgColor: '#EEEEEC',
+  },
+  {
+    id: '5',
+    name: 'User opt outs',
+    categoryKey: 'user_opt_outs',
+    bgColor: 'rgba(200, 200, 200, 0.4)',
   },
 ];

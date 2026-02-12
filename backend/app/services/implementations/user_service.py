@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import List
 from uuid import UUID
 
@@ -18,6 +19,9 @@ from app.models import (
     RankingPreference,
     Role,
     Task,
+    TaskPriority,
+    TaskStatus,
+    TaskType,
     Treatment,
     User,
     UserData,
@@ -234,6 +238,19 @@ class UserService(IUserService):
                 raise HTTPException(status_code=404, detail="User not found")
 
             db_user.active = False
+
+            # Create a User Opt Out task for admin visibility (start and end date = day of opt-out)
+            opt_out_time = datetime.utcnow()
+            opt_out_task = Task(
+                participant_id=db_user.id,
+                type=TaskType.USER_OPT_OUT,
+                priority=TaskPriority.NO_STATUS,
+                status=TaskStatus.PENDING,
+                start_date=opt_out_time,
+                end_date=opt_out_time,
+            )
+            self.db.add(opt_out_task)
+
             self.db.commit()
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid user ID format")

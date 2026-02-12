@@ -15,6 +15,7 @@ class TaskType(str, PyEnum):
     VOLUNTEER_APP_REVIEW = "volunteer_app_review"
     PROFILE_UPDATE = "profile_update"
     MATCHING = "matching"
+    USER_OPT_OUT = "user_opt_out"
 
 
 class TaskPriority(str, PyEnum):

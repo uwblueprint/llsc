@@ -82,6 +82,7 @@ const mapAPITaskToFrontend = (
     volunteer_app_review: 'Ranking / Secondary App Review',
     profile_update: 'Profile Update',
     matching: 'Matching',
+    user_opt_out: 'User Opt Out',
   };
 
   // Map backend priority to frontend priority
@@ -98,6 +99,7 @@ const mapAPITaskToFrontend = (
     volunteer_app_review: 'secondary_app',
     profile_update: 'profile_updates',
     matching: 'matching_requests',
+    user_opt_out: 'user_opt_outs',
   };
 
   // Format dates from ISO to DD/MM/YY
@@ -132,12 +134,12 @@ const mapAPITaskToFrontend = (
     startDate: formatDate(apiTask.startDate),
     endDate: apiTask.endDate ? formatDate(apiTask.endDate) : formatDate(apiTask.startDate),
     priority: priorityMap[apiTask.priority] || 'Add status',
-    type: typeMap[apiTask.type] || 'Intake Form Review',
+    type: typeMap[apiTask.type] ?? 'Intake Form Review',
     assignee: assignee?.name,
     completed: apiTask.status === 'completed',
     userType,
-    category: categoryMap[apiTask.type] || 'intake_screening',
-    description: apiTask.description || `Task for ${typeMap[apiTask.type]}`,
+    category: categoryMap[apiTask.type] ?? 'intake_screening',
+    description: apiTask.description ?? `Task for ${typeMap[apiTask.type] ?? 'Intake Form Review'}`,
   };
 };
 
