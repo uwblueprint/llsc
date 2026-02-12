@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Box, Heading, Text, Button, Input, VStack } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
@@ -17,7 +17,14 @@ export function ParticipantFormPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [passwordValidationErrors, setPasswordValidationErrors] = useState<string[]>([]);
+  const [locale, setLocale] = useState<'en' | 'fr'>('en');
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const lang = navigator.language || (navigator.languages && navigator.languages[0]) || 'en';
+    setLocale(lang.toLowerCase().startsWith('fr') ? 'fr' : 'en');
+  }, []);
 
   // Frontend password validation function that mirrors backend logic
   const validatePasswordFrontend = (password: string): string[] => {
@@ -78,8 +85,21 @@ export function ParticipantFormPage() {
     <AuthPageLayout
       illustration={{ src: '/login.png', alt: 'First Connection Peer Support', priority: true }}
     >
-      <VStack spacing={{ base: 6, md: 8 }} align="stretch">
-        <Box>
+      <Box
+        display="flex"
+        flexDirection="column"
+        minH={{ base: 'auto', md: '100vh' }}
+        w="100%"
+      >
+        <Box
+          flex="1"
+          display="flex"
+          flexDirection="column"
+          justifyContent={{ base: 'flex-start', md: 'center' }}
+          minH={0}
+        >
+          <VStack spacing={{ base: 6, md: 8 }} align="stretch" mt={{ base: 0, md: 18 }}>
+            <Box>
           <Heading
             fontWeight={600}
             color="brand.navy"
@@ -265,20 +285,51 @@ export function ParticipantFormPage() {
           </Button>
         </VStack>
 
-        <Text color="brand.navy" fontSize="md" fontWeight={600}>
-          Already have an account?{' '}
+            <Text color="brand.navy" fontSize="md" fontWeight={600}>
+              Already have an account?{' '}
+              <Link
+                href="/"
+                style={{
+                  color: 'var(--chakra-colors-brand-primary)',
+                  textDecoration: 'underline',
+                  fontWeight: 600,
+                }}
+              >
+                Sign in
+              </Link>
+            </Text>
+          </VStack>
+        </Box>
+
+        <Text
+          color="gray.600"
+          fontSize="sm"
+          fontWeight={400}
+          textAlign="center"
+          w="100%"
+          flex="0 0 auto"
+          py={{ base: 6, md: 5 }}
+        >
+          By using this site, you consent to the collection and use of information as described in
+          our{' '}
           <Link
-            href="/"
+            href={
+              locale === 'fr'
+                ? 'https://www.cancersdusang.ca/politique-de-confidentialite'
+                : 'https://www.bloodcancers.ca/privacy-policy'
+            }
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               color: 'var(--chakra-colors-brand-primary)',
               textDecoration: 'underline',
-              fontWeight: 600,
             }}
           >
-            Sign in
+            Privacy Policy
           </Link>
+          .
         </Text>
-      </VStack>
+      </Box>
     </AuthPageLayout>
   );
 }
