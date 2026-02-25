@@ -11,12 +11,16 @@ import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClien
 import { FormStatus, UserRole } from '@/types/authTypes';
 import { Match } from '@/types/matchTypes';
 import type { TimeSlot } from '@/components/dashboard/types';
+import { useTranslations } from 'next-intl';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 
 type Step = 'select-days' | 'select-times';
 
 export default function RequestNewTimesPage() {
   const router = useRouter();
+  const t = useTranslations('dashboard');
   const { matchId } = router.query;
+  const isDesktop = useIsDesktop();
 
   const [match, setMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
@@ -204,9 +208,9 @@ export default function RequestNewTimesPage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
-        <Box minH="100vh" bg="white" py={10}>
-          <Container maxW="container.xl">
-            <VStack align="stretch" gap={8}>
+        <Box minH="100vh" bg="white" py={{ base: 4, lg: 10 }}>
+          <Container maxW="container.xl" px={{ base: 4, lg: 8 }}>
+            <VStack align="stretch" gap={{ base: 6, lg: 8 }}>
               {/* Back button */}
               <Flex
                 align="center"
@@ -232,9 +236,9 @@ export default function RequestNewTimesPage() {
               </Flex>
 
               {/* Header */}
-              <VStack align="stretch" gap={4}>
+              <VStack align="stretch" gap={{ base: 2, lg: 4 }}>
                 <Heading
-                  fontSize="36px"
+                  fontSize={{ base: '24px', lg: '36px' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
@@ -244,7 +248,7 @@ export default function RequestNewTimesPage() {
                   Request a new time
                 </Heading>
                 <Text
-                  fontSize="18px"
+                  fontSize={{ base: '14px', lg: '18px' }}
                   fontWeight={400}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
@@ -259,26 +263,27 @@ export default function RequestNewTimesPage() {
 
               {/* Step 1: Select Days */}
               {step === 'select-days' && (
-                <VStack align="stretch" gap={8}>
+                <VStack align="stretch" gap={{ base: 6, lg: 8 }}>
                   <DaySelectionCalendar
                     selectedDays={selectedDays}
                     onDaysChange={setSelectedDays}
                     maxDays={14}
                   />
-                  <Flex justify="flex-end">
+                  <Flex justify={{ base: 'stretch', lg: 'flex-end' }}>
                     <Button
                       bg="#056067"
                       color="white"
                       fontWeight={600}
-                      fontSize="20px"
+                      fontSize={{ base: '16px', lg: '20px' }}
                       fontFamily="'Open Sans', sans-serif"
                       lineHeight="1em"
-                      px="42px"
-                      py="18px"
+                      px={{ base: 6, lg: 10.5 }}
+                      py={4.5}
                       h="auto"
                       borderRadius="8px"
                       border="1px solid #056067"
                       boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                      w={{ base: '100%', lg: 'auto' }}
                       onClick={handleDaysSelected}
                       disabled={selectedDays.length === 0}
                       _hover={{
@@ -296,31 +301,87 @@ export default function RequestNewTimesPage() {
 
               {/* Step 2: Select Times */}
               {step === 'select-times' && (
-                <VStack align="stretch" gap={8}>
+                <VStack align="stretch" gap={{ base: 6, lg: 8 }}>
                   {/* Time Scheduler - Show only selected days */}
-                  <Box h="900px" w="100%">
-                    <TimeScheduler
-                      onTimeSlotsChange={setSelectedTimeSlots}
-                      initialTimeSlots={selectedTimeSlots}
-                      readOnly={false}
-                      selectedDaysDates={selectedDays}
-                    />
-                  </Box>
+                  {/* Note: TimeScheduler needs mobile-friendly alternative, for now show message on mobile */}
+                  {isDesktop ? (
+                    <Box h="900px" w="100%">
+                      <TimeScheduler
+                        onTimeSlotsChange={setSelectedTimeSlots}
+                        initialTimeSlots={selectedTimeSlots}
+                        readOnly={false}
+                        visibleDays={selectedDays.map((day) =>
+                          day.toLocaleDateString('en-US', { weekday: 'long' }),
+                        )}
+                        selectedDaysDates={selectedDays}
+                      />
+                    </Box>
+                  ) : (
+                    <Box
+                      minH="400px"
+                      w="100%"
+                      overflowX="auto"
+                      css={{
+                        '&::-webkit-scrollbar': {
+                          height: '8px',
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          background: '#CBD5E0',
+                          borderRadius: '4px',
+                        },
+                      }}
+                    >
+                      <Box minW="600px">
+                        <TimeScheduler
+                          onTimeSlotsChange={setSelectedTimeSlots}
+                          initialTimeSlots={selectedTimeSlots}
+                          readOnly={false}
+                          visibleDays={selectedDays.map((day) =>
+                            day.toLocaleDateString('en-US', { weekday: 'long' }),
+                          )}
+                          selectedDaysDates={selectedDays}
+                        />
+                      </Box>
+                    </Box>
+                  )}
 
-                  <Flex justify="flex-end">
+                  <Flex
+                    justify={{ base: 'stretch', lg: 'flex-end' }}
+                    gap={3}
+                    direction={{ base: 'column-reverse', lg: 'row' }}
+                  >
+                    <Button
+                      bg="rgba(179, 206, 209, 0.3)"
+                      color="#495D6C"
+                      fontWeight={600}
+                      fontSize="16px"
+                      fontFamily="'Open Sans', sans-serif"
+                      lineHeight="1.5em"
+                      px={4.5}
+                      py={2.5}
+                      borderRadius="8px"
+                      w={{ base: '100%', lg: 'auto' }}
+                      onClick={handleBackFromTimes}
+                      _hover={{
+                        bg: 'rgba(179, 206, 209, 0.4)',
+                      }}
+                    >
+                      {t('back')}
+                    </Button>
                     <Button
                       bg="#056067"
                       color="white"
                       fontWeight={600}
-                      fontSize="20px"
+                      fontSize={{ base: '16px', lg: '20px' }}
                       fontFamily="'Open Sans', sans-serif"
                       lineHeight="1em"
-                      px="42px"
-                      py="18px"
+                      px={{ base: 6, lg: 10.5 }}
+                      py={4.5}
                       h="auto"
                       borderRadius="8px"
                       border="1px solid #056067"
                       boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                      w={{ base: '100%', lg: 'auto' }}
                       onClick={handleTimesSelected}
                       disabled={selectedTimeSlots.length === 0 || isSubmitting}
                       loading={isSubmitting}

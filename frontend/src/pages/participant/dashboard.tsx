@@ -15,7 +15,10 @@ import {
 import { FiPlus } from 'react-icons/fi';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
-import { DashboardSidebar } from '@/components/participant/DashboardSidebar';
+import {
+  DashboardSidebar,
+  useParticipantNavItems,
+} from '@/components/participant/DashboardSidebar';
 import { VolunteerCard } from '@/components/participant/VolunteerCard';
 import { ConfirmedMatchCard } from '@/components/participant/ConfirmedMatchCard';
 import { RequestNewMatchesModal } from '@/components/participant/RequestNewMatchesModal';
@@ -24,6 +27,8 @@ import { ViewContactDetailsModal } from '@/components/participant/ViewContactDet
 import { CancelCallConfirmationModal } from '@/components/participant/CancelCallConfirmationModal';
 import { CancelCallSuccessModal } from '@/components/participant/CancelCallSuccessModal';
 import ParticipantEditProfileModal from '@/components/participant/ParticipantEditProfileModal';
+import { MobileHeader } from '@/components/layout/MobileHeader';
+import { MobileDrawer } from '@/components/layout/MobileDrawer';
 import { Avatar } from '@/components/ui/avatar';
 import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClient';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
@@ -31,9 +36,14 @@ import { AuthenticatedUser, FormStatus, UserRole } from '@/types/authTypes';
 import { Match } from '@/types/matchTypes';
 import { MatchStatusScreen } from '@/components/matches/MatchStatusScreen';
 import { CallCancelledNotificationModal } from '@/components/shared/CallCancelledNotificationModal';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useTranslations } from 'next-intl';
 
 export default function ParticipantDashboardPage() {
   const router = useRouter();
+  const t = useTranslations('dashboard');
+  const isDesktop = useIsDesktop();
+  const navItems = useParticipantNavItems();
   const [matches, setMatches] = useState<Match[]>([]);
   const [confirmedMatches, setConfirmedMatches] = useState<Match[]>([]);
   const [allMatches, setAllMatches] = useState<Match[]>([]);
@@ -54,6 +64,7 @@ export default function ParticipantDashboardPage() {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [showCancelledNotification, setShowCancelledNotification] = useState(false);
   const [cancelledByName, setCancelledByName] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const userName = user?.firstName || 'there';
   const userFullName = user
@@ -344,148 +355,186 @@ export default function ParticipantDashboardPage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
-        <Box minH="100vh" bg="white" py={10}>
-          <Container maxW="container.xl">
-            <Flex
-              direction={{ base: 'column', lg: 'row' }}
-              align="flex-start"
-              gap={{ base: 8, lg: 12 }}
-            >
-              <DashboardSidebar />
+        <Box minH="100vh" bg="white">
+          {/* Mobile Header */}
+          {!isDesktop && (
+            <MobileHeader
+              userName={userFullName}
+              onMenuOpen={() => setIsMobileMenuOpen(true)}
+              onAvatarClick={() => setIsEditProfileOpen(true)}
+            />
+          )}
 
-              <Box flex={1} w="full">
-                <VStack align="stretch" gap={6}>
-                  {/* Header */}
-                  {hasPendingRequest ? (
-                    <Flex justify="space-between" align="flex-start">
-                      <Box flex={1}>
-                        <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
-                          Your request is pending!
-                        </Heading>
-                        <Text fontSize="md" color="#6B7280" opacity={0.85}>
-                          Check back in a few days.
-                        </Text>
-                      </Box>
-                      {/* User Avatar in top right */}
-                      {user && (
-                        <Box
-                          flexShrink={0}
-                          ml={4}
-                          cursor="pointer"
-                          onClick={() => setIsEditProfileOpen(true)}
-                          _hover={{ opacity: 0.8 }}
-                          transition="opacity 0.2s"
-                        >
-                          <Avatar
-                            name={userFullName}
-                            size="lg"
-                            bg="rgba(179, 206, 209, 0.3)"
-                            color="#056067"
-                            fontWeight={500}
-                          />
-                        </Box>
-                      )}
-                    </Flex>
-                  ) : confirmedMatches.length > 0 ? (
-                    <Flex justify="space-between" align="flex-start">
-                      <Box flex={1}>
-                        <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
-                          Thanks for scheduling your call!
-                        </Heading>
-                        <Text fontSize="md" color="#6B7280" opacity={0.85}>
-                          Unfortunately, you can&apos;t schedule another call until your current
-                          call is done. Check your volunteer details here.
-                        </Text>
-                      </Box>
-                      {/* User Avatar in top right */}
-                      {user && (
-                        <Box
-                          flexShrink={0}
-                          ml={4}
-                          cursor="pointer"
-                          onClick={() => setIsEditProfileOpen(true)}
-                          _hover={{ opacity: 0.8 }}
-                          transition="opacity 0.2s"
-                        >
-                          <Avatar
-                            name={userFullName}
-                            size="lg"
-                            bg="rgba(179, 206, 209, 0.3)"
-                            color="#056067"
-                            fontWeight={500}
-                          />
-                        </Box>
-                      )}
-                    </Flex>
-                  ) : confirmedMatches.length === 0 && matches.length === 0 ? (
-                    <Flex justify="space-between" align="flex-start">
-                      <Box flex={1}>
-                        <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
-                          Request to match with new volunteers?
-                        </Heading>
-                        <Text fontSize="md" color="#6B7280" opacity={0.85}>
-                          Would you like our team to find you new matches? This process may take a
-                          few days.
-                        </Text>
-                      </Box>
-                      {/* User Avatar in top right */}
-                      {user && (
-                        <Box
-                          flexShrink={0}
-                          ml={4}
-                          cursor="pointer"
-                          onClick={() => setIsEditProfileOpen(true)}
-                          _hover={{ opacity: 0.8 }}
-                          transition="opacity 0.2s"
-                        >
-                          <Avatar
-                            name={userFullName}
-                            size="lg"
-                            bg="rgba(179, 206, 209, 0.3)"
-                            color="#056067"
-                            fontWeight={500}
-                          />
-                        </Box>
-                      )}
-                    </Flex>
-                  ) : (
-                    <Flex justify="space-between" align="flex-start">
-                      <Box flex={1}>
-                        <Heading fontSize="2xl" fontWeight="600" color="#1F2937" mb={2}>
-                          Who would you like to chat with, {userName}?
-                        </Heading>
-                        <Text fontSize="md" color="#6B7280" opacity={0.85}>
-                          We&apos;ve carefully selected volunteers who we think fit your needs best.
-                        </Text>
-                      </Box>
-                      {/* User Avatar in top right */}
-                      {user && (
-                        <Box
-                          flexShrink={0}
-                          ml={4}
-                          cursor="pointer"
-                          onClick={() => setIsEditProfileOpen(true)}
-                          _hover={{ opacity: 0.8 }}
-                          transition="opacity 0.2s"
-                        >
-                          <Avatar
-                            name={userFullName}
-                            size="lg"
-                            bg="rgba(179, 206, 209, 0.3)"
-                            color="#056067"
-                            fontWeight={500}
-                          />
-                        </Box>
-                      )}
-                    </Flex>
-                  )}
+          {/* Mobile Drawer */}
+          <MobileDrawer
+            isOpen={isMobileMenuOpen}
+            onClose={() => setIsMobileMenuOpen(false)}
+            userName={userFullName}
+            navItems={navItems}
+            onEditProfile={() => setIsEditProfileOpen(true)}
+          />
 
-                  {/* Content */}
-                  {renderMatchesTab()}
-                </VStack>
-              </Box>
-            </Flex>
-          </Container>
+          <Box py={{ base: 4, lg: 10 }}>
+            <Container maxW="container.xl" px={{ base: 4, lg: 8 }}>
+              <Flex
+                direction={{ base: 'column', lg: 'row' }}
+                align="flex-start"
+                gap={{ base: 6, lg: 12 }}
+              >
+                <DashboardSidebar />
+
+                <Box flex={1} w="full">
+                  <VStack align="stretch" gap={6}>
+                    {/* Header */}
+                    {hasPendingRequest ? (
+                      <Flex justify="space-between" align="flex-start">
+                        <Box flex={1}>
+                          <Heading
+                            fontSize={{ base: 'xl', lg: '2xl' }}
+                            fontWeight="600"
+                            color="#1F2937"
+                            mb={2}
+                          >
+                            {t('yourRequestIsPending')}
+                          </Heading>
+                          <Text fontSize={{ base: 'sm', lg: 'md' }} color="#6B7280" opacity={0.85}>
+                            {t('checkBackInFewDays')}
+                          </Text>
+                        </Box>
+                        {/* User Avatar in top right - desktop only */}
+                        {user && isDesktop && (
+                          <Box
+                            flexShrink={0}
+                            ml={4}
+                            cursor="pointer"
+                            onClick={() => setIsEditProfileOpen(true)}
+                            _hover={{ opacity: 0.8 }}
+                            transition="opacity 0.2s"
+                          >
+                            <Avatar
+                              name={userFullName}
+                              size="lg"
+                              bg="rgba(179, 206, 209, 0.3)"
+                              color="#056067"
+                              fontWeight={500}
+                            />
+                          </Box>
+                        )}
+                      </Flex>
+                    ) : confirmedMatches.length > 0 ? (
+                      <Flex justify="space-between" align="flex-start">
+                        <Box flex={1}>
+                          <Heading
+                            fontSize={{ base: 'xl', lg: '2xl' }}
+                            fontWeight="600"
+                            color="#1F2937"
+                            mb={2}
+                          >
+                            {t('thanksForScheduling')}
+                          </Heading>
+                          <Text fontSize={{ base: 'sm', lg: 'md' }} color="#6B7280" opacity={0.85}>
+                            {t('viewContactDetails')}
+                          </Text>
+                        </Box>
+                        {/* User Avatar in top right - desktop only */}
+                        {user && isDesktop && (
+                          <Box
+                            flexShrink={0}
+                            ml={4}
+                            cursor="pointer"
+                            onClick={() => setIsEditProfileOpen(true)}
+                            _hover={{ opacity: 0.8 }}
+                            transition="opacity 0.2s"
+                          >
+                            <Avatar
+                              name={userFullName}
+                              size="lg"
+                              bg="rgba(179, 206, 209, 0.3)"
+                              color="#056067"
+                              fontWeight={500}
+                            />
+                          </Box>
+                        )}
+                      </Flex>
+                    ) : confirmedMatches.length === 0 && matches.length === 0 ? (
+                      <Flex justify="space-between" align="flex-start">
+                        <Box flex={1}>
+                          <Heading
+                            fontSize={{ base: 'xl', lg: '2xl' }}
+                            fontWeight="600"
+                            color="#1F2937"
+                            mb={2}
+                          >
+                            {t('requestNewVolunteers')}
+                          </Heading>
+                          <Text fontSize={{ base: 'sm', lg: 'md' }} color="#6B7280" opacity={0.85}>
+                            {t('wouldYouLikeNewMatches')}
+                          </Text>
+                        </Box>
+                        {/* User Avatar in top right - desktop only */}
+                        {user && isDesktop && (
+                          <Box
+                            flexShrink={0}
+                            ml={4}
+                            cursor="pointer"
+                            onClick={() => setIsEditProfileOpen(true)}
+                            _hover={{ opacity: 0.8 }}
+                            transition="opacity 0.2s"
+                          >
+                            <Avatar
+                              name={userFullName}
+                              size="lg"
+                              bg="rgba(179, 206, 209, 0.3)"
+                              color="#056067"
+                              fontWeight={500}
+                            />
+                          </Box>
+                        )}
+                      </Flex>
+                    ) : (
+                      <Flex justify="space-between" align="flex-start">
+                        <Box flex={1}>
+                          <Heading
+                            fontSize={{ base: 'xl', lg: '2xl' }}
+                            fontWeight="600"
+                            color="#1F2937"
+                            mb={2}
+                          >
+                            {t('whoWouldYouLikeToChat', { name: userName })}
+                          </Heading>
+                          <Text fontSize={{ base: 'sm', lg: 'md' }} color="#6B7280" opacity={0.85}>
+                            {t('carefullySelectedVolunteers')}
+                          </Text>
+                        </Box>
+                        {/* User Avatar in top right - desktop only */}
+                        {user && isDesktop && (
+                          <Box
+                            flexShrink={0}
+                            ml={4}
+                            cursor="pointer"
+                            onClick={() => setIsEditProfileOpen(true)}
+                            _hover={{ opacity: 0.8 }}
+                            transition="opacity 0.2s"
+                          >
+                            <Avatar
+                              name={userFullName}
+                              size="lg"
+                              bg="rgba(179, 206, 209, 0.3)"
+                              color="#056067"
+                              fontWeight={500}
+                            />
+                          </Box>
+                        )}
+                      </Flex>
+                    )}
+
+                    {/* Content */}
+                    {renderMatchesTab()}
+                  </VStack>
+                </Box>
+              </Flex>
+            </Container>
+          </Box>
         </Box>
 
         {/* Modals */}

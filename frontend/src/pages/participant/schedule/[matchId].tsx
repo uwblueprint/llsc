@@ -7,6 +7,8 @@ import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClient';
 import { FormStatus, UserRole } from '@/types/authTypes';
 import { Match, TimeBlock } from '@/types/matchTypes';
+import { useTranslations } from 'next-intl';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 
 interface GroupedTimeBlocks {
   [date: string]: TimeBlock[];
@@ -14,7 +16,9 @@ interface GroupedTimeBlocks {
 
 export default function ScheduleCallPage() {
   const router = useRouter();
+  const t = useTranslations('dashboard');
   const { matchId } = router.query;
+  const isDesktop = useIsDesktop();
 
   const [match, setMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
@@ -156,9 +160,9 @@ export default function ScheduleCallPage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
-        <Box minH="100vh" bg="white" py={10}>
-          <Container maxW="container.md">
-            <VStack align="stretch" gap={8}>
+        <Box minH="100vh" bg="white" py={{ base: 4, lg: 10 }}>
+          <Container maxW="container.md" px={{ base: 4, lg: 8 }}>
+            <VStack align="stretch" gap={{ base: 6, lg: 8 }}>
               {/* Back button */}
               <Flex
                 align="center"
@@ -179,7 +183,7 @@ export default function ScheduleCallPage() {
               {/* Header */}
               <VStack align="stretch" gap={4}>
                 <Heading
-                  fontSize="36px"
+                  fontSize={{ base: 'xl', lg: '2xl' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
@@ -189,7 +193,7 @@ export default function ScheduleCallPage() {
                   Schedule your call with {volunteerName}
                 </Heading>
                 <Text
-                  fontSize="18px"
+                  fontSize={{ base: 'sm', lg: 'md' }}
                   fontWeight={400}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
@@ -197,14 +201,14 @@ export default function ScheduleCallPage() {
                   letterSpacing="-1.5%"
                   opacity={0.85}
                 >
-                  When would you like to meet with your volunteer?
+                  {t('whenWouldYouLikeToMeet')}
                 </Text>
               </VStack>
 
               {/* Date Selection */}
               <VStack align="stretch" gap={6}>
                 <Text
-                  fontSize="22px"
+                  fontSize={{ base: 'sm', lg: 'md' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
@@ -213,7 +217,7 @@ export default function ScheduleCallPage() {
                 >
                   Select a date
                 </Text>
-                <Flex gap="18px" flexWrap="wrap">
+                <VStack gap={3} align="stretch">
                   {sortedDates.map((dateKey) => (
                     <Box
                       key={dateKey}
@@ -231,9 +235,13 @@ export default function ScheduleCallPage() {
                           : '0px 1px 2px 0px rgba(10, 13, 18, 0.05)'
                       }
                       cursor="pointer"
-                      px="28px"
-                      py="24px"
+                      px={{ base: 6, lg: '28px' }}
+                      py={{ base: 6, lg: '24px' }}
+                      w={{ base: '100%', lg: 'auto' }}
                       transition="all 0.15s ease"
+                      _hover={{
+                        borderColor: '#056067',
+                      }}
                     >
                       <Text
                         fontSize="18px"
@@ -247,7 +255,7 @@ export default function ScheduleCallPage() {
                       </Text>
                     </Box>
                   ))}
-                </Flex>
+                </VStack>
               </VStack>
 
               {/* Time Selection */}
@@ -255,7 +263,7 @@ export default function ScheduleCallPage() {
                 <VStack align="stretch" gap={6}>
                   <VStack align="stretch" gap={1}>
                     <Text
-                      fontSize="22px"
+                      fontSize={{ base: 'sm', lg: 'md' }}
                       fontWeight={600}
                       color="#1D3448"
                       fontFamily="'Open Sans', sans-serif"
@@ -265,14 +273,14 @@ export default function ScheduleCallPage() {
                       Select a time
                     </Text>
                     <Text
-                      fontSize="18px"
+                      fontSize={{ base: 'xs', lg: 'sm' }}
                       color="#1D3448"
                       fontFamily="'Open Sans', sans-serif"
                       opacity={0.85}
                       letterSpacing="-1.5%"
                       lineHeight="1.36"
                     >
-                      All times are in EST.
+                      {t('allTimesInTimezone', { timezone: 'EST' })}
                     </Text>
                   </VStack>
                   <Flex gap="18px" flexWrap="wrap">
@@ -290,9 +298,13 @@ export default function ScheduleCallPage() {
                             : '0px 1px 2px 0px rgba(10, 13, 18, 0.05)'
                         }
                         cursor="pointer"
-                        px="28px"
-                        py="24px"
+                        px={{ base: 4, lg: '28px' }}
+                        py={{ base: 5, lg: '24px' }}
+                        minW={{ base: 'calc(33% - 8px)', lg: 'auto' }}
                         transition="all 0.15s ease"
+                        _hover={{
+                          borderColor: '#056067',
+                        }}
                       >
                         <Text
                           fontSize="18px"
@@ -311,7 +323,7 @@ export default function ScheduleCallPage() {
               )}
 
               {/* Action Buttons */}
-              <Flex justify="flex-end" mt={4}>
+              <Flex justify={{ base: 'stretch', lg: 'flex-end' }} mt={4}>
                 {selectedDate && selectedTimeBlockId ? (
                   <Button
                     bg="#056067"
@@ -320,12 +332,13 @@ export default function ScheduleCallPage() {
                     fontSize="20px"
                     fontFamily="'Open Sans', sans-serif"
                     lineHeight="1em"
-                    px="42px"
-                    py="18px"
+                    px={{ base: 8, lg: '42px' }}
+                    py={{ base: 6, lg: '18px' }}
                     h="auto"
                     borderRadius="8px"
                     border="1px solid #056067"
                     boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                    w={{ base: '100%', lg: 'auto' }}
                     _hover={{
                       bg: '#044d52',
                     }}
@@ -344,12 +357,13 @@ export default function ScheduleCallPage() {
                     fontSize="20px"
                     fontFamily="'Open Sans', sans-serif"
                     lineHeight="1em"
-                    px="42px"
-                    py="18px"
+                    px={{ base: 8, lg: '42px' }}
+                    py={{ base: 6, lg: '18px' }}
                     h="auto"
                     borderRadius="8px"
                     border="1px solid #A70000"
                     boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                    w={{ base: '100%', lg: 'auto' }}
                     _hover={{
                       bg: '#8A0000',
                     }}
