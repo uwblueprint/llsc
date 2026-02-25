@@ -188,9 +188,9 @@ const VolunteerDashboardPage: React.FC = () => {
       <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
         <VolunteerDashboardLayout>
           <Heading
-            fontSize="2.25rem"
+            fontSize={{ base: '1.5rem', lg: '2.25rem' }}
             fontWeight={600}
-            lineHeight="100%"
+            lineHeight={{ base: '120%', lg: '100%' }}
             letterSpacing="-1.5%"
             color="#1D3448"
             fontFamily="'Open Sans', sans-serif"
@@ -203,11 +203,11 @@ const VolunteerDashboardPage: React.FC = () => {
           </Heading>
 
           <Text
-            fontSize="16px"
+            fontSize={{ base: '14px', lg: '16px' }}
             color="#6B7280"
             fontFamily="'Open Sans', sans-serif"
             textAlign="left"
-            mb={8}
+            mb={{ base: 4, lg: 8 }}
           >
             {allMatches.length > 0
               ? 'Please schedule calls with your matches.'

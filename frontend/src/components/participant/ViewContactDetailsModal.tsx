@@ -43,7 +43,7 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
         w="90%"
         boxShadow="0px 8px 8px -4px rgba(10, 13, 18, 0.03), 0px 20px 24px -4px rgba(10, 13, 18, 0.08)"
       >
-        <Flex gap={6} align="flex-start">
+        <Flex gap={{ base: 4, lg: 6 }} align="flex-start" direction={{ base: 'column', lg: 'row' }}>
           {/* Phone Icon */}
           <Box
             w="48px"
@@ -56,29 +56,32 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
             alignItems="center"
             justifyContent="center"
             flexShrink={0}
+            alignSelf={{ base: 'center', lg: 'flex-start' }}
           >
             <Image src="/icons/phone-call.png" alt="Phone" width={24} height={24} />
           </Box>
 
           {/* Content */}
-          <VStack align="stretch" gap={6} flex={1}>
+          <VStack align="stretch" gap={{ base: 4, lg: 6 }} flex={1} w="100%">
             {/* Text and supporting text */}
-            <VStack align="stretch" gap={2}>
+            <VStack align={{ base: 'center', lg: 'stretch' }} gap={2}>
               <Text
-                fontSize="20px"
+                fontSize={{ base: '18px', lg: '20px' }}
                 fontWeight={600}
                 color="#181D27"
                 fontFamily="'Open Sans', sans-serif"
                 lineHeight="1.4em"
+                textAlign={{ base: 'center', lg: 'left' }}
               >
                 Your call is set!
               </Text>
               <Text
-                fontSize="16px"
+                fontSize={{ base: '14px', lg: '16px' }}
                 fontWeight={400}
                 color="#535862"
                 fontFamily="'Open Sans', sans-serif"
                 lineHeight="1.36181640625em"
+                textAlign={{ base: 'center', lg: 'left' }}
               >
                 You will get a call from your volunteer at your scheduled time.
               </Text>
@@ -87,20 +90,20 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
             {/* Contact Details */}
             <VStack align="stretch" gap={4}>
               {/* Name */}
-              <HStack gap={4.5} align="center">
+              <HStack gap={{ base: 3, lg: 4.5 }} align="center" flexWrap="wrap">
                 <Text
-                  fontSize="16px"
+                  fontSize={{ base: '14px', lg: '16px' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.875em"
-                  w="118px"
+                  w={{ base: 'auto', lg: '118px' }}
                   flexShrink={0}
                 >
                   Name
                 </Text>
                 <Text
-                  fontSize="18px"
+                  fontSize={{ base: '16px', lg: '18px' }}
                   fontWeight={400}
                   color="#056067"
                   fontFamily="'Open Sans', sans-serif"
@@ -111,20 +114,20 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
               </HStack>
 
               {/* Phone Number */}
-              <HStack gap={4.5} align="center">
+              <HStack gap={{ base: 3, lg: 4.5 }} align="center" flexWrap="wrap">
                 <Text
-                  fontSize="16px"
+                  fontSize={{ base: '14px', lg: '16px' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.875em"
-                  w="118px"
+                  w={{ base: 'auto', lg: '118px' }}
                   flexShrink={0}
                 >
                   Phone Number
                 </Text>
                 <Text
-                  fontSize="18px"
+                  fontSize={{ base: '16px', lg: '18px' }}
                   fontWeight={400}
                   color="#056067"
                   fontFamily="'Open Sans', sans-serif"
@@ -136,7 +139,7 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
             </VStack>
 
             {/* Action Button */}
-            <Flex justify="flex-end" mt={2}>
+            <Flex justify={{ base: 'stretch', lg: 'flex-end' }} mt={2}>
               <Button
                 bg="#056067"
                 color="white"
@@ -147,6 +150,7 @@ export function ViewContactDetailsModal({ isOpen, match, onClose }: ViewContactD
                 px={4.5}
                 py={2.5}
                 borderRadius="8px"
+                w={{ base: '100%', lg: 'auto' }}
                 onClick={onClose}
                 _hover={{
                   bg: '#044d52',

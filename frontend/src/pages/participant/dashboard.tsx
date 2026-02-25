@@ -315,15 +315,37 @@ export default function ParticipantDashboardPage() {
     // Show status screen with all matches
     return (
       <VStack align="stretch" gap={6}>
-        <MatchStatusScreen
-          matches={allMatches}
-          userRole={UserRole.PARTICIPANT}
-          userName={userName}
-          onScheduleCall={handleSchedule}
-          onRequestNewTimes={(matchId) => router.push(`/participant/request-new-times/${matchId}`)}
-          onCancelCall={handleCancelCall}
-          onViewContactDetails={handleViewContactDetails}
-        />
+        {/* Mobile: show cards directly; Desktop: show table view */}
+        {!isDesktop ? (
+          <VStack align="stretch" gap={6}>
+            {/* Pending/Requesting matches - show VolunteerCards */}
+            {matches.map((match) => (
+              <VolunteerCard key={match.id} match={match} onSchedule={handleSchedule} />
+            ))}
+
+            {/* Confirmed matches - show ConfirmedMatchCards */}
+            {confirmedMatches.map((match) => (
+              <ConfirmedMatchCard
+                key={match.id}
+                match={match}
+                onCancelCall={handleCancelCall}
+                onViewContactDetails={handleViewContactDetails}
+              />
+            ))}
+          </VStack>
+        ) : (
+          <MatchStatusScreen
+            matches={allMatches}
+            userRole={UserRole.PARTICIPANT}
+            userName={userName}
+            onScheduleCall={handleSchedule}
+            onRequestNewTimes={(matchId) =>
+              router.push(`/participant/request-new-times/${matchId}`)
+            }
+            onCancelCall={handleCancelCall}
+            onViewContactDetails={handleViewContactDetails}
+          />
+        )}
 
         {/* Request New Matches Button */}
         <Button
@@ -339,6 +361,7 @@ export default function ParticipantDashboardPage() {
           lineHeight="1.5em"
           fontFamily="Open Sans, sans-serif"
           boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+          w={{ base: '100%', lg: 'auto' }}
           _hover={{ bg: '#044d52', borderColor: '#044d52' }}
           _active={{ bg: '#033a3e', borderColor: '#033a3e' }}
           onClick={handleRequestNewMatchesClick}
