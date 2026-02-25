@@ -55,16 +55,15 @@ export default function FAQPage() {
 
   return (
     <div className="flex min-h-screen bg-white">
-      <div className="flex-1 p-6">
-        <div className="mx-auto" style={{ width: '620px' }}>
+      <div className="flex-1 p-4 lg:p-6">
+        <div className="mx-auto w-full max-w-[620px]">
           <h1
-            className="font-semibold"
+            className="font-semibold text-2xl lg:text-4xl"
             style={{
               color: COLORS.veniceBlue,
-              fontSize: '36px',
               letterSpacing: '-0.5px',
               fontFamily: 'Open Sans, sans-serif',
-              marginBottom: '48px',
+              marginBottom: '32px',
             }}
           >
             {t('frequentlyAskedQuestions')}
@@ -91,12 +90,12 @@ export default function FAQPage() {
                         isOpen ? prev.filter((id) => id !== faq.id) : [...prev, faq.id],
                       )
                     }
-                    className="w-full flex items-center justify-between py-4 px-5 bg-transparent border-none rounded-lg cursor-pointer text-left hover:bg-gray-50"
+                    className="w-full flex items-center justify-between py-4 px-4 lg:px-5 bg-transparent border-none rounded-lg cursor-pointer text-left hover:bg-gray-50"
                   >
                     <span
+                      className="text-base lg:text-lg"
                       style={{
                         color: COLORS.veniceBlue,
-                        fontSize: '18px',
                         fontWeight: 600,
                         fontFamily: 'Open Sans, sans-serif',
                       }}
@@ -104,18 +103,25 @@ export default function FAQPage() {
                       {faq.question}
                     </span>
                     {isOpen ? (
-                      <FiChevronUp color={COLORS.veniceBlue} size={24} />
+                      <FiChevronUp
+                        color={COLORS.veniceBlue}
+                        size={24}
+                        className="flex-shrink-0 ml-2"
+                      />
                     ) : (
-                      <FiChevronDown color={COLORS.veniceBlue} size={24} />
+                      <FiChevronDown
+                        color={COLORS.veniceBlue}
+                        size={24}
+                        className="flex-shrink-0 ml-2"
+                      />
                     )}
                   </button>
                   {isOpen && (
-                    <div className="px-5 pb-4">
+                    <div className="px-4 lg:px-5 pb-4">
                       <div
-                        className="mb-4 whitespace-pre-wrap"
+                        className="mb-4 whitespace-pre-wrap text-sm lg:text-base"
                         style={{
                           color: COLORS.veniceBlue,
-                          fontSize: '16px',
                           fontWeight: 400,
                           fontFamily: 'Open Sans, sans-serif',
                         }}
@@ -125,7 +131,7 @@ export default function FAQPage() {
                       {faq.actionButton && (
                         <button
                           onClick={faq.actionButton.action}
-                          className="inline-flex items-center justify-center font-medium cursor-pointer text-white"
+                          className="inline-flex items-center justify-center font-medium cursor-pointer text-white w-full lg:w-auto"
                           style={{
                             backgroundColor: ACCENT_COLOR,
                             border: `1px solid ${ACCENT_COLOR}`,

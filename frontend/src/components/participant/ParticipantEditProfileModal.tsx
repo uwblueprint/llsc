@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Heading, Text, VStack, HStack, Image } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, HStack, Image, Tabs } from '@chakra-ui/react';
 import PersonalDetails from '@/components/dashboard/PersonalDetails';
 import BloodCancerExperience from '@/components/dashboard/BloodCancerExperience';
 import AccountSettings from '@/components/participant/AccountSettings';
@@ -8,6 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getUserData, updateUserData } from '@/APIClients/userDataAPIClient';
 import { Language } from '@/types/authTypes';
 import { useTranslations } from 'next-intl';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 import type { Locale } from '@/i18n/config';
 
 interface ParticipantEditProfileModalProps {
@@ -23,6 +24,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
   const { user, loading: authLoading } = useAuth();
   const { locale, setLocale } = useLanguage();
   const [loading, setLoading] = useState(true);
+  const isDesktop = useIsDesktop();
 
   // Personal details state for profile
   const [personalDetails, setPersonalDetails] = useState({
@@ -280,6 +282,170 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
     );
   }
 
+  // Render personal details content
+  const renderPersonalDetails = () => (
+    <PersonalDetails
+      personalDetails={{
+        ...personalDetails,
+        preferredLanguage: personalDetails.preferredLanguage === Language.FRENCH ? 'fr' : 'en',
+      }}
+      setPersonalDetails={(updater) => {
+        if (typeof updater === 'function') {
+          setPersonalDetails((prev) => {
+            const updated = updater({
+              ...prev,
+              preferredLanguage: prev.preferredLanguage === Language.FRENCH ? 'fr' : 'en',
+            });
+            return {
+              ...updated,
+              preferredLanguage: (updated.preferredLanguage === 'fr'
+                ? Language.FRENCH
+                : Language.ENGLISH) as Language,
+            };
+          });
+        } else {
+          setPersonalDetails({
+            ...updater,
+            preferredLanguage: (updater.preferredLanguage === 'fr'
+              ? Language.FRENCH
+              : Language.ENGLISH) as Language,
+          });
+        }
+      }}
+      lovedOneDetails={lovedOneDetails}
+      setLovedOneDetails={setLovedOneDetails}
+      onSave={handleSavePersonalDetail}
+      isVolunteer={false}
+    />
+  );
+
+  // Render blood cancer experience content
+  const renderHistory = () => (
+    <BloodCancerExperience
+      cancerExperience={cancerExperience}
+      setCancerExperience={setCancerExperience}
+      lovedOneCancerExperience={lovedOneCancerExperience}
+      setLovedOneCancerExperience={setLovedOneCancerExperience}
+      onEditTreatments={handleSaveTreatments}
+      onEditExperiences={handleSaveExperiences}
+      onEditLovedOneTreatments={handleSaveLovedOneTreatments}
+      onEditLovedOneExperiences={handleSaveLovedOneExperiences}
+      hasBloodCancer={hasBloodCancer}
+    />
+  );
+
+  // Mobile layout with tabs
+  const renderMobileLayout = () => (
+    <Box minH="100vh" bg="white" px={4} py={6}>
+      <HStack gap={2} mb={4} cursor="pointer" onClick={onClose}>
+        <Image src="/icons/chevron-left.png" alt={t('back')} w="20px" h="20px" />
+        <Text fontSize="16px" color="#1D3448" fontFamily="'Open Sans', sans-serif" fontWeight={400}>
+          {t('back')}
+        </Text>
+      </HStack>
+
+      <Heading
+        fontSize="24px"
+        fontWeight={600}
+        color="#1D3448"
+        fontFamily="'Open Sans', sans-serif"
+        letterSpacing="-1.5%"
+        mb={6}
+        textAlign="center"
+      >
+        {t('editProfile')}
+      </Heading>
+
+      <Tabs.Root defaultValue="personal" variant="line">
+        <Tabs.List mb={6} borderBottomWidth="1px" borderColor="#E5E7EB" gap={0}>
+          <Tabs.Trigger
+            value="personal"
+            flex={1}
+            fontSize="14px"
+            fontWeight={400}
+            fontFamily="'Open Sans', sans-serif"
+            color="#6B7280"
+            pb={3}
+            _selected={{
+              color: '#1D3448',
+              fontWeight: 600,
+              borderBottomWidth: '2px',
+              borderColor: '#1D3448',
+            }}
+          >
+            {t('personalDetails')}
+          </Tabs.Trigger>
+          <Tabs.Trigger
+            value="history"
+            flex={1}
+            fontSize="14px"
+            fontWeight={400}
+            fontFamily="'Open Sans', sans-serif"
+            color="#6B7280"
+            pb={3}
+            _selected={{
+              color: '#1D3448',
+              fontWeight: 600,
+              borderBottomWidth: '2px',
+              borderColor: '#1D3448',
+            }}
+          >
+            {t('history')}
+          </Tabs.Trigger>
+        </Tabs.List>
+
+        <Tabs.Content value="personal">
+          <VStack gap={0} align="stretch">
+            {renderPersonalDetails()}
+            <AccountSettings />
+          </VStack>
+        </Tabs.Content>
+
+        <Tabs.Content value="history">
+          <VStack gap={0} align="stretch">
+            {renderHistory()}
+          </VStack>
+        </Tabs.Content>
+      </Tabs.Root>
+    </Box>
+  );
+
+  // Desktop layout (original)
+  const renderDesktopLayout = () => (
+    <Box minH="100vh" bg="white" p={12}>
+      <Box w="70%" mx="auto" overflowX="hidden">
+        <HStack gap={2} mb={4} cursor="pointer" onClick={onClose}>
+          <Image src="/icons/chevron-left.png" alt={t('back')} w="20px" h="20px" />
+          <Text
+            fontSize="16px"
+            color="#1D3448"
+            fontFamily="'Open Sans', sans-serif"
+            fontWeight={400}
+          >
+            {t('back')}
+          </Text>
+        </HStack>
+
+        <Heading
+          fontSize="36px"
+          fontWeight={600}
+          color="#1D3448"
+          fontFamily="'Open Sans', sans-serif"
+          letterSpacing="-1.5%"
+          mb="48px"
+        >
+          {t('editProfile')}
+        </Heading>
+
+        <VStack gap={0} align="stretch">
+          {renderPersonalDetails()}
+          {renderHistory()}
+          <AccountSettings />
+        </VStack>
+      </Box>
+    </Box>
+  );
+
   return (
     <Box
       position="fixed"
@@ -291,81 +457,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
       zIndex={9999}
       overflowY="auto"
     >
-      <Box minH="100vh" bg="white" p={12}>
-        <Box w="70%" mx="auto" overflowX="hidden">
-          <HStack gap={2} mb={4} cursor="pointer" onClick={onClose}>
-            <Image src="/icons/chevron-left.png" alt={t('back')} w="20px" h="20px" />
-            <Text
-              fontSize="16px"
-              color="#1D3448"
-              fontFamily="'Open Sans', sans-serif"
-              fontWeight={400}
-            >
-              {t('back')}
-            </Text>
-          </HStack>
-
-          <Heading
-            fontSize="36px"
-            fontWeight={600}
-            color="#1D3448"
-            fontFamily="'Open Sans', sans-serif"
-            letterSpacing="-1.5%"
-            mb="48px"
-          >
-            {t('editProfile')}
-          </Heading>
-
-          <VStack gap={0} align="stretch">
-            <PersonalDetails
-              personalDetails={{
-                ...personalDetails,
-                preferredLanguage:
-                  personalDetails.preferredLanguage === Language.FRENCH ? 'fr' : 'en',
-              }}
-              setPersonalDetails={(updater) => {
-                if (typeof updater === 'function') {
-                  setPersonalDetails((prev) => {
-                    const updated = updater({
-                      ...prev,
-                      preferredLanguage: prev.preferredLanguage === Language.FRENCH ? 'fr' : 'en',
-                    });
-                    return {
-                      ...updated,
-                      preferredLanguage: (updated.preferredLanguage === 'fr'
-                        ? Language.FRENCH
-                        : Language.ENGLISH) as Language,
-                    };
-                  });
-                } else {
-                  setPersonalDetails({
-                    ...updater,
-                    preferredLanguage: (updater.preferredLanguage === 'fr'
-                      ? Language.FRENCH
-                      : Language.ENGLISH) as Language,
-                  });
-                }
-              }}
-              lovedOneDetails={lovedOneDetails}
-              setLovedOneDetails={setLovedOneDetails}
-              onSave={handleSavePersonalDetail}
-              isVolunteer={false}
-            />
-            <BloodCancerExperience
-              cancerExperience={cancerExperience}
-              setCancerExperience={setCancerExperience}
-              lovedOneCancerExperience={lovedOneCancerExperience}
-              setLovedOneCancerExperience={setLovedOneCancerExperience}
-              onEditTreatments={handleSaveTreatments}
-              onEditExperiences={handleSaveExperiences}
-              onEditLovedOneTreatments={handleSaveLovedOneTreatments}
-              onEditLovedOneExperiences={handleSaveLovedOneExperiences}
-              hasBloodCancer={hasBloodCancer}
-            />
-            <AccountSettings />
-          </VStack>
-        </Box>
-      </Box>
+      {isDesktop ? renderDesktopLayout() : renderMobileLayout()}
     </Box>
   );
 };

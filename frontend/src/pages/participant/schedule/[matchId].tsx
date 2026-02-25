@@ -7,6 +7,7 @@ import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClien
 import { FormStatus, UserRole } from '@/types/authTypes';
 import { Match, TimeBlock } from '@/types/matchTypes';
 import { useTranslations } from 'next-intl';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 
 interface GroupedTimeBlocks {
   [date: string]: TimeBlock[];
@@ -16,6 +17,7 @@ export default function ScheduleCallPage() {
   const t = useTranslations('dashboard');
   const router = useRouter();
   const { matchId } = router.query;
+  const isDesktop = useIsDesktop();
 
   const [match, setMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
@@ -157,9 +159,9 @@ export default function ScheduleCallPage() {
   return (
     <ProtectedPage allowedRoles={[UserRole.PARTICIPANT, UserRole.ADMIN]}>
       <FormStatusGuard allowedStatuses={[FormStatus.COMPLETED]}>
-        <Box minH="100vh" bg="white" py={10}>
-          <Container maxW="container.md">
-            <VStack align="stretch" gap={8}>
+        <Box minH="100vh" bg="white" py={{ base: 4, lg: 10 }}>
+          <Container maxW="container.md" px={{ base: 4, lg: 8 }}>
+            <VStack align="stretch" gap={{ base: 6, lg: 8 }}>
               {/* Back button */}
               <Flex
                 align="center"
@@ -189,14 +191,18 @@ export default function ScheduleCallPage() {
               {/* Header */}
               <VStack align="stretch" gap={2}>
                 <Heading
-                  fontSize="2xl"
+                  fontSize={{ base: 'xl', lg: '2xl' }}
                   fontWeight="600"
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                 >
                   {t('scheduleYourCall', { name: volunteerName })}
                 </Heading>
-                <Text fontSize="md" color="#6B7280" fontFamily="'Open Sans', sans-serif">
+                <Text
+                  fontSize={{ base: 'sm', lg: 'md' }}
+                  color="#6B7280"
+                  fontFamily="'Open Sans', sans-serif"
+                >
                   {t('whenWouldYouLikeToMeet')}
                 </Text>
               </VStack>
@@ -204,14 +210,14 @@ export default function ScheduleCallPage() {
               {/* Date Selection */}
               <VStack align="stretch" gap={4}>
                 <Text
-                  fontSize="md"
+                  fontSize={{ base: 'sm', lg: 'md' }}
                   fontWeight="600"
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                 >
                   {t('selectDate')}
                 </Text>
-                <Flex gap={3} flexWrap="wrap">
+                <VStack gap={3} align="stretch">
                   {sortedDates.map((dateKey) => (
                     <Button
                       key={dateKey}
@@ -230,6 +236,8 @@ export default function ScheduleCallPage() {
                       px={6}
                       py={6}
                       borderRadius="6px"
+                      w={{ base: '100%', lg: 'auto' }}
+                      justifyContent={{ base: 'center', lg: 'center' }}
                       _hover={{
                         borderColor: '#056067',
                       }}
@@ -237,7 +245,7 @@ export default function ScheduleCallPage() {
                       {formatDate(dateKey)}
                     </Button>
                   ))}
-                </Flex>
+                </VStack>
               </VStack>
 
               {/* Time Selection */}
@@ -245,14 +253,18 @@ export default function ScheduleCallPage() {
                 <VStack align="stretch" gap={4}>
                   <Box>
                     <Text
-                      fontSize="md"
+                      fontSize={{ base: 'sm', lg: 'md' }}
                       fontWeight="600"
                       color="#1D3448"
                       fontFamily="'Open Sans', sans-serif"
                     >
                       {t('selectTime')}
                     </Text>
-                    <Text fontSize="sm" color="#6B7280" fontFamily="'Open Sans', sans-serif">
+                    <Text
+                      fontSize={{ base: 'xs', lg: 'sm' }}
+                      color="#6B7280"
+                      fontFamily="'Open Sans', sans-serif"
+                    >
                       {t('allTimesInTimezone', { timezone: 'EST' })}
                     </Text>
                   </Box>
@@ -269,9 +281,10 @@ export default function ScheduleCallPage() {
                         fontWeight="400"
                         fontSize="sm"
                         fontFamily="'Open Sans', sans-serif"
-                        px={6}
+                        px={{ base: 4, lg: 6 }}
                         py={5}
                         borderRadius="6px"
+                        minW={{ base: 'calc(33% - 8px)', lg: 'auto' }}
                         _hover={{
                           borderColor: '#056067',
                         }}
@@ -284,7 +297,7 @@ export default function ScheduleCallPage() {
               )}
 
               {/* Action Buttons */}
-              <Flex justify="flex-end" mt={4}>
+              <Flex justify={{ base: 'stretch', lg: 'flex-end' }} mt={4}>
                 {selectedDate && selectedTimeBlockId ? (
                   <Button
                     bg="#056067"
@@ -295,6 +308,7 @@ export default function ScheduleCallPage() {
                     px={8}
                     py={6}
                     borderRadius="md"
+                    w={{ base: '100%', lg: 'auto' }}
                     _hover={{
                       bg: '#044d52',
                     }}
@@ -315,6 +329,7 @@ export default function ScheduleCallPage() {
                     px={8}
                     py={6}
                     borderRadius="md"
+                    w={{ base: '100%', lg: 'auto' }}
                     _hover={{
                       bg: '#822727',
                     }}
