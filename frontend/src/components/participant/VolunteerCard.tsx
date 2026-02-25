@@ -5,6 +5,7 @@ import Badge from '@/components/dashboard/Badge';
 import { COLORS } from '@/constants/form';
 import { FiLoader } from 'react-icons/fi';
 import { useTranslations } from 'next-intl';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 
 interface VolunteerCardProps {
   match: Match;
@@ -14,6 +15,7 @@ interface VolunteerCardProps {
 export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
   const t = useTranslations('dashboard');
   const tOptions = useTranslations('options');
+  const isDesktop = useIsDesktop();
   const { volunteer } = match;
 
   // Helper to translate medical terms with fallback to original value
@@ -37,14 +39,14 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
   return (
     <Box
       w="full"
-      maxW="675px"
+      maxW={{ base: '100%', lg: '675px' }}
       border="1px solid #D5D7DA"
       borderRadius="8px"
       bg="white"
       boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
-      py="24px"
-      px="28px"
-      pb="80px"
+      py={{ base: '16px', lg: '24px' }}
+      px={{ base: '16px', lg: '28px' }}
+      pb={{ base: '16px', lg: '80px' }}
       position="relative"
       minH="fit-content"
     >
@@ -52,8 +54,8 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
       {isRequestingNewTimes && (
         <Box
           position="absolute"
-          top="24px"
-          right="28px"
+          top={{ base: '16px', lg: '24px' }}
+          right={{ base: '16px', lg: '28px' }}
           bg="#F5E9E1"
           borderRadius="16px"
           px="12px"
@@ -78,39 +80,44 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
         </Box>
       )}
       <VStack align="start" gap={0}>
-        <HStack gap="32px" align="start">
+        <HStack gap={{ base: '12px', lg: '32px' }} align="start">
           {/* Avatar */}
-          <Avatar name={fullName} size="xl" bg="#F4F4F4" color="#000000" fontSize="36.52px" />
+          <Avatar
+            name={fullName}
+            size={isDesktop ? 'xl' : 'lg'}
+            bg="#F4F4F4"
+            color="#000000"
+            fontSize={isDesktop ? '36.52px' : '24px'}
+          />
 
           {/* Volunteer Info */}
-          <VStack align="start" gap={2}>
-            <HStack gap={2} align="center">
+          <VStack align="start" gap={2} flex={1}>
+            <HStack gap={2} align="center" wrap="wrap">
               <Text
-                fontSize="1.5rem"
+                fontSize={{ base: '1.125rem', lg: '1.5rem' }}
                 fontWeight={600}
                 color="#1D3448"
                 fontFamily="'Open Sans', sans-serif"
-                lineHeight="1.875rem"
+                lineHeight={{ base: '1.5rem', lg: '1.875rem' }}
                 letterSpacing="0%"
               >
                 {fullName}
               </Text>
               {pronounsText && (
                 <Text
-                  fontSize="1rem"
+                  fontSize={{ base: '0.875rem', lg: '1rem' }}
                   fontWeight={400}
                   color="#495D6C"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="100%"
                   letterSpacing="0%"
-                  mr="16px"
                 >
                   {pronounsText}
                 </Text>
               )}
             </HStack>
 
-            <HStack gap={2} align="center" wrap="wrap" mt="16px">
+            <HStack gap={2} align="center" wrap="wrap" mt={{ base: '8px', lg: '16px' }}>
               {typeof volunteer.age === 'number' && (
                 <Badge iconSrc="/icons/user-secondary.png">
                   {t('currentAge')} {volunteer.age}
@@ -134,18 +141,18 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
         {volunteer.overview && (
           <Box mt={4}>
             <Text
-              fontSize="1.125rem"
+              fontSize={{ base: '1rem', lg: '1.125rem' }}
               fontWeight={600}
               color="#1D3448"
               fontFamily="'Open Sans', sans-serif"
               lineHeight="1.875rem"
               letterSpacing="0%"
-              mb="16px"
+              mb={{ base: '8px', lg: '16px' }}
             >
               {t('overview')}
             </Text>
             <Text
-              fontSize="1rem"
+              fontSize={{ base: '0.875rem', lg: '1rem' }}
               fontWeight={400}
               color="#495D6C"
               fontFamily="'Open Sans', sans-serif"
@@ -160,13 +167,13 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
         {volunteer.treatments && volunteer.treatments.length > 0 && (
           <Box mt={4}>
             <Text
-              fontSize="1.125rem"
+              fontSize={{ base: '1rem', lg: '1.125rem' }}
               fontWeight={600}
               color="#1D3448"
               fontFamily="'Open Sans', sans-serif"
               lineHeight="1.875rem"
               letterSpacing="0%"
-              mb="16px"
+              mb={{ base: '8px', lg: '16px' }}
             >
               {t('treatmentInformation')}
             </Text>
@@ -184,13 +191,13 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
         {volunteer.experiences && volunteer.experiences.length > 0 && (
           <Box mt={4}>
             <Text
-              fontSize="1.125rem"
+              fontSize={{ base: '1rem', lg: '1.125rem' }}
               fontWeight={600}
               color="#1D3448"
               fontFamily="'Open Sans', sans-serif"
               lineHeight="1.875rem"
               letterSpacing="0%"
-              mb="16px"
+              mb={{ base: '8px', lg: '16px' }}
             >
               {t('experienceInformation')}
             </Text>
@@ -205,12 +212,14 @@ export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
         )}
       </VStack>
 
-      {/* Schedule call button - Positioned at bottom right */}
+      {/* Schedule call button */}
       {onSchedule && !isRequestingNewTimes && (
         <Button
-          position="absolute"
-          bottom="24px"
-          right="28px"
+          position={isDesktop ? 'absolute' : 'relative'}
+          bottom={isDesktop ? '24px' : undefined}
+          right={isDesktop ? '28px' : undefined}
+          w={{ base: '100%', lg: 'auto' }}
+          mt={{ base: 4, lg: 0 }}
           bg={COLORS.teal}
           color="white"
           fontWeight={600}
