@@ -18,9 +18,19 @@ export function ConfirmedMatchCard({
   onViewContactDetails,
 }: ConfirmedMatchCardProps) {
   const t = useTranslations('dashboard');
+  const tOptions = useTranslations('options');
   const locale = useLocale();
   const isDesktop = useIsDesktop();
   const { volunteer, chosenTimeBlock } = match;
+
+  // Helper to translate medical terms with fallback to original value
+  const translateOption = (category: 'treatments' | 'experiences' | 'diagnoses', value: string) => {
+    try {
+      return tOptions(`${category}.${value}`);
+    } catch {
+      return value;
+    }
+  };
 
   if (!chosenTimeBlock) {
     return null;
@@ -272,7 +282,7 @@ export function ConfirmedMatchCard({
                 <HStack gap={2} wrap="wrap">
                   {volunteer.treatments.map((treatment: string, index: number) => (
                     <Badge key={index} bgColor="#EEF4FF" textColor="#3538CD">
-                      {treatment}
+                      {translateOption('treatments', treatment)}
                     </Badge>
                   ))}
                 </HStack>
@@ -295,7 +305,7 @@ export function ConfirmedMatchCard({
                 <HStack gap={2} wrap="wrap">
                   {volunteer.experiences.map((experience: string, index: number) => (
                     <Badge key={index} bgColor="#FDF2FA" textColor="#C11574">
-                      {experience}
+                      {translateOption('experiences', experience)}
                     </Badge>
                   ))}
                 </HStack>

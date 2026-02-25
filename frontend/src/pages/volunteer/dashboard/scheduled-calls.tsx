@@ -107,7 +107,7 @@ const ScheduledCallsPage: React.FC = () => {
             fontSize={{ base: '1.5rem', lg: '2.25rem' }}
             fontWeight={600}
             lineHeight={{ base: '120%', lg: '100%' }}
-            letterSpacing="-1.5%"
+            letterSpacing="-0.015em"
             color="#1D3448"
             fontFamily="'Open Sans', sans-serif"
             textAlign="left"
@@ -138,7 +138,7 @@ const ScheduledCallsPage: React.FC = () => {
                   showTimes={!!call.scheduledTime}
                   onViewContact={() => {
                     // Handle view contact action
-                    console.log('View contact for', call.name);
+                    // TODO: Implement view contact details for volunteer
                   }}
                 />
               ))}

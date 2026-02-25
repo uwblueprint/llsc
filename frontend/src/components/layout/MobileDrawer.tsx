@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, VStack, HStack, Text, Image, Button, Icon, Separator } from '@chakra-ui/react';
+import { Box, VStack, HStack, Text, Image, Button, Separator } from '@chakra-ui/react';
 import { FiLogOut } from 'react-icons/fi';
 import { useRouter } from 'next/router';
 import { useTranslations } from 'next-intl';
@@ -148,7 +148,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                 }}
               >
                 <HStack gap={3} align="center">
-                  <Icon as={FiLogOut} w="18px" h="18px" />
+                  <FiLogOut size={18} />
                   <Text>{t('signOut')}</Text>
                 </HStack>
               </Button>

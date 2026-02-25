@@ -7,8 +7,6 @@ import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClien
 import { FormStatus, UserRole } from '@/types/authTypes';
 import { Match, TimeBlock } from '@/types/matchTypes';
 import { useTranslations } from 'next-intl';
-import { useIsDesktop } from '@/hooks/useIsDesktop';
-
 interface GroupedTimeBlocks {
   [date: string]: TimeBlock[];
 }
@@ -17,7 +15,6 @@ export default function ScheduleCallPage() {
   const t = useTranslations('dashboard');
   const router = useRouter();
   const { matchId } = router.query;
-  const isDesktop = useIsDesktop();
 
   const [match, setMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);

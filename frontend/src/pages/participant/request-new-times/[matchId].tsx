@@ -242,7 +242,7 @@ export default function RequestNewTimesPage() {
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.36181640625em"
-                  letterSpacing="-1.5%"
+                  letterSpacing="-0.015em"
                 >
                   {t('requestNewTime')}
                 </Heading>
@@ -252,7 +252,7 @@ export default function RequestNewTimesPage() {
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.36181640625em"
-                  letterSpacing="-1.5%"
+                  letterSpacing="-0.015em"
                   opacity={0.85}
                 >
                   {t('ifTimesDoNotWork')}

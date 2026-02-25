@@ -770,7 +770,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
         fontWeight={600}
         color="#1D3448"
         fontFamily="'Open Sans', sans-serif"
-        letterSpacing="-1.5%"
+        letterSpacing="-0.015em"
         mb={6}
         textAlign="center"
       >
@@ -871,7 +871,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
           fontWeight={600}
           color="#1D3448"
           fontFamily="'Open Sans', sans-serif"
-          letterSpacing="-1.5%"
+          letterSpacing="-0.015em"
           mb="48px"
         >
           {t('editProfile')}
