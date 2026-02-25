@@ -1,15 +1,18 @@
-import { Box, Button, HStack, Image, Text, VStack, Icon } from '@chakra-ui/react';
+import { Box, Button, HStack, Image, Text, VStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { FiLogOut } from 'react-icons/fi';
 import { useTranslations } from 'next-intl';
 import { logout } from '@/APIClients/authAPIClient';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
+import type { NavItem } from '@/components/layout/MobileDrawer';
 
-export function DashboardSidebar() {
+// Hook to get nav items for use in mobile drawer
+export function useParticipantNavItems(): NavItem[] {
   const t = useTranslations('dashboard');
   const router = useRouter();
   const currentPath = router.asPath;
 
-  const navItems = [
+  return [
     {
       label: t('matches'),
       icon: '/icons/user-primary.png',
@@ -23,6 +26,13 @@ export function DashboardSidebar() {
       isActive: currentPath === '/participant/dashboard/contact',
     },
   ];
+}
+
+export function DashboardSidebar() {
+  const t = useTranslations('dashboard');
+  const router = useRouter();
+  const isDesktop = useIsDesktop();
+  const navItems = useParticipantNavItems();
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -32,9 +42,14 @@ export function DashboardSidebar() {
     await logout();
   };
 
+  // Don't render sidebar on mobile - mobile uses MobileHeader + MobileDrawer
+  if (!isDesktop) {
+    return null;
+  }
+
   return (
     <Box
-      w={{ base: '100%', lg: '279px' }}
+      w="279px"
       flexShrink={0}
       bg="white"
       borderRadius="8px"
@@ -106,7 +121,7 @@ export function DashboardSidebar() {
           }}
         >
           <HStack gap="8px" align="center">
-            <Icon as={FiLogOut} w="14px" h="14px" />
+            <FiLogOut size={14} />
             <Text>{t('signOut')}</Text>
           </HStack>
         </Button>

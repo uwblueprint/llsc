@@ -4,6 +4,7 @@ import { Match } from '@/types/matchTypes';
 import { formatDateRelative, formatDateShort, formatTime } from '@/utils/dateUtils';
 import { Avatar } from '@/components/ui/avatar';
 import Badge from '@/components/dashboard/Badge';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 
 interface ConfirmedMatchCardProps {
   match: Match;
@@ -17,8 +18,19 @@ export function ConfirmedMatchCard({
   onViewContactDetails,
 }: ConfirmedMatchCardProps) {
   const t = useTranslations('dashboard');
+  const tOptions = useTranslations('options');
   const locale = useLocale();
+  const isDesktop = useIsDesktop();
   const { volunteer, chosenTimeBlock } = match;
+
+  // Helper to translate medical terms with fallback to original value
+  const translateOption = (category: 'treatments' | 'experiences' | 'diagnoses', value: string) => {
+    try {
+      return tOptions(`${category}.${value}`);
+    } catch {
+      return value;
+    }
+  };
 
   if (!chosenTimeBlock) {
     return null;
@@ -52,10 +64,20 @@ export function ConfirmedMatchCard({
     <VStack align="stretch" gap={4}>
       {/* Date Badge - Above the card */}
       <Box display="flex" alignItems="center" gap={2} alignSelf="flex-start">
-        <Text fontSize="20px" fontWeight="600" color="#056067" fontFamily="Open Sans">
+        <Text
+          fontSize={{ base: '16px', lg: '20px' }}
+          fontWeight="600"
+          color="#056067"
+          fontFamily="Open Sans"
+        >
           {dateShort}
         </Text>
-        <Text fontSize="18px" fontWeight="400" color="#056067" fontFamily="Open Sans">
+        <Text
+          fontSize={{ base: '14px', lg: '18px' }}
+          fontWeight="400"
+          color="#056067"
+          fontFamily="Open Sans"
+        >
           {dateLabel}
         </Text>
       </Box>
@@ -65,7 +87,7 @@ export function ConfirmedMatchCard({
         {/* Time - to the left of blue bar */}
         <Box display="flex" alignItems="flex-start" pt={2}>
           <Text
-            fontSize="18px"
+            fontSize={{ base: '14px', lg: '18px' }}
             fontWeight="400"
             color="#1F2937"
             fontFamily="Open Sans"
@@ -85,23 +107,54 @@ export function ConfirmedMatchCard({
           border="1px solid"
           borderColor="#D5D7DA"
           borderRadius="8px"
-          p={7}
+          p={{ base: 4, lg: 7 }}
           boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
         >
           <VStack align="stretch" gap={0}>
             {/* Volunteer Info */}
-            <HStack gap={8} align="flex-start" mb={4}>
-              {/* Avatar */}
-              <Avatar
-                name={`${volunteer.firstName} ${volunteer.lastName}`}
-                size="xl"
-                bg="#F4F4F4"
-                color="#000000"
-                fontSize="36.52px"
-              />
+            <HStack
+              gap={{ base: 3, lg: 8 }}
+              align="flex-start"
+              mb={4}
+              flexDirection={{ base: 'column', lg: 'row' }}
+            >
+              {/* Avatar + Name row on mobile */}
+              <HStack gap={3} align="center" w="100%">
+                <Avatar
+                  name={`${volunteer.firstName} ${volunteer.lastName}`}
+                  size={isDesktop ? 'xl' : 'lg'}
+                  bg="#F4F4F4"
+                  color="#000000"
+                  fontSize={isDesktop ? '36.52px' : '24px'}
+                />
+                {/* Name and pronouns on mobile - inline with avatar */}
+                {!isDesktop && (
+                  <VStack align="start" gap={0} flex={1}>
+                    <Text
+                      fontSize="1.125rem"
+                      fontWeight={600}
+                      color="#1D3448"
+                      fontFamily="'Open Sans', sans-serif"
+                      lineHeight="1.5rem"
+                    >
+                      {volunteer.firstName} {volunteer.lastName}
+                    </Text>
+                    {pronounsText && (
+                      <Text
+                        fontSize="0.875rem"
+                        fontWeight={400}
+                        color="#495D6C"
+                        fontFamily="'Open Sans', sans-serif"
+                      >
+                        {pronounsText}
+                      </Text>
+                    )}
+                  </VStack>
+                )}
+              </HStack>
 
-              {/* Name, pronouns, and info badges */}
-              <VStack align="start" gap={2} flex={1}>
+              {/* Name, pronouns, and info badges - desktop layout */}
+              <VStack align="start" gap={2} flex={1} display={{ base: 'none', lg: 'flex' }}>
                 {/* Name and pronouns */}
                 <HStack gap={2} align="center">
                   <Text
@@ -157,21 +210,52 @@ export function ConfirmedMatchCard({
               </VStack>
             </HStack>
 
+            {/* Info badges - mobile only, below avatar/name row */}
+            {!isDesktop && (
+              <HStack gap={2} align="center" wrap="wrap" mb={4}>
+                {typeof volunteer.age === 'number' && (
+                  <Badge
+                    iconSrc="/icons/user-secondary.png"
+                    bgColor="rgba(179, 206, 209, 0.3)"
+                    textColor="#056067"
+                  >
+                    {t('currentAge')} {volunteer.age}
+                  </Badge>
+                )}
+                <Badge
+                  iconSrc="/icons/clock-secondary.png"
+                  bgColor="rgba(179, 206, 209, 0.3)"
+                  textColor="#056067"
+                >
+                  {t('timeZone')} {volunteerTimezone}
+                </Badge>
+                {volunteer.diagnosis && (
+                  <Badge
+                    iconSrc="/icons/activity-secondary.png"
+                    bgColor="rgba(179, 206, 209, 0.3)"
+                    textColor="#056067"
+                  >
+                    {volunteer.diagnosis}
+                  </Badge>
+                )}
+              </HStack>
+            )}
+
             {/* Overview Section */}
             {volunteer.overview && (
               <Box mt={4}>
                 <Text
-                  fontSize="1.125rem"
+                  fontSize={{ base: '1rem', lg: '1.125rem' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.875rem"
-                  mb={4}
+                  mb={{ base: 2, lg: 4 }}
                 >
                   {t('overview')}
                 </Text>
                 <Text
-                  fontSize="1rem"
+                  fontSize={{ base: '0.875rem', lg: '1rem' }}
                   fontWeight={400}
                   color="#495D6C"
                   fontFamily="'Open Sans', sans-serif"
@@ -186,19 +270,19 @@ export function ConfirmedMatchCard({
             {volunteer.treatments && volunteer.treatments.length > 0 && (
               <Box mt={4}>
                 <Text
-                  fontSize="1.125rem"
+                  fontSize={{ base: '1rem', lg: '1.125rem' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.875rem"
-                  mb={4}
+                  mb={{ base: 2, lg: 4 }}
                 >
                   {t('treatmentInformation')}
                 </Text>
                 <HStack gap={2} wrap="wrap">
                   {volunteer.treatments.map((treatment: string, index: number) => (
                     <Badge key={index} bgColor="#EEF4FF" textColor="#3538CD">
-                      {treatment}
+                      {translateOption('treatments', treatment)}
                     </Badge>
                   ))}
                 </HStack>
@@ -209,19 +293,19 @@ export function ConfirmedMatchCard({
             {volunteer.experiences && volunteer.experiences.length > 0 && (
               <Box mt={4}>
                 <Text
-                  fontSize="1.125rem"
+                  fontSize={{ base: '1rem', lg: '1.125rem' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.875rem"
-                  mb={4}
+                  mb={{ base: 2, lg: 4 }}
                 >
                   {t('experienceInformation')}
                 </Text>
                 <HStack gap={2} wrap="wrap">
                   {volunteer.experiences.map((experience: string, index: number) => (
                     <Badge key={index} bgColor="#FDF2FA" textColor="#C11574">
-                      {experience}
+                      {translateOption('experiences', experience)}
                     </Badge>
                   ))}
                 </HStack>
@@ -229,7 +313,12 @@ export function ConfirmedMatchCard({
             )}
 
             {/* Action Buttons */}
-            <Flex justify="flex-end" gap={3} mt={6}>
+            <Flex
+              justify={{ base: 'stretch', lg: 'flex-end' }}
+              direction={{ base: 'column', lg: 'row' }}
+              gap={3}
+              mt={6}
+            >
               {onCancelCall && (
                 <Button
                   bg="#DC2626"
@@ -240,6 +329,7 @@ export function ConfirmedMatchCard({
                   fontWeight={600}
                   fontSize="md"
                   fontFamily="'Open Sans', sans-serif"
+                  w={{ base: '100%', lg: 'auto' }}
                   _hover={{ bg: '#B91C1C' }}
                   _active={{ bg: '#991B1B' }}
                   onClick={() => onCancelCall(match.id)}
@@ -257,6 +347,7 @@ export function ConfirmedMatchCard({
                   fontWeight={600}
                   fontSize="md"
                   fontFamily="'Open Sans', sans-serif"
+                  w={{ base: '100%', lg: 'auto' }}
                   _hover={{ bg: '#044d52' }}
                   _active={{ bg: '#033a3e' }}
                   onClick={() => onViewContactDetails(match.id)}

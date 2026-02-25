@@ -92,12 +92,12 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
 
   return (
     <>
-      <Box maxW="900px" mx="auto" p={6}>
-        <VStack spacing={6} align="stretch">
+      <Box maxW="900px" mx="auto" p={{ base: 4, lg: 6 }}>
+        <VStack gap={6} align="stretch">
           {/* Header */}
-          <VStack spacing={2} align="start">
+          <VStack gap={2} align="start">
             <Text
-              fontSize="36px"
+              fontSize={{ base: '24px', lg: '36px' }}
               fontWeight={600}
               color="#181D27"
               fontFamily="'Open Sans', sans-serif"
@@ -105,7 +105,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
               {t('getInTouch')}
             </Text>
             <Text
-              fontSize="16px"
+              fontSize={{ base: '14px', lg: '16px' }}
               fontWeight={400}
               color="#535862"
               fontFamily="'Open Sans', sans-serif"
@@ -129,7 +129,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
               {/* Personal details section */}
               <Box>
                 <Text
-                  fontSize="26px"
+                  fontSize={{ base: '20px', lg: '26px' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
@@ -138,7 +138,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
                   {t('personalDetails')}
                 </Text>
 
-                <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
+                <Grid templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }} gap={4}>
                   {/* Name field */}
                   <Field
                     label={
@@ -209,7 +209,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
               {/* Message section */}
               <Box>
                 <Text
-                  fontSize="26px"
+                  fontSize={{ base: '20px', lg: '26px' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
@@ -241,16 +241,21 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
               </Box>
 
               {/* Action buttons */}
-              <HStack gap={3} justify="flex-end">
+              <HStack
+                gap={3}
+                justify={{ base: 'stretch', lg: 'flex-end' }}
+                flexDirection={{ base: 'column-reverse', lg: 'row' }}
+              >
                 <Button
                   variant="outline"
                   onClick={handleCancel}
-                  fontSize="18px"
+                  fontSize={{ base: '16px', lg: '18px' }}
                   fontWeight={600}
                   fontFamily="'Open Sans', sans-serif"
-                  px="28px"
-                  py="16px"
+                  px={{ base: '20px', lg: '28px' }}
+                  py={{ base: '14px', lg: '16px' }}
                   h="auto"
+                  w={{ base: '100%', lg: 'auto' }}
                   borderRadius="8px"
                   borderColor="transparent"
                   color="#495D6C"
@@ -264,12 +269,13 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
                   type="submit"
                   bg="#056067"
                   color="white"
-                  fontSize="18px"
+                  fontSize={{ base: '16px', lg: '18px' }}
                   fontWeight={600}
                   fontFamily="'Open Sans', sans-serif"
-                  px="28px"
-                  py="16px"
+                  px={{ base: '20px', lg: '28px' }}
+                  py={{ base: '14px', lg: '16px' }}
                   h="auto"
+                  w={{ base: '100%', lg: 'auto' }}
                   borderRadius="8px"
                   border="1px solid #056067"
                   boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"

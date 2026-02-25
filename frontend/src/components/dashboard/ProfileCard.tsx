@@ -4,6 +4,7 @@ import { Avatar } from '@/components/ui/avatar';
 import Badge from './Badge';
 import { COLORS } from '@/constants/form';
 import { useTranslations } from 'next-intl';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 
 interface ProfileCardProps {
   participant: {
@@ -31,6 +32,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   onViewContact,
 }) => {
   const t = useTranslations('dashboard');
+  const isDesktop = useIsDesktop();
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -41,11 +43,11 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
 
   if (showTimes && time) {
     return (
-      <HStack gap="24px" align="start" w="100%">
+      <HStack gap={{ base: '12px', lg: '24px' }} align="start" w="100%">
         {/* Time with vertical line */}
-        <HStack gap="24px" align="start">
+        <HStack gap={{ base: '12px', lg: '24px' }} align="start">
           <Text
-            fontSize="1rem"
+            fontSize={{ base: '0.875rem', lg: '1rem' }}
             fontWeight={400}
             color="#6B7280"
             fontFamily="'Open Sans', sans-serif"
@@ -53,7 +55,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
           >
             {formatTime(time)}
           </Text>
-          <Box w="4px" h="371px" bg="#5F989D" borderRadius="11px" />
+          <Box w="4px" minH={{ base: '200px', lg: '371px' }} bg="#5F989D" borderRadius="11px" />
         </HStack>
 
         {/* Card */}
@@ -61,6 +63,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
           participant={participant}
           onScheduleCall={onScheduleCall}
           onViewContact={onViewContact}
+          isDesktop={isDesktop}
         />
       </HStack>
     );
@@ -71,6 +74,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       participant={participant}
       onScheduleCall={onScheduleCall}
       onViewContact={onViewContact}
+      isDesktop={isDesktop}
     />
   );
 };
@@ -79,7 +83,8 @@ const ProfileCardContent: React.FC<{
   participant: ProfileCardProps['participant'];
   onScheduleCall?: () => void;
   onViewContact?: () => void;
-}> = ({ participant, onScheduleCall, onViewContact }) => {
+  isDesktop: boolean;
+}> = ({ participant, onScheduleCall, onViewContact, isDesktop }) => {
   const t = useTranslations('dashboard');
   const tOptions = useTranslations('options');
 
@@ -94,54 +99,56 @@ const ProfileCardContent: React.FC<{
 
   return (
     <Box
-      w="675px"
-      h="371px"
+      w={{ base: '100%', lg: '675px' }}
+      minH={{ base: 'auto', lg: '371px' }}
       border="1px solid #D5D7DA"
       borderRadius="8px"
       bg="white"
       boxShadow="0 1px 2px 0 rgba(0, 0, 0, 0.05)"
-      py="24px"
-      px="28px"
+      py={{ base: '16px', lg: '24px' }}
+      px={{ base: '16px', lg: '28px' }}
+      pb={{ base: '16px', lg: '24px' }}
       position="relative"
     >
       <VStack align="start" gap={0}>
-        <HStack gap="32px" align="start">
+        <HStack gap={{ base: '12px', lg: '32px' }} align="start">
           {/* Avatar */}
           <Avatar
             name={participant.name}
-            size="xl"
+            size={isDesktop ? 'xl' : 'lg'}
             bg="#F4F4F4"
             color="#000000"
-            fontSize="36.52px"
+            fontSize={isDesktop ? '36.52px' : '24px'}
           />
 
           {/* Participant Info */}
-          <VStack align="start" gap={2}>
-            <HStack gap={2} align="center">
+          <VStack align="start" gap={2} flex={1}>
+            <HStack gap={2} align="center" wrap="wrap">
               <Text
-                fontSize="1.5rem"
+                fontSize={{ base: '1.125rem', lg: '1.5rem' }}
                 fontWeight={600}
                 color="#1D3448"
                 fontFamily="'Open Sans', sans-serif"
-                lineHeight="1.875rem"
+                lineHeight={{ base: '1.5rem', lg: '1.875rem' }}
                 letterSpacing="0%"
               >
                 {participant.name}
               </Text>
-              <Text
-                fontSize="1rem"
-                fontWeight={400}
-                color="#495D6C"
-                fontFamily="'Open Sans', sans-serif"
-                lineHeight="100%"
-                letterSpacing="0%"
-                mr="16px"
-              >
-                {participant.pronouns}
-              </Text>
+              {participant.pronouns && (
+                <Text
+                  fontSize={{ base: '0.875rem', lg: '1rem' }}
+                  fontWeight={400}
+                  color="#495D6C"
+                  fontFamily="'Open Sans', sans-serif"
+                  lineHeight="100%"
+                  letterSpacing="0%"
+                >
+                  {participant.pronouns}
+                </Text>
+              )}
             </HStack>
 
-            <HStack gap={2} align="center" wrap="wrap" mt="16px">
+            <HStack gap={2} align="center" wrap="wrap" mt={{ base: '8px', lg: '16px' }}>
               <Badge iconSrc="/icons/user-secondary.png">
                 {t('currentAge')} {participant.age}
               </Badge>
@@ -156,38 +163,40 @@ const ProfileCardContent: React.FC<{
         </HStack>
 
         {/* Treatment Information - Left aligned to the box */}
-        <Box mt={4}>
-          <Text
-            fontSize="1.125rem"
-            fontWeight={600}
-            color="#1D3448"
-            fontFamily="'Open Sans', sans-serif"
-            lineHeight="1.875rem"
-            letterSpacing="0%"
-            mb="16px"
-          >
-            {t('treatmentInformation')}
-          </Text>
-          <HStack gap={2} wrap="wrap">
-            {participant.treatments.map((treatment: string, index: number) => (
-              <Badge key={index} bgColor="#EEF4FF" textColor="#3538CD">
-                {translateOption('treatments', treatment)}
-              </Badge>
-            ))}
-          </HStack>
-        </Box>
-
-        {/* Experience Information */}
-        {participant.experiences && participant.experiences.length > 0 && (
+        {participant.treatments && participant.treatments.length > 0 && (
           <Box mt={4}>
             <Text
-              fontSize="1.125rem"
+              fontSize={{ base: '1rem', lg: '1.125rem' }}
               fontWeight={600}
               color="#1D3448"
               fontFamily="'Open Sans', sans-serif"
               lineHeight="1.875rem"
               letterSpacing="0%"
-              mb="16px"
+              mb={{ base: '8px', lg: '16px' }}
+            >
+              {t('treatmentInformation')}
+            </Text>
+            <HStack gap={2} wrap="wrap">
+              {participant.treatments.map((treatment: string, index: number) => (
+                <Badge key={index} bgColor="#EEF4FF" textColor="#3538CD">
+                  {translateOption('treatments', treatment)}
+                </Badge>
+              ))}
+            </HStack>
+          </Box>
+        )}
+
+        {/* Experience Information */}
+        {participant.experiences && participant.experiences.length > 0 && (
+          <Box mt={4}>
+            <Text
+              fontSize={{ base: '1rem', lg: '1.125rem' }}
+              fontWeight={600}
+              color="#1D3448"
+              fontFamily="'Open Sans', sans-serif"
+              lineHeight="1.875rem"
+              letterSpacing="0%"
+              mb={{ base: '8px', lg: '16px' }}
             >
               {t('experienceInformation')}
             </Text>
@@ -202,29 +211,33 @@ const ProfileCardContent: React.FC<{
         )}
       </VStack>
 
-      {/* Action Button - Positioned at bottom */}
-      <Button
-        position="absolute"
-        bottom="24px"
-        right="28px"
-        bg={COLORS.teal}
-        color="white"
-        fontWeight={600}
-        fontSize="0.875rem"
-        fontFamily="'Open Sans', sans-serif"
-        px={6}
-        py={3}
-        borderRadius="6px"
-        _hover={{
-          bg: '#056067',
-        }}
-        _active={{
-          bg: '#044953',
-        }}
-        onClick={onViewContact || onScheduleCall}
-      >
-        {onViewContact ? t('viewContactDetails') : t('scheduleCall')}
-      </Button>
+      {/* Action Button */}
+      {(onViewContact || onScheduleCall) && (
+        <Button
+          position={isDesktop ? 'absolute' : 'relative'}
+          bottom={isDesktop ? '24px' : undefined}
+          right={isDesktop ? '28px' : undefined}
+          w={{ base: '100%', lg: 'auto' }}
+          mt={{ base: 4, lg: 0 }}
+          bg={COLORS.teal}
+          color="white"
+          fontWeight={600}
+          fontSize="0.875rem"
+          fontFamily="'Open Sans', sans-serif"
+          px={6}
+          py={3}
+          borderRadius="6px"
+          _hover={{
+            bg: '#056067',
+          }}
+          _active={{
+            bg: '#044953',
+          }}
+          onClick={onViewContact || onScheduleCall}
+        >
+          {onViewContact ? t('viewContactDetails') : t('scheduleCall')}
+        </Button>
+      )}
     </Box>
   );
 };
