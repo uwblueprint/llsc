@@ -1,4 +1,4 @@
-import { Box, Button, HStack, Image, Text, VStack, Icon } from '@chakra-ui/react';
+import { Box, Button, HStack, Image, Text, VStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { FiLogOut } from 'react-icons/fi';
 import { logout } from '@/APIClients/authAPIClient';
@@ -118,7 +118,7 @@ export function DashboardSidebar() {
           }}
         >
           <HStack gap="8px" align="center">
-            <Icon as={FiLogOut} w="14px" h="14px" />
+            <FiLogOut size={14} />
             <Text>Sign Out</Text>
           </HStack>
         </Button>

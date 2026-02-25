@@ -263,7 +263,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
         <Box
           minH="100vh"
           bg="white"
-          p={12}
+          p={{ base: 4, lg: 12 }}
           display="flex"
           justifyContent="center"
           alignItems="center"
@@ -343,7 +343,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
         fontWeight={600}
         color="#1D3448"
         fontFamily="'Open Sans', sans-serif"
-        letterSpacing="-1.5%"
+        letterSpacing="-0.015em"
         mb={6}
         textAlign="center"
       >
@@ -425,7 +425,7 @@ const ParticipantEditProfileModal: React.FC<ParticipantEditProfileModalProps> = 
           fontWeight={600}
           color="#1D3448"
           fontFamily="'Open Sans', sans-serif"
-          letterSpacing="-1.5%"
+          letterSpacing="-0.015em"
           mb="48px"
         >
           {t('editProfile')}

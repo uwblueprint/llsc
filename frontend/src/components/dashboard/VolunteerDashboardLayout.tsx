@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, VStack, HStack, Text, Image, Button, Icon, Container, Flex } from '@chakra-ui/react';
+import { Box, VStack, HStack, Text, Image, Button, Container, Flex } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { FiLogOut } from 'react-icons/fi';
 
@@ -178,7 +178,7 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
                     }}
                   >
                     <HStack gap="8px" align="center">
-                      <Icon as={FiLogOut} w="14px" h="14px" />
+                      <FiLogOut size={14} />
                       <Text>{t('signOut')}</Text>
                     </HStack>
                   </Button>

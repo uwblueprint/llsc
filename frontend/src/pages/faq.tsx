@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { COLORS } from '@/constants/form';
 import { useRouter } from 'next/router';
+import { useTranslations } from 'next-intl';
+import { MobileHeader } from '@/components/layout/MobileHeader';
+import { MobileDrawer } from '@/components/layout/MobileDrawer';
+import type { NavItem } from '@/components/layout/MobileDrawer';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { getCurrentUser } from '@/APIClients/authAPIClient';
 
 interface FAQItem {
   id: string;
@@ -19,7 +25,28 @@ const SHADOW_COLOR = '#B3CED1';
 
 export default function FAQPage() {
   const [expandedFAQs, setExpandedFAQs] = useState<string[]>([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
+  const t = useTranslations('dashboard');
+  const isDesktop = useIsDesktop();
+
+  const user = typeof window !== 'undefined' ? getCurrentUser() : null;
+  const userName = user
+    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email
+    : '';
+
+  const navItems: NavItem[] = [
+    {
+      label: t('matches'),
+      path: '/participant/dashboard',
+      isActive: false,
+    },
+    {
+      label: t('contact'),
+      path: '/participant/dashboard/contact',
+      isActive: false,
+    },
+  ];
 
   const faqData: FAQItem[] = [
     {
@@ -55,7 +82,20 @@ export default function FAQPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-white">
+      {/* Mobile Header */}
+      {!isDesktop && (
+        <MobileHeader userName={userName} onMenuOpen={() => setIsMobileMenuOpen(true)} />
+      )}
+
+      {/* Mobile Drawer */}
+      <MobileDrawer
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        userName={userName}
+        navItems={navItems}
+      />
+
       <div className="flex-1 p-4 lg:p-6">
         <div className="mx-auto w-full max-w-[620px]">
           <h1

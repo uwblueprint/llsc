@@ -735,7 +735,7 @@ const EditProfile: React.FC = () => {
         fontWeight={600}
         color={COLORS.veniceBlue}
         fontFamily="'Open Sans', sans-serif"
-        letterSpacing="-1.5%"
+        letterSpacing="-0.015em"
         mb={6}
         textAlign="center"
       >
@@ -837,7 +837,7 @@ const EditProfile: React.FC = () => {
                 fontSize="2.25rem"
                 fontWeight={600}
                 lineHeight="100%"
-                letterSpacing="-1.5%"
+                letterSpacing="-0.015em"
                 color={COLORS.veniceBlue}
                 fontFamily="'Open Sans', sans-serif"
               >

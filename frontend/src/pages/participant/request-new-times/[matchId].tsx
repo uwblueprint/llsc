@@ -243,7 +243,7 @@ export default function RequestNewTimesPage() {
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.36181640625em"
-                  letterSpacing="-1.5%"
+                  letterSpacing="-0.015em"
                 >
                   Request a new time
                 </Heading>
@@ -253,7 +253,7 @@ export default function RequestNewTimesPage() {
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.36181640625em"
-                  letterSpacing="-1.5%"
+                  letterSpacing="-0.015em"
                   opacity={0.85}
                 >
                   If the volunteer&apos;s available times don&apos;t work, you&apos;re able to send

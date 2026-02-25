@@ -91,9 +91,9 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
   return (
     <>
       <Box maxW="900px" mx="auto" p={{ base: 4, lg: 6 }}>
-        <VStack spacing={6} align="stretch">
+        <VStack gap={6} align="stretch">
           {/* Header */}
-          <VStack spacing={2} align="start">
+          <VStack gap={2} align="start">
             <Text
               fontSize={{ base: '24px', lg: '36px' }}
               fontWeight={600}
@@ -137,7 +137,7 @@ export function ContactForm({ redirectPath }: ContactFormProps) {
                   Personal details
                 </Text>
 
-                <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
+                <Grid templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }} gap={4}>
                   {/* Name field */}
                   <Field
                     label={
