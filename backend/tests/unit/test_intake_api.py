@@ -170,6 +170,7 @@ def override_dependencies(session: FakeSession, authorized: bool = True):
             return authorized
 
     app.dependency_overrides[get_db] = _override_db
+
     def _override_auth_service(**kwargs):
         return DummyAuthService()
 
