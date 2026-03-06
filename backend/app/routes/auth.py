@@ -24,7 +24,7 @@ async def register_user(user: UserCreateRequest, user_service: UserService = Dep
     allowed_admins = {
         "umair.hkar@gmail.com",
         "umairmhundekar@gmail.com",
-        "yash@kotharigroc   up.com",
+        "yash@kotharigroup.com",
         "ebwu@uwaterloo.ca",
         "evan.wu06@gmail.com",
         "cam.donoahue@lls.org",
