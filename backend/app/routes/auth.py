@@ -1,9 +1,11 @@
 import logging
 
+import firebase_admin.auth
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
+from ..middleware.auth import has_roles
 from ..models.User import Language, User
 from ..schemas.auth import AuthResponse, LoginRequest, RefreshRequest, Token
 from ..schemas.user import UserCreateRequest, UserCreateResponse, UserRole
@@ -22,8 +24,9 @@ async def register_user(user: UserCreateRequest, user_service: UserService = Dep
     allowed_admins = {
         "umair.hkar@gmail.com",
         "umairmhundekar@gmail.com",
-        "yash@kotharigroup.com",
+        "yash@kotharigroc   up.com",
         "ebwu@uwaterloo.ca",
+        "evan.wu06@gmail.com",
         "cam.donoahue@lls.org",
         "richardbai@uwblueprint.org",
         "brooke.dewhurst@lls.org",
@@ -31,6 +34,9 @@ async def register_user(user: UserCreateRequest, user_service: UserService = Dep
         "caroline.mitchell@lls.org",
         "jolyane.pelletier@lls.org",
         "megan.norrish@lls.org",
+        "camjdon@gmail.com",
+        "marilyne.morin@lls.org",
+        "alexandra.harris-lowe@lls.org"
     }
     if user.role == UserRole.ADMIN:
         normalized_email = user.email.lower() if user.email else ""
@@ -213,3 +219,30 @@ async def update_current_user_language(
     except Exception as e:
         print(f"Error updating user language: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/admin/verify-all-admins")
+async def verify_all_admin_emails(
+    user_service: UserService = Depends(get_user_service),
+    authorized: bool = has_roles([UserRole.ADMIN]),
+):
+    """Bulk verify all admin emails in Firebase"""
+    try:
+        admins = await user_service.get_admins()
+        verified_count = 0
+        failed = []
+
+        for admin in admins:
+            try:
+                firebase_admin.auth.update_user(admin.auth_id, email_verified=True)
+                verified_count += 1
+            except Exception as e:
+                failed.append({"email": admin.email, "error": str(e)})
+
+        return {
+            "verified": verified_count,
+            "failed": failed,
+            "total": len(admins)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
