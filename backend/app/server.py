@@ -14,6 +14,7 @@ from .routes import (
     auth,
     availability,
     contact,
+    experiences,
     intake,
     match,
     matching,
@@ -22,6 +23,7 @@ from .routes import (
     suggested_times,
     task,
     test,
+    treatments,
     user,
     user_data,
     volunteer_data,
@@ -130,6 +132,8 @@ app.include_router(send_email.router)
 app.include_router(task.router)
 app.include_router(test.router)
 app.include_router(contact.router)
+app.include_router(experiences.router)
+app.include_router(treatments.router)
 
 
 @app.get("/")
