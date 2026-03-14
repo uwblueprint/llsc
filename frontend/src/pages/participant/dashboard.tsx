@@ -30,6 +30,7 @@ import { getCurrentUser } from '@/APIClients/authAPIClient';
 import { AuthenticatedUser, FormStatus, UserRole } from '@/types/authTypes';
 import { Match } from '@/types/matchTypes';
 import { MatchStatusScreen } from '@/components/matches/MatchStatusScreen';
+import { CallCancelledNotificationModal } from '@/components/shared/CallCancelledNotificationModal';
 
 export default function ParticipantDashboardPage() {
   const router = useRouter();
@@ -51,6 +52,8 @@ export default function ParticipantDashboardPage() {
   const [requestMessage, setRequestMessage] = useState('');
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [showCancelledNotification, setShowCancelledNotification] = useState(false);
+  const [cancelledByName, setCancelledByName] = useState('');
 
   const userName = user?.firstName || 'there';
   const userFullName = user
@@ -82,6 +85,27 @@ export default function ParticipantDashboardPage() {
 
       // Store all matches for status screen
       setAllMatches(data.matches);
+
+      // Check for volunteer-cancelled matches and notify once per session
+      if (typeof window !== 'undefined') {
+        const cancelledByVol = data.matches.filter(
+          (m: Match) => m.matchStatus === 'cancelled_by_volunteer',
+        );
+        const cancelledIds = cancelledByVol.map((m: Match) => String(m.id)).sort();
+        if (cancelledIds.length > 0) {
+          const cancelKey = `participant-cancelled-notification-${cancelledIds.join(',')}`;
+          const hasSeen = sessionStorage.getItem(cancelKey);
+          if (!hasSeen) {
+            sessionStorage.setItem(cancelKey, 'seen');
+            const vol = cancelledByVol[0].volunteer;
+            const firstName = vol.firstName || '';
+            const lastName = vol.lastName || '';
+            const name = `${firstName} ${lastName.charAt(0) ? lastName.charAt(0) + '.' : ''}`.trim();
+            setCancelledByName(name || vol.email);
+            setShowCancelledNotification(true);
+          }
+        }
+      }
     } catch (err) {
       console.error('Error loading matches:', err);
       const errorMessage =
@@ -149,7 +173,7 @@ export default function ParticipantDashboardPage() {
   };
 
   const handleViewContactDetails = (matchId: number) => {
-    const match = confirmedMatches.find((m) => m.id === matchId);
+    const match = allMatches.find((m) => m.id === matchId);
     if (match) {
       setSelectedMatch(match);
       setIsViewContactModalOpen(true);
@@ -283,6 +307,10 @@ export default function ParticipantDashboardPage() {
           matches={allMatches}
           userRole={UserRole.PARTICIPANT}
           userName={userName}
+          onScheduleCall={handleSchedule}
+          onRequestNewTimes={(matchId) => router.push(`/participant/request-new-times/${matchId}`)}
+          onCancelCall={handleCancelCall}
+          onViewContactDetails={handleViewContactDetails}
         />
 
         {/* Request New Matches Button */}
@@ -496,6 +524,11 @@ export default function ParticipantDashboardPage() {
         <ParticipantEditProfileModal
           isOpen={isEditProfileOpen}
           onClose={() => setIsEditProfileOpen(false)}
+        />
+        <CallCancelledNotificationModal
+          isOpen={showCancelledNotification}
+          onClose={() => setShowCancelledNotification(false)}
+          cancelledByName={cancelledByName}
         />
       </FormStatusGuard>
     </ProtectedPage>

@@ -7,6 +7,7 @@ interface CancelCallConfirmationModalProps {
   onClose: () => void;
   onConfirm: () => void;
   isCancelling?: boolean;
+  supportingText?: string;
 }
 
 export function CancelCallConfirmationModal({
@@ -14,6 +15,7 @@ export function CancelCallConfirmationModal({
   onClose,
   onConfirm,
   isCancelling = false,
+  supportingText = "You can request new matches if you'd like to connect with other volunteers.",
 }: CancelCallConfirmationModalProps) {
   if (!isOpen) {
     return null;
@@ -77,7 +79,7 @@ export function CancelCallConfirmationModal({
               lineHeight="1.36181640625em"
               textAlign="center"
             >
-              You can request new matches if you&apos;d like to connect with other volunteers.
+              {supportingText}
             </Text>
           </VStack>
 

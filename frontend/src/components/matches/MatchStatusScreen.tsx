@@ -1,16 +1,86 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Box, Text, VStack, HStack, Badge, Button, Flex, Icon } from '@chakra-ui/react';
-import { FiChevronDown, FiChevronUp, FiUser, FiClock, FiActivity, FiHeart } from 'react-icons/fi';
-import { Match, MatchStatus, VolunteerSummary } from '@/types/matchTypes';
+import { FiUser, FiClock, FiActivity, FiHeart, FiBell, FiCalendar, FiXCircle, FiCheckCircle } from 'react-icons/fi';
+import { Match, MatchStatus, TimeBlock, VolunteerSummary } from '@/types/matchTypes';
 import { UserRole } from '@/types/authTypes';
+
+const STATUS_BADGE_CONFIG: Record<string, { label: string; bg: string; color: string; icon?: React.ElementType }> = {
+  requesting_new_times: { label: 'Time Request', bg: 'rgba(232, 188, 189, 0.3)', color: '#A70000', icon: FiBell },
+  awaiting_volunteer_acceptance: { label: 'Awaiting Volunteer', bg: '#F3F4F6', color: '#6B7280', icon: FiClock },
+  cancelled_by_volunteer: { label: 'Cancelled by Volunteer', bg: '#FEE4E2', color: '#D92D20', icon: FiXCircle },
+  cancelled_by_participant: { label: 'Cancelled by Participant', bg: '#FEE4E2', color: '#D92D20', icon: FiXCircle },
+  confirmed: { label: 'Call Scheduled', bg: '#D1FADF', color: '#039855', icon: FiCheckCircle },
+  pending: { label: 'Pending', bg: 'rgba(179, 206, 209, 0.3)', color: '#056067', icon: FiClock },
+};
+
+// Role-specific label overrides (volunteer perspective)
+const VOLUNTEER_LABEL_OVERRIDES: Record<string, string> = {
+  pending: 'Awaiting Participant',
+  awaiting_volunteer_acceptance: 'Action Required',
+};
+
+// Role-specific label overrides (participant perspective)
+const PARTICIPANT_LABEL_OVERRIDES: Record<string, string> = {
+  pending: 'Action Required',
+};
+
+function StatusBadge({ matchStatus, userRole }: { matchStatus: string; userRole?: UserRole }) {
+  const config = STATUS_BADGE_CONFIG[matchStatus];
+  if (!config) return null;
+
+  let label = config.label;
+  if (userRole === UserRole.VOLUNTEER && VOLUNTEER_LABEL_OVERRIDES[matchStatus]) {
+    label = VOLUNTEER_LABEL_OVERRIDES[matchStatus];
+  } else if (userRole === UserRole.PARTICIPANT && PARTICIPANT_LABEL_OVERRIDES[matchStatus]) {
+    label = PARTICIPANT_LABEL_OVERRIDES[matchStatus];
+  }
+
+  return (
+    <Badge
+      bg={config.bg}
+      color={config.color}
+      borderRadius="16px"
+      px="10px"
+      py="4px"
+      fontSize="13px"
+      fontWeight={600}
+      textTransform="none"
+      fontFamily="Open Sans, sans-serif"
+      display="inline-flex"
+      alignItems="center"
+      gap="4px"
+      whiteSpace="nowrap"
+    >
+      {config.icon && <Icon as={config.icon} boxSize="13px" />}
+      {label}
+    </Badge>
+  );
+}
+
+function formatScheduledTime(isoString: string): string {
+  const date = new Date(isoString);
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
 
 interface MatchStatusScreenProps {
   matches: Match[] | VolunteerMatch[];
   userRole: UserRole;
   userName?: string;
+  onViewRequest?: (matchId: number) => void;
+  onScheduleCall?: (matchId: number) => void;
+  onRequestNewTimes?: (matchId: number) => void;
+  onCancelCall?: (matchId: number) => void;
+  onViewContactDetails?: (matchId: number) => void;
 }
 
-// Volunteer match type (has participant instead of volunteer)
 export interface ParticipantSummary {
   id: string;
   firstName: string | null;
@@ -39,118 +109,50 @@ export interface VolunteerMatch {
   suggestedTimeBlocks?: { id: number; startTime: string }[];
 }
 
-type DisplayStatus =
-  | 'match sent'
-  | 'availability sent'
-  | 'availability received'
-  | 'call scheduled';
-
-interface MatchWithDisplayStatus {
+interface ProcessedMatch {
   id: number;
-  displayStatus: DisplayStatus;
-  displayDate: string | null;
-  displayTime: string | null;
   person: VolunteerSummary | ParticipantSummary;
   matchStatus: MatchStatus;
+  isTimeRequest: boolean;
+  hasSuggestedTimes: boolean;
+  chosenTimeBlock: TimeBlock | null;
 }
 
-export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusScreenProps) {
-  const [expandedMatches, setExpandedMatches] = useState<Set<number>>(new Set());
-
-  const toggleMatchExpansion = (matchId: number) => {
-    const newExpanded = new Set(expandedMatches);
-    if (newExpanded.has(matchId)) {
-      newExpanded.delete(matchId);
-    } else {
-      newExpanded.add(matchId);
-    }
-    setExpandedMatches(newExpanded);
-  };
-
-  const getDisplayStatus = (match: Match | VolunteerMatch): DisplayStatus => {
-    const status = match.matchStatus.toLowerCase();
-
-    if (userRole === UserRole.VOLUNTEER) {
-      if (status === 'awaiting_volunteer_acceptance') {
-        return 'match sent';
-      } else if (status === 'pending') {
-        return 'availability sent';
-      } else if (status === 'confirmed') {
-        return 'call scheduled';
-      }
-    } else {
-      // Participant
-      const participantMatch = match as Match;
-      if (status === 'pending') {
-        // If there are suggested time blocks, availability has been received
-        if (
-          participantMatch.suggestedTimeBlocks &&
-          participantMatch.suggestedTimeBlocks.length > 0
-        ) {
-          return 'availability received';
-        }
-        return 'match sent';
-      } else if (status === 'confirmed') {
-        return 'call scheduled';
-      }
-    }
-
-    // Default fallback
-    return 'match sent';
-  };
-
-  const formatDate = (dateStr: string | null | undefined): string | null => {
-    if (!dateStr) return null;
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-    } catch {
-      return null;
-    }
-  };
-
-  const formatTime = (dateStr: string | null | undefined): string | null => {
-    if (!dateStr) return null;
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      });
-    } catch {
-      return null;
-    }
-  };
-
-  const processedMatches: MatchWithDisplayStatus[] = matches.map((match) => {
-    const displayStatus = getDisplayStatus(match);
-
-    // Use match creation date and time
-    const displayDate = formatDate(match.createdAt);
-    const displayTime = formatTime(match.createdAt);
-
-    // Get the person (volunteer for participants, participant for volunteers)
+export function MatchStatusScreen({
+  matches,
+  userRole,
+  userName,
+  onViewRequest,
+  onScheduleCall,
+  onRequestNewTimes,
+  onCancelCall,
+  onViewContactDetails,
+}: MatchStatusScreenProps) {
+  const processedMatches: ProcessedMatch[] = matches.map((match) => {
     const person =
       userRole === UserRole.VOLUNTEER
         ? (match as VolunteerMatch).participant
         : (match as Match).volunteer;
 
+    const hasSuggestedTimes =
+      ('suggestedTimeBlocks' in match &&
+        Array.isArray(match.suggestedTimeBlocks) &&
+        match.suggestedTimeBlocks.length > 0) ||
+      false;
+
+    const chosenTimeBlock =
+      'chosenTimeBlock' in match && match.chosenTimeBlock ? match.chosenTimeBlock : null;
+
     return {
       id: match.id,
-      displayStatus,
-      displayDate,
-      displayTime,
       person,
       matchStatus: match.matchStatus,
+      isTimeRequest: match.matchStatus.toLowerCase() === 'requesting_new_times',
+      hasSuggestedTimes,
+      chosenTimeBlock,
     };
   });
 
-  // Show "Not Matched" state when there are no matches
   if (processedMatches.length === 0) {
     return (
       <Box
@@ -183,7 +185,6 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
     );
   }
 
-  // Show "Currently Matched" state with matches list
   return (
     <VStack align="stretch" gap="40px" w="full">
       {/* Currently Matched Status Card */}
@@ -196,7 +197,6 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
         boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
       >
         <VStack align="center" gap="20px">
-          {/* Success Icon */}
           <Box
             display="inline-flex"
             alignItems="center"
@@ -241,388 +241,530 @@ export function MatchStatusScreen({ matches, userRole, userName }: MatchStatusSc
         </VStack>
       </Box>
 
-      {/* Matches Table */}
-      <Box border="1px solid #D5D7DA" borderRadius="8px" bg="white" overflow="hidden">
-        {/* Table Header */}
-        <Box bg="white" borderBottom="1px solid #D5D7DA" px={6} py={3}>
-          <HStack justify="space-between" align="center" gap={4}>
-            <Box flex="1" minW="150px">
-              <HStack gap="6px">
-                <Text
-                  fontSize="16px"
-                  fontWeight={500}
-                  color="#414651"
-                  fontFamily="Inter, sans-serif"
-                >
-                  Name
-                </Text>
-                <Icon as={FiChevronDown} boxSize="16px" color="#414651" />
-              </HStack>
-            </Box>
-            <Box w="150px">
-              <HStack gap="6px">
-                <Text
-                  fontSize="16px"
-                  fontWeight={500}
-                  color="#414651"
-                  fontFamily="Inter, sans-serif"
-                >
-                  Date
-                </Text>
-                <Icon as={FiChevronDown} boxSize="16px" color="#414651" />
-              </HStack>
-            </Box>
-            <Box w="100px">
-              <Text fontSize="16px" fontWeight={500} color="#414651" fontFamily="Inter, sans-serif">
-                Time
+      {/* Match Cards */}
+      {processedMatches.map((match) => (
+        <MatchCard
+          key={match.id}
+          match={match}
+          userRole={userRole}
+          onViewRequest={onViewRequest}
+          onScheduleCall={onScheduleCall}
+          onRequestNewTimes={onRequestNewTimes}
+          onCancelCall={onCancelCall}
+          onViewContactDetails={onViewContactDetails}
+        />
+      ))}
+    </VStack>
+  );
+}
+
+interface MatchCardProps {
+  match: ProcessedMatch;
+  userRole: UserRole;
+  onViewRequest?: (matchId: number) => void;
+  onScheduleCall?: (matchId: number) => void;
+  onRequestNewTimes?: (matchId: number) => void;
+  onCancelCall?: (matchId: number) => void;
+  onViewContactDetails?: (matchId: number) => void;
+}
+
+function MatchCard({ match, userRole, onViewRequest, onScheduleCall, onRequestNewTimes, onCancelCall, onViewContactDetails }: MatchCardProps) {
+  const person = match.person;
+
+  const fullName = person
+    ? `${person.firstName || ''} ${person.lastName || ''}`.trim() || person.email
+    : 'Unknown';
+
+  const initials = person
+    ? `${(person.firstName || '').charAt(0)}${(person.lastName || '').charAt(0)}`.toUpperCase()
+    : '?';
+
+  const pronounsText =
+    person?.pronouns && person.pronouns.length > 0 ? person.pronouns.join('/') : '';
+
+  const regularTreatments = person?.treatments || [];
+  const lovedOneTreatments = person?.lovedOneTreatments || [];
+  const regularExperiences = person?.experiences || [];
+  const lovedOneExperiences = person?.lovedOneExperiences || [];
+
+  return (
+    <VStack align="stretch" gap="12px">
+      {/* Card */}
+      <Box
+        bg="white"
+        border="1px solid #D5D7DA"
+        borderRadius="7px"
+        px="25px"
+        py="21px"
+        boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+      >
+        <VStack align="stretch" gap="28px">
+          {/* Top section: Avatar + Name/Pronouns + Overview Badges + Status Badge */}
+          <HStack align="flex-start" gap="28px">
+            {/* Avatar */}
+            <Box
+              w="79px"
+              h="79px"
+              borderRadius="full"
+              bg="#F4F4F4"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              flexShrink={0}
+            >
+              <Text
+                fontSize="32px"
+                fontWeight={600}
+                color="#000000"
+                opacity={0.8}
+                fontFamily="Inter, sans-serif"
+                letterSpacing="-1.5%"
+              >
+                {initials}
               </Text>
             </Box>
-            <Box w="140px" />
-            <Box w="100px" />
+
+            {/* Name + Overview */}
+            <VStack align="flex-start" gap="12px" flex={1}>
+              <Flex align="center" gap="14px" flexWrap="wrap">
+                <Text
+                  fontSize="21px"
+                  fontWeight={600}
+                  color="#1D3448"
+                  fontFamily="Open Sans, sans-serif"
+                >
+                  {fullName}
+                </Text>
+                {pronounsText && (
+                  <Text
+                    fontSize="14px"
+                    fontWeight={400}
+                    color="#495D6C"
+                    fontFamily="Open Sans, sans-serif"
+                  >
+                    {pronounsText}
+                  </Text>
+                )}
+              </Flex>
+
+              <HStack gap="14px" flexWrap="wrap">
+                {typeof person?.age === 'number' && (
+                  <Badge
+                    bg="rgba(179, 206, 209, 0.3)"
+                    color="#056067"
+                    borderRadius="14px"
+                    px="10px"
+                    pl="9px"
+                    py="5px"
+                    fontSize="14px"
+                    fontWeight={400}
+                    display="flex"
+                    alignItems="center"
+                    gap="3.5px"
+                    fontFamily="Open Sans, sans-serif"
+                  >
+                    <Icon as={FiUser} boxSize="10.5px" strokeWidth="1.3px" />
+                    Current Age: {person.age}
+                  </Badge>
+                )}
+                {person?.timezone && (
+                  <Badge
+                    bg="rgba(179, 206, 209, 0.3)"
+                    color="#056067"
+                    borderRadius="14px"
+                    px="10px"
+                    pl="9px"
+                    py="5px"
+                    fontSize="14px"
+                    fontWeight={400}
+                    display="flex"
+                    alignItems="center"
+                    gap="3.5px"
+                    fontFamily="Open Sans, sans-serif"
+                  >
+                    <Icon as={FiClock} boxSize="10.5px" strokeWidth="1.3px" />
+                    Time Zone: {person.timezone}
+                  </Badge>
+                )}
+                {person?.diagnosis && (
+                  <Badge
+                    bg="rgba(179, 206, 209, 0.3)"
+                    color="#056067"
+                    borderRadius="14px"
+                    px="10px"
+                    pl="9px"
+                    py="5px"
+                    fontSize="14px"
+                    fontWeight={400}
+                    display="flex"
+                    alignItems="center"
+                    gap="3.5px"
+                    fontFamily="Open Sans, sans-serif"
+                  >
+                    <Icon as={FiActivity} boxSize="10.5px" strokeWidth="1.3px" />
+                    {person.diagnosis}
+                  </Badge>
+                )}
+                {person?.lovedOneDiagnosis && (
+                  <Badge
+                    bg="rgba(179, 206, 209, 0.3)"
+                    color="#056067"
+                    borderRadius="14px"
+                    px="10px"
+                    pl="9px"
+                    py="5px"
+                    fontSize="14px"
+                    fontWeight={400}
+                    display="flex"
+                    alignItems="center"
+                    gap="3.5px"
+                    fontFamily="Open Sans, sans-serif"
+                  >
+                    <Icon as={FiActivity} boxSize="10.5px" strokeWidth="1.3px" />
+                    Loved One: {person.lovedOneDiagnosis}
+                  </Badge>
+                )}
+              </HStack>
+            </VStack>
+
+            {/* Status Badge — top right */}
+            <Box flexShrink={0} pt="4px">
+              <StatusBadge matchStatus={match.matchStatus} userRole={userRole} />
+            </Box>
           </HStack>
-        </Box>
 
-        {/* Table Body */}
-        <VStack align="stretch" gap={0}>
-          {processedMatches.map((match, index) => {
-            const isExpanded = expandedMatches.has(match.id);
-            const person = match.person;
-
-            const fullName = person
-              ? `${person.firstName || ''} ${person.lastName || ''}`.trim() || person.email
-              : 'Unknown';
-
-            const pronounsText =
-              person?.pronouns && person.pronouns.length > 0 ? person.pronouns.join('/') : '';
-
-            return (
-              <Box key={match.id}>
-                {index > 0 && <Box h="1px" bg="#D5D7DA" />}
-                <Box>
-                  {/* Main Row */}
-                  <Box px={6} py={4}>
-                    <HStack justify="space-between" align="center" gap={4}>
-                      <Box flex="1" minW="150px">
-                        <Flex align="center" gap="10px">
-                          <Text
-                            fontSize="18px"
-                            fontWeight={600}
-                            color="#1D3448"
-                            fontFamily="Open Sans, sans-serif"
-                          >
-                            {fullName}
-                          </Text>
-                          {pronounsText && (
-                            <Text
-                              fontSize="14px"
-                              fontWeight={400}
-                              color="#495D6C"
-                              fontFamily="Open Sans, sans-serif"
-                            >
-                              {pronounsText}
-                            </Text>
-                          )}
-                        </Flex>
-                      </Box>
-                      <Box w="150px">
-                        <Text
-                          fontSize="18px"
-                          fontWeight={400}
-                          color="#1D3448"
-                          fontFamily="Open Sans, sans-serif"
-                        >
-                          {match.displayDate || '-'}
-                        </Text>
-                      </Box>
-                      <Box w="100px">
-                        <Text
-                          fontSize="18px"
-                          fontWeight={400}
-                          color="#1D3448"
-                          fontFamily="Open Sans, sans-serif"
-                        >
-                          {match.displayTime || '-'}
-                        </Text>
-                      </Box>
-                      <Box w="140px">
+          {/* Treatment + Experience Information */}
+          <VStack align="stretch" gap="21px">
+            {/* Treatment Information */}
+            <HStack align="flex-start" gap="44px">
+              <VStack align="flex-start" gap="12px" flex={1}>
+                <Text
+                  fontSize="16px"
+                  fontWeight={600}
+                  color="#1D3448"
+                  fontFamily="Open Sans, sans-serif"
+                >
+                  Treatment Information
+                </Text>
+                <HStack gap="18px" flexWrap="wrap">
+                  {regularTreatments.length > 0 || lovedOneTreatments.length > 0 ? (
+                    <>
+                      {regularTreatments.map((treatment: string, idx: number) => (
                         <Badge
-                          bg="rgba(179, 206, 209, 0.3)"
-                          color="#056067"
-                          borderRadius="16px"
-                          px="14px"
-                          py="6px"
-                          fontSize="16px"
-                          fontWeight={400}
-                          textTransform="capitalize"
-                          fontFamily="Open Sans, sans-serif"
-                        >
-                          {match.displayStatus}
-                        </Badge>
-                      </Box>
-                      <Box w="100px">
-                        <Button
-                          bg="#056067"
-                          color="white"
-                          border="1px solid #056067"
-                          borderRadius="8px"
-                          px="14px"
-                          py="8px"
-                          h="36px"
-                          fontWeight={600}
+                          key={`regular-${idx}`}
+                          bg="#EEF4FF"
+                          color="#3538CD"
+                          borderRadius="14px"
+                          px="11px"
+                          py="5px"
                           fontSize="14px"
+                          fontWeight={400}
                           fontFamily="Open Sans, sans-serif"
-                          boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
-                          _hover={{ bg: '#044d52', borderColor: '#044d52' }}
-                          _active={{ bg: '#033a3e', borderColor: '#033a3e' }}
-                          onClick={() => toggleMatchExpansion(match.id)}
                         >
-                          <Flex align="center" gap="6px">
-                            <Text>Details</Text>
-                            <Icon
-                              as={isExpanded ? FiChevronUp : FiChevronDown}
-                              boxSize="20px"
-                              strokeWidth="2px"
-                            />
-                          </Flex>
-                        </Button>
-                      </Box>
-                    </HStack>
-                  </Box>
-
-                  {/* Expanded Details */}
-                  {isExpanded && (
-                    <Box px="20px" py="24px" bg="#FAFAFA" borderTop="1px solid #D5D7DA">
-                      {(() => {
-                        // Track which treatments/experiences are from loved one
-                        const regularTreatments = person?.treatments || [];
-                        const lovedOneTreatments = person?.lovedOneTreatments || [];
-                        const regularExperiences = person?.experiences || [];
-                        const lovedOneExperiences = person?.lovedOneExperiences || [];
-
-                        return (
-                          <HStack align="flex-start" gap="24px" w="full">
-                            {/* Overview */}
-                            <VStack align="flex-start" gap="16px" flex="0 0 250px">
-                              <Text
-                                fontSize="18px"
-                                fontWeight={600}
-                                color="#1D3448"
-                                fontFamily="Open Sans, sans-serif"
-                              >
-                                Overview
-                              </Text>
-                              <VStack align="flex-start" gap="8px" w="full">
-                                {typeof person?.age === 'number' && (
-                                  <Badge
-                                    bg="rgba(179, 206, 209, 0.3)"
-                                    color="#056067"
-                                    borderRadius="14.04px"
-                                    px="10.53px"
-                                    pl="8.78px"
-                                    py="5.27px"
-                                    fontSize="16px"
-                                    fontWeight={400}
-                                    display="flex"
-                                    alignItems="center"
-                                    gap="3.51px"
-                                    fontFamily="Open Sans, sans-serif"
-                                  >
-                                    <Icon as={FiUser} boxSize="10.53px" strokeWidth="1.32px" />
-                                    Current Age: {person.age}
-                                  </Badge>
-                                )}
-                                {person?.timezone && (
-                                  <Badge
-                                    bg="rgba(179, 206, 209, 0.3)"
-                                    color="#056067"
-                                    borderRadius="14.04px"
-                                    px="10.53px"
-                                    pl="8.78px"
-                                    py="5.27px"
-                                    fontSize="16px"
-                                    fontWeight={400}
-                                    display="flex"
-                                    alignItems="center"
-                                    gap="3.51px"
-                                    fontFamily="Open Sans, sans-serif"
-                                  >
-                                    <Icon as={FiClock} boxSize="10.53px" strokeWidth="1.32px" />
-                                    Time Zone: {person.timezone}
-                                  </Badge>
-                                )}
-                                {person?.diagnosis && (
-                                  <Badge
-                                    bg="rgba(179, 206, 209, 0.3)"
-                                    color="#056067"
-                                    borderRadius="14.04px"
-                                    px="10.53px"
-                                    pl="8.78px"
-                                    py="5.27px"
-                                    fontSize="16px"
-                                    fontWeight={400}
-                                    display="flex"
-                                    alignItems="center"
-                                    gap="3.51px"
-                                    fontFamily="Open Sans, sans-serif"
-                                  >
-                                    <Icon as={FiActivity} boxSize="10.53px" strokeWidth="1.32px" />
-                                    {person.diagnosis}
-                                  </Badge>
-                                )}
-                                {person?.lovedOneDiagnosis && (
-                                  <Badge
-                                    bg="rgba(179, 206, 209, 0.3)"
-                                    color="#056067"
-                                    borderRadius="14.04px"
-                                    px="10.53px"
-                                    pl="8.78px"
-                                    py="5.27px"
-                                    fontSize="16px"
-                                    fontWeight={400}
-                                    display="flex"
-                                    alignItems="center"
-                                    gap="3.51px"
-                                    fontFamily="Open Sans, sans-serif"
-                                  >
-                                    <Icon as={FiActivity} boxSize="10.53px" strokeWidth="1.32px" />
-                                    Loved One: {person.lovedOneDiagnosis}
-                                  </Badge>
-                                )}
-                                {!person?.age &&
-                                  !person?.timezone &&
-                                  !person?.diagnosis &&
-                                  !person?.lovedOneDiagnosis && (
-                                    <Text fontSize="14px" color="#6B7280">
-                                      No overview information available
-                                    </Text>
-                                  )}
-                              </VStack>
-                            </VStack>
-
-                            {/* Treatment Information */}
-                            <VStack align="flex-start" gap="16px" flex="1">
-                              <Text
-                                fontSize="18px"
-                                fontWeight={600}
-                                color="#1D3448"
-                                fontFamily="Open Sans, sans-serif"
-                              >
-                                Treatment Information
-                              </Text>
-                              <HStack gap="8px" flexWrap="wrap">
-                                {regularTreatments.length > 0 || lovedOneTreatments.length > 0 ? (
-                                  <>
-                                    {regularTreatments.map((treatment: string, idx: number) => (
-                                      <Badge
-                                        key={`regular-${idx}`}
-                                        bg="#EEF4FF"
-                                        color="#3538CD"
-                                        borderRadius="14.04px"
-                                        px="12px"
-                                        pl="10px"
-                                        py="6px"
-                                        fontSize="16px"
-                                        fontWeight={400}
-                                        fontFamily="Open Sans, sans-serif"
-                                      >
-                                        {treatment}
-                                      </Badge>
-                                    ))}
-                                    {lovedOneTreatments.map((treatment: string, idx: number) => (
-                                      <Badge
-                                        key={`lovedone-${idx}`}
-                                        bg="#EEF4FF"
-                                        color="#3538CD"
-                                        borderRadius="14.04px"
-                                        px="12px"
-                                        pl="10px"
-                                        py="6px"
-                                        fontSize="16px"
-                                        fontWeight={400}
-                                        fontFamily="Open Sans, sans-serif"
-                                        display="flex"
-                                        alignItems="center"
-                                        gap="4px"
-                                      >
-                                        <Icon as={FiHeart} boxSize="12px" color="#056067" />
-                                        {treatment}
-                                      </Badge>
-                                    ))}
-                                  </>
-                                ) : (
-                                  <Text fontSize="14px" color="#6B7280">
-                                    No treatment information available
-                                  </Text>
-                                )}
-                              </HStack>
-                            </VStack>
-
-                            {/* Experience Information */}
-                            <VStack align="flex-start" gap="16px" flex="1">
-                              <Text
-                                fontSize="18px"
-                                fontWeight={600}
-                                color="#1D3448"
-                                fontFamily="Open Sans, sans-serif"
-                              >
-                                Experience Information
-                              </Text>
-                              <HStack gap="8px" flexWrap="wrap">
-                                {regularExperiences.length > 0 || lovedOneExperiences.length > 0 ? (
-                                  <>
-                                    {regularExperiences.map((experience: string, idx: number) => (
-                                      <Badge
-                                        key={`regular-${idx}`}
-                                        bg="#FDF2FA"
-                                        color="#C11574"
-                                        borderRadius="16px"
-                                        px="12px"
-                                        pl="10px"
-                                        py="6px"
-                                        fontSize="16px"
-                                        fontWeight={400}
-                                        fontFamily="Open Sans, sans-serif"
-                                      >
-                                        {experience}
-                                      </Badge>
-                                    ))}
-                                    {lovedOneExperiences.map((experience: string, idx: number) => (
-                                      <Badge
-                                        key={`lovedone-${idx}`}
-                                        bg="#FDF2FA"
-                                        color="#C11574"
-                                        borderRadius="16px"
-                                        px="12px"
-                                        pl="10px"
-                                        py="6px"
-                                        fontSize="16px"
-                                        fontWeight={400}
-                                        fontFamily="Open Sans, sans-serif"
-                                        display="flex"
-                                        alignItems="center"
-                                        gap="4px"
-                                      >
-                                        <Icon as={FiHeart} boxSize="12px" color="#056067" />
-                                        {experience}
-                                      </Badge>
-                                    ))}
-                                  </>
-                                ) : (
-                                  <Text fontSize="14px" color="#6B7280">
-                                    No experience information available
-                                  </Text>
-                                )}
-                              </HStack>
-                            </VStack>
-                          </HStack>
-                        );
-                      })()}
-                    </Box>
+                          {treatment}
+                        </Badge>
+                      ))}
+                      {lovedOneTreatments.map((treatment: string, idx: number) => (
+                        <Badge
+                          key={`lovedone-${idx}`}
+                          bg="#EEF4FF"
+                          color="#3538CD"
+                          borderRadius="14px"
+                          px="11px"
+                          py="5px"
+                          fontSize="14px"
+                          fontWeight={400}
+                          fontFamily="Open Sans, sans-serif"
+                          display="flex"
+                          alignItems="center"
+                          gap="4px"
+                        >
+                          <Icon as={FiHeart} boxSize="12px" color="#056067" />
+                          {treatment}
+                        </Badge>
+                      ))}
+                    </>
+                  ) : (
+                    <Text fontSize="14px" color="#6B7280">
+                      No treatment information available
+                    </Text>
                   )}
-                </Box>
-              </Box>
-            );
-          })}
+                </HStack>
+              </VStack>
+            </HStack>
+
+            {/* Experience Information */}
+            <HStack align="flex-start" gap="44px">
+              <VStack align="flex-start" gap="12px" flex={1}>
+                <Text
+                  fontSize="16px"
+                  fontWeight={600}
+                  color="#1D3448"
+                  fontFamily="Open Sans, sans-serif"
+                >
+                  Experience Information
+                </Text>
+                <HStack gap="18px" flexWrap="wrap">
+                  {regularExperiences.length > 0 || lovedOneExperiences.length > 0 ? (
+                    <>
+                      {regularExperiences.map((experience: string, idx: number) => (
+                        <Badge
+                          key={`regular-${idx}`}
+                          bg="#FDF2FA"
+                          color="#C11574"
+                          borderRadius="16px"
+                          px="11px"
+                          py="5px"
+                          fontSize="14px"
+                          fontWeight={400}
+                          fontFamily="Open Sans, sans-serif"
+                        >
+                          {experience}
+                        </Badge>
+                      ))}
+                      {lovedOneExperiences.map((experience: string, idx: number) => (
+                        <Badge
+                          key={`lovedone-${idx}`}
+                          bg="#FDF2FA"
+                          color="#C11574"
+                          borderRadius="16px"
+                          px="11px"
+                          py="5px"
+                          fontSize="14px"
+                          fontWeight={400}
+                          fontFamily="Open Sans, sans-serif"
+                          display="flex"
+                          alignItems="center"
+                          gap="4px"
+                        >
+                          <Icon as={FiHeart} boxSize="12px" color="#056067" />
+                          {experience}
+                        </Badge>
+                      ))}
+                    </>
+                  ) : (
+                    <Text fontSize="14px" color="#6B7280">
+                      No experience information available
+                    </Text>
+                  )}
+                </HStack>
+              </VStack>
+            </HStack>
+          </VStack>
+
+          {/* Scheduled Time Banner (for confirmed matches) */}
+          {match.matchStatus === 'confirmed' && match.chosenTimeBlock && (
+            <Box
+              bg="#ECFDF3"
+              border="1px solid #A6F4C5"
+              borderRadius="8px"
+              px="20px"
+              py="14px"
+            >
+              <HStack gap="10px" align="center">
+                <Icon as={FiCalendar} boxSize="18px" color="#039855" />
+                <VStack align="flex-start" gap="2px">
+                  <Text
+                    fontSize="13px"
+                    fontWeight={600}
+                    color="#027A48"
+                    fontFamily="Open Sans, sans-serif"
+                    textTransform="uppercase"
+                    letterSpacing="0.5px"
+                  >
+                    Scheduled Call
+                  </Text>
+                  <Text
+                    fontSize="15px"
+                    fontWeight={500}
+                    color="#054F31"
+                    fontFamily="Open Sans, sans-serif"
+                  >
+                    {formatScheduledTime(match.chosenTimeBlock.startTime)}
+                  </Text>
+                </VStack>
+              </HStack>
+            </Box>
+          )}
+
+          {/* Action Button */}
+          <Flex justify="flex-end" gap="12px">
+            {userRole === UserRole.VOLUNTEER && (
+              <>
+                {match.isTimeRequest && onViewRequest ? (
+                  <Button
+                    bg="#A70000"
+                    color="white"
+                    border="1px solid #A70000"
+                    borderRadius="7px"
+                    px="25px"
+                    py="10.5px"
+                    h="auto"
+                    fontWeight={600}
+                    fontSize="16px"
+                    fontFamily="Open Sans, sans-serif"
+                    boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                    _hover={{ bg: '#8A0000', borderColor: '#8A0000' }}
+                    _active={{ bg: '#700000', borderColor: '#700000' }}
+                    onClick={() => onViewRequest(match.id)}
+                  >
+                    View Request
+                  </Button>
+                ) : (match.matchStatus === 'awaiting_volunteer_acceptance' || match.matchStatus === 'cancelled_by_volunteer' || match.matchStatus === 'cancelled_by_participant') && onScheduleCall ? (
+                  <Button
+                    bg="#056067"
+                    color="white"
+                    border="1px solid #056067"
+                    borderRadius="7px"
+                    px="25px"
+                    py="10.5px"
+                    h="auto"
+                    fontWeight={600}
+                    fontSize="16px"
+                    fontFamily="Open Sans, sans-serif"
+                    boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                    _hover={{ bg: '#044d52', borderColor: '#044d52' }}
+                    _active={{ bg: '#033a3e', borderColor: '#033a3e' }}
+                    onClick={() => onScheduleCall(match.id)}
+                  >
+                    Schedule call
+                  </Button>
+                ) : match.matchStatus === 'confirmed' ? (
+                  <>
+                    {onCancelCall && (
+                      <Button
+                        bg="#A70000"
+                        color="white"
+                        border="1px solid #A70000"
+                        borderRadius="8px"
+                        px="28px"
+                        py="10px"
+                        h="auto"
+                        fontWeight={600}
+                        fontSize="16px"
+                        fontFamily="Open Sans, sans-serif"
+                        boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                        _hover={{ bg: '#8B0000', borderColor: '#8B0000' }}
+                        _active={{ bg: '#750000', borderColor: '#750000' }}
+                        onClick={() => onCancelCall(match.id)}
+                      >
+                        Cancel Call
+                      </Button>
+                    )}
+                    {onViewContactDetails && (
+                      <Button
+                        bg="#056067"
+                        color="white"
+                        border="1px solid #056067"
+                        borderRadius="8px"
+                        px="28px"
+                        py="10px"
+                        h="auto"
+                        fontWeight={600}
+                        fontSize="16px"
+                        fontFamily="Open Sans, sans-serif"
+                        boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                        _hover={{ bg: '#044d52', borderColor: '#044d52' }}
+                        _active={{ bg: '#033a3e', borderColor: '#033a3e' }}
+                        onClick={() => onViewContactDetails(match.id)}
+                      >
+                        View Contact Details
+                      </Button>
+                    )}
+                  </>
+                ) : null}
+              </>
+            )}
+            {userRole === UserRole.PARTICIPANT &&
+              match.matchStatus === 'pending' &&
+              match.hasSuggestedTimes && (
+                <>
+                  {onRequestNewTimes && (
+                    <Button
+                      bg="white"
+                      color="#344054"
+                      border="1px solid #D0D5DD"
+                      borderRadius="7px"
+                      px="25px"
+                      py="10.5px"
+                      h="auto"
+                      fontWeight={600}
+                      fontSize="16px"
+                      fontFamily="Open Sans, sans-serif"
+                      boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                      _hover={{ bg: '#F9FAFB' }}
+                      onClick={() => onRequestNewTimes(match.id)}
+                    >
+                      Request new times
+                    </Button>
+                  )}
+                  {onScheduleCall && (
+                    <Button
+                      bg="#056067"
+                      color="white"
+                      border="1px solid #056067"
+                      borderRadius="7px"
+                      px="25px"
+                      py="10.5px"
+                      h="auto"
+                      fontWeight={600}
+                      fontSize="16px"
+                      fontFamily="Open Sans, sans-serif"
+                      boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                      _hover={{ bg: '#044d52', borderColor: '#044d52' }}
+                      _active={{ bg: '#033a3e', borderColor: '#033a3e' }}
+                      onClick={() => onScheduleCall(match.id)}
+                    >
+                      Schedule call
+                    </Button>
+                  )}
+                </>
+              )}
+            {userRole === UserRole.PARTICIPANT && match.matchStatus === 'confirmed' && (
+              <>
+                {onCancelCall && (
+                  <Button
+                    bg="#A70000"
+                    color="white"
+                    border="1px solid #A70000"
+                    borderRadius="8px"
+                    px="28px"
+                    py="10px"
+                    h="auto"
+                    fontWeight={600}
+                    fontSize="16px"
+                    fontFamily="Open Sans, sans-serif"
+                    boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                    _hover={{ bg: '#8B0000', borderColor: '#8B0000' }}
+                    _active={{ bg: '#750000', borderColor: '#750000' }}
+                    onClick={() => onCancelCall(match.id)}
+                  >
+                    Cancel Call
+                  </Button>
+                )}
+                {onViewContactDetails && (
+                  <Button
+                    bg="#056067"
+                    color="white"
+                    border="1px solid #056067"
+                    borderRadius="8px"
+                    px="28px"
+                    py="10px"
+                    h="auto"
+                    fontWeight={600}
+                    fontSize="16px"
+                    fontFamily="Open Sans, sans-serif"
+                    boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
+                    _hover={{ bg: '#044d52', borderColor: '#044d52' }}
+                    _active={{ bg: '#033a3e', borderColor: '#033a3e' }}
+                    onClick={() => onViewContactDetails(match.id)}
+                  >
+                    View Contact Details
+                  </Button>
+                )}
+              </>
+            )}
+          </Flex>
         </VStack>
       </Box>
     </VStack>
