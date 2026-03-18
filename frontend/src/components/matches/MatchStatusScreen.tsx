@@ -1,14 +1,46 @@
 import React from 'react';
 import { Box, Text, VStack, HStack, Badge, Button, Flex, Icon } from '@chakra-ui/react';
-import { FiUser, FiClock, FiActivity, FiHeart, FiBell, FiCalendar, FiXCircle, FiCheckCircle } from 'react-icons/fi';
+import {
+  FiUser,
+  FiClock,
+  FiActivity,
+  FiHeart,
+  FiBell,
+  FiCalendar,
+  FiXCircle,
+  FiCheckCircle,
+} from 'react-icons/fi';
 import { Match, MatchStatus, TimeBlock, VolunteerSummary } from '@/types/matchTypes';
 import { UserRole } from '@/types/authTypes';
 
-const STATUS_BADGE_CONFIG: Record<string, { label: string; bg: string; color: string; icon?: React.ElementType }> = {
-  requesting_new_times: { label: 'Time Request', bg: 'rgba(232, 188, 189, 0.3)', color: '#A70000', icon: FiBell },
-  awaiting_volunteer_acceptance: { label: 'Awaiting Volunteer', bg: '#F3F4F6', color: '#6B7280', icon: FiClock },
-  cancelled_by_volunteer: { label: 'Cancelled by Volunteer', bg: '#FEE4E2', color: '#D92D20', icon: FiXCircle },
-  cancelled_by_participant: { label: 'Cancelled by Participant', bg: '#FEE4E2', color: '#D92D20', icon: FiXCircle },
+const STATUS_BADGE_CONFIG: Record<
+  string,
+  { label: string; bg: string; color: string; icon?: React.ElementType }
+> = {
+  requesting_new_times: {
+    label: 'Time Request',
+    bg: 'rgba(232, 188, 189, 0.3)',
+    color: '#A70000',
+    icon: FiBell,
+  },
+  awaiting_volunteer_acceptance: {
+    label: 'Awaiting Volunteer',
+    bg: '#F3F4F6',
+    color: '#6B7280',
+    icon: FiClock,
+  },
+  cancelled_by_volunteer: {
+    label: 'Cancelled by Volunteer',
+    bg: '#FEE4E2',
+    color: '#D92D20',
+    icon: FiXCircle,
+  },
+  cancelled_by_participant: {
+    label: 'Cancelled by Participant',
+    bg: '#FEE4E2',
+    color: '#D92D20',
+    icon: FiXCircle,
+  },
   confirmed: { label: 'Call Scheduled', bg: '#D1FADF', color: '#039855', icon: FiCheckCircle },
   pending: { label: 'Pending', bg: 'rgba(179, 206, 209, 0.3)', color: '#056067', icon: FiClock },
 };
@@ -268,7 +300,15 @@ interface MatchCardProps {
   onViewContactDetails?: (matchId: number) => void;
 }
 
-function MatchCard({ match, userRole, onViewRequest, onScheduleCall, onRequestNewTimes, onCancelCall, onViewContactDetails }: MatchCardProps) {
+function MatchCard({
+  match,
+  userRole,
+  onViewRequest,
+  onScheduleCall,
+  onRequestNewTimes,
+  onCancelCall,
+  onViewContactDetails,
+}: MatchCardProps) {
   const person = match.person;
 
   const fullName = person
@@ -554,13 +594,7 @@ function MatchCard({ match, userRole, onViewRequest, onScheduleCall, onRequestNe
 
           {/* Scheduled Time Banner (for confirmed matches) */}
           {match.matchStatus === 'confirmed' && match.chosenTimeBlock && (
-            <Box
-              bg="#ECFDF3"
-              border="1px solid #A6F4C5"
-              borderRadius="8px"
-              px="20px"
-              py="14px"
-            >
+            <Box bg="#ECFDF3" border="1px solid #A6F4C5" borderRadius="8px" px="20px" py="14px">
               <HStack gap="10px" align="center">
                 <Icon as={FiCalendar} boxSize="18px" color="#039855" />
                 <VStack align="flex-start" gap="2px">
@@ -610,7 +644,10 @@ function MatchCard({ match, userRole, onViewRequest, onScheduleCall, onRequestNe
                   >
                     View Request
                   </Button>
-                ) : (match.matchStatus === 'awaiting_volunteer_acceptance' || match.matchStatus === 'cancelled_by_volunteer' || match.matchStatus === 'cancelled_by_participant') && onScheduleCall ? (
+                ) : (match.matchStatus === 'awaiting_volunteer_acceptance' ||
+                    match.matchStatus === 'cancelled_by_volunteer' ||
+                    match.matchStatus === 'cancelled_by_participant') &&
+                  onScheduleCall ? (
                   <Button
                     bg="#056067"
                     color="white"

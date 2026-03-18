@@ -73,7 +73,8 @@ export function CallCancelledNotificationModal({
               lineHeight="1.36em"
               textAlign="center"
             >
-              {cancelledByName} has cancelled the scheduled call. No further action is required on your end.
+              {cancelledByName} has cancelled the scheduled call. No further action is required on
+              your end.
             </Text>
           </VStack>
 

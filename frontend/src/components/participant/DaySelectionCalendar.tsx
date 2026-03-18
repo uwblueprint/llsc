@@ -164,13 +164,7 @@ export function DaySelectionCalendar({
                 const dateForCell = week.find((date) => date.getDay() === dayIndex);
 
                 if (!dateForCell) {
-                  return (
-                    <Box
-                      key={`${weekIndex}-${dayIndex}-empty`}
-                      minW="37px"
-                      minH="52px"
-                    />
-                  );
+                  return <Box key={`${weekIndex}-${dayIndex}-empty`} minW="37px" minH="52px" />;
                 }
 
                 const selected = isDaySelected(dateForCell);

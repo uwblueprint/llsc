@@ -100,7 +100,8 @@ export default function ParticipantDashboardPage() {
             const vol = cancelledByVol[0].volunteer;
             const firstName = vol.firstName || '';
             const lastName = vol.lastName || '';
-            const name = `${firstName} ${lastName.charAt(0) ? lastName.charAt(0) + '.' : ''}`.trim();
+            const name =
+              `${firstName} ${lastName.charAt(0) ? lastName.charAt(0) + '.' : ''}`.trim();
             setCancelledByName(name || vol.email);
             setShowCancelledNotification(true);
           }

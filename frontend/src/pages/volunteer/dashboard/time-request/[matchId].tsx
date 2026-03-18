@@ -1,15 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import {
-  Box,
-  Button,
-  Flex,
-  HStack,
-  Icon,
-  Spinner,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Box, Button, Flex, HStack, Icon, Spinner, Text, VStack } from '@chakra-ui/react';
 import { FiChevronLeft } from 'react-icons/fi';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
@@ -246,8 +237,9 @@ export default function VolunteerTimeRequestPage() {
                 letterSpacing="-1.5%"
                 lineHeight="1.36"
               >
-                Schedule your meeting. If no times work for you, {participantFirstName || participantShortName}{' '}
-                will be matched with a different volunteer.
+                Schedule your meeting. If no times work for you,{' '}
+                {participantFirstName || participantShortName} will be matched with a different
+                volunteer.
               </Text>
             </VStack>
 
@@ -553,7 +545,11 @@ interface VolunteerConfirmedModalProps {
   onClose: () => void;
 }
 
-function VolunteerConfirmedModal({ isOpen, confirmedTimeLabel, onClose }: VolunteerConfirmedModalProps) {
+function VolunteerConfirmedModal({
+  isOpen,
+  confirmedTimeLabel,
+  onClose,
+}: VolunteerConfirmedModalProps) {
   if (!isOpen) return null;
 
   return (

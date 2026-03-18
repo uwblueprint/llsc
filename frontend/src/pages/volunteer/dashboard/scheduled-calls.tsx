@@ -35,7 +35,9 @@ const ScheduledCallsPage: React.FC = () => {
   const [matchToCancel, setMatchToCancel] = useState<number | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelSuccess, setShowCancelSuccess] = useState(false);
-  const [contactParticipant, setContactParticipant] = useState<ScheduledCallMatch['participant'] | null>(null);
+  const [contactParticipant, setContactParticipant] = useState<
+    ScheduledCallMatch['participant'] | null
+  >(null);
 
   const loadData = async () => {
     const user = getCurrentUser();
@@ -46,9 +48,7 @@ const ScheduledCallsPage: React.FC = () => {
     try {
       const response = await baseAPIClient.get('/matches/volunteer/me');
       const matches: ScheduledCallMatch[] = response.data.matches || [];
-      const confirmed = matches.filter(
-        (match) => match.matchStatus?.toLowerCase() === 'confirmed',
-      );
+      const confirmed = matches.filter((match) => match.matchStatus?.toLowerCase() === 'confirmed');
       setConfirmedMatches(confirmed);
     } catch (error) {
       console.error('Error fetching scheduled calls:', error);

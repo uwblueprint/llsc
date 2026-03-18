@@ -59,7 +59,9 @@ const VolunteerDashboardPage: React.FC = () => {
   const [matchToCancel, setMatchToCancel] = useState<number | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelSuccess, setShowCancelSuccess] = useState(false);
-  const [contactParticipant, setContactParticipant] = useState<VolunteerDashboardMatch['participant'] | null>(null);
+  const [contactParticipant, setContactParticipant] = useState<
+    VolunteerDashboardMatch['participant'] | null
+  >(null);
   const [showCancelledNotification, setShowCancelledNotification] = useState(false);
   const [cancelledByName, setCancelledByName] = useState('');
 
@@ -104,7 +106,8 @@ const VolunteerDashboardPage: React.FC = () => {
             const first = requestingMatches[0].participant;
             const firstName = first.firstName || '';
             const lastName = first.lastName || '';
-            const name = `${firstName} ${lastName.charAt(0) ? lastName.charAt(0) + '.' : ''}`.trim();
+            const name =
+              `${firstName} ${lastName.charAt(0) ? lastName.charAt(0) + '.' : ''}`.trim();
             setRequestingParticipantName(name || first.email);
           }
         }
@@ -124,7 +127,8 @@ const VolunteerDashboardPage: React.FC = () => {
             const first = cancelledMatches[0].participant;
             const firstName = first.firstName || '';
             const lastName = first.lastName || '';
-            const name = `${firstName} ${lastName.charAt(0) ? lastName.charAt(0) + '.' : ''}`.trim();
+            const name =
+              `${firstName} ${lastName.charAt(0) ? lastName.charAt(0) + '.' : ''}`.trim();
             setCancelledByName(name || first.email);
             setShowCancelledNotification(true);
           }
@@ -235,8 +239,7 @@ const VolunteerDashboardPage: React.FC = () => {
                     diagnosis: participant.diagnosis || 'N/A',
                     treatments: participant.treatments || [],
                     experiences: participant.experiences || [],
-                    initials:
-                      `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
+                    initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
                   });
                   setIsScheduleModalOpen(true);
                 }}
