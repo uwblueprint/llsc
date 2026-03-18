@@ -11,10 +11,9 @@ from app.utilities.ses_email_service import SESEmailService
 # Load environment variables
 load_dotenv()
 
-# Test email addresses
+# Test email addresses - add your own email(s) here before running
 TEST_EMAILS = [
-    "yashkothari@uwblueprint.org",
-    "ykykyk017@gmail.com",
+    # "your-email@example.com",
 ]
 
 
