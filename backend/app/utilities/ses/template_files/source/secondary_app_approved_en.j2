@@ -1,0 +1,11 @@
+{% extends "base_email_en.html" %}
+
+{% block content %}
+<p class="MsoNormal">Hi {{first_name}},</p>
+<p>Great news - your secondary application has been approved and your volunteer profile is now complete. You are now eligible to be matched with participants. We will notify you when a match is available.</p>
+<p align="center" style="text-align:center;margin-top:20px;margin-bottom:20px;">
+  <a href="{{dashboard_url}}" style="background-color:#056067;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;font-weight:bold;display:inline-block;">
+    Go to dashboard
+  </a>
+</p>
+{% endblock %}

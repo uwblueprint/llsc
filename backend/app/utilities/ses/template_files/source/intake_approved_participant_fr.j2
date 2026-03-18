@@ -1,0 +1,11 @@
+{% extends "base_email_fr.html" %}
+
+{% block content %}
+<p class="MsoNormal">Bonjour {{first_name}},</p>
+<p>Bonne nouvelle – votre formulaire de demande a été approuvé et vous pouvez maintenant soumettre vos préférences de jumelage. Veuillez remplir ce formulaire pour nous aider à trouver le meilleur jumelage pour vous.</p>
+<p align="center" style="text-align:center;margin-top:20px;margin-bottom:20px;">
+  <a href="{{ranking_url}}" style="background-color:#056067;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;font-weight:bold;display:inline-block;">
+    Soumettre les préférences de jumelage
+  </a>
+</p>
+{% endblock %}

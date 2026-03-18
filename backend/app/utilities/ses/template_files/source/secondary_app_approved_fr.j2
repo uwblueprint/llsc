@@ -1,0 +1,11 @@
+{% extends "base_email_fr.html" %}
+
+{% block content %}
+<p class="MsoNormal">Bonjour {{first_name}},</p>
+<p>Excellente nouvelle – votre demande complémentaire a été approuvée et votre profil de bénévole est maintenant complété. Vous êtes maintenant admissible au jumelage avec des participants. Nous vous aviserons lorsqu'un jumelage sera disponible.</p>
+<p align="center" style="text-align:center;margin-top:20px;margin-bottom:20px;">
+  <a href="{{dashboard_url}}" style="background-color:#056067;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;font-weight:bold;display:inline-block;">
+    Aller au tableau de bord
+  </a>
+</p>
+{% endblock %}
