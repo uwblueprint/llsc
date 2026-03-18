@@ -373,6 +373,164 @@ class SESEmailService:
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
+    def send_intake_approved_participant_email(
+        self, to_email: str, first_name: str = None, ranking_url: str = None, language: str = "en"
+    ) -> bool:
+        """
+        Send intake approved email to participant (next step: ranking/matching preferences form)
+
+        Args:
+            to_email: Recipient email address
+            first_name: User's first name (optional)
+            ranking_url: URL to ranking form (optional, defaults to /participant/ranking)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "IntakeApprovedParticipantEn" if language == "en" else "IntakeApprovedParticipantFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        if not ranking_url:
+            ranking_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/ranking"
+
+        template_data = {"first_name": first_name if first_name else "there", "ranking_url": ranking_url}
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_intake_approved_volunteer_email(
+        self, to_email: str, first_name: str = None, secondary_app_url: str = None, language: str = "en"
+    ) -> bool:
+        """
+        Send intake approved email to volunteer (next step: secondary application form)
+
+        Args:
+            to_email: Recipient email address
+            first_name: User's first name (optional)
+            secondary_app_url: URL to secondary application form (optional, defaults to /volunteer/secondary-application)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "IntakeApprovedVolunteerEn" if language == "en" else "IntakeApprovedVolunteerFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        if not secondary_app_url:
+            secondary_app_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/secondary-application"
+
+        template_data = {"first_name": first_name if first_name else "there", "secondary_app_url": secondary_app_url}
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_ranking_form_confirmation_email(self, to_email: str, first_name: str = None, language: str = "en") -> bool:
+        """
+        Send ranking form submission confirmation email to participant
+
+        Args:
+            to_email: Recipient email address
+            first_name: User's first name (optional)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "RankingFormConfirmationEn" if language == "en" else "RankingFormConfirmationFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        template_data = {"first_name": first_name if first_name else "there"}
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_ranking_approved_email(self, to_email: str, first_name: str = None, language: str = "en") -> bool:
+        """
+        Send ranking form approved email to participant (now in matching pool)
+
+        Args:
+            to_email: Recipient email address
+            first_name: User's first name (optional)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "RankingApprovedEn" if language == "en" else "RankingApprovedFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        template_data = {"first_name": first_name if first_name else "there"}
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_secondary_app_confirmation_email(
+        self, to_email: str, first_name: str = None, language: str = "en"
+    ) -> bool:
+        """
+        Send secondary application submission confirmation email to volunteer
+
+        Args:
+            to_email: Recipient email address
+            first_name: User's first name (optional)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "SecondaryAppConfirmationEn" if language == "en" else "SecondaryAppConfirmationFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        template_data = {"first_name": first_name if first_name else "there"}
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
+    def send_secondary_app_approved_email(
+        self, to_email: str, first_name: str = None, dashboard_url: str = None, language: str = "en"
+    ) -> bool:
+        """
+        Send secondary application approved email to volunteer (profile complete, eligible for matching)
+
+        Args:
+            to_email: Recipient email address
+            first_name: User's first name (optional)
+            dashboard_url: URL to volunteer dashboard (optional, defaults to /volunteer/dashboard)
+            language: Language code ("en" for English, "fr" for French). Defaults to "en"
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        language = language.lower() if language else "en"
+        if language not in ["en", "fr"]:
+            language = "en"
+
+        template_name = "SecondaryAppApprovedEn" if language == "en" else "SecondaryAppApprovedFr"
+        source_email = self.source_email_en if language == "en" else self.source_email_fr
+
+        if not dashboard_url:
+            dashboard_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard"
+
+        template_data = {"first_name": first_name if first_name else "there", "dashboard_url": dashboard_url}
+
+        return self.send_templated_email(to_email, template_name, template_data, source_email)
+
     def send_participant_cancelled_email(
         self,
         to_email: str,

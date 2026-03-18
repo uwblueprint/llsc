@@ -13,6 +13,7 @@ from app.services.implementations.ranking_service import RankingService
 from app.services.implementations.user_service import UserService
 from app.utilities.db_utils import get_db
 from app.utilities.service_utils import get_user_service
+from app.utilities.ses_email_service import SESEmailService
 from app.utilities.task_utils import create_volunteer_app_review_task
 
 
@@ -83,6 +84,22 @@ async def put_ranking_preferences(
         try:
             user_id_str = await user_service.get_user_id_by_auth_id(user_auth_id)
             create_volunteer_app_review_task(db, user_id_str, "ranking")
+        except Exception:
+            # Log error but don't fail the request
+            pass
+
+        # Send ranking form confirmation email
+        try:
+            user_id_str = await user_service.get_user_id_by_auth_id(user_auth_id)
+            user = db.query(User).filter(User.id == UUID(user_id_str)).first()
+            if user and user.email:
+                language = user.language.value if user.language else "en"
+                ses_service = SESEmailService()
+                ses_service.send_ranking_form_confirmation_email(
+                    to_email=user.email,
+                    first_name=user.first_name,
+                    language=language,
+                )
         except Exception:
             # Log error but don't fail the request
             pass
