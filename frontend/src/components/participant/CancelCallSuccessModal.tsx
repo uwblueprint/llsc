@@ -6,11 +6,15 @@ import { useTranslations } from 'next-intl';
 interface CancelCallSuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
+  supportingText?: string;
 }
 
-export function CancelCallSuccessModal({ isOpen, onClose }: CancelCallSuccessModalProps) {
+export function CancelCallSuccessModal({
+  isOpen,
+  onClose,
+  supportingText,
+}: CancelCallSuccessModalProps) {
   const t = useTranslations('dashboard');
-
   if (!isOpen) {
     return null;
   }
@@ -73,7 +77,7 @@ export function CancelCallSuccessModal({ isOpen, onClose }: CancelCallSuccessMod
               lineHeight="1.36181640625em"
               textAlign="center"
             >
-              {t('notifiedParticipant')}
+              {supportingText ?? t('notifiedParticipant')}
             </Text>
           </VStack>
 

@@ -1637,6 +1637,207 @@ class TestUpdateMatch:
         assert exc_info.value.status_code == 404
         assert "Match" in exc_info.value.detail
 
+# ========== VOLUNTEER ACCEPT/DECLINE REQUESTED TIMES TESTS ==========
+
+
+class TestVolunteerAcceptRequestedTimes:
+    """Test volunteer accepting participant-requested times."""
+
+    @pytest_asyncio.fixture
+    async def requesting_match(self, db_session, participant_user, volunteer_user):
+        """Create a match in requesting_new_times status with suggested time blocks."""
+        match = Match(
+            participant_id=participant_user.id,
+            volunteer_id=volunteer_user.id,
+            match_status_id=8,  # requesting_new_times
+        )
+        db_session.add(match)
+        db_session.flush()
+
+        now = datetime.now(timezone.utc)
+        tomorrow = now + timedelta(days=1)
+        for hour, minute in [(12, 0), (12, 30), (13, 0)]:
+            block = TimeBlock(start_time=tomorrow.replace(hour=hour, minute=minute, second=0, microsecond=0))
+            match.suggested_time_blocks.append(block)
+
+        db_session.commit()
+        db_session.refresh(match)
+        return match
+
+    @pytest.mark.asyncio
+    async def test_accept_requested_times_success(self, db_session, requesting_match, volunteer_user):
+        """Volunteer can accept one of the requested time blocks"""
+        try:
+            match_service = MatchService(db_session)
+            time_block_id = requesting_match.suggested_time_blocks[0].id
+
+            response = await match_service.volunteer_accept_requested_times(
+                requesting_match.id, time_block_id, acting_volunteer_id=volunteer_user.id
+            )
+
+            assert response.match_status == "confirmed"
+            assert response.chosen_time_block is not None
+            assert response.chosen_time_block.id == time_block_id
+
+            db_session.refresh(requesting_match)
+            assert requesting_match.match_status.name == "confirmed"
+            assert requesting_match.chosen_time_block_id == time_block_id
+
+            db_session.commit()
+        except Exception:
+            db_session.rollback()
+            raise
+
+    @pytest.mark.asyncio
+    async def test_accept_requested_times_wrong_volunteer_403(
+        self, db_session, requesting_match, another_volunteer
+    ):
+        """403 when different volunteer tries to accept"""
+        match_service = MatchService(db_session)
+        time_block_id = requesting_match.suggested_time_blocks[0].id
+
+        with pytest.raises(HTTPException) as exc_info:
+            await match_service.volunteer_accept_requested_times(
+                requesting_match.id, time_block_id, acting_volunteer_id=another_volunteer.id
+            )
+
+        assert exc_info.value.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_accept_requested_times_wrong_status_400(self, db_session, sample_match, volunteer_user):
+        """400 when match is not in requesting_new_times status"""
+        match_service = MatchService(db_session)
+        time_block_id = sample_match.suggested_time_blocks[0].id
+
+        with pytest.raises(HTTPException) as exc_info:
+            await match_service.volunteer_accept_requested_times(
+                sample_match.id, time_block_id, acting_volunteer_id=volunteer_user.id
+            )
+
+        assert exc_info.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_accept_requested_times_invalid_block_400(self, db_session, requesting_match, volunteer_user):
+        """400 when time block is not among suggested times"""
+        try:
+            match_service = MatchService(db_session)
+
+            other_block = TimeBlock(
+                start_time=datetime.now(timezone.utc) + timedelta(days=5)
+            )
+            db_session.add(other_block)
+            db_session.commit()
+            db_session.refresh(other_block)
+
+            with pytest.raises(HTTPException) as exc_info:
+                await match_service.volunteer_accept_requested_times(
+                    requesting_match.id, other_block.id, acting_volunteer_id=volunteer_user.id
+                )
+
+            assert exc_info.value.status_code == 400
+            assert "not among the requested times" in exc_info.value.detail.lower()
+
+        except HTTPException:
+            raise
+        except Exception:
+            db_session.rollback()
+            raise
+
+    @pytest.mark.asyncio
+    async def test_accept_requested_times_invalid_match_404(self, db_session, volunteer_user):
+        """404 when match doesn't exist"""
+        match_service = MatchService(db_session)
+
+        with pytest.raises(HTTPException) as exc_info:
+            await match_service.volunteer_accept_requested_times(
+                99999, 1, acting_volunteer_id=volunteer_user.id
+            )
+
+        assert exc_info.value.status_code == 404
+
+
+class TestVolunteerDeclineRequestedTimes:
+    """Test volunteer declining participant-requested times."""
+
+    @pytest_asyncio.fixture
+    async def requesting_match(self, db_session, participant_user, volunteer_user):
+        """Create a match in requesting_new_times status."""
+        match = Match(
+            participant_id=participant_user.id,
+            volunteer_id=volunteer_user.id,
+            match_status_id=8,  # requesting_new_times
+        )
+        db_session.add(match)
+        db_session.flush()
+
+        now = datetime.now(timezone.utc)
+        tomorrow = now + timedelta(days=1)
+        block = TimeBlock(start_time=tomorrow.replace(hour=14, minute=0, second=0, microsecond=0))
+        match.suggested_time_blocks.append(block)
+
+        db_session.commit()
+        db_session.refresh(match)
+        return match
+
+    @pytest.mark.asyncio
+    async def test_decline_requested_times_success(self, db_session, requesting_match, volunteer_user):
+        """Volunteer can decline all requested times"""
+        try:
+            match_service = MatchService(db_session)
+
+            response = await match_service.volunteer_decline_requested_times(
+                requesting_match.id, acting_volunteer_id=volunteer_user.id
+            )
+
+            assert response.match_status == "cancelled_by_volunteer"
+
+            db_session.refresh(requesting_match)
+            assert requesting_match.match_status.name == "cancelled_by_volunteer"
+
+            db_session.commit()
+        except Exception:
+            db_session.rollback()
+            raise
+
+    @pytest.mark.asyncio
+    async def test_decline_requested_times_wrong_volunteer_403(
+        self, db_session, requesting_match, another_volunteer
+    ):
+        """403 when different volunteer tries to decline"""
+        match_service = MatchService(db_session)
+
+        with pytest.raises(HTTPException) as exc_info:
+            await match_service.volunteer_decline_requested_times(
+                requesting_match.id, acting_volunteer_id=another_volunteer.id
+            )
+
+        assert exc_info.value.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_decline_requested_times_wrong_status_400(self, db_session, sample_match, volunteer_user):
+        """400 when match is not in requesting_new_times status"""
+        match_service = MatchService(db_session)
+
+        with pytest.raises(HTTPException) as exc_info:
+            await match_service.volunteer_decline_requested_times(
+                sample_match.id, acting_volunteer_id=volunteer_user.id
+            )
+
+        assert exc_info.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_decline_requested_times_invalid_match_404(self, db_session, volunteer_user):
+        """404 when match doesn't exist"""
+        match_service = MatchService(db_session)
+
+        with pytest.raises(HTTPException) as exc_info:
+            await match_service.volunteer_decline_requested_times(
+                99999, acting_volunteer_id=volunteer_user.id
+            )
+
+        assert exc_info.value.status_code == 404
+
+
     @pytest.mark.asyncio
     async def test_update_match_reassigns_volunteer_resets_suggested_times(
         self,

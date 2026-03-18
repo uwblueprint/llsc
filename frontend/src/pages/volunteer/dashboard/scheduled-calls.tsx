@@ -1,84 +1,73 @@
 import React, { useEffect, useState } from 'react';
-import { Heading, Text, VStack } from '@chakra-ui/react';
+import { Heading, Text } from '@chakra-ui/react';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
-import ProfileCard from '@/components/dashboard/ProfileCard';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { FormStatus, UserRole } from '@/types/authTypes';
 import { useTranslations } from 'next-intl';
-
-interface ScheduledCall {
-  id: number;
-  name: string;
-  pronouns: string;
-  age: number;
-  timezone: string;
-  diagnosis: string;
-  treatments: string[];
-  experiences: string[];
-  initials: string;
-  scheduledTime?: Date;
-}
+import { MatchStatusScreen, VolunteerMatch } from '@/components/matches/MatchStatusScreen';
+import { CancelCallConfirmationModal } from '@/components/participant/CancelCallConfirmationModal';
+import { CancelCallSuccessModal } from '@/components/participant/CancelCallSuccessModal';
+import { ViewParticipantContactModal } from '@/components/volunteer/ViewParticipantContactModal';
 
 const ScheduledCallsPage: React.FC = () => {
   const t = useTranslations('dashboard');
   const [userName, setUserName] = useState('');
-  const [scheduledCalls, setScheduledCalls] = useState<ScheduledCall[]>([]);
+  const [confirmedMatches, setConfirmedMatches] = useState<VolunteerMatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [matchToCancel, setMatchToCancel] = useState<number | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelSuccess, setShowCancelSuccess] = useState(false);
+  const [contactParticipant, setContactParticipant] = useState<
+    VolunteerMatch['participant'] | null
+  >(null);
+
+  const loadData = async () => {
+    const user = getCurrentUser();
+    if (user) {
+      setUserName(user.firstName || '');
+    }
+
+    try {
+      const response = await baseAPIClient.get('/matches/volunteer/me');
+      const matches: VolunteerMatch[] = response.data.matches || [];
+      const confirmed = matches.filter((match) => match.matchStatus?.toLowerCase() === 'confirmed');
+      setConfirmedMatches(confirmed);
+    } catch (error) {
+      console.error('Error fetching scheduled calls:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      // Get current user name
-      const user = getCurrentUser();
-      if (user) {
-        const firstName = user.firstName || '';
-        setUserName(firstName);
-      }
-
-      // Fetch scheduled calls from API
-      try {
-        const response = await baseAPIClient.get('/matches/volunteer/me');
-        const matches = response.data.matches || [];
-
-        // Filter matches that are confirmed (scheduled)
-        const confirmedMatches = matches.filter((match: any) => {
-          const status = match.matchStatus?.toLowerCase() || '';
-          return status === 'confirmed';
-        });
-
-        // Transform API response to match ProfileCard format
-        const transformedCalls = confirmedMatches.map((match: any) => {
-          const participant = match.participant;
-          const firstName = participant.firstName || '';
-          const lastName = participant.lastName || '';
-          const fullName = `${firstName} ${lastName}`.trim();
-
-          return {
-            id: match.id,
-            name: fullName || participant.email,
-            pronouns: participant.pronouns?.join('/') || '',
-            age: participant.age || 0,
-            timezone: participant.timezone || t('notAvailable'),
-            diagnosis: participant.diagnosis || t('notAvailable'),
-            treatments: participant.treatments || [],
-            experiences: participant.experiences || [],
-            initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
-            scheduledTime: match.scheduledTime ? new Date(match.scheduledTime) : undefined,
-          };
-        });
-
-        setScheduledCalls(transformedCalls);
-      } catch (error) {
-        console.error('Error fetching scheduled calls:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadData();
   }, []);
+
+  const handleCancelCall = async () => {
+    if (!matchToCancel) return;
+    try {
+      setIsCancelling(true);
+      await baseAPIClient.post(`/matches/${matchToCancel}/cancel-volunteer`);
+      setMatchToCancel(null);
+      setShowCancelSuccess(true);
+      await loadData();
+    } catch (error) {
+      console.error('Error cancelling call:', error);
+      alert('Failed to cancel call. Please try again.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const handleViewContact = (matchId: number) => {
+    const match = confirmedMatches.find((m) => m.id === matchId);
+    if (match) {
+      setContactParticipant(match.participant);
+    }
+  };
 
   if (loading) {
     return (
@@ -113,7 +102,7 @@ const ScheduledCallsPage: React.FC = () => {
             textAlign="left"
             mb={2}
           >
-            {scheduledCalls.length > 0
+            {confirmedMatches.length > 0
               ? `${t('yourScheduledCalls')}${userName ? `, ${userName}` : ''}`
               : `${t('noScheduledCalls')}${userName ? `, ${userName}` : ''}`}
           </Heading>
@@ -125,25 +114,38 @@ const ScheduledCallsPage: React.FC = () => {
             textAlign="left"
             mb={8}
           >
-            {scheduledCalls.length > 0 ? t('hereAreUpcomingCalls') : t('noScheduledCallsYet')}
+            {confirmedMatches.length > 0 ? t('hereAreUpcomingCalls') : t('noScheduledCallsYet')}
           </Text>
 
-          {scheduledCalls.length > 0 && (
-            <VStack gap={6} align="flex-start">
-              {scheduledCalls.map((call) => (
-                <ProfileCard
-                  key={call.id}
-                  participant={call}
-                  time={call.scheduledTime}
-                  showTimes={!!call.scheduledTime}
-                  onViewContact={() => {
-                    // Handle view contact action
-                    console.log('View contact for', call.name);
-                  }}
-                />
-              ))}
-            </VStack>
+          {confirmedMatches.length > 0 && (
+            <MatchStatusScreen
+              matches={confirmedMatches}
+              userRole={UserRole.VOLUNTEER}
+              userName={userName}
+              onCancelCall={(matchId) => setMatchToCancel(matchId)}
+              onViewContactDetails={handleViewContact}
+            />
           )}
+
+          <CancelCallConfirmationModal
+            isOpen={matchToCancel !== null}
+            onClose={() => setMatchToCancel(null)}
+            onConfirm={handleCancelCall}
+            isCancelling={isCancelling}
+            supportingText="We will let the participant know you have cancelled the call."
+          />
+
+          <CancelCallSuccessModal
+            isOpen={showCancelSuccess}
+            onClose={() => setShowCancelSuccess(false)}
+            supportingText="We've notified the participant about the cancellation."
+          />
+
+          <ViewParticipantContactModal
+            isOpen={contactParticipant !== null}
+            participant={contactParticipant}
+            onClose={() => setContactParticipant(null)}
+          />
         </VolunteerDashboardLayout>
       </FormStatusGuard>
     </ProtectedPage>

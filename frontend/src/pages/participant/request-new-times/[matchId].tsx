@@ -61,11 +61,6 @@ export default function RequestNewTimesPage() {
     }
   };
 
-  const handleBackFromTimes = () => {
-    setStep('select-days');
-    setSelectedTimeSlots([]);
-  };
-
   const handleTimesSelected = async () => {
     if (selectedTimeSlots.length > 0 && matchId) {
       await handleConfirm();
@@ -75,28 +70,31 @@ export default function RequestNewTimesPage() {
   const convertTimeSlotsToTimeRanges = (
     timeSlots: TimeSlot[],
   ): Array<{ startTime: string; endTime: string }> => {
-    // Create a map of day names to Date objects
-    const dayNameToDate: { [dayName: string]: Date } = {};
+    // Create a map of date keys to Date objects
+    // TimeSlot.day is now "DayName|YYYY-MM-DD" when selectedDaysDates is used
+    const dateKeyToDate: { [key: string]: Date } = {};
     selectedDays.forEach((day) => {
       const dayName = day.toLocaleDateString('en-US', { weekday: 'long' });
-      dayNameToDate[dayName] = day;
+      const dateStr = day.toISOString().split('T')[0];
+      const key = `${dayName}|${dateStr}`;
+      dateKeyToDate[key] = day;
     });
 
-    // Group time slots by day
-    const slotsByDay: { [day: string]: TimeSlot[] } = {};
+    // Group time slots by their key
+    const slotsByKey: { [key: string]: TimeSlot[] } = {};
     timeSlots.forEach((slot) => {
-      if (!slotsByDay[slot.day]) {
-        slotsByDay[slot.day] = [];
+      if (!slotsByKey[slot.day]) {
+        slotsByKey[slot.day] = [];
       }
-      slotsByDay[slot.day].push(slot);
+      slotsByKey[slot.day].push(slot);
     });
 
     const timeRanges: Array<{ startTime: string; endTime: string }> = [];
 
     // For each selected day, find the corresponding time slots
-    Object.keys(dayNameToDate).forEach((dayName) => {
-      const day = dayNameToDate[dayName];
-      const daySlots = slotsByDay[dayName] || [];
+    Object.keys(dateKeyToDate).forEach((key) => {
+      const day = dateKeyToDate[key];
+      const daySlots = slotsByKey[key] || [];
 
       if (daySlots.length === 0) return;
 
@@ -213,11 +211,9 @@ export default function RequestNewTimesPage() {
                 cursor="pointer"
                 onClick={() => {
                   if (step === 'select-times') {
-                    // Go back to date selection step
                     setStep('select-days');
                     setSelectedTimeSlots([]);
                   } else {
-                    // Go back to previous page
                     router.back();
                   }
                 }}
@@ -263,7 +259,7 @@ export default function RequestNewTimesPage() {
                   <DaySelectionCalendar
                     selectedDays={selectedDays}
                     onDaysChange={setSelectedDays}
-                    maxDays={7}
+                    maxDays={14}
                   />
                   <Flex justify="flex-end">
                     <Button
@@ -273,9 +269,12 @@ export default function RequestNewTimesPage() {
                       fontSize="20px"
                       fontFamily="'Open Sans', sans-serif"
                       lineHeight="1em"
-                      px={10.5}
-                      py={4.5}
+                      px="42px"
+                      py="18px"
+                      h="auto"
                       borderRadius="8px"
+                      border="1px solid #056067"
+                      boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
                       onClick={handleDaysSelected}
                       disabled={selectedDays.length === 0}
                       _hover={{
@@ -300,31 +299,11 @@ export default function RequestNewTimesPage() {
                       onTimeSlotsChange={setSelectedTimeSlots}
                       initialTimeSlots={selectedTimeSlots}
                       readOnly={false}
-                      visibleDays={selectedDays.map((day) =>
-                        day.toLocaleDateString('en-US', { weekday: 'long' }),
-                      )}
                       selectedDaysDates={selectedDays}
                     />
                   </Box>
 
-                  <Flex justify="flex-end" gap={3}>
-                    <Button
-                      bg="rgba(179, 206, 209, 0.3)"
-                      color="#495D6C"
-                      fontWeight={600}
-                      fontSize="16px"
-                      fontFamily="'Open Sans', sans-serif"
-                      lineHeight="1.5em"
-                      px={4.5}
-                      py={2.5}
-                      borderRadius="8px"
-                      onClick={handleBackFromTimes}
-                      _hover={{
-                        bg: 'rgba(179, 206, 209, 0.4)',
-                      }}
-                    >
-                      {t('back')}
-                    </Button>
+                  <Flex justify="flex-end">
                     <Button
                       bg="#056067"
                       color="white"
@@ -332,9 +311,12 @@ export default function RequestNewTimesPage() {
                       fontSize="20px"
                       fontFamily="'Open Sans', sans-serif"
                       lineHeight="1em"
-                      px={10.5}
-                      py={4.5}
+                      px="42px"
+                      py="18px"
+                      h="auto"
                       borderRadius="8px"
+                      border="1px solid #056067"
+                      boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
                       onClick={handleTimesSelected}
                       disabled={selectedTimeSlots.length === 0 || isSubmitting}
                       loading={isSubmitting}

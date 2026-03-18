@@ -11,7 +11,7 @@ interface DaySelectionCalendarProps {
 export function DaySelectionCalendar({
   selectedDays,
   onDaysChange,
-  maxDays = 7,
+  maxDays = 14,
 }: DaySelectionCalendarProps) {
   const locale = useLocale();
 
@@ -30,7 +30,7 @@ export function DaySelectionCalendar({
     const date = new Date(2024, i, 1);
     return date.toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA', { month: 'long' });
   });
-  // Get the next 7 days starting from tomorrow
+  // Get the next 14 days starting from tomorrow
   const getAvailableDays = (): Date[] => {
     const days: Date[] = [];
     const today = new Date();
@@ -166,40 +166,7 @@ export function DaySelectionCalendar({
                 const dateForCell = week.find((date) => date.getDay() === dayIndex);
 
                 if (!dateForCell) {
-                  // Empty cell - might need to show next month indicator
-                  const isFirstWeek = weekIndex === 0;
-                  const shouldShowNextMonth =
-                    isFirstWeek &&
-                    dayIndex === 0 &&
-                    availableDays[availableDays.length - 1].getDate() > 7;
-
-                  return (
-                    <Box
-                      key={`${weekIndex}-${dayIndex}-empty`}
-                      minW="37px"
-                      minH="52px"
-                      position="relative"
-                    >
-                      {shouldShowNextMonth && (
-                        <Text
-                          fontSize="20px"
-                          fontWeight={400}
-                          color="#000000"
-                          fontFamily="'Open Sans', sans-serif"
-                          lineHeight="1.36181640625em"
-                          letterSpacing="-3%"
-                          opacity={0.3}
-                          position="absolute"
-                          top="66.5px"
-                        >
-                          {MONTHS[availableDays[availableDays.length - 1].getMonth()].substring(
-                            0,
-                            3,
-                          )}
-                        </Text>
-                      )}
-                    </Box>
-                  );
+                  return <Box key={`${weekIndex}-${dayIndex}-empty`} minW="37px" minH="52px" />;
                 }
 
                 const selected = isDaySelected(dateForCell);

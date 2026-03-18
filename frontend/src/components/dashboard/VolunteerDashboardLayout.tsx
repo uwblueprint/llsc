@@ -10,9 +10,13 @@ import EditProfileModal from './EditProfileModal';
 
 interface VolunteerDashboardLayoutProps {
   children: React.ReactNode;
+  hideSidebar?: boolean;
 }
 
-export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> = ({ children }) => {
+export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> = ({
+  children,
+  hideSidebar = false,
+}) => {
   const t = useTranslations('dashboard');
   const [userName, setUserName] = useState('');
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -66,64 +70,65 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
           gap={{ base: 8, lg: 12 }}
         >
           {/* Sidebar */}
-          <Box
-            w={{ base: '100%', lg: '279px' }}
-            flexShrink={0}
-            bg="white"
-            borderRadius="8px"
-            border="1px solid rgba(187, 194, 200, 0.5)"
-            p={2}
-            display="flex"
-            flexDirection="column"
-            overflow="visible"
-          >
-            {/* Logo */}
+          {!hideSidebar && (
             <Box
-              mb={0}
-              w="100%"
+              w={{ base: '100%', lg: '279px' }}
+              flexShrink={0}
+              bg="white"
+              borderRadius="8px"
+              border="1px solid rgba(187, 194, 200, 0.5)"
+              p={2}
               display="flex"
-              alignItems="center"
-              justifyContent="flex-start"
-              pl={4}
+              flexDirection="column"
+              overflow="visible"
             >
-              <Image
-                src="/llsc-logo.png"
-                alt="Leukemia & Lymphoma Society of Canada"
-                w="220px"
-                h="150px"
-                objectFit="contain"
-              />
-            </Box>
+              {/* Logo */}
+              <Box
+                mb={0}
+                w="100%"
+                display="flex"
+                alignItems="center"
+                justifyContent="flex-start"
+                pl={4}
+              >
+                <Image
+                  src="/llsc-logo.png"
+                  alt="Leukemia & Lymphoma Society of Canada"
+                  w="220px"
+                  h="150px"
+                  objectFit="contain"
+                />
+              </Box>
 
-            {/* Navigation */}
-            <VStack align="stretch" gap="8px" flex={1}>
-              {navigationItems.map((item) => (
-                <Button
-                  key={item.path}
-                  onClick={() => handleNavigation(item.path)}
-                  bg={item.isActive ? 'rgba(179, 206, 209, 0.3)' : 'transparent'}
-                  color={item.isActive ? '#1D3448' : '#6B7280'}
-                  fontWeight={item.isActive ? 600 : 400}
-                  fontSize="14px"
-                  fontFamily="'Open Sans', sans-serif"
-                  justifyContent="flex-start"
-                  h="50px"
-                  px="12px"
-                  py="8px"
-                  borderRadius="6px"
-                  _hover={{
-                    bg: item.isActive ? 'rgba(179, 206, 209, 0.3)' : '#F1F5F9',
-                  }}
-                  _active={{
-                    bg: item.isActive ? 'rgba(179, 206, 209, 0.3)' : '#E2E8F0',
-                  }}
-                >
-                  <HStack gap="8px" align="center">
-                    {item.icon && <Image src={item.icon} alt={item.label} w="14px" h="14px" />}
-                    <Text>{item.label}</Text>
-                  </HStack>
-                </Button>
-              ))}
+              {/* Navigation */}
+              <VStack align="stretch" gap="8px" flex={1}>
+                {navigationItems.map((item) => (
+                  <Button
+                    key={item.path}
+                    onClick={() => handleNavigation(item.path)}
+                    bg={item.isActive ? 'rgba(179, 206, 209, 0.3)' : 'transparent'}
+                    color={item.isActive ? '#1D3448' : '#6B7280'}
+                    fontWeight={item.isActive ? 600 : 400}
+                    fontSize="14px"
+                    fontFamily="'Open Sans', sans-serif"
+                    justifyContent="flex-start"
+                    h="50px"
+                    px="12px"
+                    py="8px"
+                    borderRadius="6px"
+                    _hover={{
+                      bg: item.isActive ? 'rgba(179, 206, 209, 0.3)' : '#F1F5F9',
+                    }}
+                    _active={{
+                      bg: item.isActive ? 'rgba(179, 206, 209, 0.3)' : '#E2E8F0',
+                    }}
+                  >
+                    <HStack gap="8px" align="center">
+                      {item.icon && <Image src={item.icon} alt={item.label} w="14px" h="14px" />}
+                      <Text>{item.label}</Text>
+                    </HStack>
+                  </Button>
+                ))}
 
               {/* Sign Out */}
               <Button
@@ -152,6 +157,7 @@ export const VolunteerDashboardLayout: React.FC<VolunteerDashboardLayoutProps> =
               </Button>
             </VStack>
           </Box>
+          )}
 
           {/* Main Content */}
           <Box flex={1} w="full">

@@ -171,33 +171,51 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
     return dayOrder.indexOf(a) - dayOrder.indexOf(b);
   });
 
-  // Filter days if visibleDays prop is provided
-  const getVisibleDays = () => {
-    if (visibleDays && visibleDays.length > 0) {
-      // Map full day names to abbreviated day names
-      const dayNameMap: { [key: string]: string } = {
-        Monday: 'Mon',
-        Tuesday: 'Tues',
-        Wednesday: 'Wed',
-        Thursday: 'Thu',
-        Friday: 'Fri',
-        Saturday: 'Sat',
-        Sunday: 'Sun',
-      };
-      return visibleDays.map((fullDay) => dayNameMap[fullDay] || fullDay);
+  // Build unique column identifiers when selectedDaysDates is provided
+  // This prevents same-weekday collisions (e.g. two Mondays)
+  const getColumnKeys = (): string[] => {
+    if (selectedDaysDates && selectedDaysDates.length > 0) {
+      // Use "DayName|YYYY-MM-DD" as unique key per column
+      return selectedDaysDates.map((d) => {
+        const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+        const dateStr = d.toISOString().split('T')[0];
+        return `${dayName}|${dateStr}`;
+      });
     }
-    return days;
-  };
-
-  const getVisibleDaysFull = () => {
     if (visibleDays && visibleDays.length > 0) {
       return visibleDays;
     }
     return daysFull;
   };
 
-  const filteredDays = getVisibleDays();
-  const filteredDaysFull = getVisibleDaysFull();
+  const dayNameMap: { [key: string]: string } = {
+    Monday: 'Mon',
+    Tuesday: 'Tues',
+    Wednesday: 'Wed',
+    Thursday: 'Thu',
+    Friday: 'Fri',
+    Saturday: 'Sat',
+    Sunday: 'Sun',
+  };
+
+  // Get abbreviated header labels for display
+  const getHeaderLabels = (): string[] => {
+    const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-US';
+    if (selectedDaysDates && selectedDaysDates.length > 0) {
+      return selectedDaysDates.map((d, idx) => {
+        const abbr = dayNameMap[d.toLocaleDateString('en-US', { weekday: 'long' })] || days[idx];
+        const dateLabel = d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
+        return `${abbr}, ${dateLabel}`;
+      });
+    }
+    if (visibleDays && visibleDays.length > 0) {
+      return visibleDays.map((fullDay) => dayNameMap[fullDay] || fullDay);
+    }
+    return days;
+  };
+
+  const columnKeys = getColumnKeys();
+  const headerLabels = getHeaderLabels();
 
   const renderScheduleGrid = () => (
     <Box h="100%" w="100%" display="flex" flexDirection="column" overflow="hidden">
@@ -216,33 +234,22 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
         >
           {t('timezoneLabel')}
         </Box>
-        {filteredDays.map((day, index) => {
-          // Format day header with date if we have selected days dates
-          const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-US';
-          const dayHeader =
-            visibleDays &&
-            visibleDays.length > 0 &&
-            selectedDaysDates &&
-            selectedDaysDates.length > index
-              ? `${day}, ${selectedDaysDates[index].toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}`
-              : day;
-          return (
-            <Box
-              key={day}
-              flex="1"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              color="gray.600"
-              fontWeight="normal"
-              fontSize={['md', 'lg']}
-              fontFamily="'Open Sans', sans-serif"
-              textAlign="center"
-            >
-              {dayHeader}
-            </Box>
-          );
-        })}
+        {headerLabels.map((label, index) => (
+          <Box
+            key={columnKeys[index] || label}
+            flex="1"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            color="gray.600"
+            fontWeight="normal"
+            fontSize={['md', 'lg']}
+            fontFamily="'Open Sans', sans-serif"
+            textAlign="center"
+          >
+            {label}
+          </Box>
+        ))}
         {showAvailability && <Box w="220px" ml={6} />}
       </Box>
 
@@ -268,12 +275,12 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
               </Box>
 
               {/* Day Cells */}
-              {filteredDaysFull.map((dayFull, dayIndex) => (
+              {columnKeys.map((colKey, dayIndex) => (
                 <Box
-                  key={`${dayFull}-${hour}`}
+                  key={`${colKey}-${hour}`}
                   flex="1"
                   cursor={readOnly ? 'default' : 'pointer'}
-                  bg={isTimeSlotSelected(dayFull, hour) ? 'rgba(255, 187, 138, 0.2)' : 'white'}
+                  bg={isTimeSlotSelected(colKey, hour) ? 'rgba(255, 187, 138, 0.2)' : 'white'}
                   transition="background 0.2s"
                   borderTop="0.91px solid"
                   borderBottom="0.91px solid"
@@ -284,13 +291,13 @@ const TimeScheduler: React.FC<TimeSchedulerProps> = ({
                     readOnly
                       ? {}
                       : {
-                          bg: isTimeSlotSelected(dayFull, hour)
+                          bg: isTimeSlotSelected(colKey, hour)
                             ? 'rgba(255, 187, 138, 0.2)'
                             : 'rgba(255, 187, 138, 0.1)',
                         }
                   }
-                  onMouseDown={readOnly ? undefined : () => handleMouseDown(dayFull, hour)}
-                  onMouseEnter={readOnly ? undefined : () => handleMouseEnter(dayFull, hour)}
+                  onMouseDown={readOnly ? undefined : () => handleMouseDown(colKey, hour)}
+                  onMouseEnter={readOnly ? undefined : () => handleMouseEnter(colKey, hour)}
                   onMouseUp={readOnly ? undefined : handleMouseUp}
                   userSelect="none"
                   opacity={readOnly ? 0.7 : 1}

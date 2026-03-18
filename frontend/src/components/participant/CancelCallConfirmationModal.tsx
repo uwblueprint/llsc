@@ -8,6 +8,7 @@ interface CancelCallConfirmationModalProps {
   onClose: () => void;
   onConfirm: () => void;
   isCancelling?: boolean;
+  supportingText?: string;
 }
 
 export function CancelCallConfirmationModal({
@@ -15,6 +16,7 @@ export function CancelCallConfirmationModal({
   onClose,
   onConfirm,
   isCancelling = false,
+  supportingText,
 }: CancelCallConfirmationModalProps) {
   const t = useTranslations('dashboard');
 
@@ -80,7 +82,7 @@ export function CancelCallConfirmationModal({
               lineHeight="1.36181640625em"
               textAlign="center"
             >
-              {t('canRequestNewMatches')}
+              {supportingText ?? t('canRequestNewMatches')}
             </Text>
           </VStack>
 
