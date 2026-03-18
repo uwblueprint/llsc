@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { Box, Button, Container, Flex, Heading, Spinner, Text, VStack } from '@chakra-ui/react';
+import { FiChevronLeft } from 'react-icons/fi';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { participantMatchAPIClient } from '@/APIClients/participantMatchAPIClient';
@@ -161,121 +162,149 @@ export default function ScheduleCallPage() {
               {/* Back button */}
               <Flex
                 align="center"
-                gap={1}
+                gap={2}
                 cursor="pointer"
                 onClick={() => router.back()}
                 alignSelf="flex-start"
+                color="#1D3448"
+                fontSize="16px"
+                fontWeight={600}
+                fontFamily="'Open Sans', sans-serif"
+                lineHeight="1.25em"
               >
-                <Text
-                  fontSize="lg"
-                  color="#1D3448"
-                  fontWeight="400"
-                  fontFamily="'Open Sans', sans-serif"
-                >
-                  &lt;
-                </Text>
-                <Text
-                  fontSize="md"
-                  color="#1D3448"
-                  fontWeight="400"
-                  fontFamily="'Open Sans', sans-serif"
-                >
-                  Back
-                </Text>
+                <FiChevronLeft size={20} />
+                <Text>Back</Text>
               </Flex>
 
               {/* Header */}
-              <VStack align="stretch" gap={2}>
+              <VStack align="stretch" gap={4}>
                 <Heading
-                  fontSize="2xl"
-                  fontWeight="600"
+                  fontSize="36px"
+                  fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
+                  lineHeight="1.36181640625em"
+                  letterSpacing="-1.5%"
                 >
                   Schedule your call with {volunteerName}
                 </Heading>
-                <Text fontSize="md" color="#6B7280" fontFamily="'Open Sans', sans-serif">
-                  When you would like to meet with your volunteer?
+                <Text
+                  fontSize="18px"
+                  fontWeight={400}
+                  color="#1D3448"
+                  fontFamily="'Open Sans', sans-serif"
+                  lineHeight="1.36181640625em"
+                  letterSpacing="-1.5%"
+                  opacity={0.85}
+                >
+                  When would you like to meet with your volunteer?
                 </Text>
               </VStack>
 
               {/* Date Selection */}
-              <VStack align="stretch" gap={4}>
+              <VStack align="stretch" gap={6}>
                 <Text
-                  fontSize="md"
-                  fontWeight="600"
+                  fontSize="22px"
+                  fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
+                  letterSpacing="-1.5%"
+                  lineHeight="1.36"
                 >
                   Select a date
                 </Text>
-                <Flex gap={3} flexWrap="wrap">
+                <Flex gap="18px" flexWrap="wrap">
                   {sortedDates.map((dateKey) => (
-                    <Button
+                    <Box
                       key={dateKey}
                       onClick={() => {
                         setSelectedDate(dateKey);
-                        setSelectedTimeBlockId(null); // Reset time selection
+                        setSelectedTimeBlockId(null);
                       }}
-                      variant="outline"
-                      border="2px solid"
-                      borderColor={selectedDate === dateKey ? '#056067' : '#D5D7DA'}
-                      bg={selectedDate === dateKey ? 'transparent' : 'white'}
-                      color="#1D3448"
-                      fontWeight="400"
-                      fontSize="sm"
-                      fontFamily="'Open Sans', sans-serif"
-                      px={6}
-                      py={6}
-                      borderRadius="6px"
-                      _hover={{
-                        borderColor: '#056067',
-                      }}
+                      border="1px solid"
+                      borderColor={selectedDate === dateKey ? '#5F989D' : '#D5D7DA'}
+                      borderRadius="8px"
+                      bg="white"
+                      boxShadow={
+                        selectedDate === dateKey
+                          ? '0px 0px 0px 4px rgba(179, 206, 209, 1)'
+                          : '0px 1px 2px 0px rgba(10, 13, 18, 0.05)'
+                      }
+                      cursor="pointer"
+                      px="28px"
+                      py="24px"
+                      transition="all 0.15s ease"
                     >
-                      {formatDate(dateKey)}
-                    </Button>
+                      <Text
+                        fontSize="18px"
+                        fontWeight={600}
+                        color="#1D3448"
+                        fontFamily="'Open Sans', sans-serif"
+                        textAlign="center"
+                        whiteSpace="nowrap"
+                      >
+                        {formatDate(dateKey)}
+                      </Text>
+                    </Box>
                   ))}
                 </Flex>
               </VStack>
 
               {/* Time Selection */}
               {selectedDate && (
-                <VStack align="stretch" gap={4}>
-                  <Box>
+                <VStack align="stretch" gap={6}>
+                  <VStack align="stretch" gap={1}>
                     <Text
-                      fontSize="md"
-                      fontWeight="600"
+                      fontSize="22px"
+                      fontWeight={600}
                       color="#1D3448"
                       fontFamily="'Open Sans', sans-serif"
+                      letterSpacing="-1.5%"
+                      lineHeight="1.36"
                     >
                       Select a time
                     </Text>
-                    <Text fontSize="sm" color="#6B7280" fontFamily="'Open Sans', sans-serif">
+                    <Text
+                      fontSize="18px"
+                      color="#1D3448"
+                      fontFamily="'Open Sans', sans-serif"
+                      opacity={0.85}
+                      letterSpacing="-1.5%"
+                      lineHeight="1.36"
+                    >
                       All times are in EST.
                     </Text>
-                  </Box>
-                  <Flex gap={3} flexWrap="wrap">
+                  </VStack>
+                  <Flex gap="18px" flexWrap="wrap">
                     {groupedTimeBlocks[selectedDate]?.map((timeBlock) => (
-                      <Button
+                      <Box
                         key={timeBlock.id}
                         onClick={() => setSelectedTimeBlockId(timeBlock.id)}
-                        variant="outline"
-                        border="2px solid"
-                        borderColor={selectedTimeBlockId === timeBlock.id ? '#056067' : '#D5D7DA'}
-                        bg={selectedTimeBlockId === timeBlock.id ? 'transparent' : 'white'}
-                        color="#1D3448"
-                        fontWeight="400"
-                        fontSize="sm"
-                        fontFamily="'Open Sans', sans-serif"
-                        px={6}
-                        py={5}
-                        borderRadius="6px"
-                        _hover={{
-                          borderColor: '#056067',
-                        }}
+                        border="1px solid"
+                        borderColor={selectedTimeBlockId === timeBlock.id ? '#5F989D' : '#D5D7DA'}
+                        borderRadius="8px"
+                        bg="white"
+                        boxShadow={
+                          selectedTimeBlockId === timeBlock.id
+                            ? '0px 0px 0px 4px rgba(179, 206, 209, 1)'
+                            : '0px 1px 2px 0px rgba(10, 13, 18, 0.05)'
+                        }
+                        cursor="pointer"
+                        px="28px"
+                        py="24px"
+                        transition="all 0.15s ease"
                       >
-                        {formatTime(timeBlock.startTime)}
-                      </Button>
+                        <Text
+                          fontSize="18px"
+                          fontWeight={600}
+                          color="#1D3448"
+                          fontFamily="'Open Sans', sans-serif"
+                          textAlign="center"
+                          whiteSpace="nowrap"
+                        >
+                          {formatTime(timeBlock.startTime)}
+                        </Text>
+                      </Box>
                     ))}
                   </Flex>
                 </VStack>
@@ -288,11 +317,15 @@ export default function ScheduleCallPage() {
                     bg="#056067"
                     color="white"
                     fontWeight={600}
-                    fontSize="md"
+                    fontSize="20px"
                     fontFamily="'Open Sans', sans-serif"
-                    px={8}
-                    py={6}
-                    borderRadius="md"
+                    lineHeight="1em"
+                    px="42px"
+                    py="18px"
+                    h="auto"
+                    borderRadius="8px"
+                    border="1px solid #056067"
+                    boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
                     _hover={{
                       bg: '#044d52',
                     }}
@@ -305,19 +338,23 @@ export default function ScheduleCallPage() {
                   </Button>
                 ) : (
                   <Button
-                    bg="#9B2C2C"
+                    bg="#A70000"
                     color="white"
                     fontWeight={600}
-                    fontSize="md"
+                    fontSize="20px"
                     fontFamily="'Open Sans', sans-serif"
-                    px={8}
-                    py={6}
-                    borderRadius="md"
+                    lineHeight="1em"
+                    px="42px"
+                    py="18px"
+                    h="auto"
+                    borderRadius="8px"
+                    border="1px solid #A70000"
+                    boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
                     _hover={{
-                      bg: '#822727',
+                      bg: '#8A0000',
                     }}
                     _active={{
-                      bg: '#63171B',
+                      bg: '#700000',
                     }}
                     onClick={() => router.push(`/participant/request-new-times/${matchId}`)}
                   >

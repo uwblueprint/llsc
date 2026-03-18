@@ -102,6 +102,8 @@ class MatchDetailForVolunteerResponse(BaseModel):
     volunteer_id: UUID
     participant: MatchParticipantSummary
     match_status: str
+    chosen_time_block: Optional[TimeBlockEntity] = None
+    suggested_time_blocks: List[TimeBlockEntity] = Field(default_factory=list)
     created_at: datetime
     updated_at: Optional[datetime] = None
 

@@ -1,18 +1,17 @@
-import { Box, Button, Flex, Text, VStack } from '@chakra-ui/react';
-import { Icon } from '@chakra-ui/react';
-import { FiCheckCircle } from 'react-icons/fi';
+import { Box, Button, Flex, Icon, Text, VStack } from '@chakra-ui/react';
+import { FiAlertCircle } from 'react-icons/fi';
 
-interface CancelCallSuccessModalProps {
+interface CallCancelledNotificationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  supportingText?: string;
+  cancelledByName: string;
 }
 
-export function CancelCallSuccessModal({
+export function CallCancelledNotificationModal({
   isOpen,
   onClose,
-  supportingText = "We've notified your volunteer about the cancellation.",
-}: CancelCallSuccessModalProps) {
+  cancelledByName,
+}: CallCancelledNotificationModalProps) {
   if (!isOpen) {
     return null;
   }
@@ -29,7 +28,7 @@ export function CancelCallSuccessModal({
       display="flex"
       alignItems="center"
       justifyContent="center"
-      zIndex={1000}
+      zIndex={1200}
     >
       <Box
         bg="white"
@@ -39,23 +38,22 @@ export function CancelCallSuccessModal({
         w="90%"
         boxShadow="0px 8px 8px -4px rgba(10, 13, 18, 0.03), 0px 20px 24px -4px rgba(10, 13, 18, 0.08)"
       >
-        <VStack align="center" gap={5} alignSelf="stretch">
-          {/* Success Icon */}
+        <VStack align="center" gap={5}>
+          {/* Error Icon */}
           <Box
             w="48px"
             h="48px"
             borderRadius="full"
-            bg="#D1FADF"
+            bg="#FEE4E2"
             border="8px solid"
-            borderColor="#ECFDF3"
+            borderColor="#FEF3F2"
             display="flex"
             alignItems="center"
             justifyContent="center"
           >
-            <Icon as={FiCheckCircle} boxSize={6} color="#039855" />
+            <Icon as={FiAlertCircle} boxSize={6} color="#D92D20" />
           </Box>
 
-          {/* Text Content */}
           <VStack align="center" gap={2} alignSelf="stretch">
             <Text
               fontSize="20px"
@@ -65,44 +63,38 @@ export function CancelCallSuccessModal({
               lineHeight="1.4em"
               textAlign="center"
             >
-              Your call is cancelled
+              Call Cancelled
             </Text>
             <Text
               fontSize="16px"
               fontWeight={400}
               color="#535862"
               fontFamily="'Open Sans', sans-serif"
-              lineHeight="1.36181640625em"
+              lineHeight="1.36em"
               textAlign="center"
             >
-              {supportingText}
+              {cancelledByName} has cancelled the scheduled call. No further action is required on
+              your end.
             </Text>
           </VStack>
 
-          {/* Action Button */}
-          <Flex alignSelf="stretch" w="100%">
-            <Button
-              flex={1}
-              bg="#056067"
-              color="white"
-              fontWeight={600}
-              fontSize="16px"
-              fontFamily="'Open Sans', sans-serif"
-              lineHeight="1.5em"
-              px={4.5}
-              py={2.5}
-              borderRadius="8px"
-              onClick={onClose}
-              _hover={{
-                bg: '#044d52',
-              }}
-              _active={{
-                bg: '#033a3e',
-              }}
-            >
-              Okay!
-            </Button>
-          </Flex>
+          <Button
+            w="100%"
+            bg="#056067"
+            color="white"
+            fontWeight={600}
+            fontSize="16px"
+            fontFamily="'Open Sans', sans-serif"
+            lineHeight="1.5em"
+            px={4.5}
+            py={2.5}
+            borderRadius="8px"
+            onClick={onClose}
+            _hover={{ bg: '#044d52' }}
+            _active={{ bg: '#033a3e' }}
+          >
+            Okay
+          </Button>
         </VStack>
       </Box>
     </Box>

@@ -540,8 +540,7 @@ class MatchService:
                 # Log error but don't fail the cancellation
                 self.logger.error(f"Failed to send participant cancelled email for match {match_id}: {e}")
 
-            # Soft-delete the match when cancelled (cleans up time blocks and sets deleted_at)
-            self._delete_match(match)
+            self._clear_confirmed_time(match)
 
             self.db.flush()
             self.db.commit()
@@ -671,7 +670,6 @@ class MatchService:
                 .filter(
                     Match.participant_id == participant_id,
                     Match.deleted_at.is_(None),
-                    ~Match.match_status.has(MatchStatus.name == "awaiting_volunteer_acceptance"),
                 )
                 .order_by(Match.created_at.desc())
                 .all()
@@ -745,6 +743,8 @@ class MatchService:
                     joinedload(Match.participant).joinedload(User.user_data).joinedload(UserData.loved_one_treatments),
                     joinedload(Match.participant).joinedload(User.user_data).joinedload(UserData.loved_one_experiences),
                     joinedload(Match.match_status),
+                    joinedload(Match.suggested_time_blocks),
+                    joinedload(Match.confirmed_time),
                 )
                 .filter(Match.volunteer_id == volunteer_id, Match.deleted_at.is_(None))
                 .order_by(Match.created_at.desc())
@@ -783,8 +783,9 @@ class MatchService:
             if acting_volunteer_id and match.volunteer_id != acting_volunteer_id:
                 raise HTTPException(status_code=403, detail="Cannot modify another volunteer's match")
 
-            # Check current status
-            if not match.match_status or match.match_status.name != "awaiting_volunteer_acceptance":
+            # Check current status — allow both new matches and previously-cancelled matches to be re-scheduled
+            allowed_statuses = {"awaiting_volunteer_acceptance", "cancelled_by_volunteer", "cancelled_by_participant"}
+            if not match.match_status or match.match_status.name not in allowed_statuses:
                 raise HTTPException(
                     400,
                     f"Match is not awaiting volunteer acceptance. Current status: {match.match_status.name if match.match_status else 'unknown'}",
@@ -853,6 +854,116 @@ class MatchService:
             self.logger.error(f"Error accepting match {match_id} for volunteer: {exc}")
             raise HTTPException(status_code=500, detail="Failed to accept match")
 
+    async def volunteer_accept_requested_times(
+        self,
+        match_id: int,
+        time_block_id: int,
+        acting_volunteer_id: Optional[UUID] = None,
+    ) -> MatchDetailForVolunteerResponse:
+        """Volunteer confirms one of the participant's requested time blocks, scheduling the call."""
+        try:
+            match: Match | None = (
+                self.db.query(Match)
+                .options(
+                    joinedload(Match.volunteer).joinedload(User.user_data),
+                    joinedload(Match.participant).joinedload(User.user_data),
+                    joinedload(Match.suggested_time_blocks),
+                    joinedload(Match.match_status),
+                )
+                .filter(Match.id == match_id, Match.deleted_at.is_(None))
+                .first()
+            )
+            if not match:
+                raise HTTPException(404, f"Match {match_id} not found")
+
+            if acting_volunteer_id and match.volunteer_id != acting_volunteer_id:
+                raise HTTPException(status_code=403, detail="Cannot modify another volunteer's match")
+
+            if not match.match_status or match.match_status.name != "requesting_new_times":
+                raise HTTPException(
+                    400,
+                    f"Match is not in requesting_new_times status. Current: {match.match_status.name if match.match_status else 'unknown'}",
+                )
+
+            block = self.db.get(TimeBlock, time_block_id)
+            if not block:
+                raise HTTPException(404, f"TimeBlock {time_block_id} not found")
+
+            if block not in match.suggested_time_blocks:
+                raise HTTPException(400, "Selected time block is not among the requested times for this match")
+
+            match.chosen_time_block_id = block.id
+            match.confirmed_time = block
+
+            confirmed_status = self.db.query(MatchStatus).filter_by(name="confirmed").first()
+            if not confirmed_status:
+                raise HTTPException(500, "Match status 'confirmed' not configured")
+            match.match_status = confirmed_status
+
+            self.db.flush()
+            self.db.commit()
+            self.db.refresh(match)
+
+            return self._build_match_detail_for_volunteer(match)
+        except HTTPException:
+            self.db.rollback()
+            raise
+        except Exception as exc:
+            self.db.rollback()
+            self.logger.error(f"Error accepting requested times for match {match_id}: {exc}")
+            raise HTTPException(status_code=500, detail="Failed to accept requested times")
+
+    async def volunteer_decline_requested_times(
+        self,
+        match_id: int,
+        acting_volunteer_id: Optional[UUID] = None,
+    ) -> MatchDetailForVolunteerResponse:
+        """Volunteer declines all requested times — soft-deletes the match so it can't be rescheduled."""
+        try:
+            match: Match | None = (
+                self.db.query(Match)
+                .options(
+                    joinedload(Match.volunteer),
+                    joinedload(Match.participant).joinedload(User.user_data),
+                    joinedload(Match.suggested_time_blocks),
+                    joinedload(Match.match_status),
+                )
+                .filter(Match.id == match_id, Match.deleted_at.is_(None))
+                .first()
+            )
+            if not match:
+                raise HTTPException(404, f"Match {match_id} not found")
+
+            if acting_volunteer_id and match.volunteer_id != acting_volunteer_id:
+                raise HTTPException(status_code=403, detail="Cannot modify another volunteer's match")
+
+            if not match.match_status or match.match_status.name != "requesting_new_times":
+                raise HTTPException(
+                    400,
+                    f"Match is not in requesting_new_times status. Current: {match.match_status.name if match.match_status else 'unknown'}",
+                )
+
+            # Build the response before soft-deleting
+            response = self._build_match_detail_for_volunteer(match)
+
+            # Set status to cancelled and soft-delete so it disappears from both dashboards
+            cancelled_status = self.db.query(MatchStatus).filter_by(name="cancelled_by_volunteer").first()
+            if cancelled_status:
+                match.match_status = cancelled_status
+            self._delete_match(match)
+
+            self.db.flush()
+            self.db.commit()
+
+            return response
+        except HTTPException:
+            self.db.rollback()
+            raise
+        except Exception as exc:
+            self.db.rollback()
+            self.logger.error(f"Error declining requested times for match {match_id}: {exc}")
+            raise HTTPException(status_code=500, detail="Failed to decline requested times")
+
     def _build_match_detail_for_volunteer(self, match: Match) -> MatchDetailForVolunteerResponse:
         """Build match detail response for volunteer view (includes participant info)."""
         participant = match.participant
@@ -912,12 +1023,26 @@ class MatchService:
 
         match_status_name = match.match_status.name if match.match_status else ""
 
+        suggested_blocks = [
+            TimeBlockEntity(id=tb.id, start_time=tb.start_time)
+            for tb in (match.suggested_time_blocks or [])
+        ]
+
+        chosen_block = None
+        if match.confirmed_time:
+            chosen_block = TimeBlockEntity(
+                id=match.confirmed_time.id,
+                start_time=match.confirmed_time.start_time,
+            )
+
         return MatchDetailForVolunteerResponse(
             id=match.id,
             participant_id=match.participant_id,
             volunteer_id=match.volunteer_id,
             participant=participant_summary,
             match_status=match_status_name,
+            chosen_time_block=chosen_block,
+            suggested_time_blocks=suggested_blocks,
             created_at=match.created_at,
             updated_at=match.updated_at,
         )
