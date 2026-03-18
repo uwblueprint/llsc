@@ -29,6 +29,7 @@ from app.models.User import FormStatus
 from app.services.implementations.intake_form_processor import IntakeFormProcessor
 from app.services.implementations.volunteer_data_service import VolunteerDataService
 from app.utilities.constants import LOGGER_NAME
+from app.utilities.ses_email_service import SESEmailService
 
 
 class FormProcessor:
@@ -91,11 +92,31 @@ class FormProcessor:
             elif user.role and user.role.name == "volunteer":
                 is_volunteer = True
 
-        # Update form_status to next step
+        # Update form_status to next step and send approval email
         if is_participant:
             user.form_status = FormStatus.RANKING_TODO
+            try:
+                language = user.language.value if user.language else "en"
+                ses_service = SESEmailService()
+                ses_service.send_intake_approved_participant_email(
+                    to_email=user.email,
+                    first_name=user.first_name,
+                    language=language,
+                )
+            except Exception as e:
+                self.logger.error(f"Failed to send intake approved email to participant {user.id}: {e}")
         elif is_volunteer:
             user.form_status = FormStatus.SECONDARY_APPLICATION_TODO
+            try:
+                language = user.language.value if user.language else "en"
+                ses_service = SESEmailService()
+                ses_service.send_intake_approved_volunteer_email(
+                    to_email=user.email,
+                    first_name=user.first_name,
+                    language=language,
+                )
+            except Exception as e:
+                self.logger.error(f"Failed to send intake approved email to volunteer {user.id}: {e}")
 
     def _process_ranking_form(self, submission: FormSubmission, user: User) -> None:
         """Process ranking form - creates RankingPreference records."""
@@ -151,6 +172,18 @@ class FormProcessor:
                 # Log error but don't fail the ranking form approval
                 self.logger.error(f"Failed to create MATCHING task for user {user.id}: {str(e)}")
 
+            # Send ranking approved email to participant
+            try:
+                language = user.language.value if user.language else "en"
+                ses_service = SESEmailService()
+                ses_service.send_ranking_approved_email(
+                    to_email=user.email,
+                    first_name=user.first_name,
+                    language=language,
+                )
+            except Exception as e:
+                self.logger.error(f"Failed to send ranking approved email to user {user.id}: {e}")
+
     def _process_secondary_form(self, submission: FormSubmission, user: User) -> None:
         """Process secondary application form - creates VolunteerData."""
         service = VolunteerDataService(self.db)
@@ -162,6 +195,18 @@ class FormProcessor:
         # Update form_status to completed after secondary application is approved
         if user.form_status in (FormStatus.SECONDARY_APPLICATION_TODO, FormStatus.SECONDARY_APPLICATION_SUBMITTED):
             user.form_status = FormStatus.COMPLETED
+
+            # Send secondary application approved email to volunteer
+            try:
+                language = user.language.value if user.language else "en"
+                ses_service = SESEmailService()
+                ses_service.send_secondary_app_approved_email(
+                    to_email=user.email,
+                    first_name=user.first_name,
+                    language=language,
+                )
+            except Exception as e:
+                self.logger.error(f"Failed to send secondary app approved email to volunteer {user.id}: {e}")
 
     def _process_role_change_form(self, submission: FormSubmission, user: User, form_type: str) -> None:
         """

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.middleware.auth import has_roles
+from app.models import User
 from app.schemas.user import UserRole
 from app.schemas.volunteer_data import (
     VolunteerDataCreateRequest,
@@ -16,6 +17,7 @@ from app.services.implementations.user_service import UserService
 from app.services.implementations.volunteer_data_service import VolunteerDataService
 from app.utilities.db_utils import get_db
 from app.utilities.service_utils import get_user_service, get_volunteer_data_service
+from app.utilities.ses_email_service import SESEmailService
 from app.utilities.task_utils import create_volunteer_app_review_task
 
 router = APIRouter(
@@ -55,6 +57,21 @@ async def submit_volunteer_data(
 
         # Create task for admin review
         create_volunteer_app_review_task(db, str(user_id), "secondary")
+
+        # Send secondary application confirmation email
+        try:
+            user = db.query(User).filter(User.id == user_id).first()
+            if user and user.email:
+                language = user.language.value if user.language else "en"
+                ses_service = SESEmailService()
+                ses_service.send_secondary_app_confirmation_email(
+                    to_email=user.email,
+                    first_name=user.first_name,
+                    language=language,
+                )
+        except Exception:
+            # Log error but don't fail the request
+            pass
 
         return result
     except HTTPException as http_ex:

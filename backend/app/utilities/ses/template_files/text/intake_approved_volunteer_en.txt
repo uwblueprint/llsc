@@ -1,0 +1,15 @@
+Hi {{first_name}},
+
+Good news - your intake form has been approved and you can now submit your secondary application. Please complete this so we can finalize your volunteer profile.
+
+Submit secondary application: {{secondary_app_url}}
+
+---
+
+Stay informed. Connect with us today!
+
+Copyright © The Leukemia & Lymphoma Society of Canada.
+All rights reserved.
+Charitable registration: #10762 3654 RR0001
+
+NOTICE: Please do not reply to this email. It is automated from an unmonitored email address and will not be received or responded to. Please contact FirstConnection@bloodcancers.ca for any questions or concerns related to the First Connection Peer Support Program.

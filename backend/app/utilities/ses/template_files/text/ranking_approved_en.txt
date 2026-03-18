@@ -1,0 +1,15 @@
+Hi {{first_name}},
+
+Great news - your matching preferences have been approved and you are now in our matching pool. Our team will be working on finding the best volunteer match for you. We will notify you as soon as your matches are ready.
+
+For any inquiries, please reach us at FirstConnections@bloodcancers.ca.
+
+---
+
+Stay informed. Connect with us today!
+
+Copyright © The Leukemia & Lymphoma Society of Canada.
+All rights reserved.
+Charitable registration: #10762 3654 RR0001
+
+NOTICE: Please do not reply to this email. It is automated from an unmonitored email address and will not be received or responded to. Please contact FirstConnection@bloodcancers.ca for any questions or concerns related to the First Connection Peer Support Program.
