@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, Heading, Button, VStack, Text } from '@chakra-ui/react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Input } from '@chakra-ui/react';
 import { InputGroup } from '@/components/ui/input-group';
 import { FormField } from '@/components/ui/form-field';
@@ -10,6 +10,7 @@ import { StepIndicator } from '@/components/ui';
 import {
   PROVINCES,
   VALIDATION,
+  validateIntakeDdMmYyyy,
   ExperienceData,
   PersonalData,
   getIntakeFormTitle,
@@ -17,6 +18,7 @@ import {
 } from '@/constants/form';
 import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
 import { Checkbox } from '@/components/ui/checkbox';
+import { FormErrorBox } from '@/components/ui/form-error-box';
 
 interface PersonalInfoFormData {
   hasBloodCancer: 'yes' | 'no' | '';
@@ -55,6 +57,8 @@ export function PersonalInfoForm({
   const {
     control,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<PersonalInfoFormData>({
     defaultValues: {
@@ -82,11 +86,45 @@ export function PersonalInfoForm({
   });
 
   const isVolunteerFlow = formType === 'volunteer' || formType === 'become_volunteer';
+  const isParticipantFlow = formType === 'participant' || formType === 'become_participant';
+  /** Participant + volunteer intakes: must answer yes to at least one of the two experience questions */
+  const requiresBloodCancerOrCaregiver = isVolunteerFlow || isParticipantFlow;
+
+  const watchedHasBloodCancer = useWatch({ control, name: 'hasBloodCancer' });
+  const watchedCaringForSomeone = useWatch({ control, name: 'caringForSomeone' });
+  const hasNoBloodCancerAndNoCaregiver =
+    requiresBloodCancerOrCaregiver &&
+    watchedHasBloodCancer === 'no' &&
+    watchedCaringForSomeone === 'no';
+
+  // Manual setError('eligibilityCriteria') for "both no" stays on the field and blocks handleSubmit
+  // until cleared — only clear when user leaves the both-no state (don’t wipe volunteer checkbox errors).
+  const wasBothNoRef = useRef(false);
+  useEffect(() => {
+    if (wasBothNoRef.current && !hasNoBloodCancerAndNoCaregiver) {
+      clearErrors('eligibilityCriteria');
+    }
+    wasBothNoRef.current = !!hasNoBloodCancerAndNoCaregiver;
+  }, [hasNoBloodCancerAndNoCaregiver, clearErrors]);
 
   const onFormSubmit = (data: PersonalInfoFormData) => {
     // Validate required experience fields
     if (!data.hasBloodCancer || !data.caringForSomeone) {
       return; // Form validation will show errors
+    }
+
+    // Eligibility: must have blood cancer or care for someone with blood cancer (participant + volunteer)
+    if (
+      requiresBloodCancerOrCaregiver &&
+      data.hasBloodCancer === 'no' &&
+      data.caringForSomeone === 'no'
+    ) {
+      setError('eligibilityCriteria', {
+        type: 'manual',
+        message:
+          'You must either have blood cancer or care for someone with blood cancer to be eligible for the First Connection Peer Support Program',
+      });
+      return;
     }
 
     // Validate all eligibility criteria are checked (only for volunteers)
@@ -138,6 +176,12 @@ export function PersonalInfoForm({
 
       {/* Experience Type Section */}
       <ExperienceTypeSection control={control} errors={errors} />
+
+      {hasNoBloodCancerAndNoCaregiver && (
+        <Box mt={4} mb={2}>
+          <FormErrorBox message="You must either have blood cancer or care for someone with blood cancer to be eligible for the First Connection Peer Support Program" />
+        </Box>
+      )}
 
       {/* Personal Information Section */}
       <Box mb={10}>
@@ -226,7 +270,10 @@ export function PersonalInfoForm({
               <Controller
                 name="dateOfBirth"
                 control={control}
-                rules={{ required: 'Date of birth is required' }}
+                rules={{
+                  required: 'Date of birth is required',
+                  validate: (v) => validateIntakeDdMmYyyy(v, { disallowFuture: true }),
+                }}
                 render={({ field }) => (
                   <InputGroup>
                     <Input
@@ -545,10 +592,14 @@ export function PersonalInfoForm({
                     Comfortable sharing your personal blood cancer experience with others
                   </Text>
                 </Checkbox>
-                {errors.eligibilityCriteria && (
-                  <Text color="red.500" fontSize="12px" mt={1}>
-                    {errors.eligibilityCriteria.message}
-                  </Text>
+                {errors.eligibilityCriteria && !hasNoBloodCancerAndNoCaregiver && (
+                  <Box mt={3}>
+                    <FormErrorBox
+                      message={
+                        errors.eligibilityCriteria.message || 'Please review eligibility criteria'
+                      }
+                    />
+                  </Box>
                 )}
               </VStack>
             )}
