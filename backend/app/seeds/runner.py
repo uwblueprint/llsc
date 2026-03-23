@@ -11,6 +11,16 @@ from sqlalchemy.orm import sessionmaker
 
 from app.utilities.constants import LOGGER_NAME
 
+# Import all seed functions
+from .experiences import seed_experiences
+from .forms import seed_forms
+from .match_status import seed_match_status
+from .qualities import seed_qualities
+from .ranking_preferences import seed_ranking_preferences
+from .roles import seed_roles
+from .treatments import seed_treatments
+from .users import seed_users
+
 
 def _sync_sequences(session) -> None:
     """
@@ -25,16 +35,6 @@ def _sync_sequences(session) -> None:
                 f"COALESCE((SELECT MAX(id) FROM {table}), 1))"
             )
         )
-
-# Import all seed functions
-from .experiences import seed_experiences
-from .forms import seed_forms
-from .match_status import seed_match_status
-from .qualities import seed_qualities
-from .ranking_preferences import seed_ranking_preferences
-from .roles import seed_roles
-from .treatments import seed_treatments
-from .users import seed_users
 
 # Load environment variables
 load_dotenv()
