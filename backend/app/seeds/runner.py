@@ -6,10 +6,25 @@ import os
 import sys
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from app.utilities.constants import LOGGER_NAME
+
+
+def _sync_sequences(session) -> None:
+    """
+    Sync PostgreSQL sequences for tables that use explicit IDs during seeding.
+    Without this, INSERTs without an explicit id reuse low sequence values and
+    hit primary key conflicts.
+    """
+    for table in ["treatments", "experiences"]:
+        session.execute(
+            text(
+                f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), "
+                f"COALESCE((SELECT MAX(id) FROM {table}), 1))"
+            )
+        )
 
 # Import all seed functions
 from .experiences import seed_experiences
@@ -90,6 +105,11 @@ def seed_database(verbose: bool = True) -> None:
                 print(f"❌ Error seeding {name}: {str(e)}")
                 log.error(f"Error seeding {name}: {str(e)}")
                 raise
+
+        # Sync sequences for tables with explicit seed IDs (treatments, experiences)
+        # so new INSERTs get correct next id values
+        _sync_sequences(session)
+        session.commit()
 
         if verbose:
             print("\n🎉 Database seeding completed successfully!")
