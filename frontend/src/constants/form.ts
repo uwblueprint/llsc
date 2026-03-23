@@ -189,6 +189,58 @@ export const VALIDATION = {
   DATE: /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/,
 } as const;
 
+/**
+ * Validates DD/MM/YYYY: format, real calendar date (incl. leap years), and optional "not in the future".
+ * For react-hook-form `validate`, return `true` if valid or a string error message.
+ */
+export function validateIntakeDdMmYyyy(
+  value: string,
+  options?: { disallowFuture?: boolean },
+): true | string {
+  const trimmed = (value ?? '').trim();
+  if (!trimmed) {
+    return true;
+  }
+
+  if (!VALIDATION.DATE.test(trimmed)) {
+    return 'Please enter a valid date in DD/MM/YYYY format';
+  }
+
+  const [dd, mm, yyyy] = trimmed.split('/');
+  const day = parseInt(dd, 10);
+  const month = parseInt(mm, 10);
+  const year = parseInt(yyyy, 10);
+
+  if (year < 1000 || year > 9999) {
+    return 'Please enter a valid year';
+  }
+
+  const constructed = new Date(year, month - 1, day);
+  if (
+    constructed.getFullYear() !== year ||
+    constructed.getMonth() !== month - 1 ||
+    constructed.getDate() !== day
+  ) {
+    return 'Please enter a valid calendar date (check day and month)';
+  }
+
+  if (options?.disallowFuture !== false) {
+    const now = new Date();
+    const todayY = now.getFullYear();
+    const todayM = now.getMonth() + 1;
+    const todayD = now.getDate();
+    if (
+      year > todayY ||
+      (year === todayY && month > todayM) ||
+      (year === todayY && month === todayM && day > todayD)
+    ) {
+      return 'Date cannot be in the future';
+    }
+  }
+
+  return true;
+}
+
 // Comprehensive intake form data structure
 export type IntakeFormType =
   | 'participant'

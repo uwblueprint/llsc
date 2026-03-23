@@ -6,7 +6,11 @@ import { InputGroup } from '@/components/ui/input-group';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
 import { ResponsiveFieldGroup } from '@/components/layout';
 import { StepIndicator } from '@/components/ui';
-import { VALIDATION, getIntakeFormTitle, IntakeFormType } from '@/constants/form';
+import {
+  validateIntakeDdMmYyyy,
+  getIntakeFormTitle,
+  IntakeFormType,
+} from '@/constants/form';
 import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';
@@ -285,10 +289,7 @@ export function LovedOneForm({ formType = 'participant', onSubmit }: LovedOneFor
                 control={control}
                 rules={{
                   required: 'Date of diagnosis is required',
-                  pattern: {
-                    value: VALIDATION.DATE,
-                    message: 'Please enter a valid date (DD/MM/YYYY)',
-                  },
+                  validate: (v) => validateIntakeDdMmYyyy(v, { disallowFuture: true }),
                 }}
                 render={({ field }) => (
                   <InputGroup>
