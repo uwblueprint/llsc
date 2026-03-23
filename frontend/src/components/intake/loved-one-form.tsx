@@ -6,11 +6,7 @@ import { InputGroup } from '@/components/ui/input-group';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
 import { ResponsiveFieldGroup } from '@/components/layout';
 import { StepIndicator } from '@/components/ui';
-import {
-  validateIntakeDdMmYyyy,
-  getIntakeFormTitle,
-  IntakeFormType,
-} from '@/constants/form';
+import { validateIntakeDdMmYyyy, getIntakeFormTitle, IntakeFormType } from '@/constants/form';
 import { IntakeExperience, IntakeTreatment } from '@/types/intakeTypes';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { SingleSelectDropdown } from '@/components/ui/single-select-dropdown';

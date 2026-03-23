@@ -3,11 +3,7 @@ import { Box, Text, VStack } from '@chakra-ui/react';
 
 const WARNING_ICON = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M10 0L20 18H0L10 0Z"
-      fill="#C53030"
-      fillOpacity={1}
-    />
+    <path d="M10 0L20 18H0L10 0Z" fill="#C53030" fillOpacity={1} />
     <text x="10" y="14" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">
       !
     </text>

@@ -88,8 +88,7 @@ export function PersonalInfoForm({
   const isVolunteerFlow = formType === 'volunteer' || formType === 'become_volunteer';
   const isParticipantFlow = formType === 'participant' || formType === 'become_participant';
   /** Participant + volunteer intakes: must answer yes to at least one of the two experience questions */
-  const requiresBloodCancerOrCaregiver =
-    isVolunteerFlow || isParticipantFlow;
+  const requiresBloodCancerOrCaregiver = isVolunteerFlow || isParticipantFlow;
 
   const watchedHasBloodCancer = useWatch({ control, name: 'hasBloodCancer' });
   const watchedCaringForSomeone = useWatch({ control, name: 'caringForSomeone' });
@@ -180,9 +179,7 @@ export function PersonalInfoForm({
 
       {hasNoBloodCancerAndNoCaregiver && (
         <Box mt={4} mb={2}>
-          <FormErrorBox
-            message="You must either have blood cancer or care for someone with blood cancer to be eligible for the First Connection Peer Support Program"
-          />
+          <FormErrorBox message="You must either have blood cancer or care for someone with blood cancer to be eligible for the First Connection Peer Support Program" />
         </Box>
       )}
 
@@ -598,7 +595,9 @@ export function PersonalInfoForm({
                 {errors.eligibilityCriteria && !hasNoBloodCancerAndNoCaregiver && (
                   <Box mt={3}>
                     <FormErrorBox
-                      message={errors.eligibilityCriteria.message || 'Please review eligibility criteria'}
+                      message={
+                        errors.eligibilityCriteria.message || 'Please review eligibility criteria'
+                      }
                     />
                   </Box>
                 )}
