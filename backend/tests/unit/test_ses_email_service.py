@@ -178,9 +178,7 @@ class TestSendVerificationEmail:
         )
 
     def test_english_without_name(self, ses_service):
-        ses_service.send_verification_email(
-            "to@example.com", "https://example.com/verify?token=abc", language="en"
-        )
+        ses_service.send_verification_email("to@example.com", "https://example.com/verify?token=abc", language="en")
         assert _render_subject(ses_service._mock_client) == (
             "Confirm your email - First Connection Peer Support Program"
         )
@@ -191,17 +189,13 @@ class TestSendVerificationEmail:
         )
         assert _get_template_name(ses_service._mock_client) == "EmailVerificationFr"
         assert _render_subject(ses_service._mock_client) == (
-            "Marie, confirmation de l'adresse courriel "
-            "\u2013 Programme de soutien par les pairs Premier contact"
+            "Marie, confirmation de l'adresse courriel \u2013 Programme de soutien par les pairs Premier contact"
         )
 
     def test_french_without_name(self, ses_service):
-        ses_service.send_verification_email(
-            "to@example.com", "https://example.com/verify?token=abc", language="fr"
-        )
+        ses_service.send_verification_email("to@example.com", "https://example.com/verify?token=abc", language="fr")
         assert _render_subject(ses_service._mock_client) == (
-            "Confirmation de l'adresse courriel "
-            "\u2013 Programme de soutien par les pairs Premier contact"
+            "Confirmation de l'adresse courriel \u2013 Programme de soutien par les pairs Premier contact"
         )
 
 
@@ -222,9 +216,7 @@ class TestSendPasswordResetEmail:
         )
 
     def test_french(self, ses_service):
-        ses_service.send_password_reset_email(
-            "to@example.com", "https://example.com/reset?token=abc", language="fr"
-        )
+        ses_service.send_password_reset_email("to@example.com", "https://example.com/reset?token=abc", language="fr")
         assert _get_template_name(ses_service._mock_client) == "PasswordResetFr"
 
 
@@ -265,15 +257,13 @@ class TestSendMatchesAvailableEmail:
     def test_french_with_name(self, ses_service):
         ses_service.send_matches_available_email("to@example.com", first_name="Marie", language="fr")
         assert _render_subject(ses_service._mock_client) == (
-            "Marie, nouveaux jumelages "
-            "\u2013 Programme de soutien par les pairs Premier contact"
+            "Marie, nouveaux jumelages \u2013 Programme de soutien par les pairs Premier contact"
         )
 
     def test_french_without_name(self, ses_service):
         ses_service.send_matches_available_email("to@example.com", language="fr")
         assert _render_subject(ses_service._mock_client) == (
-            "Nouveaux jumelages "
-            "\u2013 Programme de soutien par les pairs Premier contact"
+            "Nouveaux jumelages \u2013 Programme de soutien par les pairs Premier contact"
         )
 
     def test_default_matches_url(self, ses_service):
@@ -299,8 +289,7 @@ class TestSendCallScheduledEmail:
         assert data["first_name"] == "Yash"
         assert "/participant/dashboard" in data["scheduled_calls_url"]
         assert _render_subject(ses_service._mock_client) == (
-            "Call confirmed with Jane Doe @ March 22, 2026 10:00 AM EST "
-            "- First Connection Peer Support Program"
+            "Call confirmed with Jane Doe @ March 22, 2026 10:00 AM EST - First Connection Peer Support Program"
         )
 
     def test_french(self, ses_service):
@@ -359,8 +348,7 @@ class TestSendIntakeApprovedVolunteerEmail:
     def test_french_without_name(self, ses_service):
         ses_service.send_intake_approved_volunteer_email("to@example.com", language="fr")
         assert _render_subject(ses_service._mock_client) == (
-            "Votre demande compl\u00e9mentaire est pr\u00eate "
-            "\u2013 Programme de soutien par les pairs Premier contact"
+            "Votre demande compl\u00e9mentaire est pr\u00eate \u2013 Programme de soutien par les pairs Premier contact"
         )
 
 
@@ -403,8 +391,7 @@ class TestSendRankingApprovedEmail:
     def test_french_without_name(self, ses_service):
         ses_service.send_ranking_approved_email("to@example.com", language="fr")
         assert _render_subject(ses_service._mock_client) == (
-            "Vous \u00eates pr\u00eat(e) pour le jumelage "
-            "\u2013 Programme de soutien par les pairs Premier contact"
+            "Vous \u00eates pr\u00eat(e) pour le jumelage \u2013 Programme de soutien par les pairs Premier contact"
         )
 
 
@@ -472,8 +459,7 @@ class TestSendVolunteerAcceptedNewTimesEmail:
         assert data["first_name"] == "Yash"
         assert _get_template_name(ses_service._mock_client) == "VolunteerAcceptedNewTimesEn"
         assert _render_subject(ses_service._mock_client) == (
-            "Jane Doe confirmed your new time @ March 22, 2026 10:00 AM EST "
-            "- First Connection Peer Support Program"
+            "Jane Doe confirmed your new time @ March 22, 2026 10:00 AM EST - First Connection Peer Support Program"
         )
 
 

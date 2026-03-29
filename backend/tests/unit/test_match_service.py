@@ -1637,6 +1637,7 @@ class TestUpdateMatch:
         assert exc_info.value.status_code == 404
         assert "Match" in exc_info.value.detail
 
+
 # ========== VOLUNTEER ACCEPT/DECLINE REQUESTED TIMES TESTS ==========
 
 
@@ -1689,9 +1690,7 @@ class TestVolunteerAcceptRequestedTimes:
             raise
 
     @pytest.mark.asyncio
-    async def test_accept_requested_times_wrong_volunteer_403(
-        self, db_session, requesting_match, another_volunteer
-    ):
+    async def test_accept_requested_times_wrong_volunteer_403(self, db_session, requesting_match, another_volunteer):
         """403 when different volunteer tries to accept"""
         match_service = MatchService(db_session)
         time_block_id = requesting_match.suggested_time_blocks[0].id
@@ -1722,9 +1721,7 @@ class TestVolunteerAcceptRequestedTimes:
         try:
             match_service = MatchService(db_session)
 
-            other_block = TimeBlock(
-                start_time=datetime.now(timezone.utc) + timedelta(days=5)
-            )
+            other_block = TimeBlock(start_time=datetime.now(timezone.utc) + timedelta(days=5))
             db_session.add(other_block)
             db_session.commit()
             db_session.refresh(other_block)
@@ -1749,9 +1746,7 @@ class TestVolunteerAcceptRequestedTimes:
         match_service = MatchService(db_session)
 
         with pytest.raises(HTTPException) as exc_info:
-            await match_service.volunteer_accept_requested_times(
-                99999, 1, acting_volunteer_id=volunteer_user.id
-            )
+            await match_service.volunteer_accept_requested_times(99999, 1, acting_volunteer_id=volunteer_user.id)
 
         assert exc_info.value.status_code == 404
 
@@ -1800,9 +1795,7 @@ class TestVolunteerDeclineRequestedTimes:
             raise
 
     @pytest.mark.asyncio
-    async def test_decline_requested_times_wrong_volunteer_403(
-        self, db_session, requesting_match, another_volunteer
-    ):
+    async def test_decline_requested_times_wrong_volunteer_403(self, db_session, requesting_match, another_volunteer):
         """403 when different volunteer tries to decline"""
         match_service = MatchService(db_session)
 
@@ -1831,12 +1824,9 @@ class TestVolunteerDeclineRequestedTimes:
         match_service = MatchService(db_session)
 
         with pytest.raises(HTTPException) as exc_info:
-            await match_service.volunteer_decline_requested_times(
-                99999, acting_volunteer_id=volunteer_user.id
-            )
+            await match_service.volunteer_decline_requested_times(99999, acting_volunteer_id=volunteer_user.id)
 
         assert exc_info.value.status_code == 404
-
 
     @pytest.mark.asyncio
     async def test_update_match_reassigns_volunteer_resets_suggested_times(

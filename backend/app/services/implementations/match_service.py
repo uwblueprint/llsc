@@ -1101,8 +1101,7 @@ class MatchService:
         match_status_name = match.match_status.name if match.match_status else ""
 
         suggested_blocks = [
-            TimeBlockEntity(id=tb.id, start_time=tb.start_time)
-            for tb in (match.suggested_time_blocks or [])
+            TimeBlockEntity(id=tb.id, start_time=tb.start_time) for tb in (match.suggested_time_blocks or [])
         ]
 
         chosen_block = None
