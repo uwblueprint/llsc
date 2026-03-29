@@ -39,6 +39,28 @@ class SESEmailService:
                 self.logger.error(f"Failed to initialize SES client: {str(e)}")
                 self.ses_client = None
 
+    def _normalize_first_name(self, first_name: str | None) -> str | None:
+        if not first_name:
+            return None
+        cleaned_name = first_name.strip()
+        return cleaned_name if cleaned_name else None
+
+    def _build_name_template_data(
+        self,
+        first_name: str | None,
+        subject_first_word: str | None = None,
+    ) -> Dict[str, str]:
+        normalized_name = self._normalize_first_name(first_name)
+        template_data = {
+            "first_name": normalized_name if normalized_name else "there",
+            "subject_prefix": f"{normalized_name}, " if normalized_name else "",
+        }
+        if subject_first_word:
+            word = subject_first_word.strip()
+            if word:
+                template_data["subject_first_word"] = word if normalized_name else word[0].upper() + word[1:]
+        return template_data
+
     def verify_email_address(self, email: str) -> bool:
         """
         Verify an email address in SES (for sandbox mode)
@@ -137,7 +159,13 @@ class SESEmailService:
         # Use appropriate source email based on language
         source_email = self.source_email_en if language == "en" else self.source_email_fr
 
-        template_data = {"verification_link": verification_link, "first_name": first_name if first_name else "there"}
+        template_data = {
+            **self._build_name_template_data(
+                first_name,
+                subject_first_word="confirm" if language == "en" else "confirmation",
+            ),
+            "verification_link": verification_link,
+        }
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
@@ -164,7 +192,10 @@ class SESEmailService:
         template_name = "PasswordResetEn" if language == "en" else "PasswordResetFr"
         source_email = self.source_email_en if language == "en" else self.source_email_fr
 
-        template_data = {"reset_link": reset_link, "first_name": first_name if first_name else "there"}
+        template_data = {
+            **self._build_name_template_data(first_name),
+            "reset_link": reset_link,
+        }
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
@@ -188,7 +219,7 @@ class SESEmailService:
         template_name = "IntakeFormConfirmationEn" if language == "en" else "IntakeFormConfirmationFr"
         source_email = self.source_email_en if language == "en" else self.source_email_fr
 
-        template_data = {"first_name": first_name if first_name else "there"}
+        template_data = self._build_name_template_data(first_name)
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
@@ -219,7 +250,13 @@ class SESEmailService:
         if not matches_url:
             matches_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard"
 
-        template_data = {"first_name": first_name if first_name else "there", "matches_url": matches_url}
+        template_data = {
+            **self._build_name_template_data(
+                first_name,
+                subject_first_word="you" if language == "en" else "nouveaux",
+            ),
+            "matches_url": matches_url,
+        }
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
@@ -263,7 +300,7 @@ class SESEmailService:
             scheduled_calls_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard"
 
         template_data = {
-            "first_name": first_name if first_name else "there",
+            **self._build_name_template_data(first_name),
             "match_name": match_name,
             "date": date,
             "time": time,
@@ -307,7 +344,7 @@ class SESEmailService:
             matches_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard"
 
         template_data = {
-            "first_name": first_name if first_name else "there",
+            **self._build_name_template_data(first_name),
             "participant_name": participant_name,
             "matches_url": matches_url,
         }
@@ -354,7 +391,7 @@ class SESEmailService:
             scheduled_calls_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard"
 
         template_data = {
-            "first_name": first_name if first_name else "there",
+            **self._build_name_template_data(first_name),
             "volunteer_name": volunteer_name,
             "date": date,
             "time": time,
@@ -389,7 +426,13 @@ class SESEmailService:
         if not ranking_url:
             ranking_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/ranking"
 
-        template_data = {"first_name": first_name if first_name else "there", "ranking_url": ranking_url}
+        template_data = {
+            **self._build_name_template_data(
+                first_name,
+                subject_first_word="your" if language == "en" else "votre",
+            ),
+            "ranking_url": ranking_url,
+        }
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
@@ -418,7 +461,13 @@ class SESEmailService:
         if not secondary_app_url:
             secondary_app_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/secondary-application"
 
-        template_data = {"first_name": first_name if first_name else "there", "secondary_app_url": secondary_app_url}
+        template_data = {
+            **self._build_name_template_data(
+                first_name,
+                subject_first_word="your" if language == "en" else "votre",
+            ),
+            "secondary_app_url": secondary_app_url,
+        }
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
@@ -441,7 +490,7 @@ class SESEmailService:
         template_name = "RankingFormConfirmationEn" if language == "en" else "RankingFormConfirmationFr"
         source_email = self.source_email_en if language == "en" else self.source_email_fr
 
-        template_data = {"first_name": first_name if first_name else "there"}
+        template_data = self._build_name_template_data(first_name)
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
@@ -464,7 +513,10 @@ class SESEmailService:
         template_name = "RankingApprovedEn" if language == "en" else "RankingApprovedFr"
         source_email = self.source_email_en if language == "en" else self.source_email_fr
 
-        template_data = {"first_name": first_name if first_name else "there"}
+        template_data = self._build_name_template_data(
+            first_name,
+            subject_first_word="you're" if language == "en" else "vous",
+        )
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
@@ -489,7 +541,7 @@ class SESEmailService:
         template_name = "SecondaryAppConfirmationEn" if language == "en" else "SecondaryAppConfirmationFr"
         source_email = self.source_email_en if language == "en" else self.source_email_fr
 
-        template_data = {"first_name": first_name if first_name else "there"}
+        template_data = self._build_name_template_data(first_name)
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
@@ -518,7 +570,13 @@ class SESEmailService:
         if not dashboard_url:
             dashboard_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard"
 
-        template_data = {"first_name": first_name if first_name else "there", "dashboard_url": dashboard_url}
+        template_data = {
+            **self._build_name_template_data(
+                first_name,
+                subject_first_word="your" if language == "en" else "votre",
+            ),
+            "dashboard_url": dashboard_url,
+        }
 
         return self.send_templated_email(to_email, template_name, template_data, source_email)
 
@@ -562,7 +620,7 @@ class SESEmailService:
             dashboard_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard"
 
         template_data = {
-            "first_name": first_name if first_name else "there",
+            **self._build_name_template_data(first_name),
             "participant_name": participant_name,
             "date": date,
             "time": time,
@@ -612,7 +670,7 @@ class SESEmailService:
             request_matches_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard"
 
         template_data = {
-            "first_name": first_name if first_name else "there",
+            **self._build_name_template_data(first_name),
             "volunteer_name": volunteer_name,
             "date": date,
             "time": time,

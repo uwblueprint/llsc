@@ -7,13 +7,13 @@
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/email_verification_en.html",
-    "SubjectPart": "{{first_name}}, confirm your email - First Connection Peer Support Program",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} your email - First Connection Peer Support Program",
     "TemplateName": "EmailVerificationEn",
     "TextPart": "app/utilities/ses/template_files/text/email_verification_en.txt"
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/email_verification_fr.html",
-    "SubjectPart": "{{first_name}}, confirmation de l'adresse courriel – Programme de soutien par les pairs Premier contact",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} de l'adresse courriel – Programme de soutien par les pairs Premier contact",
     "TemplateName": "EmailVerificationFr",
     "TextPart": "app/utilities/ses/template_files/text/email_verification_fr.txt"
   },
@@ -43,13 +43,13 @@
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/matches_available_en.html",
-    "SubjectPart": "{{first_name}}, you have new matches - First Connection Peer Support Program",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} have new matches - First Connection Peer Support Program",
     "TemplateName": "MatchesAvailableEn",
     "TextPart": "app/utilities/ses/template_files/text/matches_available_en.txt"
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/matches_available_fr.html",
-    "SubjectPart": "{{first_name}}, nouveaux jumelages – Programme de soutien par les pairs Premier contact",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} jumelages – Programme de soutien par les pairs Premier contact",
     "TemplateName": "MatchesAvailableFr",
     "TextPart": "app/utilities/ses/template_files/text/matches_available_fr.txt"
   },
@@ -115,25 +115,25 @@
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/intake_approved_participant_en.html",
-    "SubjectPart": "{{first_name}}, your matching preferences form is ready - First Connection Peer Support Program",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} matching preferences form is ready - First Connection Peer Support Program",
     "TemplateName": "IntakeApprovedParticipantEn",
     "TextPart": "app/utilities/ses/template_files/text/intake_approved_participant_en.txt"
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/intake_approved_participant_fr.html",
-    "SubjectPart": "{{first_name}}, votre formulaire de préférences de jumelage est prêt – Programme de soutien par les pairs Premier contact",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} formulaire de préférences de jumelage est prêt – Programme de soutien par les pairs Premier contact",
     "TemplateName": "IntakeApprovedParticipantFr",
     "TextPart": "app/utilities/ses/template_files/text/intake_approved_participant_fr.txt"
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/intake_approved_volunteer_en.html",
-    "SubjectPart": "{{first_name}}, your secondary application is ready - First Connection Peer Support Program",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} secondary application is ready - First Connection Peer Support Program",
     "TemplateName": "IntakeApprovedVolunteerEn",
     "TextPart": "app/utilities/ses/template_files/text/intake_approved_volunteer_en.txt"
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/intake_approved_volunteer_fr.html",
-    "SubjectPart": "{{first_name}}, votre demande complémentaire est prête – Programme de soutien par les pairs Premier contact",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} demande complémentaire est prête – Programme de soutien par les pairs Premier contact",
     "TemplateName": "IntakeApprovedVolunteerFr",
     "TextPart": "app/utilities/ses/template_files/text/intake_approved_volunteer_fr.txt"
   },
@@ -151,13 +151,13 @@
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/ranking_approved_en.html",
-    "SubjectPart": "{{first_name}}, you're ready for matching - First Connection Peer Support Program",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} ready for matching - First Connection Peer Support Program",
     "TemplateName": "RankingApprovedEn",
     "TextPart": "app/utilities/ses/template_files/text/ranking_approved_en.txt"
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/ranking_approved_fr.html",
-    "SubjectPart": "{{first_name}}, vous êtes prêt(e) pour le jumelage – Programme de soutien par les pairs Premier contact",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} êtes prêt(e) pour le jumelage – Programme de soutien par les pairs Premier contact",
     "TemplateName": "RankingApprovedFr",
     "TextPart": "app/utilities/ses/template_files/text/ranking_approved_fr.txt"
   },
@@ -175,13 +175,13 @@
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/secondary_app_approved_en.html",
-    "SubjectPart": "{{first_name}}, your volunteer profile is complete - First Connection Peer Support Program",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} volunteer profile is complete - First Connection Peer Support Program",
     "TemplateName": "SecondaryAppApprovedEn",
     "TextPart": "app/utilities/ses/template_files/text/secondary_app_approved_en.txt"
   },
   {
     "HtmlPart": "app/utilities/ses/template_files/compiled/secondary_app_approved_fr.html",
-    "SubjectPart": "{{first_name}}, votre profil de bénévole est complété – Programme de soutien par les pairs Premier contact",
+    "SubjectPart": "{{subject_prefix}}{{subject_first_word}} profil de bénévole est complété – Programme de soutien par les pairs Premier contact",
     "TemplateName": "SecondaryAppApprovedFr",
     "TextPart": "app/utilities/ses/template_files/text/secondary_app_approved_fr.txt"
   }

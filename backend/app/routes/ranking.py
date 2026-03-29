@@ -15,6 +15,7 @@ from app.utilities.db_utils import get_db
 from app.utilities.service_utils import get_user_service
 from app.utilities.ses_email_service import SESEmailService
 from app.utilities.task_utils import create_volunteer_app_review_task
+from app.utilities.user_name import resolve_user_first_name
 
 
 class StaticQualityOption(BaseModel):
@@ -97,7 +98,7 @@ async def put_ranking_preferences(
                 ses_service = SESEmailService()
                 ses_service.send_ranking_form_confirmation_email(
                     to_email=user.email,
-                    first_name=user.first_name,
+                    first_name=resolve_user_first_name(user),
                     language=language,
                 )
         except Exception:
