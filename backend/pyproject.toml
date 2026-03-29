@@ -34,14 +34,16 @@ distribution = false
 dev = "fastapi dev app/server.py --port 8080"
 precommit = "pre-commit run"
 precommit-install = "pre-commit install"
-dc-down = "docker-compose down -v"
-dc-up = "docker-compose up -d"
+dc-down = "docker compose down -v"
+dc-up = "docker compose up -d"
 docker-db = {composite = ["dc-down", "dc-up"]}
 db-dev = {composite = ["docker-db", "dev"]}
 revision = "alembic revision --autogenerate"
 upgrade = "alembic upgrade head"
 seed = "python -m app.seeds.runner"
 db-reset = {composite = ["docker-db", "upgrade", "seed"]}
+seed-matches = "python seed_all_match_states.py"
+db-reset-full = {composite = ["docker-db", "upgrade", "seed", "seed-matches"]}
 tests = "pytest -v"
 test-db-create = {shell = "docker exec llsc_db psql -U postgres -c 'DROP DATABASE IF EXISTS llsc_test' 2>/dev/null || true && docker exec llsc_db psql -U postgres -c 'CREATE DATABASE llsc_test'"}
 test-db-migrate = {shell = "POSTGRES_DATABASE_URL='postgresql+psycopg2://postgres:postgres@localhost:5432/llsc_test' alembic upgrade head"}
