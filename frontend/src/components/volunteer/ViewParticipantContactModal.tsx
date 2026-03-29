@@ -1,5 +1,6 @@
 import { Box, Button, Flex, Text, VStack, HStack, Icon } from '@chakra-ui/react';
 import { FiPhone } from 'react-icons/fi';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 
 interface ParticipantContactInfo {
   firstName: string | null;
@@ -18,6 +19,8 @@ export function ViewParticipantContactModal({
   participant,
   onClose,
 }: ViewParticipantContactModalProps) {
+  const isDesktop = useIsDesktop();
+
   if (!isOpen || !participant) {
     return null;
   }
@@ -49,7 +52,11 @@ export function ViewParticipantContactModal({
         w="90%"
         boxShadow="0px 8px 8px -4px rgba(10, 13, 18, 0.03), 0px 20px 24px -4px rgba(10, 13, 18, 0.08)"
       >
-        <Flex gap={6} align="flex-start">
+        <Flex
+          gap={6}
+          align={isDesktop ? 'flex-start' : 'center'}
+          direction={{ base: 'column', lg: 'row' }}
+        >
           {/* Phone Icon */}
           <Box
             w="48px"
@@ -67,23 +74,25 @@ export function ViewParticipantContactModal({
           </Box>
 
           {/* Content */}
-          <VStack align="stretch" gap={6} flex={1}>
-            <VStack align="stretch" gap={2}>
+          <VStack align="stretch" gap={6} flex={1} w="100%">
+            <VStack align={{ base: 'center', lg: 'stretch' }} gap={2}>
               <Text
-                fontSize="20px"
+                fontSize={{ base: '18px', lg: '20px' }}
                 fontWeight={600}
                 color="#181D27"
                 fontFamily="'Open Sans', sans-serif"
                 lineHeight="1.4em"
+                textAlign={{ base: 'center', lg: 'left' }}
               >
                 Your call is set!
               </Text>
               <Text
-                fontSize="16px"
+                fontSize={{ base: '14px', lg: '16px' }}
                 fontWeight={400}
                 color="#535862"
                 fontFamily="'Open Sans', sans-serif"
                 lineHeight="1.36181640625em"
+                textAlign={{ base: 'center', lg: 'left' }}
               >
                 Here are the contact details for your participant.
               </Text>
@@ -92,18 +101,18 @@ export function ViewParticipantContactModal({
             <VStack align="stretch" gap={4}>
               <HStack gap={4.5} align="center">
                 <Text
-                  fontSize="16px"
+                  fontSize={{ base: '14px', lg: '16px' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.875em"
-                  w="118px"
+                  w={{ base: '80px', lg: '118px' }}
                   flexShrink={0}
                 >
                   Name
                 </Text>
                 <Text
-                  fontSize="18px"
+                  fontSize={{ base: '16px', lg: '18px' }}
                   fontWeight={400}
                   color="#056067"
                   fontFamily="'Open Sans', sans-serif"
@@ -115,30 +124,32 @@ export function ViewParticipantContactModal({
 
               <HStack gap={4.5} align="center">
                 <Text
-                  fontSize="16px"
+                  fontSize={{ base: '14px', lg: '16px' }}
                   fontWeight={600}
                   color="#1D3448"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.875em"
-                  w="118px"
+                  w={{ base: '80px', lg: '118px' }}
                   flexShrink={0}
                 >
                   Email
                 </Text>
                 <Text
-                  fontSize="18px"
+                  fontSize={{ base: '16px', lg: '18px' }}
                   fontWeight={400}
                   color="#056067"
                   fontFamily="'Open Sans', sans-serif"
                   lineHeight="1.3333333333333333em"
+                  wordBreak="break-all"
                 >
                   {participant.email}
                 </Text>
               </HStack>
             </VStack>
 
-            <Flex justify="flex-end" mt={2}>
+            <Flex justify={{ base: 'stretch', lg: 'flex-end' }} mt={2}>
               <Button
+                w={{ base: '100%', lg: 'auto' }}
                 bg="#056067"
                 color="white"
                 fontWeight={600}

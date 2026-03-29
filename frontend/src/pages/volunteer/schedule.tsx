@@ -1,20 +1,65 @@
 import React, { useState } from 'react';
-import { Box, Heading, Text, VStack, HStack, Button, Textarea } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, HStack, Button } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { BiArrowBack } from 'react-icons/bi';
 import TimeScheduler from '@/components/dashboard/TimeScheduler';
 import type { TimeSlot } from '@/components/dashboard/types';
 import { createAvailability, AvailabilityTemplate } from '@/APIClients/authAPIClient';
 import { getCurrentUserId } from '@/utils/AuthUtils';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 
 const SchedulePage: React.FC = () => {
   const router = useRouter();
+  const isDesktop = useIsDesktop();
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([]);
-  const [additionalInfo, setAdditionalInfo] = useState('');
   const [loading, setLoading] = useState(false);
+  const [selectedMobileDay, setSelectedMobileDay] = useState<string>('Sunday');
 
   const handleTimeSlotsChange = (timeSlots: TimeSlot[]) => {
     setSelectedTimeSlots(timeSlots);
+  };
+
+  // Mobile day abbreviations for availability selector
+  const mobileDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  const dayFullNames: Record<string, string> = {
+    SUN: 'Sunday',
+    MON: 'Monday',
+    TUE: 'Tuesday',
+    WED: 'Wednesday',
+    THU: 'Thursday',
+    FRI: 'Friday',
+    SAT: 'Saturday',
+  };
+  const hours = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
+
+  const formatMobileTime = (hour: number) => {
+    if (hour <= 11) {
+      return `${hour} AM`;
+    } else if (hour === 12) {
+      return '12 PM';
+    } else {
+      return `${hour - 12} PM`;
+    }
+  };
+
+  const isTimeSlotSelectedForDay = (day: string, hour: number) => {
+    const timeStr = `${hour}:00 - ${hour + 1}:00`;
+    return selectedTimeSlots.some((slot) => slot.day === day && slot.time === timeStr);
+  };
+
+  const handleMobileTimeSlotToggle = (day: string, hour: number) => {
+    const timeStr = `${hour}:00 - ${hour + 1}:00`;
+    const existingSlotIndex = selectedTimeSlots.findIndex(
+      (slot) => slot.day === day && slot.time === timeStr,
+    );
+
+    let newSlots: TimeSlot[];
+    if (existingSlotIndex >= 0) {
+      newSlots = selectedTimeSlots.filter((_, index) => index !== existingSlotIndex);
+    } else {
+      newSlots = [...selectedTimeSlots, { day, time: timeStr, selected: true }];
+    }
+
+    setSelectedTimeSlots(newSlots);
   };
 
   // Convert TimeSlots to AvailabilityTemplates for API (same logic as admin profile)
@@ -125,19 +170,92 @@ const SchedulePage: React.FC = () => {
     }
   };
 
+  const renderMobileAvailability = () => (
+    <VStack align="stretch" gap={4}>
+      {/* Day selector pills */}
+      <HStack gap={2} overflowX="auto" pb={2}>
+        {mobileDays.map((day) => (
+          <Box
+            key={day}
+            px={3}
+            py={2}
+            borderRadius="full"
+            bg={selectedMobileDay === dayFullNames[day] ? '#1D3448' : 'white'}
+            color={selectedMobileDay === dayFullNames[day] ? 'white' : '#1D3448'}
+            border="1px solid"
+            borderColor={selectedMobileDay === dayFullNames[day] ? '#1D3448' : '#E5E7EB'}
+            cursor="pointer"
+            onClick={() => setSelectedMobileDay(dayFullNames[day])}
+            fontFamily="'Open Sans', sans-serif"
+            fontSize="14px"
+            fontWeight={500}
+            flexShrink={0}
+          >
+            {day}
+          </Box>
+        ))}
+      </HStack>
+
+      {/* Vertical time slots list */}
+      <VStack align="stretch" gap={0}>
+        {hours.map((hour) => {
+          const isSelected = isTimeSlotSelectedForDay(selectedMobileDay, hour);
+          return (
+            <Box
+              key={hour}
+              py={3}
+              px={4}
+              borderBottom="1px solid"
+              borderColor="#E5E7EB"
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              cursor="pointer"
+              onClick={() => handleMobileTimeSlotToggle(selectedMobileDay, hour)}
+              bg={isSelected ? 'rgba(255, 187, 138, 0.2)' : 'white'}
+            >
+              <Text
+                fontSize="14px"
+                fontWeight={400}
+                color="#1D3448"
+                fontFamily="'Open Sans', sans-serif"
+              >
+                {formatMobileTime(hour)}
+              </Text>
+              {isSelected && (
+                <Box
+                  bg="rgba(255, 187, 138, 0.5)"
+                  color="#1D3448"
+                  px={3}
+                  py={1}
+                  borderRadius="4px"
+                  fontSize="12px"
+                  fontWeight={500}
+                  fontFamily="'Open Sans', sans-serif"
+                >
+                  {formatMobileTime(hour)} - {formatMobileTime(hour + 1)}
+                </Box>
+              )}
+            </Box>
+          );
+        })}
+      </VStack>
+    </VStack>
+  );
+
   return (
-    <Box minH="100vh" bg="white" p={12}>
-      {/* Centered container with 70% width */}
-      <Box w="70%" mx="auto" overflowX="hidden">
+    <Box minH="100vh" bg="white" p={{ base: 4, lg: 12 }}>
+      {/* Centered container */}
+      <Box w={{ base: '100%', lg: '70%' }} mx="auto" overflowX="hidden">
         <VStack gap={0} align="stretch" minW={0}>
           {/* Header and Text - Left Aligned */}
           <Box textAlign="left">
             <Heading
-              fontSize="36px"
+              fontSize={{ base: '24px', lg: '36px' }}
               fontWeight={600}
               color="#1D3448"
               fontFamily="'Open Sans', sans-serif"
-              letterSpacing="-1.5%"
+              letterSpacing="-0.015em"
               mb="19px"
             >
               Select your availability
@@ -145,41 +263,51 @@ const SchedulePage: React.FC = () => {
             <VStack align="start" gap={2}>
               <Text
                 color="#1D3448"
-                fontSize="16px"
+                fontSize={{ base: '14px', lg: '16px' }}
                 fontFamily="'Open Sans', sans-serif"
                 fontWeight={400}
-                letterSpacing="-1.5%"
-                lineHeight="100%"
+                letterSpacing="-0.015em"
+                lineHeight="140%"
               >
-                Drag to select all the times you will usually be available to meet with
-                participants. We require that availability be provided in sessions of at least 2
-                hours.
+                Tap to select all the times you will usually be available to meet with participants.
+                We require that availability be provided in sessions of at least 2 hours.
               </Text>
               <Text
                 color="#1D3448"
-                fontSize="16px"
+                fontSize={{ base: '14px', lg: '16px' }}
                 fontFamily="'Open Sans', sans-serif"
                 fontWeight={400}
-                letterSpacing="-1.5%"
-                lineHeight="100%"
+                letterSpacing="-0.015em"
+                lineHeight="140%"
               >
                 You will also be able to edit later in your profile.
               </Text>
             </VStack>
           </Box>
 
-          {/* TimeScheduler - Centered */}
-          <Box h="700px" w="100%" minW={0} mt="49px">
-            <TimeScheduler
-              showAvailability={false}
-              onTimeSlotsChange={handleTimeSlotsChange}
-              readOnly={false}
-            />
-          </Box>
+          {/* TimeScheduler / Mobile Availability */}
+          {isDesktop ? (
+            <Box h="700px" w="100%" minW={0} mt="49px">
+              <TimeScheduler
+                showAvailability={false}
+                onTimeSlotsChange={handleTimeSlotsChange}
+                readOnly={false}
+              />
+            </Box>
+          ) : (
+            <Box mt={6}>{renderMobileAvailability()}</Box>
+          )}
 
-          {/* Confirm Button - Right Aligned */}
-          <Box mt={4} display="flex" justifyContent="flex-end" w="100%" minW={0}>
+          {/* Confirm Button */}
+          <Box
+            mt={4}
+            display="flex"
+            justifyContent={{ base: 'stretch', lg: 'flex-end' }}
+            w="100%"
+            minW={0}
+          >
             <Button
+              w={{ base: '100%', lg: 'auto' }}
               gap={2}
               bg="#056067"
               color="#fff"
@@ -187,7 +315,8 @@ const SchedulePage: React.FC = () => {
               fontWeight={600}
               borderRadius="md"
               px={8}
-              py={2}
+              py={{ base: 6, lg: 2 }}
+              fontSize={{ base: '16px', lg: '14px' }}
               _hover={{ bg: '#044d4d' }}
               onClick={handleSend}
               disabled={loading}

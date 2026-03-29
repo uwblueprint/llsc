@@ -17,12 +17,12 @@ const FAQsPage: React.FC = () => {
   return (
     <VolunteerDashboardLayout>
       <Box display="flex" justifyContent="center" w="100%">
-        <Box w="711px">
+        <Box w={{ base: '100%', lg: '711px' }}>
           <Heading
-            fontSize="2.25rem"
+            fontSize={{ base: '1.5rem', lg: '2.25rem' }}
             fontWeight={600}
             lineHeight="100%"
-            letterSpacing="-1.5%"
+            letterSpacing="-0.015em"
             color="#1D3448"
             fontFamily="'Open Sans', sans-serif"
             textAlign="left"
@@ -32,7 +32,7 @@ const FAQsPage: React.FC = () => {
           </Heading>
 
           <Text
-            fontSize="16px"
+            fontSize={{ base: '14px', lg: '16px' }}
             color="#6B7280"
             fontFamily="'Open Sans', sans-serif"
             textAlign="left"
@@ -42,7 +42,7 @@ const FAQsPage: React.FC = () => {
           </Text>
 
           <Text
-            fontSize="16px"
+            fontSize={{ base: '14px', lg: '16px' }}
             color="#6B7280"
             fontFamily="'Open Sans', sans-serif"
             textAlign="center"

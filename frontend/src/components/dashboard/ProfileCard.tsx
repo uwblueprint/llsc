@@ -31,7 +31,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   onScheduleCall,
   onViewContact,
 }) => {
-  const t = useTranslations('dashboard');
   const isDesktop = useIsDesktop();
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {

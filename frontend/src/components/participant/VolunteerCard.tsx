@@ -4,7 +4,6 @@ import { Avatar } from '@/components/ui/avatar';
 import Badge from '@/components/dashboard/Badge';
 import { COLORS } from '@/constants/form';
 import { FiLoader } from 'react-icons/fi';
-import { useTranslations } from 'next-intl';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 
 interface VolunteerCardProps {
@@ -13,8 +12,6 @@ interface VolunteerCardProps {
 }
 
 export function VolunteerCard({ match, onSchedule }: VolunteerCardProps) {
-  const t = useTranslations('dashboard');
-  const tOptions = useTranslations('options');
   const isDesktop = useIsDesktop();
   const { volunteer } = match;
 

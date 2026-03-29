@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Box, Heading, Text } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack } from '@chakra-ui/react';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
 import ScheduleCallModal from '@/components/dashboard/ScheduleCallModal';
+import ProfileCard from '@/components/dashboard/ProfileCard';
 import { getCurrentUser } from '@/APIClients/authAPIClient';
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { FormStatus, UserRole } from '@/types/authTypes';
@@ -14,6 +15,7 @@ import { CancelCallConfirmationModal } from '@/components/participant/CancelCall
 import { ViewParticipantContactModal } from '@/components/volunteer/ViewParticipantContactModal';
 import { CallCancelledNotificationModal } from '@/components/shared/CallCancelledNotificationModal';
 import { CancelCallSuccessModal } from '@/components/participant/CancelCallSuccessModal';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 
 interface MatchedParticipant {
   id: number;
@@ -46,6 +48,7 @@ interface VolunteerDashboardMatch {
 
 const VolunteerDashboardPage: React.FC = () => {
   const router = useRouter();
+  const isDesktop = useIsDesktop();
   const [userName, setUserName] = useState('');
   const [allMatches, setAllMatches] = useState<VolunteerDashboardMatch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -216,36 +219,74 @@ const VolunteerDashboardPage: React.FC = () => {
 
           {allMatches.length > 0 && (
             <Box mb={8}>
-              <MatchStatusScreen
-                matches={allMatches}
-                userRole={UserRole.VOLUNTEER}
-                userName={userName}
-                onViewRequest={(matchId) =>
-                  router.push(`/volunteer/dashboard/time-request/${matchId}`)
-                }
-                onScheduleCall={(matchId) => {
-                  const match = allMatches.find((m) => m.id === matchId);
-                  if (!match) return;
-                  const participant = match.participant;
-                  const firstName = participant.firstName || '';
-                  const lastName = participant.lastName || '';
-                  const fullName = `${firstName} ${lastName}`.trim();
-                  setSelectedParticipant({
-                    id: match.id,
-                    name: fullName || participant.email,
-                    pronouns: participant.pronouns?.join('/') || '',
-                    age: participant.age || 0,
-                    timezone: participant.timezone || 'N/A',
-                    diagnosis: participant.diagnosis || 'N/A',
-                    treatments: participant.treatments || [],
-                    experiences: participant.experiences || [],
-                    initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
-                  });
-                  setIsScheduleModalOpen(true);
-                }}
-                onCancelCall={(matchId) => setMatchToCancel(matchId)}
-                onViewContactDetails={handleViewContact}
-              />
+              {!isDesktop ? (
+                <VStack gap={4} align="stretch">
+                  {allMatches.map((match) => {
+                    const participant = match.participant;
+                    const firstName = participant.firstName || '';
+                    const lastName = participant.lastName || '';
+                    const fullName = `${firstName} ${lastName}`.trim();
+                    const isConfirmed = match.matchStatus === 'confirmed';
+                    const profileParticipant = {
+                      id: match.id,
+                      name: fullName || participant.email,
+                      pronouns: participant.pronouns?.join('/') || '',
+                      age: participant.age || 0,
+                      timezone: participant.timezone || 'N/A',
+                      diagnosis: participant.diagnosis || 'N/A',
+                      treatments: participant.treatments || [],
+                      experiences: participant.experiences || [],
+                      initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
+                    };
+                    return (
+                      <ProfileCard
+                        key={match.id}
+                        participant={profileParticipant}
+                        onScheduleCall={
+                          !isConfirmed
+                            ? () => {
+                                setSelectedParticipant(profileParticipant);
+                                setIsScheduleModalOpen(true);
+                              }
+                            : undefined
+                        }
+                        onViewContact={isConfirmed ? () => handleViewContact(match.id) : undefined}
+                      />
+                    );
+                  })}
+                </VStack>
+              ) : (
+                <MatchStatusScreen
+                  matches={allMatches}
+                  userRole={UserRole.VOLUNTEER}
+                  userName={userName}
+                  onViewRequest={(matchId) =>
+                    router.push(`/volunteer/dashboard/time-request/${matchId}`)
+                  }
+                  onScheduleCall={(matchId) => {
+                    const match = allMatches.find((m) => m.id === matchId);
+                    if (!match) return;
+                    const participant = match.participant;
+                    const firstName = participant.firstName || '';
+                    const lastName = participant.lastName || '';
+                    const fullName = `${firstName} ${lastName}`.trim();
+                    setSelectedParticipant({
+                      id: match.id,
+                      name: fullName || participant.email,
+                      pronouns: participant.pronouns?.join('/') || '',
+                      age: participant.age || 0,
+                      timezone: participant.timezone || 'N/A',
+                      diagnosis: participant.diagnosis || 'N/A',
+                      treatments: participant.treatments || [],
+                      experiences: participant.experiences || [],
+                      initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?',
+                    });
+                    setIsScheduleModalOpen(true);
+                  }}
+                  onCancelCall={(matchId) => setMatchToCancel(matchId)}
+                  onViewContactDetails={handleViewContact}
+                />
+              )}
             </Box>
           )}
 

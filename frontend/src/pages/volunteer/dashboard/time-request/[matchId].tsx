@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Box, Button, Flex, HStack, Icon, Spinner, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Flex, HStack, Spinner, Text, VStack } from '@chakra-ui/react';
 import { FiChevronLeft } from 'react-icons/fi';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { FormStatusGuard } from '@/components/auth/FormStatusGuard';
 import { VolunteerDashboardLayout } from '@/components/dashboard/VolunteerDashboardLayout';
+
 import baseAPIClient from '@/APIClients/baseAPIClient';
 import { FormStatus, UserRole } from '@/types/authTypes';
 
@@ -206,7 +207,7 @@ export default function VolunteerTimeRequestPage() {
               onClick={() => router.push('/volunteer/dashboard')}
               _hover={{ opacity: 0.7 }}
             >
-              <Icon as={FiChevronLeft} boxSize="20px" color="#1D3448" strokeWidth="1.67px" />
+              <FiChevronLeft size={20} strokeWidth={1.67} />
               <Text
                 fontSize="16px"
                 fontWeight={600}
@@ -220,21 +221,21 @@ export default function VolunteerTimeRequestPage() {
             {/* Title Section */}
             <VStack align="stretch" gap={4}>
               <Text
-                fontSize="36px"
+                fontSize={{ base: '24px', lg: '36px' }}
                 fontWeight={600}
                 color="#1D3448"
                 fontFamily="'Open Sans', sans-serif"
-                letterSpacing="-1.5%"
+                letterSpacing="-0.015em"
                 lineHeight="1.36"
               >
                 {participantShortName} has requested these times
               </Text>
               <Text
-                fontSize="18px"
+                fontSize={{ base: '16px', lg: '18px' }}
                 color="#1D3448"
                 fontFamily="'Open Sans', sans-serif"
                 opacity={0.85}
-                letterSpacing="-1.5%"
+                letterSpacing="-0.015em"
                 lineHeight="1.36"
               >
                 Schedule your meeting. If no times work for you,{' '}
@@ -246,11 +247,11 @@ export default function VolunteerTimeRequestPage() {
             {/* Select a Date Section */}
             <VStack align="stretch" gap={6}>
               <Text
-                fontSize="22px"
+                fontSize={{ base: '18px', lg: '22px' }}
                 fontWeight={600}
                 color="#1D3448"
                 fontFamily="'Open Sans', sans-serif"
-                letterSpacing="-1.5%"
+                letterSpacing="-0.015em"
                 lineHeight="1.36"
               >
                 Select a date
@@ -280,8 +281,9 @@ export default function VolunteerTimeRequestPage() {
                         }
                         cursor="pointer"
                         onClick={() => setExpandedDate(isExpanded ? null : dateKey)}
-                        px="28px"
-                        py="24px"
+                        w={{ base: '100%', lg: 'auto' }}
+                        px={{ base: '20px', lg: '28px' }}
+                        py={{ base: '16px', lg: '24px' }}
                         transition="all 0.15s ease"
                       >
                         <Text
@@ -306,21 +308,21 @@ export default function VolunteerTimeRequestPage() {
               <VStack align="stretch" gap={6}>
                 <VStack align="stretch" gap={1}>
                   <Text
-                    fontSize="22px"
+                    fontSize={{ base: '18px', lg: '22px' }}
                     fontWeight={600}
                     color="#1D3448"
                     fontFamily="'Open Sans', sans-serif"
-                    letterSpacing="-1.5%"
+                    letterSpacing="-0.015em"
                     lineHeight="1.36"
                   >
                     Select a time
                   </Text>
                   <Text
-                    fontSize="18px"
+                    fontSize={{ base: '16px', lg: '18px' }}
                     color="#1D3448"
                     fontFamily="'Open Sans', sans-serif"
                     opacity={0.85}
-                    letterSpacing="-1.5%"
+                    letterSpacing="-0.015em"
                     lineHeight="1.36"
                   >
                     All times are in {participantTimezone}.
@@ -344,8 +346,8 @@ export default function VolunteerTimeRequestPage() {
                         }
                         cursor="pointer"
                         onClick={() => toggleTimeBlockSelection(timeBlock.id)}
-                        px="28px"
-                        py="24px"
+                        px={{ base: '20px', lg: '28px' }}
+                        py={{ base: '16px', lg: '24px' }}
                         transition="all 0.15s ease"
                       >
                         <Text
@@ -366,16 +368,22 @@ export default function VolunteerTimeRequestPage() {
             )}
 
             {/* Action Buttons */}
-            <Flex justify="space-between" pt={2}>
+            <Flex
+              justify="space-between"
+              pt={2}
+              direction={{ base: 'column-reverse', lg: 'row' }}
+              gap={{ base: 3, lg: 0 }}
+            >
               <Button
                 bg="#A70000"
                 color="white"
                 borderRadius="8px"
-                px="42px"
-                py="18px"
+                px={{ base: '24px', lg: '42px' }}
+                py={{ base: '12px', lg: '18px' }}
                 h="auto"
+                w={{ base: '100%', lg: 'auto' }}
                 fontWeight={600}
-                fontSize="20px"
+                fontSize={{ base: '16px', lg: '20px' }}
                 fontFamily="'Open Sans', sans-serif"
                 border="1px solid #A70000"
                 boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"
@@ -391,11 +399,12 @@ export default function VolunteerTimeRequestPage() {
                   bg="#056067"
                   color="white"
                   borderRadius="8px"
-                  px="42px"
-                  py="18px"
+                  px={{ base: '24px', lg: '42px' }}
+                  py={{ base: '12px', lg: '18px' }}
                   h="auto"
+                  w={{ base: '100%', lg: 'auto' }}
                   fontWeight={600}
-                  fontSize="20px"
+                  fontSize={{ base: '16px', lg: '20px' }}
                   fontFamily="'Open Sans', sans-serif"
                   border="1px solid #056067"
                   boxShadow="0px 1px 2px 0px rgba(10, 13, 18, 0.05)"

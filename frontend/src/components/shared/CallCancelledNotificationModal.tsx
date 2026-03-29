@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Icon, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Icon, Text, VStack } from '@chakra-ui/react';
 import { FiAlertCircle } from 'react-icons/fi';
 
 interface CallCancelledNotificationModalProps {
