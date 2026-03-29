@@ -1,5 +1,6 @@
 from app.models import User
 
+
 def resolve_user_first_name(user: User | None) -> str | None:
     if not user:
         return None

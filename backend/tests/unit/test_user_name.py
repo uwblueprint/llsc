@@ -1,7 +1,5 @@
 from unittest.mock import MagicMock
 
-import pytest
-
 from app.utilities.user_name import resolve_user_first_name
 
 
