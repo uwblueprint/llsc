@@ -6,6 +6,7 @@ from fastapi import HTTPException
 
 from app.utilities.constants import LOGGER_NAME
 from app.utilities.ses_email_service import SESEmailService
+from app.utilities.user_name import resolve_user_first_name
 
 from ...interfaces.auth_service import IAuthService
 from ...schemas.auth import AuthResponse, Token
@@ -57,8 +58,7 @@ class AuthService(IAuthService):
                 try:
                     user = self.user_service.get_user_by_email(email)
                     if user:
-                        if user.first_name and user.first_name.strip():
-                            first_name = user.first_name.strip()
+                        first_name = resolve_user_first_name(user)
                         # Get language from user (enum values are already "en" or "fr")
                         if user.language:
                             language = user.language.value
@@ -127,8 +127,9 @@ class AuthService(IAuthService):
                 if not first_name:
                     try:
                         user = self.user_service.get_user_by_email(email)
-                        if user and user.first_name and user.first_name.strip():
-                            first_name = user.first_name.strip()
+                        resolved_name = resolve_user_first_name(user) if user else None
+                        if resolved_name:
+                            first_name = resolved_name
                             self.logger.info(f"Found first name '{first_name}' from database for user {email}")
                         else:
                             self.logger.debug(f"No first name found in database for user {email}")

@@ -14,6 +14,7 @@ from app.schemas.user import UserRole
 from app.services.implementations.form_processor import FormProcessor
 from app.utilities.db_utils import get_db
 from app.utilities.ses_email_service import SESEmailService
+from app.utilities.user_name import resolve_user_first_name
 
 # ===== Schemas =====
 
@@ -277,7 +278,7 @@ async def create_form_submission(
                 # Get language (enum values are already "en" or "fr")
                 language = target_user.language.value if target_user.language else "en"
 
-                first_name = target_user.first_name if target_user.first_name else None
+                first_name = resolve_user_first_name(target_user)
                 ses_service.send_intake_form_confirmation_email(
                     to_email=target_user.email, first_name=first_name, language=language
                 )

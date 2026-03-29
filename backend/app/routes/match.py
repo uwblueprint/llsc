@@ -236,7 +236,9 @@ async def accept_requested_times(
     """Volunteer accepts one of the participant's requested time blocks."""
     try:
         acting_volunteer_id = await _resolve_acting_volunteer_id(request, user_service)
-        return await match_service.volunteer_accept_requested_times(match_id, payload.time_block_id, acting_volunteer_id)
+        return await match_service.volunteer_accept_requested_times(
+            match_id, payload.time_block_id, acting_volunteer_id
+        )
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:

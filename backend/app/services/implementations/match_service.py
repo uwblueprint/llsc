@@ -27,6 +27,7 @@ from app.schemas.time_block import TimeBlockEntity, TimeRange
 from app.schemas.user import UserRole
 from app.utilities.ses_email_service import SESEmailService
 from app.utilities.timezone_utils import get_timezone_from_abbreviation
+from app.utilities.user_name import resolve_user_first_name
 
 SCHEDULE_CLEANUP_STATUSES = {
     "pending",
@@ -106,7 +107,7 @@ class MatchService:
                         # Get volunteer's language (enum values are already "en" or "fr")
                         language = volunteer.language.value if volunteer.language else "en"
 
-                        first_name = volunteer.first_name if volunteer.first_name else None
+                        first_name = resolve_user_first_name(volunteer)
                         matches_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard"
 
                         ses_service.send_matches_available_email(
@@ -342,7 +343,7 @@ class MatchService:
                             date=participant_date,
                             time=participant_time_str,
                             timezone=participant_tz_abbr,
-                            first_name=participant.first_name,
+                            first_name=resolve_user_first_name(participant),
                             scheduled_calls_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard",
                             language=participant_language,
                         )
@@ -357,7 +358,7 @@ class MatchService:
                             date=volunteer_date,
                             time=volunteer_time_str,
                             timezone=volunteer_tz_abbr,
-                            first_name=volunteer.first_name,
+                            first_name=resolve_user_first_name(volunteer),
                             scheduled_calls_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard",
                             language=volunteer_language,
                         )
@@ -446,7 +447,7 @@ class MatchService:
                     ses_service.send_participant_requested_new_times_email(
                         to_email=volunteer.email,
                         participant_name=participant_name,
-                        first_name=volunteer.first_name,
+                        first_name=resolve_user_first_name(volunteer),
                         matches_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard",
                         language=volunteer_language,
                     )
@@ -532,7 +533,7 @@ class MatchService:
                             date=volunteer_date,
                             time=volunteer_time_str,
                             timezone=volunteer_tz_abbr,
-                            first_name=volunteer.first_name,
+                            first_name=resolve_user_first_name(volunteer),
                             dashboard_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard",
                             language=volunteer_language,
                         )
@@ -622,7 +623,7 @@ class MatchService:
                             date=participant_date,
                             time=participant_time_str,
                             timezone=participant_tz_abbr,
-                            first_name=participant.first_name,
+                            first_name=resolve_user_first_name(participant),
                             request_matches_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard",
                             language=participant_language,
                         )
@@ -830,7 +831,7 @@ class MatchService:
                     # Get participant's language (enum values are already "en" or "fr")
                     language = participant.language.value if participant.language else "en"
 
-                    first_name = participant.first_name if participant.first_name else None
+                    first_name = resolve_user_first_name(participant)
                     matches_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard"
 
                     ses_service = SESEmailService()
@@ -903,6 +904,82 @@ class MatchService:
             self.db.flush()
             self.db.commit()
             self.db.refresh(match)
+
+            # Send confirmation emails for accepted requested times
+            try:
+                participant = match.participant
+                volunteer = match.volunteer
+
+                if participant and volunteer and match.confirmed_time:
+                    ses_service = SESEmailService()
+                    confirmed_time_utc = match.confirmed_time.start_time
+
+                    # Get participant's timezone and language
+                    participant_tz = ZoneInfo("America/Toronto")  # Default to EST
+                    if participant.user_data and participant.user_data.timezone:
+                        tz_result = get_timezone_from_abbreviation(participant.user_data.timezone)
+                        if tz_result:
+                            participant_tz = tz_result
+                    participant_language = participant.language.value if participant.language else "en"
+
+                    # Get volunteer's timezone and language
+                    volunteer_tz = ZoneInfo("America/Toronto")  # Default to EST
+                    if volunteer.user_data and volunteer.user_data.timezone:
+                        tz_result = get_timezone_from_abbreviation(volunteer.user_data.timezone)
+                        if tz_result:
+                            volunteer_tz = tz_result
+                    volunteer_language = volunteer.language.value if volunteer.language else "en"
+
+                    # Convert time to participant's timezone
+                    participant_time = confirmed_time_utc.astimezone(participant_tz)
+                    participant_date = participant_time.strftime("%B %d, %Y")
+                    participant_time_str = participant_time.strftime("%I:%M %p")
+                    participant_tz_abbr = participant_time.strftime("%Z")
+
+                    # Convert time to volunteer's timezone
+                    volunteer_time = confirmed_time_utc.astimezone(volunteer_tz)
+                    volunteer_date = volunteer_time.strftime("%B %d, %Y")
+                    volunteer_time_str = volunteer_time.strftime("%I:%M %p")
+                    volunteer_tz_abbr = volunteer_time.strftime("%Z")
+
+                    # Send participant notification (volunteer accepted requested time)
+                    if participant.email:
+                        volunteer_name = (
+                            f"{volunteer.first_name} {volunteer.last_name}"
+                            if volunteer.first_name and volunteer.last_name
+                            else volunteer.first_name or "Your volunteer"
+                        )
+                        ses_service.send_volunteer_accepted_new_times_email(
+                            to_email=participant.email,
+                            volunteer_name=volunteer_name,
+                            date=participant_date,
+                            time=participant_time_str,
+                            timezone=participant_tz_abbr,
+                            first_name=resolve_user_first_name(participant),
+                            scheduled_calls_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/participant/dashboard",
+                            language=participant_language,
+                        )
+
+                    # Send volunteer confirmation (call is now scheduled)
+                    if volunteer.email:
+                        participant_name = (
+                            f"{participant.first_name} {participant.last_name}"
+                            if participant.first_name and participant.last_name
+                            else participant.first_name or "Your participant"
+                        )
+                        ses_service.send_call_scheduled_email(
+                            to_email=volunteer.email,
+                            match_name=participant_name,
+                            date=volunteer_date,
+                            time=volunteer_time_str,
+                            timezone=volunteer_tz_abbr,
+                            first_name=resolve_user_first_name(volunteer),
+                            scheduled_calls_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/volunteer/dashboard",
+                            language=volunteer_language,
+                        )
+            except Exception as e:
+                # Log error but don't fail the acceptance
+                self.logger.error(f"Failed to send acceptance confirmation emails for match {match_id}: {e}")
 
             return self._build_match_detail_for_volunteer(match)
         except HTTPException:
@@ -1024,8 +1101,7 @@ class MatchService:
         match_status_name = match.match_status.name if match.match_status else ""
 
         suggested_blocks = [
-            TimeBlockEntity(id=tb.id, start_time=tb.start_time)
-            for tb in (match.suggested_time_blocks or [])
+            TimeBlockEntity(id=tb.id, start_time=tb.start_time) for tb in (match.suggested_time_blocks or [])
         ]
 
         chosen_block = None

@@ -30,6 +30,7 @@ from app.services.implementations.intake_form_processor import IntakeFormProcess
 from app.services.implementations.volunteer_data_service import VolunteerDataService
 from app.utilities.constants import LOGGER_NAME
 from app.utilities.ses_email_service import SESEmailService
+from app.utilities.user_name import resolve_user_first_name
 
 
 class FormProcessor:
@@ -100,7 +101,7 @@ class FormProcessor:
                 ses_service = SESEmailService()
                 ses_service.send_intake_approved_participant_email(
                     to_email=user.email,
-                    first_name=user.first_name,
+                    first_name=resolve_user_first_name(user),
                     language=language,
                 )
             except Exception as e:
@@ -112,7 +113,7 @@ class FormProcessor:
                 ses_service = SESEmailService()
                 ses_service.send_intake_approved_volunteer_email(
                     to_email=user.email,
-                    first_name=user.first_name,
+                    first_name=resolve_user_first_name(user),
                     language=language,
                 )
             except Exception as e:
@@ -178,7 +179,7 @@ class FormProcessor:
                 ses_service = SESEmailService()
                 ses_service.send_ranking_approved_email(
                     to_email=user.email,
-                    first_name=user.first_name,
+                    first_name=resolve_user_first_name(user),
                     language=language,
                 )
             except Exception as e:
@@ -202,7 +203,7 @@ class FormProcessor:
                 ses_service = SESEmailService()
                 ses_service.send_secondary_app_approved_email(
                     to_email=user.email,
-                    first_name=user.first_name,
+                    first_name=resolve_user_first_name(user),
                     language=language,
                 )
             except Exception as e:
