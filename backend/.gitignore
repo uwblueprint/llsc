@@ -165,4 +165,4 @@ cython_debug/
 #.idea/
 
 # Firebase
-serviceAccountKey.json
+serviceAccountKey.jsonseed_all_match_states.py
