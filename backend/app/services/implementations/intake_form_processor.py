@@ -147,7 +147,13 @@ class IntakeFormProcessor:
         if not date_str:
             return None
 
-        # Try DD/MM/YYYY format first (frontend format)
+        # Try MM/DD/YYYY format (frontend format)
+        try:
+            return datetime.strptime(date_str, "%m/%d/%Y").date()
+        except ValueError:
+            pass
+
+        # Try DD/MM/YYYY format
         try:
             return datetime.strptime(date_str, "%d/%m/%Y").date()
         except ValueError:
@@ -157,7 +163,7 @@ class IntakeFormProcessor:
         try:
             return datetime.fromisoformat(date_str).date()
         except ValueError:
-            raise ValueError(f"Invalid date format: {date_str}. Expected DD/MM/YYYY or ISO format.")
+            raise ValueError(f"Invalid date format: {date_str}. Expected MM/DD/YYYY or ISO format.")
 
     def _process_personal_info(self, user_data: UserData, personal_info: Dict[str, Any]):
         """Process personal information fields."""
